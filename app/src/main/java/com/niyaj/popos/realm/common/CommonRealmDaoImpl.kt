@@ -4,39 +4,22 @@ import com.niyaj.popos.domain.util.CartOrderType
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.cart_order.CartOrderRealm
 import com.niyaj.popos.realm.charges.ChargesRealm
-import com.niyaj.popos.realmApp
 import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.subscriptions
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.mongodb.syncSession
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class CommonRealmDaoImpl(
-    config: SyncConfiguration
+    config: RealmConfiguration
 ) : CommonRealmDao {
-
-    private val user = realmApp.currentUser
 
     val realm = Realm.open(config)
 
     private val sessionState = realm.syncSession.state.name
 
     init {
-        if(user == null && sessionState != "ACTIVE") {
-            Timber.d("Common Realm: user is null")
-        }
-
         Timber.d("Common Session: $sessionState")
-
-        CoroutineScope(Dispatchers.IO).launch {
-            realm.syncSession.downloadAllServerChanges()
-            realm.syncSession.uploadAllLocalChanges()
-            realm.subscriptions.waitForSynchronization()
-        }
     }
 
     override fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
@@ -75,5 +58,4 @@ class CommonRealmDaoImpl(
 
         return Pair(totalPrice, discountPrice)
     }
-
 }

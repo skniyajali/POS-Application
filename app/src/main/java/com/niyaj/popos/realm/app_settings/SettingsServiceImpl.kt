@@ -1,39 +1,21 @@
 package com.niyaj.popos.realm.app_settings
 
 import com.niyaj.popos.domain.util.Resource
-import com.niyaj.popos.realmApp
 import com.niyaj.popos.util.Constants.SETTINGS_ID
 import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.subscriptions
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.mongodb.syncSession
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class SettingsServiceImpl(config: SyncConfiguration) : SettingsService {
-
-    private val user = realmApp.currentUser
+class SettingsServiceImpl(config: RealmConfiguration) : SettingsService {
 
     val realm = Realm.open(config)
 
     private val sessionState = realm.syncSession.state.name
 
     init {
-        if (user == null && sessionState != "ACTIVE") {
-            Timber.d("Settings: user is null")
-        }
-
         Timber.d("Settings Session: $sessionState")
-
-
-        CoroutineScope(Dispatchers.IO).launch {
-            realm.syncSession.uploadAllLocalChanges()
-            realm.syncSession.downloadAllServerChanges()
-            realm.subscriptions.waitForSynchronization()
-        }
     }
 
 

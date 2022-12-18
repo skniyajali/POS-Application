@@ -8,14 +8,11 @@ import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealm
 import com.niyaj.popos.realm.expenses.ExpensesRealm
-import com.niyaj.popos.realmApp
 import com.niyaj.popos.util.getCalculatedStartDate
 import com.niyaj.popos.util.toSalaryDate
 import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.User
-import io.realm.kotlin.mongodb.subscriptions
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.UpdatedResults
@@ -28,28 +25,16 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class ReportsRealmDaoImpl(
-    config: SyncConfiguration,
+    config: RealmConfiguration,
     private val cartRealmDao: CartRealmDao,
 ) : ReportsRealmDao {
-
-    private val user: User? = realmApp.currentUser
 
     val realm = Realm.open(config)
 
     private val sessionState = realm.syncSession.state.name
 
     init {
-        if (user == null) {
-            Timber.d("Report: user is null")
-        } else {
-            Timber.d("Report Session: $sessionState")
-
-            CoroutineScope(Dispatchers.IO).launch {
-                realm.subscriptions.waitForSynchronization()
-                realm.syncSession.downloadAllServerChanges()
-                realm.syncSession.uploadAllLocalChanges()
-            }
-        }
+        Timber.d("Report Session: $sessionState")
     }
 
     override suspend fun generateReport(startDate: String, endDate: String): Resource<Boolean> {

@@ -9,14 +9,12 @@ import com.niyaj.popos.realm.address.AddressRealm
 import com.niyaj.popos.realm.app_settings.SettingsService
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.customer.CustomerRealm
-import com.niyaj.popos.realmApp
 import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.exceptions.RealmException
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.internal.interop.RealmCoreException
-import io.realm.kotlin.mongodb.subscriptions
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialObject
 import io.realm.kotlin.notifications.InitialResults
@@ -34,28 +32,16 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class CartOrderRealmDaoImpl(
-    config: SyncConfiguration,
+    config: RealmConfiguration,
     private val settingsService: SettingsService
 ) : CartOrderRealmDao {
-
-    private val user = realmApp.currentUser
 
     val realm = Realm.open(config)
 
     private val sessionState = realm.syncSession.state.name
 
     init {
-        if (user == null && sessionState != "ACTIVE") {
-            Timber.d("CartOrderRealmDaoImpl: user is null")
-        }
-
         Timber.d("CartOrder Session: $sessionState")
-
-        CoroutineScope(Dispatchers.IO).launch {
-            realm.syncSession.downloadAllServerChanges()
-            realm.syncSession.uploadAllLocalChanges()
-            realm.subscriptions.waitForSynchronization()
-        }
     }
 
     /**
@@ -66,7 +52,7 @@ class CartOrderRealmDaoImpl(
             val cartOrderId = realm.query<CartOrderRealm>().find().last().orderId.toLongOrNull()
 
             return cartOrderId ?: 0
-        }catch (e: Exception){
+        } catch (e: Exception) {
             0
         }
     }
@@ -77,146 +63,138 @@ class CartOrderRealmDaoImpl(
      */
     override suspend fun getAllCartOrders(): Flow<Resource<List<CartOrderRealm>>> {
         return channelFlow {
-            if (user != null) {
-                try {
-                    send(Resource.Loading(true))
+            try {
+                send(Resource.Loading(true))
 
-                    val items = realm.query<CartOrderRealm>(
-                        "cartOrderStatus == $0",
-                        OrderStatus.Processing.orderStatus
-                    ).sort("_id", Sort.DESCENDING)
+                val items = realm.query<CartOrderRealm>(
+                    "cartOrderStatus == $0",
+                    OrderStatus.Processing.orderStatus
+                ).sort("_id", Sort.DESCENDING)
 
-                    val itemsFlow = items.asFlow()
+                val itemsFlow = items.asFlow()
 
-                    itemsFlow.collect { changes: ResultsChange<CartOrderRealm> ->
-                        when (changes) {
-                            is UpdatedResults -> {
-                                send(Resource.Success(changes.list))
+                itemsFlow.collect { changes: ResultsChange<CartOrderRealm> ->
+                    when (changes) {
+                        is UpdatedResults -> {
+                            send(Resource.Success(changes.list))
 
-                                if (changes.list.isNotEmpty()) {
-                                    if (changes.insertions.isNotEmpty()) {
-                                        addSelectedCartOrder(changes.list[changes.insertions.last()]._id)
-                                    } else if (changes.changes.isNotEmpty()) {
-                                        addSelectedCartOrder(changes.list[changes.changes.last()]._id)
-                                    } else {
-                                        addSelectedCartOrder(changes.list.first()._id)
-                                    }
+                            if (changes.list.isNotEmpty()) {
+                                if (changes.insertions.isNotEmpty()) {
+                                    addSelectedCartOrder(changes.list[changes.insertions.last()]._id)
+                                } else if (changes.changes.isNotEmpty()) {
+                                    addSelectedCartOrder(changes.list[changes.changes.last()]._id)
                                 } else {
-                                    deleteSelectedCartOrder()
+                                    addSelectedCartOrder(changes.list.first()._id)
                                 }
-
-                                send(Resource.Loading(false))
+                            } else {
+                                deleteSelectedCartOrder()
                             }
 
-                            is InitialResults -> {
+                            send(Resource.Loading(false))
+                        }
 
-                                send(Resource.Success(changes.list))
+                        is InitialResults -> {
 
-                                val selectedCartOrder = realm.query<SelectedCartOrderRealm>().first().find()
+                            send(Resource.Success(changes.list))
 
-                                if (changes.list.isNotEmpty()) {
-                                    if (selectedCartOrder == null){
-                                        addSelectedCartOrder(changes.list.first()._id)
-                                    }
-                                } else {
-                                    deleteSelectedCartOrder()
+                            val selectedCartOrder =
+                                realm.query<SelectedCartOrderRealm>().first().find()
+
+                            if (changes.list.isNotEmpty()) {
+                                if (selectedCartOrder == null) {
+                                    addSelectedCartOrder(changes.list.first()._id)
                                 }
-
-                                send(Resource.Loading(false))
+                            } else {
+                                deleteSelectedCartOrder()
                             }
+
+                            send(Resource.Loading(false))
                         }
                     }
-                } catch (e: Exception) {
-                    send(Resource.Error(e.message ?: "Unable to get cartOrders"))
                 }
-            } else {
-                send(Resource.Error("User is not authenticated"))
+            } catch (e: Exception) {
+                send(Resource.Error(e.message ?: "Unable to get cartOrders"))
             }
         }
     }
 
     override suspend fun getCartOrderById(cartOrderId: String): Resource<CartOrderRealm?> {
-        return if (user != null) {
-            try {
-                val cartOrder = realm.query<CartOrderRealm>("_id == $0", cartOrderId).first().find()
-                Resource.Success(cartOrder)
-            } catch (e: Exception) {
-                Resource.Error(e.message ?: "Unable to get Cart Order", null)
-            }
-        } else {
-            Resource.Error("User is not authenticated", null)
+        return try {
+            val cartOrder = realm.query<CartOrderRealm>("_id == $0", cartOrderId).first().find()
+            Resource.Success(cartOrder)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unable to get Cart Order", null)
         }
     }
 
     override suspend fun createNewOrder(newOrder: CartOrder): Resource<Boolean> {
-        return if (user != null) {
-            try {
-                var customer: CustomerRealm? = null
+        return try {
+            var customer: CustomerRealm? = null
 
-                var address: AddressRealm? = null
+            var address: AddressRealm? = null
 
-                if (newOrder.customer != null) {
-                    if (newOrder.customer.customerId.isEmpty() && newOrder.customer.customerPhone.isNotEmpty()) {
-                        val newCustomer = CustomerRealm(user.id)
-                        newCustomer.customerPhone = newOrder.customer.customerPhone
+            if (newOrder.customer != null) {
+                if (newOrder.customer.customerId.isEmpty() && newOrder.customer.customerPhone.isNotEmpty()) {
+                    val newCustomer = CustomerRealm()
+                    newCustomer.customerPhone = newOrder.customer.customerPhone
 
-                        CoroutineScope(Dispatchers.IO).launch {
-                            realm.write {
-                                customer = this.copyToRealm(newCustomer)
-                            }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        realm.write {
+                            customer = this.copyToRealm(newCustomer)
                         }
-
-                    } else {
-                        customer = realm.query<CustomerRealm>("_id == $0", newOrder.customer.customerId).first().find()
                     }
+
+                } else {
+                    customer = realm.query<CustomerRealm>("_id == $0", newOrder.customer.customerId)
+                        .first().find()
                 }
-
-                if (newOrder.address != null) {
-                    if (newOrder.address.addressId.isEmpty() && newOrder.address.addressName.isNotEmpty()) {
-                        val newAddress = AddressRealm(user.id)
-                        newAddress.shortName = newOrder.address.shortName
-                        newAddress.addressName = newOrder.address.addressName
-
-                        CoroutineScope(Dispatchers.IO).launch {
-                            realm.write {
-                                address = this.copyToRealm(newAddress)
-                            }
-                        }
-                    } else {
-                        address = realm.query<AddressRealm>("_id == $0", newOrder.address.addressId).first().find()
-                    }
-                }
-
-                val cartOrder = CartOrderRealm(user.id)
-                cartOrder.orderId = newOrder.orderId
-                cartOrder.orderType = newOrder.cartOrderType
-
-                realm.write {
-
-                    if (customer != null) {
-                        findLatest(customer!!).also { cartOrder.customer = it }
-                    }
-
-                    if (address != null) {
-                        findLatest(address!!).also { cartOrder.address = it }
-                    }
-
-                    this.copyToRealm(cartOrder)
-
-                }
-
-                this.addSelectedCartOrder(cartOrder._id)
-
-                Resource.Success(true)
-            } catch (e: RealmException) {
-                Resource.Error(e.message ?: "Unable to create cart order", false)
-            } catch (e: RealmCoreException) {
-                Resource.Error(e.message ?: "Unable to create cart order", false)
-            } catch (e: Exception) {
-                Resource.Error(e.message ?: "Unable to create cart order", false)
             }
-        } else {
-            Resource.Error("User is not authenticated", false)
+
+            if (newOrder.address != null) {
+                if (newOrder.address.addressId.isEmpty() && newOrder.address.addressName.isNotEmpty()) {
+                    val newAddress = AddressRealm()
+                    newAddress.shortName = newOrder.address.shortName
+                    newAddress.addressName = newOrder.address.addressName
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        realm.write {
+                            address = this.copyToRealm(newAddress)
+                        }
+                    }
+                } else {
+                    address =
+                        realm.query<AddressRealm>("_id == $0", newOrder.address.addressId).first()
+                            .find()
+                }
+            }
+
+            val cartOrder = CartOrderRealm()
+            cartOrder.orderId = newOrder.orderId
+            cartOrder.orderType = newOrder.cartOrderType
+
+            realm.write {
+
+                if (customer != null) {
+                    findLatest(customer!!).also { cartOrder.customer = it }
+                }
+
+                if (address != null) {
+                    findLatest(address!!).also { cartOrder.address = it }
+                }
+
+                this.copyToRealm(cartOrder)
+
+            }
+
+            this.addSelectedCartOrder(cartOrder._id)
+
+            Resource.Success(true)
+        } catch (e: RealmException) {
+            Resource.Error(e.message ?: "Unable to create cart order", false)
+        } catch (e: RealmCoreException) {
+            Resource.Error(e.message ?: "Unable to create cart order", false)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unable to create cart order", false)
         }
     }
 
@@ -224,79 +202,75 @@ class CartOrderRealmDaoImpl(
         newOrder: CartOrder,
         cartOrderId: String,
     ): Resource<Boolean> {
-        return if (user != null) {
-            try {
-                var customer: CustomerRealm? = null
+        return try {
+            var customer: CustomerRealm? = null
 
-                var address: AddressRealm? = null
+            var address: AddressRealm? = null
 
-                if (newOrder.customer != null) {
+            if (newOrder.customer != null) {
 
-                    if (newOrder.customer.customerId.isEmpty() && newOrder.customer.customerPhone.isNotEmpty()) {
-                        val newCustomer = CustomerRealm(user.id)
-                        newCustomer.customerPhone = newOrder.customer.customerPhone
+                if (newOrder.customer.customerId.isEmpty() && newOrder.customer.customerPhone.isNotEmpty()) {
+                    val newCustomer = CustomerRealm()
+                    newCustomer.customerPhone = newOrder.customer.customerPhone
 
-                        CoroutineScope(Dispatchers.IO).launch {
-                            realm.write {
-                                customer = this.copyToRealm(newCustomer)
-                            }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        realm.write {
+                            customer = this.copyToRealm(newCustomer)
                         }
-
-                    } else {
-                        customer =
-                            realm.query<CustomerRealm>("_id == $0", newOrder.customer.customerId)
-                                .first().find()
                     }
-                }
 
-                if (newOrder.address != null) {
-                    if (newOrder.address.addressId.isEmpty() && newOrder.address.addressName.isNotEmpty()) {
-                        val newAddress = AddressRealm(user.id)
-                        newAddress.shortName = newOrder.address.shortName
-                        newAddress.addressName = newOrder.address.addressName
-
-                        CoroutineScope(Dispatchers.IO).launch {
-                            realm.write {
-                                address = this.copyToRealm(newAddress)
-                            }
-                        }
-                    } else {
-                        address = realm.query<AddressRealm>("_id == $0", newOrder.address.addressId)
+                } else {
+                    customer =
+                        realm.query<CustomerRealm>("_id == $0", newOrder.customer.customerId)
                             .first().find()
-                    }
                 }
-
-                realm.write {
-                    val cartOrder =
-                        this.query<CartOrderRealm>("_id == $0", cartOrderId).first().find()
-                    cartOrder?.orderId = newOrder.orderId
-                    cartOrder?.orderType = newOrder.cartOrderType
-                    cartOrder?.updated_at = System.currentTimeMillis().toString()
-
-                    if (customer != null) {
-                        findLatest(customer!!).also { cartOrder?.customer = it }
-                    } else if (newOrder.cartOrderType == CartOrderType.DineIn.orderType) {
-                        cartOrder?.customer = null
-                    } else {
-                        cartOrder?.customer = null
-                    }
-
-                    if (address != null) {
-                        findLatest(address!!).also { cartOrder?.address = it }
-                    } else if (newOrder.cartOrderType != CartOrderType.DineIn.orderType) {
-                        cartOrder?.address = null
-                    } else {
-                        cartOrder?.address = null
-                    }
-
-                }
-
-                Resource.Success(true)
-            } catch (e: Exception) {
-                Resource.Error(e.message ?: "Unable to update order", false)
             }
-        } else {
-            Resource.Error("User is not authenticated", false)
+
+            if (newOrder.address != null) {
+                if (newOrder.address.addressId.isEmpty() && newOrder.address.addressName.isNotEmpty()) {
+                    val newAddress = AddressRealm()
+                    newAddress.shortName = newOrder.address.shortName
+                    newAddress.addressName = newOrder.address.addressName
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        realm.write {
+                            address = this.copyToRealm(newAddress)
+                        }
+                    }
+                } else {
+                    address = realm.query<AddressRealm>("_id == $0", newOrder.address.addressId)
+                        .first().find()
+                }
+            }
+
+            realm.write {
+                val cartOrder =
+                    this.query<CartOrderRealm>("_id == $0", cartOrderId).first().find()
+                cartOrder?.orderId = newOrder.orderId
+                cartOrder?.orderType = newOrder.cartOrderType
+                cartOrder?.updated_at = System.currentTimeMillis().toString()
+
+                if (customer != null) {
+                    findLatest(customer!!).also { cartOrder?.customer = it }
+                } else if (newOrder.cartOrderType == CartOrderType.DineIn.orderType) {
+                    cartOrder?.customer = null
+                } else {
+                    cartOrder?.customer = null
+                }
+
+                if (address != null) {
+                    findLatest(address!!).also { cartOrder?.address = it }
+                } else if (newOrder.cartOrderType != CartOrderType.DineIn.orderType) {
+                    cartOrder?.address = null
+                } else {
+                    cartOrder?.address = null
+                }
+
+            }
+
+            Resource.Success(true)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unable to update order", false)
         }
     }
 
@@ -333,73 +307,63 @@ class CartOrderRealmDaoImpl(
     }
 
     override suspend fun deleteCartOrder(cartOrderId: String): Resource<Boolean> {
-        return if (user != null) {
-            try {
-                CoroutineScope(Dispatchers.Default).launch{
-                    realm.write {
-                        val cartOrder = this.query<CartOrderRealm>("_id == $0", cartOrderId).find().first()
-                        val cartProducts: RealmResults<CartRealm> = this.query<CartRealm>("cartOrder._id == $0", cartOrderId).find()
+        return try {
+            CoroutineScope(Dispatchers.Default).launch {
+                realm.write {
+                    val cartOrder =
+                        this.query<CartOrderRealm>("_id == $0", cartOrderId).find().first()
+                    val cartProducts: RealmResults<CartRealm> =
+                        this.query<CartRealm>("cartOrder._id == $0", cartOrderId).find()
 
-                        delete(cartProducts)
-                        delete(cartOrder)
-                    }
+                    delete(cartProducts)
+                    delete(cartOrder)
                 }
-
-                Resource.Success(true)
-            } catch (e: Exception) {
-                Resource.Error(e.message ?: "Unable to delete cart", false)
             }
-        } else {
-            Resource.Error("User is not authenticated", false)
+
+            Resource.Success(true)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unable to delete cart", false)
         }
     }
 
     override suspend fun placeOrder(cartOrderId: String): Resource<Boolean> {
-        return if (user != null) {
-            try {
-                val cartOrder = realm.query<CartOrderRealm>("_id == $0", cartOrderId).first().find()
+        return try {
+            val cartOrder = realm.query<CartOrderRealm>("_id == $0", cartOrderId).first().find()
 
-                realm.write {
-                    if (cartOrder != null) {
+            realm.write {
+                if (cartOrder != null) {
+                    findLatest(cartOrder)?.also {
+                        it.cartOrderStatus = OrderStatus.Placed.orderStatus
+                        it.updated_at = System.currentTimeMillis().toString()
+                    }
+                }
+            }
+
+            Resource.Success(true)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unable to place order", false)
+        }
+    }
+
+    override suspend fun placeAllOrder(cartOrderIds: List<String>): Resource<Boolean> {
+        return try {
+            for (cartOrderId in cartOrderIds) {
+                val cartOrder =
+                    realm.query<CartOrderRealm>("_id == $0", cartOrderId).first().find()
+                if (cartOrder != null) {
+                    realm.write {
                         findLatest(cartOrder)?.also {
                             it.cartOrderStatus = OrderStatus.Placed.orderStatus
                             it.updated_at = System.currentTimeMillis().toString()
                         }
                     }
+
                 }
-
-                Resource.Success(true)
-            } catch (e: Exception) {
-                Resource.Error(e.message ?: "Unable to place order", false)
             }
-        } else {
-            Resource.Error("User is not authenticated", false)
-        }
-    }
 
-    override suspend fun placeAllOrder(cartOrderIds: List<String>): Resource<Boolean> {
-        return if (user != null && cartOrderIds.isNotEmpty()) {
-            try {
-                for (cartOrderId in cartOrderIds) {
-                    val cartOrder =
-                        realm.query<CartOrderRealm>("_id == $0", cartOrderId).first().find()
-                    if (cartOrder != null) {
-                        realm.write {
-                            findLatest(cartOrder)?.also {
-                                it.cartOrderStatus = OrderStatus.Placed.orderStatus
-                                it.updated_at = System.currentTimeMillis().toString()
-                            }
-                        }
-
-                    }
-                }
-
-                Resource.Success(true)
-            } catch (e: Exception) {
-                Resource.Error(e.message ?: "Unable to place all cart orders", false)
-            }
-        } else {
-            Resource.Error("User is not authenticated", false)
+            Resource.Success(true)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unable to place all cart orders", false)
         }
     }
 
@@ -414,9 +378,11 @@ class CartOrderRealmDaoImpl(
                     is InitialObject -> {
                         cartOrders.emit(changes.obj)
                     }
+
                     is UpdatedObject -> {
                         cartOrders.emit(changes.obj)
                     }
+
                     else -> {
                         cartOrders.emit(changes.obj)
                     }
@@ -431,15 +397,17 @@ class CartOrderRealmDaoImpl(
         try {
             if (cartOrderId.isNotEmpty()) {
                 CoroutineScope(Dispatchers.Default).launch {
-                    val cartOrder = realm.query<CartOrderRealm>("_id == $0", cartOrderId).first().find()
+                    val cartOrder =
+                        realm.query<CartOrderRealm>("_id == $0", cartOrderId).first().find()
 
                     realm.write {
                         if (cartOrder != null) {
-                            val selectedCartOrder = this.query<SelectedCartOrderRealm>().first().find()
+                            val selectedCartOrder =
+                                this.query<SelectedCartOrderRealm>().first().find()
 
                             if (selectedCartOrder != null) {
 
-                                if(selectedCartOrder.cartOrder?._id != cartOrderId){
+                                if (selectedCartOrder.cartOrder?._id != cartOrderId) {
                                     findLatest(cartOrder)?.also {
                                         selectedCartOrder.cartOrder = it
                                     }
@@ -489,17 +457,18 @@ class CartOrderRealmDaoImpl(
     override suspend fun deleteCartOrders(deleteAll: Boolean): Resource<Boolean> {
         return try {
             val settings = settingsService.getSetting().data!!
-            val cartOrderDate = getCalculatedStartDate(days = "-${settings.cartOrderDataDeletionInterval}")
+            val cartOrderDate =
+                getCalculatedStartDate(days = "-${settings.cartOrderDataDeletionInterval}")
 
 
             CoroutineScope(Dispatchers.Default).launch {
                 val cartOrders = if (deleteAll) {
                     realm.query<CartOrderRealm>().find()
-                }else {
+                } else {
                     realm.query<CartOrderRealm>("created_at < $0", cartOrderDate).find()
                 }
 
-                if(cartOrders.isNotEmpty()){
+                if (cartOrders.isNotEmpty()) {
                     cartOrders.forEach { cartOrderRealm ->
                         deleteCartOrder(cartOrderRealm._id)
                     }
@@ -507,7 +476,7 @@ class CartOrderRealmDaoImpl(
             }
 
             Resource.Success(true)
-        }catch (e:Exception){
+        } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to delete all cart orders")
         }
     }

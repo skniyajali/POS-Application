@@ -57,21 +57,16 @@ import com.niyaj.popos.realm.product.ProductRealmDaoImpl
 import com.niyaj.popos.realm.reports.ReportsRealm
 import com.niyaj.popos.realm.reports.ReportsRealmDao
 import com.niyaj.popos.realm.reports.ReportsRealmDaoImpl
-import com.niyaj.popos.realmApp
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.realm.kotlin.ext.query
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.log.LogLevel
-import io.realm.kotlin.mongodb.User
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 
 @Module
 @InstallIn(SingletonComponent::class)
 object RealmModule {
-
-    private val user: User? = realmApp.currentUser
 
     private val schema = setOf(
         CategoryRealm::class,
@@ -93,112 +88,8 @@ object RealmModule {
         SettingsRealm::class,
     )
 
-    private val config = SyncConfiguration
-        .Builder(user!!, schema)
-        .initialSubscriptions{ realm ->
-            this.add(
-                query = realm.query<CategoryRealm>(),
-                name = "category",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<ProductRealm>(),
-                name = "product",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<AddressRealm>(),
-                name = "address",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<CustomerRealm>(),
-                name = "customer",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<CartOrderRealm>(),
-                name = "cartOrder",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<CartRealm>(),
-                name = "cartProducts",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<AddOnItemRealm>(),
-                name = "addOnItems",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<ChargesRealm>(),
-                name = "charges",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<PartnerRealm>(),
-                name = "delivery_partner",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<EmployeeRealm>(),
-                name = "employee",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<ExpensesCategoryRealm>(),
-                name = "expenses_category",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<ExpensesRealm>(),
-                name = "expenses",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<SelectedCartOrderRealm>(),
-                name = "selectedCartOrder",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<SalaryRealm>(),
-                name = "salary",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<AttendanceRealm>(),
-                name = "attendance",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<ReportsRealm>(),
-                name = "reports",
-                updateExisting = true,
-            )
-
-            this.add(
-                query = realm.query<SettingsRealm>(),
-                name = "settings",
-                updateExisting = true,
-            )
-        }
-        .waitForInitialRemoteData()
+    private val config = RealmConfiguration
+        .Builder(schema)
         .name("popos")
         .log(LogLevel.ALL)
         .build()

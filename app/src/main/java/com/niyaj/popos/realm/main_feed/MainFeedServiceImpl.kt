@@ -6,45 +6,38 @@ import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.cart_order.SelectedCartOrderRealm
 import com.niyaj.popos.realm.category.CategoryRealm
 import com.niyaj.popos.realm.product.ProductRealm
-import com.niyaj.popos.realmApp
 import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.subscriptions
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.mongodb.syncSession
-import io.realm.kotlin.notifications.*
+import io.realm.kotlin.notifications.InitialObject
+import io.realm.kotlin.notifications.InitialResults
+import io.realm.kotlin.notifications.ResultsChange
+import io.realm.kotlin.notifications.UpdatedObject
+import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.RealmResults
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import timber.log.Timber
 
 class MainFeedServiceImpl(
-    config: SyncConfiguration
+    config: RealmConfiguration
 ) : MainFeedService {
-
-    private val user = realmApp.currentUser
 
     val realm = Realm.open(config)
 
     private val sessionState = realm.syncSession.state.name
 
     init {
-        if(user == null && sessionState != "ACTIVE") {
-            Timber.d("Main Feed: user is null")
-        }
-
         Timber.d("Main Feed Session: $sessionState")
-
-
-        CoroutineScope(Dispatchers.IO).launch {
-            realm.syncSession.uploadAllLocalChanges()
-            realm.syncSession.downloadAllServerChanges()
-            realm.subscriptions.waitForSynchronization()
-        }
     }
 
     private val productWithQuantity = MutableStateFlow<List<ProductWithQuantityRealm>>(listOf())

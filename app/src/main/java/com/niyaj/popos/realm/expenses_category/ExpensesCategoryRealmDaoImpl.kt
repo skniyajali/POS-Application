@@ -3,48 +3,28 @@ package com.niyaj.popos.realm.expenses_category
 import com.niyaj.popos.domain.model.ExpensesCategory
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.expenses.ExpensesRealm
-import com.niyaj.popos.realmApp
 import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.exceptions.RealmException
 import io.realm.kotlin.ext.isValid
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.subscriptions
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class ExpensesCategoryRealmDaoImpl(config: SyncConfiguration) : ExpensesCategoryRealmDao {
-
-
-    private val user = realmApp.currentUser
-
+class ExpensesCategoryRealmDaoImpl(config: RealmConfiguration) : ExpensesCategoryRealmDao {
 
     val realm = Realm.open(config)
 
     private val sessionState = realm.syncSession.state.name
 
     init {
-        if(user == null && sessionState != "ACTIVE") {
-            Timber.d("ExpensesCategoryRealmDao: user is null")
-        }
-
         Timber.d("ExpensesCategoryRealmDao Session: $sessionState")
-
-
-        CoroutineScope(Dispatchers.IO).launch {
-            realm.syncSession.uploadAllLocalChanges()
-            realm.syncSession.downloadAllServerChanges()
-            realm.subscriptions.waitForSynchronization()
-        }
     }
 
 
@@ -84,21 +64,17 @@ class ExpensesCategoryRealmDaoImpl(config: SyncConfiguration) : ExpensesCategory
     }
 
     override suspend fun createNewExpansesCategory(newExpensesCategory: ExpensesCategory): Resource<Boolean> {
-        if (user != null){
-            return try {
-                val expansesCategory = ExpensesCategoryRealm(user.id)
-                expansesCategory.expansesCategoryName = newExpensesCategory.expensesCategoryName
+        return try {
+            val expansesCategory = ExpensesCategoryRealm()
+            expansesCategory.expansesCategoryName = newExpensesCategory.expensesCategoryName
 
-                val result = realm.write {
-                    this.copyToRealm(expansesCategory)
-                }
-
-                Resource.Success(result.isValid())
-            }catch (e: RealmException){
-                Resource.Error(e.message ?: "Error creating expanses category Item")
+            val result = realm.write {
+                this.copyToRealm(expansesCategory)
             }
-        }else{
-            return Resource.Error("User not authenticated", false)
+
+            Resource.Success(result.isValid())
+        }catch (e: RealmException){
+            Resource.Error(e.message ?: "Error creating expanses category Item")
         }
     }
 

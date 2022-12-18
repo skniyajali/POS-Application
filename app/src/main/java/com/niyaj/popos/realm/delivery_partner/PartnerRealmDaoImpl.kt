@@ -2,48 +2,28 @@ package com.niyaj.popos.realm.delivery_partner
 
 import com.niyaj.popos.domain.model.DeliveryPartner
 import com.niyaj.popos.domain.util.Resource
-import com.niyaj.popos.realmApp
 import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.exceptions.RealmException
 import io.realm.kotlin.ext.isValid
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.subscriptions
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class PartnerRealmDaoImpl(config: SyncConfiguration) : PartnerRealmDao {
-
-    private val user = realmApp.currentUser
-
+class PartnerRealmDaoImpl(config: RealmConfiguration) : PartnerRealmDao {
 
     val realm = Realm.open(config)
 
     private val sessionState = realm.syncSession.state.name
 
     init {
-        if(user == null && sessionState != "ACTIVE") {
-            Timber.d("Delivery Partner: user is null")
-        }
-
         Timber.d("Delivery Partner Session: $sessionState")
-
-
-        CoroutineScope(Dispatchers.IO).launch {
-            realm.syncSession.uploadAllLocalChanges()
-            realm.syncSession.downloadAllServerChanges()
-            realm.subscriptions.waitForSynchronization()
-        }
     }
 
 
@@ -60,13 +40,14 @@ class PartnerRealmDaoImpl(config: SyncConfiguration) : PartnerRealmDao {
                             send(Resource.Success(changes.list))
                             send(Resource.Loading(false))
                         }
+
                         is InitialResults -> {
                             send(Resource.Success(changes.list))
                             send(Resource.Loading(false))
                         }
                     }
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 send(Resource.Error(e.message ?: "Unable to get delivery partners", null))
             }
         }
@@ -87,15 +68,16 @@ class PartnerRealmDaoImpl(config: SyncConfiguration) : PartnerRealmDao {
         partnerId: String?,
     ): Resource<Boolean> {
 
-        val findPartnerByEmail: PartnerRealm? = if(partnerId.isNullOrEmpty()) {
+        val findPartnerByEmail: PartnerRealm? = if (partnerId.isNullOrEmpty()) {
             realm.query<PartnerRealm>("partnerEmail == $0", partnerEmail).first().find()
-        }else {
-            realm.query<PartnerRealm>("partnerEmail == $0 AND _id != $1", partnerEmail, partnerId).first().find()
+        } else {
+            realm.query<PartnerRealm>("partnerEmail == $0 AND _id != $1", partnerEmail, partnerId)
+                .first().find()
         }
 
-        return if(findPartnerByEmail != null){
+        return if (findPartnerByEmail != null) {
             Resource.Error("Partner email already exists", false)
-        }else {
+        } else {
             Resource.Success(true)
         }
 
@@ -106,51 +88,52 @@ class PartnerRealmDaoImpl(config: SyncConfiguration) : PartnerRealmDao {
         partnerId: String?,
     ): Resource<Boolean> {
 
-        val findPartnerByPhone: PartnerRealm? = if(partnerId.isNullOrEmpty()) {
+        val findPartnerByPhone: PartnerRealm? = if (partnerId.isNullOrEmpty()) {
             realm.query<PartnerRealm>("partnerPhone == $0", partnerPhone).first().find()
-        }else {
-            realm.query<PartnerRealm>("partnerPhone == $0 AND _id != $1", partnerPhone, partnerId).first().find()
+        } else {
+            realm.query<PartnerRealm>("partnerPhone == $0 AND _id != $1", partnerPhone, partnerId)
+                .first().find()
         }
 
-        return if(findPartnerByPhone != null){
+        return if (findPartnerByPhone != null) {
             Resource.Error("Partner phone already exists", false)
-        }else {
+        } else {
             Resource.Success(true)
         }
     }
 
     override suspend fun createNewPartner(newPartner: DeliveryPartner): Resource<Boolean> {
-        if (user != null){
-            return try {
+        return try {
 
-                val findPartnerByEmail = realm.query<PartnerRealm>("partnerEmail == $0", newPartner.deliveryPartnerEmail).first().find()
-                val findPartnerByPhone = realm.query<PartnerRealm>("partnerPhone == $0", newPartner.deliveryPartnerPhone).first().find()
+            val findPartnerByEmail =
+                realm.query<PartnerRealm>("partnerEmail == $0", newPartner.deliveryPartnerEmail)
+                    .first().find()
+            val findPartnerByPhone =
+                realm.query<PartnerRealm>("partnerPhone == $0", newPartner.deliveryPartnerPhone)
+                    .first().find()
 
-                if(findPartnerByEmail != null){
-                    Resource.Error("Partner email already exists", false)
-                }else if(findPartnerByPhone != null){
-                    Resource.Error("Partner phone already exists", false)
-                }else{
-                    val partner = PartnerRealm(user.id)
-                    partner.partnerName = newPartner.deliveryPartnerName
-                    partner.partnerEmail = newPartner.deliveryPartnerEmail
-                    partner.partnerPhone = newPartner.deliveryPartnerPhone
-                    partner.partnerPassword = newPartner.deliveryPartnerPassword
-                    partner.partnerStatus = newPartner.deliveryPartnerStatus
-                    partner.partnerType = newPartner.deliveryPartnerType
+            if (findPartnerByEmail != null) {
+                Resource.Error("Partner email already exists", false)
+            } else if (findPartnerByPhone != null) {
+                Resource.Error("Partner phone already exists", false)
+            } else {
+                val partner = PartnerRealm()
+                partner.partnerName = newPartner.deliveryPartnerName
+                partner.partnerEmail = newPartner.deliveryPartnerEmail
+                partner.partnerPhone = newPartner.deliveryPartnerPhone
+                partner.partnerPassword = newPartner.deliveryPartnerPassword
+                partner.partnerStatus = newPartner.deliveryPartnerStatus
+                partner.partnerType = newPartner.deliveryPartnerType
 
-                    val result = realm.write {
-                        this.copyToRealm(partner)
-                    }
-
-                    Resource.Success(result.isValid())
+                val result = realm.write {
+                    this.copyToRealm(partner)
                 }
 
-            }catch (e: RealmException){
-                Resource.Error(e.message ?: "Error creating Delivery Partner")
+                Resource.Success(result.isValid())
             }
-        }else{
-            return Resource.Error("User not authenticated", false)
+
+        } catch (e: RealmException) {
+            Resource.Error(e.message ?: "Error creating Delivery Partner")
         }
     }
 
@@ -159,14 +142,22 @@ class PartnerRealmDaoImpl(config: SyncConfiguration) : PartnerRealmDao {
         partnerId: String,
     ): Resource<Boolean> {
         return try {
-            val findPartnerByEmail = realm.query<PartnerRealm>("partnerEmail == $0 AND _id != $1", newPartner.deliveryPartnerEmail, partnerId).first().find()
-            val findPartnerByPhone = realm.query<PartnerRealm>("partnerPhone == $0 AND _id != $1", newPartner.deliveryPartnerPhone, partnerId).first().find()
+            val findPartnerByEmail = realm.query<PartnerRealm>(
+                "partnerEmail == $0 AND _id != $1",
+                newPartner.deliveryPartnerEmail,
+                partnerId
+            ).first().find()
+            val findPartnerByPhone = realm.query<PartnerRealm>(
+                "partnerPhone == $0 AND _id != $1",
+                newPartner.deliveryPartnerPhone,
+                partnerId
+            ).first().find()
 
-            if(findPartnerByEmail != null){
+            if (findPartnerByEmail != null) {
                 Resource.Error("Partner email already exists", false)
-            }else if(findPartnerByPhone != null){
+            } else if (findPartnerByPhone != null) {
                 Resource.Error("Partner phone already exists", false)
-            }else{
+            } else {
                 realm.write {
                     val partner = this.query<PartnerRealm>("_id == $0", partnerId).first().find()
                     partner?.partnerName = newPartner.deliveryPartnerName
@@ -188,14 +179,15 @@ class PartnerRealmDaoImpl(config: SyncConfiguration) : PartnerRealmDao {
     override suspend fun deletePartner(partnerId: String): Resource<Boolean> {
         return try {
             realm.write {
-                val partner: PartnerRealm = this.query<PartnerRealm>("_id == $0", partnerId).find().first()
+                val partner: PartnerRealm =
+                    this.query<PartnerRealm>("_id == $0", partnerId).find().first()
 
                 delete(partner)
             }
 
             Resource.Success(true)
 
-        } catch (e: Exception){
+        } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to delete delivery partner")
         }
     }

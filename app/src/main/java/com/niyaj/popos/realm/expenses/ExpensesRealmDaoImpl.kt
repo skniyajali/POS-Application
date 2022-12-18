@@ -4,50 +4,32 @@ import com.niyaj.popos.domain.model.Expenses
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.app_settings.SettingsService
 import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealm
-import com.niyaj.popos.realmApp
 import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.subscriptions
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class ExpensesRealmDaoImpl(
-    config: SyncConfiguration,
+    config: RealmConfiguration,
     private val settingsService: SettingsService
 ) : ExpensesRealmDao {
-
-
-    private val user = realmApp.currentUser
-
 
     val realm = Realm.open(config)
 
     private val sessionState = realm.syncSession.state.name
 
     init {
-        if(user == null && sessionState != "ACTIVE") {
-            Timber.d("ExpensesRealmDao: user is null")
-        }
-
         Timber.d("ExpensesRealmDao Session: $sessionState")
-
-        CoroutineScope(Dispatchers.IO).launch {
-            realm.syncSession.uploadAllLocalChanges()
-            realm.syncSession.downloadAllServerChanges()
-            realm.subscriptions.waitForSynchronization()
-        }
     }
 
     override suspend fun getAllExpanses(): Flow<Resource<List<ExpensesRealm>>> {
@@ -69,6 +51,7 @@ class ExpensesRealmDaoImpl(
                             send(Resource.Success(changes.list))
                             send(Resource.Loading(false))
                         }
+
                         is InitialResults -> {
                             send(Resource.Success(changes.list))
                             send(Resource.Loading(false))
@@ -76,7 +59,7 @@ class ExpensesRealmDaoImpl(
                     }
                 }
                 send(Resource.Loading(false))
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 send(Resource.Error(e.message ?: "Unable to get expanses items", null))
             }
         }
@@ -85,7 +68,7 @@ class ExpensesRealmDaoImpl(
     override suspend fun getExpansesById(expansesId: String): Resource<ExpensesRealm?> {
         return try {
 
-            val expansesItem = withContext(Dispatchers.IO){
+            val expansesItem = withContext(Dispatchers.IO) {
                 realm.query<ExpensesRealm>("_id == $0", expansesId).first().find()
             }
 
@@ -96,30 +79,29 @@ class ExpensesRealmDaoImpl(
     }
 
     override suspend fun createNewExpanses(newExpenses: Expenses): Resource<Boolean> {
-        if (user != null){
-            return try {
-                val expansesItem = ExpensesRealm(user.id)
-                expansesItem.expansesPrice = newExpenses.expansesPrice
-                expansesItem.expansesRemarks = newExpenses.expansesRemarks
+        return try {
+            val expansesItem = ExpensesRealm()
+            expansesItem.expansesPrice = newExpenses.expansesPrice
+            expansesItem.expansesRemarks = newExpenses.expansesRemarks
 
-                realm.write {
-                    val expansesCategory = this.query<ExpensesCategoryRealm>("_id == $0", newExpenses.expensesCategory.expensesCategoryId).first().find()
+            realm.write {
+                val expansesCategory = this.query<ExpensesCategoryRealm>(
+                    "_id == $0",
+                    newExpenses.expensesCategory.expensesCategoryId
+                ).first().find()
 
-                    if (expansesCategory != null) {
-                        expansesItem.expansesCategory = expansesCategory
+                if (expansesCategory != null) {
+                    expansesItem.expansesCategory = expansesCategory
 
-                        this.copyToRealm(expansesItem)
+                    this.copyToRealm(expansesItem)
 
-                        Resource.Success(true)
-                    }else {
-                        Resource.Error("Unable to find expense category", false)
-                    }
+                    Resource.Success(true)
+                } else {
+                    Resource.Error("Unable to find expense category", false)
                 }
-            }catch (e: Exception){
-                Resource.Error(e.message ?: "Error creating Expanses Item", false)
             }
-        }else{
-            return Resource.Error("User not authenticated", false)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Error creating Expanses Item", false)
         }
     }
 
@@ -130,7 +112,10 @@ class ExpensesRealmDaoImpl(
         return try {
 
             realm.write {
-                val expansesCategory = this.query<ExpensesCategoryRealm>("_id == $0", newExpenses.expensesCategory.expensesCategoryId).find().first()
+                val expansesCategory = this.query<ExpensesCategoryRealm>(
+                    "_id == $0",
+                    newExpenses.expensesCategory.expensesCategoryId
+                ).find().first()
 
                 val expansesItem = this.query<ExpensesRealm>("_id == $0", expansesId).first().find()
                 expansesItem?.expansesPrice = newExpenses.expansesPrice
@@ -151,14 +136,15 @@ class ExpensesRealmDaoImpl(
     override suspend fun deleteExpanses(expansesId: String): Resource<Boolean> {
         return try {
             realm.write {
-                val expansesItem: ExpensesRealm = this.query<ExpensesRealm>("_id == $0", expansesId).find().first()
+                val expansesItem: ExpensesRealm =
+                    this.query<ExpensesRealm>("_id == $0", expansesId).find().first()
 
                 delete(expansesItem)
             }
 
             Resource.Success(true)
 
-        } catch (e: Exception){
+        } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to delete expanses.")
         }
     }
@@ -167,7 +153,8 @@ class ExpensesRealmDaoImpl(
         return try {
             val settings = settingsService.getSetting().data!!
 
-            val expensesDate = getCalculatedStartDate(days = "-${settings.expensesDataDeletionInterval}")
+            val expensesDate =
+                getCalculatedStartDate(days = "-${settings.expensesDataDeletionInterval}")
 
 
             realm.write {
@@ -181,7 +168,7 @@ class ExpensesRealmDaoImpl(
             }
 
             Resource.Success(true)
-        }catch (e: Exception){
+        } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to delete expanses")
         }
     }

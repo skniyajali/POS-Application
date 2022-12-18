@@ -7,15 +7,13 @@ import com.niyaj.popos.domain.model.SalaryCalculationRealm
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.employee.EmployeeRealm
 import com.niyaj.popos.realm.employee_attendance.AttendanceRealm
-import com.niyaj.popos.realmApp
 import com.niyaj.popos.util.Constants.NOT_PAID
 import com.niyaj.popos.util.Constants.PAID
 import com.niyaj.popos.util.getSalaryDates
 import com.niyaj.popos.util.toRupee
 import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.subscriptions
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
@@ -28,27 +26,14 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class SalaryRealmDaoImpl(config: SyncConfiguration) : SalaryRealmDao {
-
-    private val user = realmApp.currentUser
+class SalaryRealmDaoImpl(config: RealmConfiguration) : SalaryRealmDao {
 
     val realm = Realm.open(config)
 
     private val sessionState = realm.syncSession.state.name
 
     init {
-        if(user == null && sessionState != "ACTIVE") {
-            Timber.d("Salary: user is null")
-        }
-
         Timber.d("Salary Session: $sessionState")
-
-
-        CoroutineScope(Dispatchers.IO).launch {
-            realm.syncSession.uploadAllLocalChanges()
-            realm.syncSession.downloadAllServerChanges()
-            realm.subscriptions.waitForSynchronization()
-        }
     }
 
 
@@ -157,36 +142,32 @@ class SalaryRealmDaoImpl(config: SyncConfiguration) : SalaryRealmDao {
     }
 
     override suspend fun addNewSalary(newSalary: EmployeeSalary): Resource<Boolean> {
-        if (user != null){
-            return try {
-                val employee = realm.query<EmployeeRealm>("_id == $0", newSalary.employee.employeeId).first().find()
+        return try {
+            val employee = realm.query<EmployeeRealm>("_id == $0", newSalary.employee.employeeId).first().find()
 
-                if (employee != null) {
-                    val salary = SalaryRealm(user.id)
-                    salary.employeeSalary = newSalary.employeeSalary
-                    salary.salaryType = newSalary.salaryType
-                    salary.salaryGivenDate = newSalary.salaryGivenDate
-                    salary.salaryPaymentType = newSalary.salaryPaymentType
-                    salary.salaryNote = newSalary.salaryNote
+            if (employee != null) {
+                val salary = SalaryRealm()
+                salary.employeeSalary = newSalary.employeeSalary
+                salary.salaryType = newSalary.salaryType
+                salary.salaryGivenDate = newSalary.salaryGivenDate
+                salary.salaryPaymentType = newSalary.salaryPaymentType
+                salary.salaryNote = newSalary.salaryNote
 
-                    realm.write {
-                        findLatest(employee)?.also {
-                            salary.employee = it
-                        }
-
-                        this.copyToRealm(salary)
+                realm.write {
+                    findLatest(employee)?.also {
+                        salary.employee = it
                     }
 
-                    Resource.Success(true)
-                }else {
-                    Resource.Error("Unable to find employee", false)
+                    this.copyToRealm(salary)
                 }
 
-            }catch (e: Exception){
-                Resource.Error(e.message ?: "Error creating Salary Item", false)
+                Resource.Success(true)
+            }else {
+                Resource.Error("Unable to find employee", false)
             }
-        }else{
-            return Resource.Error("User not authenticated", false)
+
+        }catch (e: Exception){
+            Resource.Error(e.message ?: "Error creating Salary Item", false)
         }
     }
 

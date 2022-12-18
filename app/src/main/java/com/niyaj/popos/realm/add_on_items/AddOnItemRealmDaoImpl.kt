@@ -2,50 +2,30 @@ package com.niyaj.popos.realm.add_on_items
 
 import com.niyaj.popos.domain.model.AddOnItem
 import com.niyaj.popos.domain.util.Resource
-import com.niyaj.popos.realmApp
 import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.exceptions.RealmException
 import io.realm.kotlin.ext.isValid
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.subscriptions
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class AddOnItemRealmDaoImpl(
-    config: SyncConfiguration
+    config: RealmConfiguration
 ) : AddOnItemRealmDao {
-
-    private val user = realmApp.currentUser
-
 
     val realm = Realm.open(config)
 
     private val sessionState = realm.syncSession.state.name
 
     init {
-        if(user == null && sessionState != "ACTIVE") {
-            Timber.d("AddOnItemDao: user is null")
-        }
-
         Timber.d("AddOnItemDao Session: $sessionState")
-
-
-        CoroutineScope(Dispatchers.IO).launch {
-            realm.syncSession.uploadAllLocalChanges()
-            realm.syncSession.downloadAllServerChanges()
-            realm.subscriptions.waitForSynchronization()
-        }
     }
 
     override suspend fun getAllAddOnItems(): Flow<Resource<List<AddOnItemRealm>>> {
@@ -71,7 +51,6 @@ class AddOnItemRealmDaoImpl(
                 send(Resource.Error(e.message ?: "Unable to get AddOnItems", null))
             }
         }
-
     }
 
     override suspend fun getAddOnItemById(addOnItemId: String): Resource<AddOnItemRealm?> {
@@ -95,28 +74,23 @@ class AddOnItemRealmDaoImpl(
     }
 
     override suspend fun createNewAddOnItem(newAddOnItem: AddOnItem): Resource<Boolean> {
-        if (user != null){
-            return try {
-                val addOnItem = AddOnItemRealm(user.id)
-                addOnItem.itemName = newAddOnItem.itemName
-                addOnItem.itemPrice = newAddOnItem.itemPrice
+        return try {
+            val addOnItem = AddOnItemRealm()
+            addOnItem.itemName = newAddOnItem.itemName
+            addOnItem.itemPrice = newAddOnItem.itemPrice
 
-                val result = realm.write {
-                    this.copyToRealm(addOnItem)
-                }
-
-                Resource.Success(result.isValid())
-            }catch (e: RealmException){
-                Resource.Error(e.message ?: "Error creating AddOn Item")
+            val result = realm.write {
+                this.copyToRealm(addOnItem)
             }
-        }else{
-            return Resource.Error("User not authenticated", false)
+
+            Resource.Success(result.isValid())
+        }catch (e: RealmException){
+            Resource.Error(e.message ?: "Error creating AddOn Item")
         }
     }
 
     override suspend fun updateAddOnItem(newAddOnItem: AddOnItem, addOnItemId: String): Resource<Boolean> {
         return try {
-
             realm.write {
                 val addOnItem = this.query<AddOnItemRealm>("_id == $0", addOnItemId).first().find()
                 addOnItem?.itemName = newAddOnItem.itemName

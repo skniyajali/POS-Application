@@ -19,13 +19,10 @@ import com.niyaj.popos.realm.expenses.ExpensesRealm
 import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealm
 import com.niyaj.popos.realm.product.ProductRealm
 import com.niyaj.popos.realm.reports.ReportsRealm
-import com.niyaj.popos.realmApp
 import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.User
-import io.realm.kotlin.mongodb.subscriptions
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.mongodb.syncSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,28 +30,16 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class DataDeletionServiceImpl(
-    config: SyncConfiguration,
+    config: RealmConfiguration,
     private val settingsService: SettingsService
 ) : DataDeletionService {
-
-    private val user: User? = realmApp.currentUser
 
     val realm = Realm.open(config)
 
     private val sessionState = realm.syncSession.state.name
 
     init {
-        if (user == null) {
-            Timber.d("Data Deletion: user is null")
-        } else {
-            Timber.d("Data Deletion Session: $sessionState")
-
-            CoroutineScope(Dispatchers.IO).launch {
-                realm.subscriptions.waitForSynchronization()
-                realm.syncSession.downloadAllServerChanges()
-                realm.syncSession.uploadAllLocalChanges()
-            }
-        }
+        Timber.d("Data Deletion Session: $sessionState")
     }
 
     /**
@@ -100,23 +85,6 @@ class DataDeletionServiceImpl(
 
             CoroutineScope(Dispatchers.IO).launch {
                 realm.write {
-//                    val category = this.query<CategoryRealm>().find()
-//                    val products = this.query<ProductRealm>().find()
-//                    val customers = this.query<CustomerRealm>().find()
-//                    val cartOrder = this.query<CartOrderRealm>().find()
-//                    val cart = this.query<CartRealm>().find()
-//                    val addOnItems = this.query<AddOnItemRealm>().find()
-//                    val charges = this.query<ChargesRealm>().find()
-//                    val partner = this.query<PartnerRealm>().find()
-//                    val employee = this.query<EmployeeRealm>().find()
-//                    val expenses = this.query<ExpensesRealm>().find()
-//                    val expensesCategory = this.query<ExpensesCategoryRealm>().find()
-//                    val selectedCartOrder = this.query<SelectedCartOrderRealm>().find()
-//                    val salary = this.query<SalaryRealm>().find()
-//                    val attendance = this.query<AttendanceRealm>().find()
-//                    val reports = this.query<ReportsRealm>().find()
-//                    val settings = this.query<SettingsRealm>().find()
-
                     delete(CategoryRealm::class)
                     delete(ProductRealm::class)
                     delete(AddressRealm::class)

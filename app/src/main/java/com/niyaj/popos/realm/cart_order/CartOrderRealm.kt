@@ -5,7 +5,6 @@ import com.niyaj.popos.domain.util.OrderStatus
 import com.niyaj.popos.realm.add_on_items.AddOnItemRealm
 import com.niyaj.popos.realm.address.AddressRealm
 import com.niyaj.popos.realm.customer.CustomerRealm
-import com.niyaj.popos.util.Constants
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
@@ -34,14 +33,4 @@ class CartOrderRealm(): RealmObject {
     var updated_at: String? = null
 
     var cartOrderStatus: String = OrderStatus.Processing.orderStatus
-
-    var isGlobalAdmin: Boolean = true
-
-    var _partition: String = Constants.REALM_PARTITION_NAME
-
-    var owner_id: String = ""
-
-    constructor(ownerId: String = "") : this() {
-        owner_id = ownerId
-    }
 }
