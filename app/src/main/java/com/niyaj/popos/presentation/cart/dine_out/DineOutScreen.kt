@@ -20,17 +20,17 @@ import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.R
+import com.niyaj.popos.destinations.AddEditCartOrderScreenDestination
+import com.niyaj.popos.destinations.OrderDetailsScreenDestination
 import com.niyaj.popos.domain.util.UiEvent
-import com.niyaj.popos.presentation.add_on_items.AddOnItemViewModel
 import com.niyaj.popos.presentation.cart.components.*
 import com.niyaj.popos.presentation.components.ItemNotAvailable
-import com.niyaj.popos.presentation.destinations.AddEditCartOrderScreenDestination
-import com.niyaj.popos.presentation.destinations.OrderDetailsScreenDestination
 import com.niyaj.popos.presentation.print_order.PrintEvent
 import com.niyaj.popos.presentation.print_order.PrintViewModel
 import com.niyaj.popos.presentation.ui.theme.SpaceMedium
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall
 import com.niyaj.popos.presentation.util.Screen
+import com.niyaj.popos.realm.addon_item.presentation.AddOnItemViewModel
 import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.flow.collectLatest
 

@@ -34,7 +34,7 @@ import com.niyaj.popos.presentation.components.ExtendedFabButton
 import com.niyaj.popos.presentation.components.ItemNotAvailable
 import com.niyaj.popos.presentation.components.StandardScaffold
 import com.niyaj.popos.presentation.components.StandardSearchBar
-import com.niyaj.popos.presentation.destinations.AddEditExpensesCategoryScreenDestination
+import com.niyaj.popos.destinations.AddEditExpensesCategoryScreenDestination
 import com.niyaj.popos.presentation.ui.theme.SpaceMedium
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall
 import com.ramcosta.composedestinations.annotation.Destination

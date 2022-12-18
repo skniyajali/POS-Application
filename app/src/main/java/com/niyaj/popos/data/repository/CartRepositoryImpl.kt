@@ -1,6 +1,11 @@
 package com.niyaj.popos.data.repository
 
-import com.niyaj.popos.domain.model.*
+import com.niyaj.popos.domain.model.Cart
+import com.niyaj.popos.domain.model.CartOrder
+import com.niyaj.popos.domain.model.CartProduct
+import com.niyaj.popos.domain.model.Category
+import com.niyaj.popos.domain.model.Customer
+import com.niyaj.popos.domain.model.Product
 import com.niyaj.popos.domain.repository.CartOrderRepository
 import com.niyaj.popos.domain.repository.CartRepository
 import com.niyaj.popos.domain.repository.ProductRepository
@@ -48,14 +53,7 @@ class CartRepositoryImpl(
                                                             created_at = cartOrder.customer.created_at,
                                                             updated_at = cartOrder.customer.created_at
                                                         ) else null,
-                                                    address = if (cartOrder.address != null)
-                                                        Address(
-                                                            addressId = cartOrder.address.addressId,
-                                                            shortName = cartOrder.address.shortName,
-                                                            addressName = cartOrder.address.addressName,
-                                                            created_at = cartOrder.address.created_at,
-                                                            updated_at = cartOrder.address.updated_at
-                                                        ) else null,
+                                                    address = cartOrder.address,
                                                     addOnItems = cartOrder.addOnItems,
                                                     doesChargesIncluded = cartOrder.doesChargesIncluded,
                                                     cartOrderStatus = cartOrder.cartOrderStatus,
@@ -139,14 +137,7 @@ class CartRepositoryImpl(
                                                             created_at = cartOrder.customer.created_at,
                                                             updated_at = cartOrder.customer.created_at
                                                         ) else null,
-                                                    address = if (cartOrder.address != null)
-                                                        Address(
-                                                            addressId = cartOrder.address.addressId,
-                                                            shortName = cartOrder.address.shortName,
-                                                            addressName = cartOrder.address.addressName,
-                                                            created_at = cartOrder.address.created_at,
-                                                            updated_at = cartOrder.address.updated_at
-                                                        ) else null,
+                                                    address = cartOrder.address,
                                                     addOnItems = cartOrder.addOnItems,
                                                     doesChargesIncluded = cartOrder.doesChargesIncluded,
                                                     cartOrderStatus = cartOrder.cartOrderStatus,
@@ -230,14 +221,7 @@ class CartRepositoryImpl(
                                                             created_at = cartOrder.customer.created_at,
                                                             updated_at = cartOrder.customer.created_at
                                                         ) else null,
-                                                    address = if (cartOrder.address != null)
-                                                        Address(
-                                                            addressId = cartOrder.address.addressId,
-                                                            shortName = cartOrder.address.shortName,
-                                                            addressName = cartOrder.address.addressName,
-                                                            created_at = cartOrder.address.created_at,
-                                                            updated_at = cartOrder.address.updated_at
-                                                        ) else null,
+                                                    address = cartOrder.address,
                                                     addOnItems = cartOrder.addOnItems,
                                                     doesChargesIncluded = cartOrder.doesChargesIncluded,
                                                     cartOrderStatus = cartOrder.cartOrderStatus,

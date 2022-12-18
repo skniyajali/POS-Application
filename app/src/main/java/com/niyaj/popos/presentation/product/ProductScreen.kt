@@ -29,8 +29,8 @@ import com.niyaj.popos.R
 import com.niyaj.popos.domain.util.BottomSheetScreen
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.presentation.components.*
-import com.niyaj.popos.presentation.destinations.AddEditProductScreenDestination
-import com.niyaj.popos.presentation.destinations.ProductSettingScreenDestination
+import com.niyaj.popos.destinations.AddEditProductScreenDestination
+import com.niyaj.popos.destinations.ProductSettingScreenDestination
 import com.niyaj.popos.presentation.main_feed.components.category.CategoryItems
 import com.niyaj.popos.presentation.product.components.ProductCard
 import com.niyaj.popos.presentation.ui.theme.ProfilePictureSizeSmall

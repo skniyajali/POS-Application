@@ -32,8 +32,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
+import com.niyaj.popos.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.presentation.components.ItemNotAvailable
-import com.niyaj.popos.presentation.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.presentation.ui.theme.SpaceMedium
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall
 import com.niyaj.popos.presentation.ui.theme.Teal200

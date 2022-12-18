@@ -13,9 +13,9 @@ import androidx.compose.ui.draw.rotate
 import androidx.navigation.NavController
 import com.niyaj.popos.presentation.components.SettingsCard
 import com.niyaj.popos.presentation.components.StandardScaffold
-import com.niyaj.popos.presentation.destinations.ExportProductScreenDestination
-import com.niyaj.popos.presentation.destinations.ImportProductScreenDestination
-import com.niyaj.popos.presentation.destinations.ProductPriceScreenDestination
+import com.niyaj.popos.destinations.ExportProductScreenDestination
+import com.niyaj.popos.destinations.ImportProductScreenDestination
+import com.niyaj.popos.destinations.ProductPriceScreenDestination
 import com.niyaj.popos.presentation.ui.theme.*
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate

@@ -332,15 +332,15 @@ fun OrderDetailsScreen(
                                             Spacer(modifier = Modifier.height(SpaceSmall))
 
                                             TextWithIcon(
-                                                text = "Created At : ${address.created_at!!.toFormattedDateAndTime}",
+                                                text = "Created At : ${address.createdAt.toFormattedDateAndTime}",
                                                 icon = Icons.Default.MoreTime
                                             )
 
-                                            if(address.updated_at != null){
+                                            if(address.updatedAt != null){
                                                 Spacer(modifier = Modifier.height(SpaceSmall))
 
                                                 TextWithIcon(
-                                                    text = "Updated At : ${address.updated_at.toFormattedDateAndTime}",
+                                                    text = "Updated At : ${address.updatedAt!!.toFormattedDateAndTime}",
                                                     icon = Icons.Default.Update
                                                 )
                                             }

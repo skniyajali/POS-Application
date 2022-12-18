@@ -33,8 +33,8 @@ import com.niyaj.popos.R
 import com.niyaj.popos.domain.util.BottomSheetScreen
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.presentation.components.*
-import com.niyaj.popos.presentation.destinations.AddEditExpensesScreenDestination
-import com.niyaj.popos.presentation.destinations.ExpensesSettingScreenDestination
+import com.niyaj.popos.destinations.AddEditExpensesScreenDestination
+import com.niyaj.popos.destinations.ExpensesSettingScreenDestination
 import com.niyaj.popos.presentation.ui.theme.SpaceMini
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall
 import com.niyaj.popos.presentation.util.Screen

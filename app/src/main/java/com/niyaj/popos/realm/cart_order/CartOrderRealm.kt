@@ -2,19 +2,19 @@ package com.niyaj.popos.realm.cart_order
 
 import com.niyaj.popos.domain.util.CartOrderType
 import com.niyaj.popos.domain.util.OrderStatus
-import com.niyaj.popos.realm.add_on_items.AddOnItem
-import com.niyaj.popos.realm.address.AddressRealm
+import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
+import com.niyaj.popos.realm.address.domain.model.Address
 import com.niyaj.popos.realm.customer.CustomerRealm
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
-import org.mongodb.kbson.ObjectId
+import org.mongodb.kbson.BsonObjectId
 
 class CartOrderRealm(): RealmObject {
 
     @PrimaryKey
-    var _id: String = ObjectId().toHexString()
+    var _id: String = BsonObjectId().toHexString()
 
     var orderId: String = ""
 
@@ -22,7 +22,7 @@ class CartOrderRealm(): RealmObject {
 
     var customer: CustomerRealm? = null
 
-    var address: AddressRealm? = null
+    var address: Address? = null
 
     var addOnItems: RealmList<AddOnItem> = realmListOf()
 

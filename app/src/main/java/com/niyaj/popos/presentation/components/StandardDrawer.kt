@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.niyaj.popos.R
-import com.niyaj.popos.presentation.destinations.*
+import com.niyaj.popos.destinations.*
 import com.niyaj.popos.presentation.ui.theme.*
 import com.ramcosta.composedestinations.navigation.navigate
 

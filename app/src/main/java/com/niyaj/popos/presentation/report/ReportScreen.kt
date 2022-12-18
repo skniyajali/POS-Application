@@ -63,9 +63,9 @@ import com.niyaj.popos.presentation.components.chart.horizontalbar.HorizontalBar
 import com.niyaj.popos.presentation.components.chart.horizontalbar.axis.HorizontalAxisConfig
 import com.niyaj.popos.presentation.components.chart.horizontalbar.config.HorizontalBarConfig
 import com.niyaj.popos.presentation.components.chart.horizontalbar.config.StartDirection
-import com.niyaj.popos.presentation.destinations.ExpensesScreenDestination
-import com.niyaj.popos.presentation.destinations.OrderScreenDestination
-import com.niyaj.popos.presentation.destinations.ViewLastSevenDaysReportsDestination
+import com.niyaj.popos.destinations.ExpensesScreenDestination
+import com.niyaj.popos.destinations.OrderScreenDestination
+import com.niyaj.popos.destinations.ViewLastSevenDaysReportsDestination
 import com.niyaj.popos.presentation.report.components.OrderTypeDropdown
 import com.niyaj.popos.presentation.report.components.ReportBox
 import com.niyaj.popos.presentation.ui.theme.ButtonSize

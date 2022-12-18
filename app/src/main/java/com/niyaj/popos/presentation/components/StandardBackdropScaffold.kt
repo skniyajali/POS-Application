@@ -20,8 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.niyaj.popos.R
-import com.niyaj.popos.presentation.destinations.AddEditCartOrderScreenDestination
-import com.niyaj.popos.presentation.destinations.CartScreenDestination
+import com.niyaj.popos.destinations.AddEditCartOrderScreenDestination
+import com.niyaj.popos.destinations.CartScreenDestination
 import com.niyaj.popos.presentation.order.SelectedOrder
 import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.CoroutineScope

@@ -6,10 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.model.Address
 import com.niyaj.popos.domain.model.CartOrder
 import com.niyaj.popos.domain.model.Customer
-import com.niyaj.popos.domain.use_cases.address.AddressUseCases
 import com.niyaj.popos.domain.use_cases.cart_order.CartOrderUseCases
 import com.niyaj.popos.domain.use_cases.cart_order.cart_order_validation.ValidateCustomerAddress
 import com.niyaj.popos.domain.use_cases.cart_order.cart_order_validation.ValidateCustomerPhone
@@ -18,8 +16,10 @@ import com.niyaj.popos.domain.use_cases.customer.CustomerUseCases
 import com.niyaj.popos.domain.util.CartOrderType
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.UiEvent
-import com.niyaj.popos.presentation.address.AddressState
 import com.niyaj.popos.presentation.customer.CustomerState
+import com.niyaj.popos.realm.address.domain.model.Address
+import com.niyaj.popos.realm.address.presentation.AddressState
+import com.niyaj.popos.realm.address.domain.use_cases.AddressUseCases
 import com.niyaj.popos.util.capitalizeWords
 import com.niyaj.popos.util.getAllCapitalizedLetters
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -117,11 +117,11 @@ class AddEditCartOrderViewModel @Inject constructor(
                         }
 
                     }else {
+                        val address = Address()
+                        address.shortName = getAllCapitalizedLetters(event.customerAddress)
+                        address.addressName = event.customerAddress.capitalizeWords
                         addEditCartOrderState = addEditCartOrderState.copy(
-                            address = Address(
-                                shortName = getAllCapitalizedLetters(event.customerAddress),
-                                addressName = event.customerAddress.capitalizeWords
-                            )
+                            address = address,
                         )
                     }
                 }

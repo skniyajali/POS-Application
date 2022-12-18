@@ -2,7 +2,7 @@ package com.niyaj.popos.realm.expenses
 
 import com.niyaj.popos.domain.model.Expenses
 import com.niyaj.popos.domain.util.Resource
-import com.niyaj.popos.realm.app_settings.SettingsService
+import com.niyaj.popos.realm.app_settings.domain.repository.SettingsService
 import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealm
 import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm

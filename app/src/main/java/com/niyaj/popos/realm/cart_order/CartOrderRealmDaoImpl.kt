@@ -4,9 +4,9 @@ import com.niyaj.popos.domain.model.CartOrder
 import com.niyaj.popos.domain.util.CartOrderType
 import com.niyaj.popos.domain.util.OrderStatus
 import com.niyaj.popos.domain.util.Resource
-import com.niyaj.popos.realm.add_on_items.AddOnItem
-import com.niyaj.popos.realm.address.AddressRealm
-import com.niyaj.popos.realm.app_settings.SettingsService
+import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
+import com.niyaj.popos.realm.address.domain.model.Address
+import com.niyaj.popos.realm.app_settings.domain.repository.SettingsService
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.customer.CustomerRealm
 import com.niyaj.popos.util.getCalculatedStartDate
@@ -128,7 +128,7 @@ class CartOrderRealmDaoImpl(
         return try {
             var customer: CustomerRealm? = null
 
-            var address: AddressRealm? = null
+            var address: Address? = null
 
             if (newOrder.customer != null) {
                 if (newOrder.customer.customerId.isEmpty() && newOrder.customer.customerPhone.isNotEmpty()) {
@@ -149,7 +149,7 @@ class CartOrderRealmDaoImpl(
 
             if (newOrder.address != null) {
                 if (newOrder.address.addressId.isEmpty() && newOrder.address.addressName.isNotEmpty()) {
-                    val newAddress = AddressRealm()
+                    val newAddress = Address()
                     newAddress.shortName = newOrder.address.shortName
                     newAddress.addressName = newOrder.address.addressName
 
@@ -160,7 +160,7 @@ class CartOrderRealmDaoImpl(
                     }
                 } else {
                     address =
-                        realm.query<AddressRealm>("_id == $0", newOrder.address.addressId).first()
+                        realm.query<Address>("_id == $0", newOrder.address.addressId).first()
                             .find()
                 }
             }
@@ -202,7 +202,7 @@ class CartOrderRealmDaoImpl(
         return try {
             var customer: CustomerRealm? = null
 
-            var address: AddressRealm? = null
+            var address: Address? = null
 
             if (newOrder.customer != null) {
 
@@ -225,7 +225,7 @@ class CartOrderRealmDaoImpl(
 
             if (newOrder.address != null) {
                 if (newOrder.address.addressId.isEmpty() && newOrder.address.addressName.isNotEmpty()) {
-                    val newAddress = AddressRealm()
+                    val newAddress = Address()
                     newAddress.shortName = newOrder.address.shortName
                     newAddress.addressName = newOrder.address.addressName
 
@@ -235,7 +235,7 @@ class CartOrderRealmDaoImpl(
                         }
                     }
                 } else {
-                    address = realm.query<AddressRealm>("_id == $0", newOrder.address.addressId)
+                    address = realm.query<Address>("_id == $0", newOrder.address.addressId)
                         .first().find()
                 }
             }

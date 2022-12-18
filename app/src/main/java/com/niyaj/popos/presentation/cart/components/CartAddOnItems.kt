@@ -13,7 +13,7 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.niyaj.popos.presentation.components.StandardChip
 import com.niyaj.popos.presentation.ui.theme.SpaceMini
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall
-import com.niyaj.popos.realm.add_on_items.AddOnItem
+import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
 
 @Composable
 fun CartAddOnItems(

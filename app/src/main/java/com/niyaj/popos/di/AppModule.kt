@@ -2,8 +2,6 @@ package com.niyaj.popos.di
 
 import com.niyaj.popos.data.repository.*
 import com.niyaj.popos.domain.repository.*
-import com.niyaj.popos.domain.use_cases.add_on_item.*
-import com.niyaj.popos.domain.use_cases.address.*
 import com.niyaj.popos.domain.use_cases.app_settings.GetSetting
 import com.niyaj.popos.domain.use_cases.app_settings.SettingsUseCases
 import com.niyaj.popos.domain.use_cases.app_settings.UpdateSetting
@@ -34,9 +32,7 @@ import com.niyaj.popos.domain.use_cases.reports.GetProductWiseReport
 import com.niyaj.popos.domain.use_cases.reports.GetReport
 import com.niyaj.popos.domain.use_cases.reports.GetReportsBarData
 import com.niyaj.popos.domain.use_cases.reports.ReportsUseCases
-import com.niyaj.popos.realm.add_on_items.AddOnItemRepository
-import com.niyaj.popos.realm.address.AddressRealmDao
-import com.niyaj.popos.realm.app_settings.SettingsService
+import com.niyaj.popos.realm.app_settings.domain.repository.SettingsService
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
 import com.niyaj.popos.realm.category.CategoryRealmDao
@@ -78,11 +74,6 @@ object AppModule {
     @Provides
     fun provideProductRepository(productRealmDao: ProductRealmDao): ProductRepository {
         return ProductRepositoryImpl(productRealmDao)
-    }
-
-    @Provides
-    fun provideAddressRepository(addressRealmDao: AddressRealmDao): AddressRepository {
-        return AddressRepositoryImpl(addressRealmDao)
     }
 
     @Provides
@@ -221,17 +212,7 @@ object AppModule {
         )
     }
 
-    @Provides
-    @Singleton
-    fun provideAddressCases(addressRepository: AddressRepository): AddressUseCases {
-        return AddressUseCases(
-            getAllAddress = GetAllAddress(addressRepository),
-            getAddressById = GetAddressById(addressRepository),
-            createNewAddress = CreateNewAddress(addressRepository),
-            updateAddress = UpdateAddress(addressRepository),
-            deleteAddress = DeleteAddress(addressRepository),
-        )
-    }
+
 
     @Provides
     @Singleton
@@ -282,19 +263,6 @@ object AppModule {
             getMainFeedSelectedOrder = GetMainFeedSelectedOrder(mainFeedRepository, cartOrderRepository),
             getMainFeedCategories = GetMainFeedCategories(mainFeedRepository),
             getProductsPager = GetProductsPager(mainFeedRepository),
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun provideAddOnItemUseCases(addOnItemRepository: AddOnItemRepository): AddOnItemUseCases {
-        return AddOnItemUseCases(
-            getAllAddOnItems = GetAllAddOnItems(addOnItemRepository),
-            getAddOnItemById = GetAddOnItemById(addOnItemRepository),
-            findAddOnItemByName = FindAddOnItemByName(addOnItemRepository),
-            createNewAddOnItem = CreateNewAddOnItem(addOnItemRepository),
-            updateAddOnItem = UpdateAddOnItem(addOnItemRepository),
-            deleteAddOnItem = DeleteAddOnItem(addOnItemRepository),
         )
     }
 

@@ -1,6 +1,7 @@
 package com.niyaj.popos.domain.model
 
-import com.niyaj.popos.realm.add_on_items.AddOnItem
+import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
+import com.niyaj.popos.realm.address.domain.model.Address
 
 data class CartOrder(
     val cartOrderId: String = "",

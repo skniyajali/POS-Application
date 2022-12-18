@@ -27,11 +27,11 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
+import com.niyaj.popos.destinations.AddEditPartnerScreenDestination
 import com.niyaj.popos.domain.model.PartnerStatus
 import com.niyaj.popos.domain.util.BottomSheetScreen
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.presentation.components.*
-import com.niyaj.popos.presentation.destinations.AddEditPartnerScreenDestination
 import com.niyaj.popos.presentation.ui.theme.*
 import com.niyaj.popos.util.toFormattedDateAndTime
 import com.ramcosta.composedestinations.annotation.Destination

@@ -54,14 +54,14 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
+import com.niyaj.popos.destinations.AddEditCartOrderScreenDestination
+import com.niyaj.popos.destinations.CartOrderSettingScreenDestination
+import com.niyaj.popos.destinations.OrderDetailsScreenDestination
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.presentation.components.ExtendedFabButton
 import com.niyaj.popos.presentation.components.ItemNotAvailable
 import com.niyaj.popos.presentation.components.StandardScaffold
 import com.niyaj.popos.presentation.components.StandardSearchBar
-import com.niyaj.popos.presentation.destinations.AddEditCartOrderScreenDestination
-import com.niyaj.popos.presentation.destinations.CartOrderSettingScreenDestination
-import com.niyaj.popos.presentation.destinations.OrderDetailsScreenDestination
 import com.niyaj.popos.presentation.ui.theme.SpaceMini
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall
 import com.niyaj.popos.presentation.ui.theme.TextGray

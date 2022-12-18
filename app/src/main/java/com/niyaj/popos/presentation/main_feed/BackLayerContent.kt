@@ -16,11 +16,11 @@ import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
 import com.google.accompanist.flowlayout.FlowMainAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.flowlayout.SizeMode
-import com.niyaj.popos.presentation.destinations.CartScreenDestination
-import com.niyaj.popos.presentation.destinations.EmployeeScreenDestination
-import com.niyaj.popos.presentation.destinations.ExpensesScreenDestination
-import com.niyaj.popos.presentation.destinations.OrderScreenDestination
-import com.niyaj.popos.presentation.destinations.ReportScreenDestination
+import com.niyaj.popos.destinations.CartScreenDestination
+import com.niyaj.popos.destinations.EmployeeScreenDestination
+import com.niyaj.popos.destinations.ExpensesScreenDestination
+import com.niyaj.popos.destinations.OrderScreenDestination
+import com.niyaj.popos.destinations.ReportScreenDestination
 import com.niyaj.popos.presentation.main_feed.components.IconBox
 import com.niyaj.popos.presentation.report.ReportsViewModel
 import com.niyaj.popos.presentation.report.components.ReportBox

@@ -1,10 +1,10 @@
 package com.niyaj.popos.realm.data_deletion
 
 import com.niyaj.popos.domain.util.Resource
-import com.niyaj.popos.realm.add_on_items.AddOnItem
-import com.niyaj.popos.realm.address.AddressRealm
-import com.niyaj.popos.realm.app_settings.SettingsRealm
-import com.niyaj.popos.realm.app_settings.SettingsService
+import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
+import com.niyaj.popos.realm.address.domain.model.Address
+import com.niyaj.popos.realm.app_settings.domain.model.Settings
+import com.niyaj.popos.realm.app_settings.domain.repository.SettingsService
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.cart_order.CartOrderRealm
 import com.niyaj.popos.realm.cart_order.SelectedCartOrderRealm
@@ -83,7 +83,7 @@ class DataDeletionServiceImpl(
                 realm.write {
                     delete(CategoryRealm::class)
                     delete(ProductRealm::class)
-                    delete(AddressRealm::class)
+                    delete(Address::class)
                     delete(CustomerRealm::class)
                     delete(CartOrderRealm::class)
                     delete(CartRealm::class)
@@ -97,7 +97,7 @@ class DataDeletionServiceImpl(
                     delete(SalaryRealm::class)
                     delete(AttendanceRealm::class)
                     delete(ReportsRealm::class)
-                    delete(SettingsRealm::class)
+                    delete(Settings::class)
                 }
             }
 

@@ -1,13 +1,13 @@
 package com.niyaj.popos.realm
 
-import com.niyaj.popos.realm.add_on_items.AddOnItem
-import com.niyaj.popos.realm.add_on_items.AddOnItemRepository
-import com.niyaj.popos.realm.add_on_items.AddOnItemRepositoryImpl
-import com.niyaj.popos.realm.address.AddressRealm
-import com.niyaj.popos.realm.address.AddressRealmDao
-import com.niyaj.popos.realm.address.AddressRealmDaoImpl
-import com.niyaj.popos.realm.app_settings.SettingsRealm
-import com.niyaj.popos.realm.app_settings.SettingsService
+import com.niyaj.popos.realm.addon_item.data.repository.AddOnItemRepositoryImpl
+import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
+import com.niyaj.popos.realm.addon_item.domain.repository.AddOnItemRepository
+import com.niyaj.popos.realm.address.data.repository.AddressRepositoryImpl
+import com.niyaj.popos.realm.address.domain.model.Address
+import com.niyaj.popos.realm.address.domain.repository.AddressRepository
+import com.niyaj.popos.realm.app_settings.domain.model.Settings
+import com.niyaj.popos.realm.app_settings.domain.repository.SettingsService
 import com.niyaj.popos.realm.app_settings.SettingsServiceImpl
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.cart.CartRealmDao
@@ -71,7 +71,7 @@ object RealmModule {
     private val schema = setOf(
         CategoryRealm::class,
         ProductRealm::class,
-        AddressRealm::class,
+        Address::class,
         CustomerRealm::class,
         CartOrderRealm::class,
         CartRealm::class,
@@ -85,7 +85,7 @@ object RealmModule {
         SalaryRealm::class,
         AttendanceRealm::class,
         ReportsRealm::class,
-        SettingsRealm::class,
+        Settings::class,
     )
 
     private val config = RealmConfiguration
@@ -112,8 +112,8 @@ object RealmModule {
     }
 
     @Provides
-    fun provideAddressRealmDaoImpl(): AddressRealmDao {
-        return AddressRealmDaoImpl(config)
+    fun provideAddressRealmDaoImpl(): AddressRepository {
+        return AddressRepositoryImpl(config)
     }
 
     @Provides

@@ -22,7 +22,7 @@ import com.niyaj.popos.R
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.presentation.components.StandardOutlinedTextField
 import com.niyaj.popos.presentation.components.util.BottomSheetWithCloseDialog
-import com.niyaj.popos.presentation.destinations.AddEditCategoryScreenDestination
+import com.niyaj.popos.destinations.AddEditCategoryScreenDestination
 import com.niyaj.popos.presentation.ui.theme.ButtonSize
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall
 import com.ramcosta.composedestinations.annotation.Destination

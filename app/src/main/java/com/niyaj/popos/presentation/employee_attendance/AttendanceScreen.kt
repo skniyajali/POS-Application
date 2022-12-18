@@ -26,9 +26,9 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.presentation.components.*
-import com.niyaj.popos.presentation.destinations.AddEditAbsentScreenDestination
-import com.niyaj.popos.presentation.destinations.AddEditPartnerScreenDestination
-import com.niyaj.popos.presentation.destinations.SalaryScreenDestination
+import com.niyaj.popos.destinations.AddEditAbsentScreenDestination
+import com.niyaj.popos.destinations.AddEditPartnerScreenDestination
+import com.niyaj.popos.destinations.SalaryScreenDestination
 import com.niyaj.popos.presentation.ui.theme.*
 import com.niyaj.popos.util.toFormattedDate
 import com.ramcosta.composedestinations.annotation.Destination

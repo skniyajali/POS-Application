@@ -27,9 +27,9 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.R
 import com.niyaj.popos.domain.util.PaymentType
 import com.niyaj.popos.presentation.components.*
-import com.niyaj.popos.presentation.destinations.AddEditAbsentScreenDestination
-import com.niyaj.popos.presentation.destinations.AddEditEmployeeScreenDestination
-import com.niyaj.popos.presentation.destinations.AddEditSalaryScreenDestination
+import com.niyaj.popos.destinations.AddEditAbsentScreenDestination
+import com.niyaj.popos.destinations.AddEditEmployeeScreenDestination
+import com.niyaj.popos.destinations.AddEditSalaryScreenDestination
 import com.niyaj.popos.presentation.report.components.SalaryDateDropdown
 import com.niyaj.popos.presentation.ui.theme.*
 import com.niyaj.popos.util.*

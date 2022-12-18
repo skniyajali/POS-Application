@@ -28,7 +28,7 @@ import com.niyaj.popos.R
 import com.niyaj.popos.domain.util.BottomSheetScreen
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.presentation.components.*
-import com.niyaj.popos.presentation.destinations.*
+import com.niyaj.popos.destinations.*
 import com.niyaj.popos.presentation.ui.theme.*
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate

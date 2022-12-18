@@ -1,8 +1,8 @@
 package com.niyaj.popos.presentation.cart_order.add_edit
 
-import com.niyaj.popos.domain.model.Address
 import com.niyaj.popos.domain.model.Customer
 import com.niyaj.popos.domain.util.CartOrderType
+import com.niyaj.popos.realm.address.domain.model.Address
 
 data class AddEditCartOrderState(
     val orderId: String = "",

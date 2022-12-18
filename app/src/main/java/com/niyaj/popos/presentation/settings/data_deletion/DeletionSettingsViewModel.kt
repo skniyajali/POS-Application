@@ -12,7 +12,7 @@ import com.niyaj.popos.domain.use_cases.app_settings.validation.ValidateExpenses
 import com.niyaj.popos.domain.use_cases.app_settings.validation.ValidateReportsInterval
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.UiEvent
-import com.niyaj.popos.realm.app_settings.SettingsRealm
+import com.niyaj.popos.realm.app_settings.domain.model.Settings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -88,7 +88,7 @@ class DeletionSettingsViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                val settings = SettingsRealm()
+                val settings = Settings()
                 settings.expensesDataDeletionInterval = state.expensesInterval.toInt()
                 settings.reportDataDeletionInterval = state.reportsInterval.toInt()
                 settings.cartDataDeletionInterval = state.cartInterval.toInt()

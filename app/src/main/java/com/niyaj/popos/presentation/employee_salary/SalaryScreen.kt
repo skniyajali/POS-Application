@@ -28,8 +28,8 @@ import com.niyaj.popos.R
 import com.niyaj.popos.domain.util.PaymentType
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.presentation.components.*
-import com.niyaj.popos.presentation.destinations.AddEditAbsentScreenDestination
-import com.niyaj.popos.presentation.destinations.AddEditSalaryScreenDestination
+import com.niyaj.popos.destinations.AddEditAbsentScreenDestination
+import com.niyaj.popos.destinations.AddEditSalaryScreenDestination
 import com.niyaj.popos.presentation.ui.theme.*
 import com.niyaj.popos.util.toRupee
 import com.niyaj.popos.util.toSalaryDate

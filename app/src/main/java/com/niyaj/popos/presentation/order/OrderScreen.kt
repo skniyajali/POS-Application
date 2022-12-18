@@ -76,8 +76,8 @@ import com.niyaj.popos.presentation.components.StandardSearchBar
 import com.niyaj.popos.presentation.components.TextWithIcon
 import com.niyaj.popos.presentation.components.util.Tabs
 import com.niyaj.popos.presentation.components.util.TabsContent
-import com.niyaj.popos.presentation.destinations.AddEditCartOrderScreenDestination
-import com.niyaj.popos.presentation.destinations.OrderDetailsScreenDestination
+import com.niyaj.popos.destinations.AddEditCartOrderScreenDestination
+import com.niyaj.popos.destinations.OrderDetailsScreenDestination
 import com.niyaj.popos.presentation.print_order.PrintEvent
 import com.niyaj.popos.presentation.print_order.PrintViewModel
 import com.niyaj.popos.presentation.ui.theme.LightColor12
