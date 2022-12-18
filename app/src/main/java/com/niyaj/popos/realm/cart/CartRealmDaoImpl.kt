@@ -10,7 +10,6 @@ import com.niyaj.popos.util.getStartTime
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
@@ -31,10 +30,8 @@ class CartRealmDaoImpl(
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("CartRealmDao Session: $sessionState")
+        Timber.d("CartRealmDao Session")
     }
 
     private val _cartProducts = MutableStateFlow<List<CartRealm>>(listOf())

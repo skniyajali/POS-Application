@@ -1,5 +1,7 @@
 package com.niyaj.popos.domain.model
 
+import com.niyaj.popos.realm.add_on_items.AddOnItem
+
 data class CartOrder(
     val cartOrderId: String = "",
     val orderId: String = "",

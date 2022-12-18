@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
-import com.niyaj.popos.domain.model.AddOnItem
 import com.niyaj.popos.domain.model.CartOrder
 import com.niyaj.popos.domain.model.CartProduct
 import com.niyaj.popos.domain.model.Charges
@@ -14,6 +13,7 @@ import com.niyaj.popos.domain.use_cases.charges.ChargesUseCases
 import com.niyaj.popos.domain.use_cases.order.OrderUseCases
 import com.niyaj.popos.domain.util.CartOrderType
 import com.niyaj.popos.domain.util.Resource
+import com.niyaj.popos.realm.add_on_items.AddOnItem
 import com.niyaj.popos.util.Constants
 import com.niyaj.popos.util.toFormattedDateAndTime
 import com.niyaj.popos.util.toRupee

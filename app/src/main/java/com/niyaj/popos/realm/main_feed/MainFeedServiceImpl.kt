@@ -9,7 +9,6 @@ import com.niyaj.popos.realm.product.ProductRealm
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialObject
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
@@ -34,10 +33,8 @@ class MainFeedServiceImpl(
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("Main Feed Session: $sessionState")
+        Timber.d("Main Feed Session")
     }
 
     private val productWithQuantity = MutableStateFlow<List<ProductWithQuantityRealm>>(listOf())

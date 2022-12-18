@@ -4,7 +4,7 @@ import com.niyaj.popos.domain.model.CartOrder
 import com.niyaj.popos.domain.util.CartOrderType
 import com.niyaj.popos.domain.util.OrderStatus
 import com.niyaj.popos.domain.util.Resource
-import com.niyaj.popos.realm.add_on_items.AddOnItemRealm
+import com.niyaj.popos.realm.add_on_items.AddOnItem
 import com.niyaj.popos.realm.address.AddressRealm
 import com.niyaj.popos.realm.app_settings.SettingsService
 import com.niyaj.popos.realm.cart.CartRealm
@@ -15,7 +15,6 @@ import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.exceptions.RealmException
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.internal.interop.RealmCoreException
-import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialObject
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
@@ -38,10 +37,8 @@ class CartOrderRealmDaoImpl(
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("CartOrder Session: $sessionState")
+        Timber.d("CartOrder Session")
     }
 
     /**
@@ -280,12 +277,12 @@ class CartOrderRealmDaoImpl(
     ): Resource<Boolean> {
         return try {
             realm.write {
-                val addOnItem = this.query<AddOnItemRealm>("_id == $0", addOnItemId).find().first()
+                val addOnItem = this.query<AddOnItem>("_id == $0", addOnItemId).find().first()
 
                 val newAddOnItem =
                     this.query<CartOrderRealm>("_id == $0", cartOrderId).find().first().addOnItems
 
-                val doesExist = newAddOnItem.find { it._id == addOnItemId }
+                val doesExist = newAddOnItem.find { it.addOnItemId == addOnItemId }
 
                 val cartOrder = this.query<CartOrderRealm>("_id == $0", cartOrderId).first().find()
 
@@ -293,7 +290,7 @@ class CartOrderRealmDaoImpl(
                 if (doesExist == null) {
                     newAddOnItem.add(addOnItem)
                 } else {
-                    newAddOnItem.removeIf { it._id == addOnItemId }
+                    newAddOnItem.removeIf { it.addOnItemId == addOnItemId }
                 }
 
                 cartOrder?.addOnItems = newAddOnItem

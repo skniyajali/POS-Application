@@ -1,14 +1,13 @@
 package com.niyaj.popos.realm.add_on_items
 
-import com.niyaj.popos.domain.model.AddOnItem
 import com.niyaj.popos.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
 
-interface AddOnItemRealmDao {
+interface AddOnItemRepository {
 
-    suspend fun getAllAddOnItems(): Flow<Resource<List<AddOnItemRealm>>>
+    suspend fun getAllAddOnItems(): Flow<Resource<List<AddOnItem>>>
 
-    suspend fun getAddOnItemById(addOnItemId: String): Resource<AddOnItemRealm?>
+    suspend fun getAddOnItemById(addOnItemId: String): Resource<AddOnItem?>
 
     fun findAddOnItemByName(addOnItemName: String, addOnItemId: String?): Boolean
 

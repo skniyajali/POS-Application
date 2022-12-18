@@ -7,7 +7,6 @@ import com.niyaj.popos.realm.product.ProductRealm
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.RealmResults
@@ -22,10 +21,8 @@ class CategoryRealmDaoImpl(
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("Category Session: $sessionState")
+        Timber.d("Category Session:")
     }
 
     override suspend fun getAllCategories(): Flow<Resource<List<CategoryRealm>>> {

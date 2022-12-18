@@ -8,7 +8,6 @@ import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
@@ -26,10 +25,8 @@ class ExpensesRealmDaoImpl(
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("ExpensesRealmDao Session: $sessionState")
+        Timber.d("ExpensesRealmDao Session:")
     }
 
     override suspend fun getAllExpanses(): Flow<Resource<List<ExpensesRealm>>> {

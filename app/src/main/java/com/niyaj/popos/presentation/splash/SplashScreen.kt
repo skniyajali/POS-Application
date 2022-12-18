@@ -17,7 +17,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.niyaj.popos.R
 import com.niyaj.popos.presentation.util.Screen
-import com.niyaj.popos.realmApp
 import com.niyaj.popos.util.Constants
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
@@ -33,8 +32,6 @@ fun SplashScreen(
     navController: NavController,
     dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) {
-    val user = realmApp.currentUser
-
     val scale = remember {
         Animatable(0f)
     }
@@ -57,11 +54,7 @@ fun SplashScreen(
 
             navController.popBackStack()
 
-            if (user != null){
-                navController.navigate(Screen.MainFeedScreen.route)
-            }else{
-                navController.navigate(Screen.LoginScreen.route)
-            }
+            navController.navigate(Screen.MainFeedScreen.route)
         }
     }
 

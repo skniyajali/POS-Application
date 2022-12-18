@@ -1,8 +1,8 @@
 package com.niyaj.popos.domain.use_cases.add_on_item
 
-import com.niyaj.popos.domain.model.AddOnItem
-import com.niyaj.popos.domain.repository.AddOnItemRepository
 import com.niyaj.popos.domain.util.Resource
+import com.niyaj.popos.realm.add_on_items.AddOnItem
+import com.niyaj.popos.realm.add_on_items.AddOnItemRepository
 
 class UpdateAddOnItem(
     private val addOnItemRepository: AddOnItemRepository

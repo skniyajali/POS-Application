@@ -2,7 +2,7 @@ package com.niyaj.popos.realm.cart_order
 
 import com.niyaj.popos.domain.util.CartOrderType
 import com.niyaj.popos.domain.util.OrderStatus
-import com.niyaj.popos.realm.add_on_items.AddOnItemRealm
+import com.niyaj.popos.realm.add_on_items.AddOnItem
 import com.niyaj.popos.realm.address.AddressRealm
 import com.niyaj.popos.realm.customer.CustomerRealm
 import io.realm.kotlin.ext.realmListOf
@@ -24,7 +24,7 @@ class CartOrderRealm(): RealmObject {
 
     var address: AddressRealm? = null
 
-    var addOnItems: RealmList<AddOnItemRealm> = realmListOf()
+    var addOnItems: RealmList<AddOnItem> = realmListOf()
 
     var doesChargesIncluded: Boolean = true
 

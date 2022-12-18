@@ -1,7 +1,7 @@
 package com.niyaj.popos.realm.data_deletion
 
 import com.niyaj.popos.domain.util.Resource
-import com.niyaj.popos.realm.add_on_items.AddOnItemRealm
+import com.niyaj.popos.realm.add_on_items.AddOnItem
 import com.niyaj.popos.realm.address.AddressRealm
 import com.niyaj.popos.realm.app_settings.SettingsRealm
 import com.niyaj.popos.realm.app_settings.SettingsService
@@ -23,7 +23,6 @@ import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.syncSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,10 +35,8 @@ class DataDeletionServiceImpl(
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("Data Deletion Session: $sessionState")
+        Timber.d("Data Deletion Session")
     }
 
     /**
@@ -82,7 +79,6 @@ class DataDeletionServiceImpl(
 
     override suspend fun deleteAllRecords(): Resource<Boolean> {
         return try {
-
             CoroutineScope(Dispatchers.IO).launch {
                 realm.write {
                     delete(CategoryRealm::class)
@@ -91,7 +87,7 @@ class DataDeletionServiceImpl(
                     delete(CustomerRealm::class)
                     delete(CartOrderRealm::class)
                     delete(CartRealm::class)
-                    delete(AddOnItemRealm::class)
+                    delete(AddOnItem::class)
                     delete(ChargesRealm::class)
                     delete(PartnerRealm::class)
                     delete(EmployeeRealm::class)

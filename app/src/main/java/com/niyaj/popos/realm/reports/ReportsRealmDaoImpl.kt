@@ -13,7 +13,6 @@ import com.niyaj.popos.util.toSalaryDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
@@ -31,10 +30,8 @@ class ReportsRealmDaoImpl(
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("Report Session: $sessionState")
+        Timber.d("Report Session")
     }
 
     override suspend fun generateReport(startDate: String, endDate: String): Resource<Boolean> {

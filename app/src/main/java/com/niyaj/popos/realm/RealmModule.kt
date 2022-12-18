@@ -1,8 +1,8 @@
 package com.niyaj.popos.realm
 
-import com.niyaj.popos.realm.add_on_items.AddOnItemRealm
-import com.niyaj.popos.realm.add_on_items.AddOnItemRealmDao
-import com.niyaj.popos.realm.add_on_items.AddOnItemRealmDaoImpl
+import com.niyaj.popos.realm.add_on_items.AddOnItem
+import com.niyaj.popos.realm.add_on_items.AddOnItemRepository
+import com.niyaj.popos.realm.add_on_items.AddOnItemRepositoryImpl
 import com.niyaj.popos.realm.address.AddressRealm
 import com.niyaj.popos.realm.address.AddressRealmDao
 import com.niyaj.popos.realm.address.AddressRealmDaoImpl
@@ -75,7 +75,7 @@ object RealmModule {
         CustomerRealm::class,
         CartOrderRealm::class,
         CartRealm::class,
-        AddOnItemRealm::class,
+        AddOnItem::class,
         ChargesRealm::class,
         PartnerRealm::class,
         EmployeeRealm::class,
@@ -90,7 +90,8 @@ object RealmModule {
 
     private val config = RealmConfiguration
         .Builder(schema)
-        .name("popos")
+        .deleteRealmIfMigrationNeeded()
+        .name("popos.realm")
         .log(LogLevel.ALL)
         .build()
 
@@ -136,8 +137,8 @@ object RealmModule {
     }
 
     @Provides
-    fun provideAddOnItemRealmDaoImpl(): AddOnItemRealmDao {
-        return AddOnItemRealmDaoImpl(config)
+    fun provideAddOnItemRealmDaoImpl(): AddOnItemRepository {
+        return AddOnItemRepositoryImpl(config)
     }
 
     @Provides

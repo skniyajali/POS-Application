@@ -5,7 +5,6 @@ import com.niyaj.popos.domain.util.Resource
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
@@ -19,10 +18,8 @@ class CustomerRealmDaoImpl(
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("Customer Session: $sessionState")
+        Timber.d("Customer Session")
     }
 
     override suspend fun getAllCustomer(): Flow<Resource<List<CustomerRealm>>> {

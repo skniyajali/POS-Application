@@ -7,7 +7,6 @@ import com.niyaj.popos.realm.cart_order.CartOrderRealm
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
@@ -23,10 +22,8 @@ class OrderRealmDaoImpl(
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("Order Session: $sessionState")
+        Timber.d("Order Session")
     }
 
     override suspend fun getAllOrders(

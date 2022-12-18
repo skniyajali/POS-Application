@@ -1,10 +1,10 @@
 package com.niyaj.popos.domain.use_cases.add_on_item
 
-import com.niyaj.popos.domain.model.AddOnItem
-import com.niyaj.popos.domain.repository.AddOnItemRepository
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.SortType
 import com.niyaj.popos.domain.util.filter_items.FilterAddOnItem
+import com.niyaj.popos.realm.add_on_items.AddOnItem
+import com.niyaj.popos.realm.add_on_items.AddOnItemRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import timber.log.Timber
@@ -38,7 +38,7 @@ class GetAllAddOnItems(
                                                 data.sortedBy { it.itemPrice }
                                             }
                                             is FilterAddOnItem.ByAddOnItemDate -> {
-                                                data.sortedBy { it.created_at }
+                                                data.sortedBy { it.createdAt }
                                             }
                                         }
                                     }
@@ -54,15 +54,15 @@ class GetAllAddOnItems(
                                                 data.sortedByDescending { it.itemPrice }
                                             }
                                             is FilterAddOnItem.ByAddOnItemDate -> {
-                                                data.sortedByDescending { it.created_at }
+                                                data.sortedByDescending { it.createdAt }
                                             }
                                         }
                                     }
                                 }.filter { addOnItem ->
                                     addOnItem.itemName.contains(searchText, true) ||
                                     addOnItem.itemPrice.toString().contains(searchText, true) ||
-                                    addOnItem.created_at?.contains(searchText, true) == true ||
-                                    addOnItem.updated_at?.contains(searchText, true) == true
+                                    addOnItem.createdAt.contains(searchText, true) ||
+                                    addOnItem.updatedAt?.contains(searchText, true) == true
                                 }
                             }
                         ))

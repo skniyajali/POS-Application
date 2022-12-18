@@ -8,7 +8,6 @@ import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.exceptions.RealmException
 import io.realm.kotlin.ext.isValid
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.syncSession
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
@@ -21,10 +20,8 @@ class EmployeeRealmDaoImpl(config: RealmConfiguration) : EmployeeRealmDao {
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("Employee Session: $sessionState")
+        Timber.d("Employee Session")
     }
     override suspend fun getAllEmployee(): Flow<Resource<List<EmployeeRealm>>> {
         return flow {

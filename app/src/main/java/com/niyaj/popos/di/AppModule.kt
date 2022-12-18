@@ -34,7 +34,7 @@ import com.niyaj.popos.domain.use_cases.reports.GetProductWiseReport
 import com.niyaj.popos.domain.use_cases.reports.GetReport
 import com.niyaj.popos.domain.use_cases.reports.GetReportsBarData
 import com.niyaj.popos.domain.use_cases.reports.ReportsUseCases
-import com.niyaj.popos.realm.add_on_items.AddOnItemRealmDao
+import com.niyaj.popos.realm.add_on_items.AddOnItemRepository
 import com.niyaj.popos.realm.address.AddressRealmDao
 import com.niyaj.popos.realm.app_settings.SettingsService
 import com.niyaj.popos.realm.cart.CartRealmDao
@@ -100,10 +100,6 @@ object AppModule {
         return OrderRepositoryImpl(orderDao, cartOrderRepository, commonRepository)
     }
 
-    @Provides
-    fun provideAddOnItemRepository(addOnItemRealmDao: AddOnItemRealmDao): AddOnItemRepository {
-        return AddOnItemRepositoryImpl(addOnItemRealmDao)
-    }
 
     @Provides
     fun provideChargesRepository(chargesRealmDao: ChargesRealmDao): ChargesRepository {

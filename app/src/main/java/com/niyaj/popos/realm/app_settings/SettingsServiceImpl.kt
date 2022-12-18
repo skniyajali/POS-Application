@@ -5,17 +5,14 @@ import com.niyaj.popos.util.Constants.SETTINGS_ID
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.syncSession
 import timber.log.Timber
 
 class SettingsServiceImpl(config: RealmConfiguration) : SettingsService {
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("Settings Session: $sessionState")
+        Timber.d("Settings Session")
     }
 
 

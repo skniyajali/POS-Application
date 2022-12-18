@@ -6,13 +6,13 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.model.AddOnItem
 import com.niyaj.popos.domain.use_cases.add_on_item.AddOnItemUseCases
 import com.niyaj.popos.domain.use_cases.add_on_item.validation.ValidateItemName
 import com.niyaj.popos.domain.use_cases.add_on_item.validation.ValidateItemPrice
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.domain.util.safeString
+import com.niyaj.popos.realm.add_on_items.AddOnItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -79,14 +79,13 @@ class AddEditAddOnItemViewModel @Inject constructor(
             return
         }else {
             viewModelScope.launch {
+                val addOnItem = AddOnItem()
+                addOnItem.itemName = addEditState.itemName
+                addOnItem.itemPrice = safeString(addEditState.itemPrice)
+
+
                 if(addOnItemId.isNullOrEmpty()){
-                    val result = addOnItemUseCases.createNewAddOnItem(
-                        AddOnItem(
-                            itemName = addEditState.itemName,
-                            itemPrice = safeString(addEditState.itemPrice),
-                        )
-                    )
-                    when(result){
+                    when(val result = addOnItemUseCases.createNewAddOnItem(addOnItem)){
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -100,10 +99,7 @@ class AddEditAddOnItemViewModel @Inject constructor(
 
                 }else {
                     val result = addOnItemUseCases.updateAddOnItem(
-                        AddOnItem(
-                            itemName = addEditState.itemName,
-                            itemPrice = safeString(addEditState.itemPrice),
-                        ),
+                        addOnItem,
                         addOnItemId
                     )
                     when(result){

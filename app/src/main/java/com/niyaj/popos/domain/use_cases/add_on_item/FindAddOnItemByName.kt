@@ -1,6 +1,6 @@
 package com.niyaj.popos.domain.use_cases.add_on_item
 
-import com.niyaj.popos.domain.repository.AddOnItemRepository
+import com.niyaj.popos.realm.add_on_items.AddOnItemRepository
 
 class FindAddOnItemByName(
     private val addOnItemRepository: AddOnItemRepository

@@ -1,6 +1,5 @@
 package com.niyaj.popos.data.repository
 
-import com.niyaj.popos.domain.model.AddOnItem
 import com.niyaj.popos.domain.model.Address
 import com.niyaj.popos.domain.model.CartOrder
 import com.niyaj.popos.domain.model.Customer
@@ -53,15 +52,7 @@ class CartOrderRepositoryImpl(
                                             updated_at = cartOrder.address!!.updated_at,
                                         )
                                     } else null,
-                                    addOnItems = cartOrder.addOnItems.map { addOnItem ->
-                                        AddOnItem(
-                                            addOnItemId = addOnItem._id,
-                                            itemName = addOnItem.itemName,
-                                            itemPrice = addOnItem.itemPrice,
-                                            created_at = addOnItem.created_at,
-                                            updated_at = addOnItem.updated_at
-                                        )
-                                    },
+                                    addOnItems = cartOrder.addOnItems,
                                     doesChargesIncluded = cartOrder.doesChargesIncluded,
                                     created_at = cartOrder.created_at,
                                     updated_at = cartOrder.updated_at,
@@ -106,15 +97,7 @@ class CartOrderRepositoryImpl(
                             updated_at = cartOrder.address!!.updated_at,
                         )
                     } else null,
-                    addOnItems = cartOrder.addOnItems.map { addOnItem ->
-                        AddOnItem(
-                            addOnItemId = addOnItem._id,
-                            itemName = addOnItem.itemName,
-                            itemPrice = addOnItem.itemPrice,
-                            created_at = addOnItem.created_at,
-                            updated_at = addOnItem.updated_at
-                        )
-                    },
+                    addOnItems = cartOrder.addOnItems,
                     doesChargesIncluded = cartOrder.doesChargesIncluded,
                     created_at = cartOrder.created_at,
                     updated_at = cartOrder.updated_at,

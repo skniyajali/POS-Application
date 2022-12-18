@@ -1,14 +1,19 @@
 package com.niyaj.popos.presentation.cart.components
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.google.accompanist.flowlayout.FlowRow
-import com.niyaj.popos.domain.model.AddOnItem
 import com.niyaj.popos.presentation.components.StandardChip
 import com.niyaj.popos.presentation.ui.theme.SpaceMini
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall
+import com.niyaj.popos.realm.add_on_items.AddOnItem
 
 @Composable
 fun CartAddOnItems(

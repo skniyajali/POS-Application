@@ -7,7 +7,6 @@ import com.niyaj.popos.realm.charges.ChargesRealm
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.mongodb.syncSession
 import timber.log.Timber
 
 class CommonRealmDaoImpl(
@@ -16,10 +15,8 @@ class CommonRealmDaoImpl(
 
     val realm = Realm.open(config)
 
-    private val sessionState = realm.syncSession.state.name
-
     init {
-        Timber.d("Common Session: $sessionState")
+        Timber.d("Common Session")
     }
 
     override fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
