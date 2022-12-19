@@ -14,7 +14,7 @@ import com.niyaj.popos.realm.customer.domain.model.Customer
 import com.niyaj.popos.realm.data_deletion.domain.repository.DataDeletionRepository
 import com.niyaj.popos.realm.delivery_partner.domain.model.DeliveryPartner
 import com.niyaj.popos.realm.employee.domain.model.Employee
-import com.niyaj.popos.realm.employee_attendance.AttendanceRealm
+import com.niyaj.popos.realm.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.realm.employee_salary.SalaryRealm
 import com.niyaj.popos.realm.expenses.ExpensesRealm
 import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealm
@@ -96,7 +96,7 @@ class DataDeletionRepositoryImpl(
                     delete(ExpensesRealm::class)
                     delete(SelectedCartOrderRealm::class)
                     delete(SalaryRealm::class)
-                    delete(AttendanceRealm::class)
+                    delete(EmployeeAttendance::class)
                     delete(ReportsRealm::class)
                     delete(Settings::class)
                 }

@@ -24,7 +24,6 @@ import com.niyaj.popos.domain.use_cases.reports.ReportsUseCases
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
 import com.niyaj.popos.realm.common.CommonRealmDao
-import com.niyaj.popos.realm.employee_attendance.AttendanceService
 import com.niyaj.popos.realm.employee_salary.SalaryRealmDao
 import com.niyaj.popos.realm.expenses.ExpensesRealmDao
 import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealmDao
@@ -91,11 +90,6 @@ object AppModule {
     @Provides
     fun provideSalaryRepository(salaryRealmDao: SalaryRealmDao): SalaryRepository {
         return SalaryRepositoryImpl(salaryRealmDao)
-    }
-
-    @Provides
-    fun provideAttendanceRepository(attendanceService: AttendanceService): AttendanceRepository {
-        return AttendanceRepositoryImpl(attendanceService)
     }
 
     @Provides
@@ -233,22 +227,4 @@ object AppModule {
             getSalaryCalculableDate = GetSalaryCalculableDate(salaryRepository),
         )
     }
-
-    @Provides
-    @Singleton
-    fun provideAttendanceUseCases(attendanceRepository: AttendanceRepository): AttendanceUseCases {
-        return AttendanceUseCases(
-            getAllAttendance = GetAllAttendance(attendanceRepository),
-            getAttendanceById = GetAttendanceById(attendanceRepository),
-            findAttendanceByAbsentDate = FindAttendanceByAbsentDate(attendanceRepository),
-            addAbsentEntry = AddAbsentEntry(attendanceRepository),
-            updateAbsentEntry = UpdateAbsentEntry(attendanceRepository),
-            deleteAttendanceById = DeleteAttendanceById(attendanceRepository),
-            deleteAttendanceByEmployeeId = DeleteAttendanceByEmployeeId(attendanceRepository),
-            getMonthlyAbsentReports = GetMonthlyAbsentReports(attendanceRepository),
-
-        )
-    }
-
-
 }

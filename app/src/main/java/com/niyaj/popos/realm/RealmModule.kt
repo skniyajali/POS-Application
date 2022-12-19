@@ -33,9 +33,9 @@ import com.niyaj.popos.realm.delivery_partner.data.repository.PartnerRepositoryI
 import com.niyaj.popos.realm.employee.domain.model.Employee
 import com.niyaj.popos.realm.employee.domain.repository.EmployeeRepository
 import com.niyaj.popos.realm.employee.data.repository.EmployeeRepositoryImpl
-import com.niyaj.popos.realm.employee_attendance.AttendanceRealm
-import com.niyaj.popos.realm.employee_attendance.AttendanceService
-import com.niyaj.popos.realm.employee_attendance.AttendanceServiceImpl
+import com.niyaj.popos.realm.employee_attendance.domain.model.EmployeeAttendance
+import com.niyaj.popos.realm.employee_attendance.domain.repository.AttendanceRepository
+import com.niyaj.popos.realm.employee_attendance.data.repository.AttendanceRepositoryImpl
 import com.niyaj.popos.realm.employee_salary.SalaryRealm
 import com.niyaj.popos.realm.employee_salary.SalaryRealmDao
 import com.niyaj.popos.realm.employee_salary.SalaryRealmDaoImpl
@@ -81,7 +81,7 @@ object RealmModule {
         ExpensesRealm::class,
         SelectedCartOrderRealm::class,
         SalaryRealm::class,
-        AttendanceRealm::class,
+        EmployeeAttendance::class,
         ReportsRealm::class,
     )
 
@@ -179,8 +179,8 @@ object RealmModule {
     }
 
     @Provides
-    fun provideAttendanceServiceImpl(): AttendanceService {
-        return AttendanceServiceImpl(config)
+    fun provideAttendanceServiceImpl(): AttendanceRepository {
+        return AttendanceRepositoryImpl(config)
     }
 
     @Provides

@@ -6,7 +6,7 @@ import com.niyaj.popos.domain.model.SalaryCalculableDate
 import com.niyaj.popos.domain.model.SalaryCalculationRealm
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.employee.domain.model.Employee
-import com.niyaj.popos.realm.employee_attendance.AttendanceRealm
+import com.niyaj.popos.realm.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.util.Constants.NOT_PAID
 import com.niyaj.popos.util.Constants.PAID
 import com.niyaj.popos.util.getSalaryDates
@@ -87,7 +87,7 @@ class SalaryRealmDaoImpl(config: RealmConfiguration) : SalaryRealmDao {
                     selectedDate.second
                 ).find()
 
-                val absents = realm.query<AttendanceRealm>(
+                val absents = realm.query<EmployeeAttendance>(
                     "employee._id == $0 AND absentDate >= $1 AND absentDate <= $2",
                     employeeId,
                     selectedDate.first,
