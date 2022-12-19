@@ -6,9 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.model.Employee
+import com.niyaj.popos.realm.employee.domain.model.Employee
 import com.niyaj.popos.domain.model.EmployeeAttendance
-import com.niyaj.popos.domain.use_cases.employee.EmployeeUseCases
+import com.niyaj.popos.realm.employee.domain.use_cases.EmployeeUseCases
 import com.niyaj.popos.domain.use_cases.employee_attendance.AttendanceUseCases
 import com.niyaj.popos.domain.use_cases.employee_attendance.validation.ValidateAbsentDate
 import com.niyaj.popos.domain.use_cases.employee_attendance.validation.ValidateAbsentEmployee
@@ -16,8 +16,8 @@ import com.niyaj.popos.domain.use_cases.employee_attendance.validation.ValidateI
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.SortType
 import com.niyaj.popos.domain.util.UiEvent
-import com.niyaj.popos.domain.util.filter_items.FilterEmployee
-import com.niyaj.popos.presentation.employee.EmployeeState
+import com.niyaj.popos.realm.employee.domain.util.FilterEmployee
+import com.niyaj.popos.realm.employee.presentation.EmployeeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

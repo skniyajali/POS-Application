@@ -24,7 +24,6 @@ import com.niyaj.popos.domain.use_cases.reports.ReportsUseCases
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
 import com.niyaj.popos.realm.common.CommonRealmDao
-import com.niyaj.popos.realm.employee.EmployeeRealmDao
 import com.niyaj.popos.realm.employee_attendance.AttendanceService
 import com.niyaj.popos.realm.employee_salary.SalaryRealmDao
 import com.niyaj.popos.realm.expenses.ExpensesRealmDao
@@ -62,11 +61,6 @@ object AppModule {
     @Provides
     fun provideOrderRepository(orderDao: OrderRealmDao, cartOrderRepository: CartOrderRepository, commonRepository: CommonRepository): OrderRepository {
         return OrderRepositoryImpl(orderDao, cartOrderRepository, commonRepository)
-    }
-
-    @Provides
-    fun provideEmployeeRepository(employeeRealmDao: EmployeeRealmDao): EmployeeRepository {
-        return EmployeeRepositoryImpl(employeeRealmDao)
     }
 
     @Provides
@@ -177,20 +171,6 @@ object AppModule {
             getMainFeedSelectedOrder = GetMainFeedSelectedOrder(mainFeedRepository, cartOrderRepository),
             getMainFeedCategories = GetMainFeedCategories(mainFeedRepository),
             getProductsPager = GetProductsPager(mainFeedRepository),
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun provideEmployeeUseCases(employeeRepository: EmployeeRepository): EmployeeUseCases {
-        return EmployeeUseCases(
-            getAllEmployee = GetAllEmployee(employeeRepository),
-            getEmployeeById = GetEmployeeById(employeeRepository),
-            findEmployeeByName = FindEmployeeByName(employeeRepository),
-            findEmployeeByPhone = FindEmployeeByPhone(employeeRepository),
-            createNewEmployee = CreateNewEmployee(employeeRepository),
-            updateEmployee = UpdateEmployee(employeeRepository),
-            deleteEmployee = DeleteEmployee(employeeRepository),
         )
     }
 

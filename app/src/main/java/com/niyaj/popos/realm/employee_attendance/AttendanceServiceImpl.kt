@@ -3,7 +3,7 @@ package com.niyaj.popos.realm.employee_attendance
 import com.niyaj.popos.domain.model.AbsentReportRealm
 import com.niyaj.popos.domain.model.EmployeeAttendance
 import com.niyaj.popos.domain.util.Resource
-import com.niyaj.popos.realm.employee.EmployeeRealm
+import com.niyaj.popos.realm.employee.domain.model.Employee
 import com.niyaj.popos.util.getSalaryDates
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
@@ -93,7 +93,7 @@ class AttendanceServiceImpl(config: RealmConfiguration) : AttendanceService {
         return channelFlow {
             try {
                 send(Resource.Loading(true))
-                val employee = realm.query<EmployeeRealm>("_id == $0", employeeId).first().find()
+                val employee = realm.query<Employee>("_id == $0", employeeId).first().find()
 
                 if (employee != null) {
                     val absentReportRealms = mutableListOf<AbsentReportRealm>()
@@ -144,7 +144,7 @@ class AttendanceServiceImpl(config: RealmConfiguration) : AttendanceService {
     override fun addAbsentEntry(attendance: EmployeeAttendance): Resource<Boolean> {
         return try {
             val employee =
-                realm.query<EmployeeRealm>("_id == $0", attendance.employee.employeeId).first()
+                realm.query<Employee>("_id == $0", attendance.employee.employeeId).first()
                     .find()
 
             if (employee != null) {
@@ -180,7 +180,7 @@ class AttendanceServiceImpl(config: RealmConfiguration) : AttendanceService {
     ): Resource<Boolean> {
         return try {
             val employee =
-                realm.query<EmployeeRealm>("_id == $0", attendance.employee.employeeId).first()
+                realm.query<Employee>("_id == $0", attendance.employee.employeeId).first()
                     .find()
 
             if (employee != null) {

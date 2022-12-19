@@ -1,6 +1,6 @@
 package com.niyaj.popos.realm.employee_attendance
 
-import com.niyaj.popos.realm.employee.EmployeeRealm
+import com.niyaj.popos.realm.employee.domain.model.Employee
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 import org.mongodb.kbson.BsonObjectId
@@ -9,7 +9,7 @@ class AttendanceRealm(): RealmObject {
     @PrimaryKey
     var _id: String = BsonObjectId().toHexString()
 
-    var employee: EmployeeRealm? = null
+    var employee: Employee? = null
 
     var isAbsent: Boolean = false
 

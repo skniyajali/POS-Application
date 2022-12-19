@@ -5,7 +5,7 @@ import com.niyaj.popos.domain.model.EmployeeSalary
 import com.niyaj.popos.domain.model.SalaryCalculableDate
 import com.niyaj.popos.domain.model.SalaryCalculationRealm
 import com.niyaj.popos.domain.util.Resource
-import com.niyaj.popos.realm.employee.EmployeeRealm
+import com.niyaj.popos.realm.employee.domain.model.Employee
 import com.niyaj.popos.realm.employee_attendance.AttendanceRealm
 import com.niyaj.popos.util.Constants.NOT_PAID
 import com.niyaj.popos.util.Constants.PAID
@@ -74,7 +74,7 @@ class SalaryRealmDaoImpl(config: RealmConfiguration) : SalaryRealmDao {
         selectedDate: Pair<String, String>
     ): Resource<CalculatedSalary?> {
         return try {
-            val employee = realm.query<EmployeeRealm>("_id == $0", employeeId).first().find()
+            val employee = realm.query<Employee>("_id == $0", employeeId).first().find()
 
             if (employee != null) {
                 val employeeSalary = employee.employeeSalary.toLong()
@@ -140,7 +140,7 @@ class SalaryRealmDaoImpl(config: RealmConfiguration) : SalaryRealmDao {
 
     override suspend fun addNewSalary(newSalary: EmployeeSalary): Resource<Boolean> {
         return try {
-            val employee = realm.query<EmployeeRealm>("_id == $0", newSalary.employee.employeeId).first().find()
+            val employee = realm.query<Employee>("_id == $0", newSalary.employee.employeeId).first().find()
 
             if (employee != null) {
                 val salary = SalaryRealm()
@@ -172,7 +172,7 @@ class SalaryRealmDaoImpl(config: RealmConfiguration) : SalaryRealmDao {
         return try {
             CoroutineScope(Dispatchers.IO).launch {
                 realm.write {
-                    val employee = this.query<EmployeeRealm>("_id == $0", newSalary.employee.employeeId).first().find()
+                    val employee = this.query<Employee>("_id == $0", newSalary.employee.employeeId).first().find()
 
                     if (employee != null) {
                         val salary = this.query<SalaryRealm>("_id == $0", salaryId).first().find()
@@ -216,7 +216,7 @@ class SalaryRealmDaoImpl(config: RealmConfiguration) : SalaryRealmDao {
     override fun getEmployeeSalary(employeeId: String): Flow<Resource<List<SalaryCalculationRealm>>> {
         return channelFlow {
             send(Resource.Loading(true))
-            val employee = realm.query<EmployeeRealm>("_id == $0", employeeId).first().find()
+            val employee = realm.query<Employee>("_id == $0", employeeId).first().find()
             if (employee != null) {
 
                 val salary = mutableListOf<SalaryCalculationRealm>()
@@ -272,7 +272,7 @@ class SalaryRealmDaoImpl(config: RealmConfiguration) : SalaryRealmDao {
 
     override fun getSalaryCalculableDate(employeeId: String): Resource<List<SalaryCalculableDate>> {
         return try {
-            val employee = realm.query<EmployeeRealm>("_id == $0", employeeId).first().find()
+            val employee = realm.query<Employee>("_id == $0", employeeId).first().find()
 
             if (employee != null) {
                 val list = mutableListOf<SalaryCalculableDate>()

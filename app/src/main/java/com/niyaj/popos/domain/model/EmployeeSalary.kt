@@ -1,5 +1,6 @@
 package com.niyaj.popos.domain.model
 
+import com.niyaj.popos.realm.employee.domain.model.Employee
 import com.niyaj.popos.realm.employee_salary.SalaryRealm
 
 data class EmployeeSalary(

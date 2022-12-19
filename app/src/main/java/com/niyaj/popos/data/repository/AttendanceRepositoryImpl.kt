@@ -1,7 +1,7 @@
 package com.niyaj.popos.data.repository
 
 import com.niyaj.popos.domain.model.AbsentReport
-import com.niyaj.popos.domain.model.Employee
+import com.niyaj.popos.realm.employee.domain.model.Employee
 import com.niyaj.popos.domain.model.EmployeeAttendance
 import com.niyaj.popos.domain.repository.AttendanceRepository
 import com.niyaj.popos.domain.util.Resource
@@ -30,7 +30,7 @@ class AttendanceRepositoryImpl(private val attendanceService: AttendanceService)
                                     updatedAt = attendanceRealm.updated_at,
                                     employee = if (attendanceRealm.employee != null)
                                         Employee(
-                                            employeeId = attendanceRealm.employee!!._id,
+                                            employeeId = attendanceRealm.employee!!.employeeId,
                                             employeeName = attendanceRealm.employee!!.employeeName,
                                             employeePhone = attendanceRealm.employee!!.employeePhone,
                                             employeeSalary = attendanceRealm.employee!!.employeeSalary,
@@ -38,8 +38,8 @@ class AttendanceRepositoryImpl(private val attendanceService: AttendanceService)
                                             employeePosition = attendanceRealm.employee!!.employeePosition,
                                             employeeType = attendanceRealm.employee!!.employeeType,
                                             employeeJoinedDate = attendanceRealm.employee!!.employeeJoinedDate,
-                                            createdAt = attendanceRealm.employee!!.created_at,
-                                            updatedAt = attendanceRealm.employee!!.updated_at
+                                            createdAt = attendanceRealm.employee!!.createdAt,
+                                            updatedAt = attendanceRealm.employee!!.updatedAt
                                         )
                                     else Employee(),
                                 )
@@ -71,7 +71,7 @@ class AttendanceRepositoryImpl(private val attendanceService: AttendanceService)
                     updatedAt = attendanceRealm.updated_at,
                     employee = if (attendanceRealm.employee != null)
                         Employee(
-                            employeeId = attendanceRealm.employee!!._id,
+                            employeeId = attendanceRealm.employee!!.employeeId,
                             employeeName = attendanceRealm.employee!!.employeeName,
                             employeePhone = attendanceRealm.employee!!.employeePhone,
                             employeeSalary = attendanceRealm.employee!!.employeeSalary,
@@ -79,8 +79,8 @@ class AttendanceRepositoryImpl(private val attendanceService: AttendanceService)
                             employeePosition = attendanceRealm.employee!!.employeePosition,
                             employeeType = attendanceRealm.employee!!.employeeType,
                             employeeJoinedDate = attendanceRealm.employee!!.employeeJoinedDate,
-                            createdAt = attendanceRealm.employee!!.created_at,
-                            updatedAt = attendanceRealm.employee!!.updated_at
+                            createdAt = attendanceRealm.employee!!.createdAt,
+                            updatedAt = attendanceRealm.employee!!.updatedAt
                         )
                     else Employee(),
                 )
@@ -126,8 +126,8 @@ class AttendanceRepositoryImpl(private val attendanceService: AttendanceService)
                                                     employeePosition = absent.employee!!.employeePosition,
                                                     employeeType = absent.employee!!.employeeType,
                                                     employeeJoinedDate = absent.employee!!.employeeJoinedDate,
-                                                    createdAt = absent.employee!!.created_at,
-                                                    updatedAt = absent.employee!!.updated_at
+                                                    createdAt = absent.employee!!.createdAt,
+                                                    updatedAt = absent.employee!!.updatedAt
                                                 )
                                             else Employee(),
                                             isAbsent = absent.isAbsent,

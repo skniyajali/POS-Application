@@ -1,6 +1,6 @@
 package com.niyaj.popos.presentation.employee_attendance.add_edit
 
-import com.niyaj.popos.domain.model.Employee
+import com.niyaj.popos.realm.employee.domain.model.Employee
 import com.niyaj.popos.util.toMilliSecond
 import java.time.LocalDate
 

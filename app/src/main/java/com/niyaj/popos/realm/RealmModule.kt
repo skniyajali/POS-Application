@@ -30,9 +30,9 @@ import com.niyaj.popos.realm.data_deletion.data.repository.DataDeletionRepositor
 import com.niyaj.popos.realm.delivery_partner.domain.model.DeliveryPartner
 import com.niyaj.popos.realm.delivery_partner.domain.repository.PartnerRepository
 import com.niyaj.popos.realm.delivery_partner.data.repository.PartnerRepositoryImpl
-import com.niyaj.popos.realm.employee.EmployeeRealm
-import com.niyaj.popos.realm.employee.EmployeeRealmDao
-import com.niyaj.popos.realm.employee.EmployeeRealmDaoImpl
+import com.niyaj.popos.realm.employee.domain.model.Employee
+import com.niyaj.popos.realm.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.realm.employee.data.repository.EmployeeRepositoryImpl
 import com.niyaj.popos.realm.employee_attendance.AttendanceRealm
 import com.niyaj.popos.realm.employee_attendance.AttendanceService
 import com.niyaj.popos.realm.employee_attendance.AttendanceServiceImpl
@@ -76,7 +76,7 @@ object RealmModule {
         Charges::class,
         AddOnItem::class,
         DeliveryPartner::class,
-        EmployeeRealm::class,
+        Employee::class,
         ExpensesCategoryRealm::class,
         ExpensesRealm::class,
         SelectedCartOrderRealm::class,
@@ -149,8 +149,8 @@ object RealmModule {
     }
 
     @Provides
-    fun provideEmployeeRealmDaoImpl(): EmployeeRealmDao {
-        return EmployeeRealmDaoImpl(config)
+    fun provideEmployeeRealmDaoImpl(): EmployeeRepository {
+        return EmployeeRepositoryImpl(config)
     }
 
     @Provides

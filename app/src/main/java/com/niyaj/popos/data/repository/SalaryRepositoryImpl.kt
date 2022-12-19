@@ -3,6 +3,7 @@ package com.niyaj.popos.data.repository
 import com.niyaj.popos.domain.model.*
 import com.niyaj.popos.domain.repository.SalaryRepository
 import com.niyaj.popos.domain.util.Resource
+import com.niyaj.popos.realm.employee.domain.model.Employee
 import com.niyaj.popos.realm.employee_salary.SalaryRealmDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -31,7 +32,7 @@ class SalaryRepositoryImpl(
                                     salaryPaymentType = salary.salaryPaymentType,
                                     salaryNote = salary.salaryNote,
                                     employee = if(salary.employee != null) Employee(
-                                        employeeId = salary.employee!!._id,
+                                        employeeId = salary.employee!!.employeeId,
                                         employeeName = salary.employee!!.employeeName,
                                         employeePhone = salary.employee!!.employeePhone,
                                         employeeSalary = salary.employee!!.employeeSalary,
@@ -39,8 +40,8 @@ class SalaryRepositoryImpl(
                                         employeePosition = salary.employee!!.employeePosition,
                                         employeeType = salary.employee!!.employeeType,
                                         employeeJoinedDate = salary.employee!!.employeeJoinedDate,
-                                        createdAt = salary.employee!!.created_at,
-                                        updatedAt = salary.employee!!.updated_at
+                                        createdAt = salary.employee!!.createdAt,
+                                        updatedAt = salary.employee!!.updatedAt
                                     ) else Employee(),
                                 )
                             }
@@ -71,7 +72,7 @@ class SalaryRepositoryImpl(
                     createdAt = salary.created_at,
                     updatedAt = salary.updated_at,
                     employee = if(salary.employee != null) Employee(
-                        employeeId = salary.employee!!._id,
+                        employeeId = salary.employee!!.employeeId,
                         employeeName = salary.employee!!.employeeName,
                         employeePhone = salary.employee!!.employeePhone,
                         employeeSalary = salary.employee!!.employeeSalary,
@@ -79,8 +80,8 @@ class SalaryRepositoryImpl(
                         employeePosition = salary.employee!!.employeePosition,
                         employeeType = salary.employee!!.employeeType,
                         employeeJoinedDate = salary.employee!!.employeeJoinedDate,
-                        createdAt = salary.employee!!.created_at,
-                        updatedAt = salary.employee!!.updated_at
+                        createdAt = salary.employee!!.createdAt,
+                        updatedAt = salary.employee!!.updatedAt
                     ) else Employee(),
                 )
             )
@@ -135,7 +136,7 @@ class SalaryRepositoryImpl(
                                             salaryPaymentType = salary.salaryPaymentType,
                                             salaryNote = salary.salaryNote,
                                             employee = if(salary.employee != null) Employee(
-                                                employeeId = salary.employee!!._id,
+                                                employeeId = salary.employee!!.employeeId,
                                                 employeeName = salary.employee!!.employeeName,
                                                 employeePhone = salary.employee!!.employeePhone,
                                                 employeeSalary = salary.employee!!.employeeSalary,
@@ -143,8 +144,8 @@ class SalaryRepositoryImpl(
                                                 employeePosition = salary.employee!!.employeePosition,
                                                 employeeType = salary.employee!!.employeeType,
                                                 employeeJoinedDate = salary.employee!!.employeeJoinedDate,
-                                                createdAt = salary.employee!!.created_at,
-                                                updatedAt = salary.employee!!.updated_at
+                                                createdAt = salary.employee!!.createdAt,
+                                                updatedAt = salary.employee!!.updatedAt
                                             ) else Employee(),
                                         )
                                     }

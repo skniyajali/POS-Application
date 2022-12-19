@@ -36,7 +36,7 @@ import com.niyaj.popos.realm.category.presentation.CategoryScreen
 import com.niyaj.popos.realm.charges.presentation.ChargesScreen
 import com.niyaj.popos.realm.customer.presentation.CustomerScreen
 import com.niyaj.popos.realm.delivery_partner.presentation.PartnerScreen
-import com.niyaj.popos.presentation.employee.EmployeeScreen
+import com.niyaj.popos.realm.employee.presentation.EmployeeScreen
 import com.niyaj.popos.presentation.expenses.ExpensesScreen
 import com.niyaj.popos.presentation.expenses_category.ExpensesCategoryScreen
 import com.niyaj.popos.presentation.main_feed.MainFeedScreen
