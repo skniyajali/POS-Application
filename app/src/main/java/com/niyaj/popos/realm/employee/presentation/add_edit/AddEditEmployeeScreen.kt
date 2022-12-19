@@ -20,7 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
-import com.niyaj.popos.domain.util.EmployeeType
+import com.niyaj.popos.realm.employee.domain.util.EmployeeType
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.presentation.components.StandardOutlinedTextField
 import com.niyaj.popos.presentation.components.StandardScaffold

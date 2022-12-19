@@ -24,7 +24,17 @@ import com.niyaj.popos.domain.use_cases.reports.ReportsUseCases
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
 import com.niyaj.popos.realm.common.CommonRealmDao
-import com.niyaj.popos.realm.employee_salary.SalaryRealmDao
+import com.niyaj.popos.realm.employee_salary.data.repository.SalaryRepositoryImpl
+import com.niyaj.popos.realm.employee_salary.domain.use_cases.AddNewSalary
+import com.niyaj.popos.realm.employee_salary.domain.use_cases.DeleteSalary
+import com.niyaj.popos.realm.employee_salary.domain.use_cases.GetAllSalary
+import com.niyaj.popos.realm.employee_salary.domain.use_cases.GetEmployeeSalary
+import com.niyaj.popos.realm.employee_salary.domain.use_cases.GetSalaryByEmployeeId
+import com.niyaj.popos.realm.employee_salary.domain.use_cases.GetSalaryById
+import com.niyaj.popos.realm.employee_salary.domain.use_cases.GetSalaryCalculableDate
+import com.niyaj.popos.realm.employee_salary.domain.use_cases.SalaryUseCases
+import com.niyaj.popos.realm.employee_salary.domain.use_cases.UpdateSalary
+import com.niyaj.popos.realm.employee_salary.domain.repository.SalaryRepository
 import com.niyaj.popos.realm.expenses.ExpensesRealmDao
 import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealmDao
 import com.niyaj.popos.realm.main_feed.MainFeedService
@@ -88,8 +98,8 @@ object AppModule {
     }
 
     @Provides
-    fun provideSalaryRepository(salaryRealmDao: SalaryRealmDao): SalaryRepository {
-        return SalaryRepositoryImpl(salaryRealmDao)
+    fun provideSalaryRepository(salaryRepository: SalaryRepository): SalaryRepository {
+        return SalaryRepositoryImpl(salaryRepository)
     }
 
     @Provides

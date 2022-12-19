@@ -1,7 +1,7 @@
 package com.niyaj.popos.realm.employee.presentation.add_edit
 
-import com.niyaj.popos.domain.util.EmployeeSalaryType
-import com.niyaj.popos.domain.util.EmployeeType
+import com.niyaj.popos.realm.employee.domain.util.EmployeeSalaryType
+import com.niyaj.popos.realm.employee.domain.util.EmployeeType
 import com.niyaj.popos.util.toMilliSecond
 import java.time.LocalDate
 

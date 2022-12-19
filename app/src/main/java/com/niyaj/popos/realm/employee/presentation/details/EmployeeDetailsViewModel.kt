@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.realm.employee.domain.use_cases.EmployeeUseCases
 import com.niyaj.popos.realm.employee_attendance.domain.use_cases.AttendanceUseCases
-import com.niyaj.popos.domain.use_cases.employee_salary.SalaryUseCases
+import com.niyaj.popos.realm.employee_salary.domain.use_cases.SalaryUseCases
 import com.niyaj.popos.domain.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch

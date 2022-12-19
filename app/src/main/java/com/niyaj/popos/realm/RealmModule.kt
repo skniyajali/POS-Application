@@ -36,9 +36,9 @@ import com.niyaj.popos.realm.employee.data.repository.EmployeeRepositoryImpl
 import com.niyaj.popos.realm.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.realm.employee_attendance.domain.repository.AttendanceRepository
 import com.niyaj.popos.realm.employee_attendance.data.repository.AttendanceRepositoryImpl
-import com.niyaj.popos.realm.employee_salary.SalaryRealm
-import com.niyaj.popos.realm.employee_salary.SalaryRealmDao
-import com.niyaj.popos.realm.employee_salary.SalaryRealmDaoImpl
+import com.niyaj.popos.realm.employee_salary.domain.model.EmployeeSalary
+import com.niyaj.popos.realm.employee_salary.domain.repository.SalaryRepository
+import com.niyaj.popos.realm.employee_salary.data.repository.SalaryRepositoryImpl
 import com.niyaj.popos.realm.expenses.ExpensesRealm
 import com.niyaj.popos.realm.expenses.ExpensesRealmDao
 import com.niyaj.popos.realm.expenses.ExpensesRealmDaoImpl
@@ -80,7 +80,7 @@ object RealmModule {
         ExpensesCategoryRealm::class,
         ExpensesRealm::class,
         SelectedCartOrderRealm::class,
-        SalaryRealm::class,
+        EmployeeSalary::class,
         EmployeeAttendance::class,
         ReportsRealm::class,
     )
@@ -174,8 +174,8 @@ object RealmModule {
     }
 
     @Provides
-    fun provideSalaryRealmDaoImpl(): SalaryRealmDao {
-        return SalaryRealmDaoImpl(config)
+    fun provideSalaryRealmDaoImpl(): SalaryRepository {
+        return SalaryRepositoryImpl(config)
     }
 
     @Provides

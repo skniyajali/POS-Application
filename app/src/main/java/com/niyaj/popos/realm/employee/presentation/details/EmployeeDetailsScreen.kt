@@ -25,7 +25,7 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.R
-import com.niyaj.popos.domain.util.PaymentType
+import com.niyaj.popos.realm.employee.domain.util.PaymentType
 import com.niyaj.popos.presentation.components.*
 import com.niyaj.popos.destinations.AddEditAbsentScreenDestination
 import com.niyaj.popos.destinations.AddEditEmployeeScreenDestination
