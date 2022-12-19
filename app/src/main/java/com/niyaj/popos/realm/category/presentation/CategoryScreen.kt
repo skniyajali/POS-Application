@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.category
+package com.niyaj.popos.realm.category.presentation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColor
@@ -277,7 +277,11 @@ fun CategoryScreen(
                                 BottomSheetScreen.FilterCategoryScreen(
                                     filterCategory = categoryViewModel.categories.value.filterCategory,
                                     onFilterChanged = {
-                                        categoryViewModel.onCategoryEvent(CategoryEvent.OnFilterCategory(it))
+                                        categoryViewModel.onCategoryEvent(
+                                            CategoryEvent.OnFilterCategory(
+                                                it
+                                            )
+                                        )
                                     },
                                 )
                             )
@@ -315,7 +319,11 @@ fun CategoryScreen(
                 positiveButton(
                     text = "Delete",
                     onClick = {
-                        categoryViewModel.onCategoryEvent(CategoryEvent.DeleteCategories(selectedCategories.toList()))
+                        categoryViewModel.onCategoryEvent(
+                            CategoryEvent.DeleteCategories(
+                                selectedCategories.toList()
+                            )
+                        )
                     }
                 )
                 negativeButton(
@@ -368,8 +376,11 @@ fun CategoryScreen(
                                     .fillMaxWidth()
                                     .padding(SpaceSmall)
                                     .clickable {
-                                        categoryViewModel.onCategoryEvent(CategoryEvent.SelectCategory(
-                                            category.categoryId))
+                                        categoryViewModel.onCategoryEvent(
+                                            CategoryEvent.SelectCategory(
+                                                category.categoryId
+                                            )
+                                        )
                                     },
                                 shape = RoundedCornerShape(4.dp),
                                 border = if(selectedCategories.contains(category.categoryId))

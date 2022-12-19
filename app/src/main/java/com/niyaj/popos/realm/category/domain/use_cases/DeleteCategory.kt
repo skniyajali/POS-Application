@@ -1,6 +1,6 @@
-package com.niyaj.popos.domain.use_cases.category
+package com.niyaj.popos.realm.category.domain.use_cases
 
-import com.niyaj.popos.domain.repository.CategoryRepository
+import com.niyaj.popos.realm.category.domain.repository.CategoryRepository
 import com.niyaj.popos.domain.util.Resource
 
 class DeleteCategory(

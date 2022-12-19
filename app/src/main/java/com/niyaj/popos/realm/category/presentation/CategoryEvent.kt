@@ -1,6 +1,6 @@
-package com.niyaj.popos.presentation.category
+package com.niyaj.popos.realm.category.presentation
 
-import com.niyaj.popos.domain.util.filter_items.FilterCategory
+import com.niyaj.popos.realm.category.domain.util.FilterCategory
 
 sealed class CategoryEvent{
 

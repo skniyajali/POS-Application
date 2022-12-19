@@ -4,7 +4,6 @@ import com.niyaj.popos.data.repository.*
 import com.niyaj.popos.domain.repository.*
 import com.niyaj.popos.domain.use_cases.cart.*
 import com.niyaj.popos.domain.use_cases.cart_order.*
-import com.niyaj.popos.domain.use_cases.category.*
 import com.niyaj.popos.domain.use_cases.charges.*
 import com.niyaj.popos.domain.use_cases.common.CommonUseCases
 import com.niyaj.popos.domain.use_cases.common.GetTotalPriceOfOrder
@@ -31,7 +30,6 @@ import com.niyaj.popos.domain.use_cases.reports.GetReportsBarData
 import com.niyaj.popos.domain.use_cases.reports.ReportsUseCases
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
-import com.niyaj.popos.realm.category.CategoryRealmDao
 import com.niyaj.popos.realm.charges.ChargesRealmDao
 import com.niyaj.popos.realm.common.CommonRealmDao
 import com.niyaj.popos.realm.customer.CustomerRealmDao
@@ -60,11 +58,6 @@ object AppModule {
     @Provides
     fun provideCartOrderRepository(cartOrderRealmDao: CartOrderRealmDao): CartOrderRepository {
         return CartOrderRepositoryImpl(cartOrderRealmDao)
-    }
-
-    @Provides
-    fun provideCategoryRepository(categoryRealmDao: CategoryRealmDao): CategoryRepository {
-        return CategoryRepositoryImpl(categoryRealmDao)
     }
 
     @Provides
@@ -171,18 +164,6 @@ object AppModule {
         )
     }
 
-    @Provides
-    @Singleton
-    fun provideCategoryCases(categoryRepository: CategoryRepository): CategoryUseCases {
-        return CategoryUseCases(
-            getAllCategories = GetAllCategories(categoryRepository),
-            getCategoryById = GetCategoryById(categoryRepository),
-            findCategoryByName = FindCategoryByName(categoryRepository),
-            createNewCategory = CreateNewCategory(categoryRepository),
-            updateCategory = UpdateCategory(categoryRepository),
-            deleteCategory = DeleteCategory(categoryRepository),
-        )
-    }
 
     @Provides
     @Singleton

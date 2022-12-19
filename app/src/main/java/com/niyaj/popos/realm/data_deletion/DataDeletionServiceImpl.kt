@@ -8,7 +8,7 @@ import com.niyaj.popos.realm.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.cart_order.CartOrderRealm
 import com.niyaj.popos.realm.cart_order.SelectedCartOrderRealm
-import com.niyaj.popos.realm.category.CategoryRealm
+import com.niyaj.popos.realm.category.domain.model.Category
 import com.niyaj.popos.realm.charges.ChargesRealm
 import com.niyaj.popos.realm.customer.CustomerRealm
 import com.niyaj.popos.realm.delivery_partner.PartnerRealm
@@ -81,7 +81,7 @@ class DataDeletionServiceImpl(
         return try {
             CoroutineScope(Dispatchers.IO).launch {
                 realm.write {
-                    delete(CategoryRealm::class)
+                    delete(Category::class)
                     delete(ProductRealm::class)
                     delete(Address::class)
                     delete(CustomerRealm::class)

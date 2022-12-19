@@ -1,10 +1,10 @@
-package com.niyaj.popos.domain.use_cases.category
+package com.niyaj.popos.realm.category.domain.use_cases
 
-import com.niyaj.popos.domain.model.Category
-import com.niyaj.popos.domain.repository.CategoryRepository
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.SortType
-import com.niyaj.popos.domain.util.filter_items.FilterCategory
+import com.niyaj.popos.realm.category.domain.util.FilterCategory
+import com.niyaj.popos.realm.category.domain.model.Category
+import com.niyaj.popos.realm.category.domain.repository.CategoryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -46,7 +46,7 @@ class GetAllCategories(
                                     if(searchText.isNotEmpty()){
                                         category.categoryName.contains(searchText, true) ||
                                         category.categoryAvailability.toString().contains(searchText, true) ||
-                                        category.createdAt?.contains(searchText, true) == true
+                                        category.createdAt.contains(searchText, true)
                                     }else {
                                         true
                                     }

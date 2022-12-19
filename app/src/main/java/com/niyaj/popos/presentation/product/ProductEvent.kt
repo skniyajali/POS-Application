@@ -1,6 +1,6 @@
 package com.niyaj.popos.presentation.product
 
-import com.niyaj.popos.domain.model.Category
+import com.niyaj.popos.realm.category.domain.model.Category
 import com.niyaj.popos.domain.util.filter_items.FilterProduct
 
 sealed class ProductEvent {

@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.paging.compose.LazyPagingItems
-import com.niyaj.popos.domain.model.Category
+import com.niyaj.popos.realm.category.domain.model.Category
 import com.niyaj.popos.presentation.components.ItemNotAvailable
 import com.niyaj.popos.presentation.main_feed.components.category.CategorySection
 import com.niyaj.popos.presentation.main_feed.components.product.ProductSection

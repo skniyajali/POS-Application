@@ -1,8 +1,9 @@
-package com.niyaj.popos.realm.category
+package com.niyaj.popos.realm.category.data.repository
 
-import com.niyaj.popos.domain.model.Category
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.cart.CartRealm
+import com.niyaj.popos.realm.category.domain.model.Category
+import com.niyaj.popos.realm.category.domain.repository.CategoryRepository
 import com.niyaj.popos.realm.product.ProductRealm
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
@@ -15,9 +16,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import timber.log.Timber
 
-class CategoryRealmDaoImpl(
+class CategoryRepositoryImpl(
     config: RealmConfiguration
-) : CategoryRealmDao {
+) : CategoryRepository {
 
     val realm = Realm.open(config)
 
@@ -25,16 +26,16 @@ class CategoryRealmDaoImpl(
         Timber.d("Category Session:")
     }
 
-    override suspend fun getAllCategories(): Flow<Resource<List<CategoryRealm>>> {
+    override suspend fun getAllCategories(): Flow<Resource<List<Category>>> {
         return channelFlow {
             try {
                 send(Resource.Loading(true))
 
-                val items: RealmResults<CategoryRealm> =
-                    realm.query<CategoryRealm>().sort("_id", Sort.DESCENDING).find()
+                val items: RealmResults<Category> =
+                    realm.query<Category>().sort("categoryId", Sort.DESCENDING).find()
                 // create a Flow from the Item collection, then add a listener to the Flow
                 val itemsFlow = items.asFlow()
-                itemsFlow.collect { changes: ResultsChange<CategoryRealm> ->
+                itemsFlow.collect { changes: ResultsChange<Category> ->
                     when (changes) {
                         // UpdatedResults means this change represents an update/insert/delete operation
                         is UpdatedResults -> {
@@ -55,9 +56,9 @@ class CategoryRealmDaoImpl(
         }
     }
 
-    override suspend fun getCategoryById(categoryId: String): Resource<CategoryRealm?> {
+    override suspend fun getCategoryById(categoryId: String): Resource<Category?> {
         return try {
-            val category = realm.query<CategoryRealm>("_id == $0", categoryId).first().find()
+            val category = realm.query<Category>("categoryId == $0", categoryId).first().find()
             Resource.Success(category)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to get category", null)
@@ -66,9 +67,9 @@ class CategoryRealmDaoImpl(
 
     override fun findCategoryByName(name: String, categoryId: String?): Boolean {
         val category = if (categoryId == null) {
-            realm.query<CategoryRealm>("categoryName == $0", name).first().find()
+            realm.query<Category>("categoryName == $0", name).first().find()
         } else {
-            realm.query<CategoryRealm>("_id != $0 && categoryName == $1", categoryId, name).first()
+            realm.query<Category>("categoryId != $0 && categoryName == $1", categoryId, name).first()
                 .find()
         }
 
@@ -77,7 +78,7 @@ class CategoryRealmDaoImpl(
 
     override suspend fun createNewCategory(newCategory: Category): Resource<Boolean> {
         return try {
-            val category = CategoryRealm()
+            val category = Category()
             category.categoryName = newCategory.categoryName
             category.categoryAvailability = newCategory.categoryAvailability
 
@@ -94,10 +95,10 @@ class CategoryRealmDaoImpl(
     override suspend fun updateCategory(updatedCategory: Category, id: String): Resource<Boolean> {
         return try {
             realm.write {
-                val category = this.query<CategoryRealm>("_id == $0", id).first().find()
+                val category = this.query<Category>("categoryId == $0", id).first().find()
                 category?.categoryName = updatedCategory.categoryName
                 category?.categoryAvailability = updatedCategory.categoryAvailability
-                category?.updated_at = System.currentTimeMillis().toString()
+                category?.updatedAt = System.currentTimeMillis().toString()
             }
 
             Resource.Success(true)
@@ -109,12 +110,12 @@ class CategoryRealmDaoImpl(
     override suspend fun deleteCategory(categoryId: String): Resource<Boolean> {
         return try {
             realm.write {
-                val category: CategoryRealm =
-                    this.query<CategoryRealm>("_id == $0", categoryId).find().first()
+                val category: Category =
+                    this.query<Category>("categoryId == $0", categoryId).find().first()
                 val products: RealmResults<ProductRealm> =
-                    this.query<ProductRealm>("category._id == $0", categoryId).find()
+                    this.query<ProductRealm>("category.categoryId == $0", categoryId).find()
                 val cartOrders =
-                    this.query<CartRealm>("product.category._id == $0", categoryId).find()
+                    this.query<CartRealm>("product.category.categoryId == $0", categoryId).find()
 
                 delete(cartOrders)
 

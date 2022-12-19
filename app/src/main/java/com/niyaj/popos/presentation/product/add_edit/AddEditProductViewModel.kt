@@ -6,9 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.model.Category
+import com.niyaj.popos.realm.category.domain.model.Category
 import com.niyaj.popos.domain.model.Product
-import com.niyaj.popos.domain.use_cases.category.CategoryUseCases
+import com.niyaj.popos.realm.category.domain.use_cases.CategoryUseCases
 import com.niyaj.popos.domain.use_cases.product.ProductUseCases
 import com.niyaj.popos.domain.use_cases.product.validation.ValidateCategoryName
 import com.niyaj.popos.domain.use_cases.product.validation.ValidateProductName

@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.category
+package com.niyaj.popos.realm.category.presentation
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -8,13 +8,13 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.model.Category
-import com.niyaj.popos.domain.use_cases.category.CategoryUseCases
-import com.niyaj.popos.domain.use_cases.category.validation.ValidateCategoryName
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.SortType
 import com.niyaj.popos.domain.util.UiEvent
-import com.niyaj.popos.domain.util.filter_items.FilterCategory
+import com.niyaj.popos.realm.category.domain.util.FilterCategory
+import com.niyaj.popos.realm.category.domain.model.Category
+import com.niyaj.popos.realm.category.domain.use_cases.CategoryUseCases
+import com.niyaj.popos.realm.category.domain.use_cases.validation.ValidateCategoryName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -219,15 +219,13 @@ class CategoryViewModel @Inject constructor(
             return
         }else{
             viewModelScope.launch {
-                if(categoryId.isNullOrEmpty()){
-                    val result = categoryUseCases.createNewCategory(
-                        Category(
-                            categoryName = addEditCategoryState.categoryName,
-                            categoryAvailability = addEditCategoryState.categoryAvailability,
-                        )
-                    )
+                val category = Category()
+                category.categoryName = addEditCategoryState.categoryName
+                category.categoryAvailability = addEditCategoryState.categoryAvailability
 
-                    when(result){
+                if(categoryId.isNullOrEmpty()){
+
+                    when(val result = categoryUseCases.createNewCategory(category)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("Category Created Successfully"))
@@ -238,10 +236,7 @@ class CategoryViewModel @Inject constructor(
                     }
                 }else{
                     val result = categoryUseCases.updateCategory(
-                        Category(
-                            categoryName = addEditCategoryState.categoryName,
-                            categoryAvailability = addEditCategoryState.categoryAvailability,
-                        ),
+                        category,
                         categoryId
                     )
 

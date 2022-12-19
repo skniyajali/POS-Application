@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.niyaj.popos.R
-import com.niyaj.popos.domain.model.Category
+import com.niyaj.popos.realm.category.domain.model.Category
 import com.niyaj.popos.presentation.main_feed.components.components.TitleWithIcon
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall
 import com.niyaj.popos.presentation.ui.theme.TextGray

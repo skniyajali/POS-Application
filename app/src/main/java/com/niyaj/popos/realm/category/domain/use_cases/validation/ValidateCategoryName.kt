@@ -1,6 +1,6 @@
-package com.niyaj.popos.domain.use_cases.category.validation
+package com.niyaj.popos.realm.category.domain.use_cases.validation
 
-import com.niyaj.popos.domain.use_cases.category.CategoryUseCases
+import com.niyaj.popos.realm.category.domain.use_cases.CategoryUseCases
 import com.niyaj.popos.domain.util.ValidationResult
 import javax.inject.Inject
 

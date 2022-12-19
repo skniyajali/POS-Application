@@ -1,4 +1,4 @@
-package com.niyaj.popos.domain.use_cases.category
+package com.niyaj.popos.realm.category.domain.use_cases
 
 data class CategoryUseCases(
     val getAllCategories: GetAllCategories,

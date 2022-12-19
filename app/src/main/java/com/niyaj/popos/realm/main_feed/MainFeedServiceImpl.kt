@@ -4,7 +4,7 @@ import com.niyaj.popos.domain.util.OrderStatus
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.cart_order.SelectedCartOrderRealm
-import com.niyaj.popos.realm.category.CategoryRealm
+import com.niyaj.popos.realm.category.domain.model.Category
 import com.niyaj.popos.realm.product.ProductRealm
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
@@ -68,15 +68,15 @@ class MainFeedServiceImpl(
         return cartOrders
     }
 
-    override suspend fun getAllCategories(): Flow<Resource<List<CategoryRealm>>> {
+    override suspend fun getAllCategories(): Flow<Resource<List<Category>>> {
         return flow {
             try {
                 emit(Resource.Loading(true))
 
-                val items: RealmResults<CategoryRealm> = realm.query<CategoryRealm>().sort("_id", Sort.DESCENDING).find()
+                val items: RealmResults<Category> = realm.query<Category>().sort("_id", Sort.DESCENDING).find()
                 // create a Flow from the Item collection, then add a listener to the Flow
                 val itemsFlow = items.asFlow()
-                itemsFlow.collect { changes: ResultsChange<CategoryRealm> ->
+                itemsFlow.collect { changes: ResultsChange<Category> ->
                     when (changes) {
                         // UpdatedResults means this change represents an update/insert/delete operation
                         is UpdatedResults -> {

@@ -14,7 +14,7 @@ import com.niyaj.popos.domain.use_cases.main_feed.MainFeedUseCases
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.SortType
 import com.niyaj.popos.domain.util.UiEvent
-import com.niyaj.popos.domain.util.filter_items.FilterCategory
+import com.niyaj.popos.realm.category.domain.util.FilterCategory
 import com.niyaj.popos.domain.util.filter_items.FilterProduct
 import com.niyaj.popos.presentation.main_feed.components.category.MainFeedCategoryEvent
 import com.niyaj.popos.presentation.main_feed.components.category.MainFeedCategoryState

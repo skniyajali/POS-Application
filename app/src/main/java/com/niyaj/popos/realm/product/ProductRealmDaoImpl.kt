@@ -3,7 +3,7 @@ package com.niyaj.popos.realm.product
 import com.niyaj.popos.domain.model.Product
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.cart.CartRealm
-import com.niyaj.popos.realm.category.CategoryRealm
+import com.niyaj.popos.realm.category.domain.model.Category
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -87,7 +87,7 @@ class ProductRealmDaoImpl(
     override suspend fun createNewProduct(newProduct: Product): Resource<Boolean> {
         return try {
             val category =
-                realm.query<CategoryRealm>("_id == $0", newProduct.category.categoryId).first()
+                realm.query<Category>("_id == $0", newProduct.category.categoryId).first()
                     .find()
 
             if (category != null) {
@@ -117,7 +117,7 @@ class ProductRealmDaoImpl(
     override suspend fun updateProduct(newProduct: Product, id: String): Resource<Boolean> {
         return try {
             val category =
-                realm.query<CategoryRealm>("_id == $0", newProduct.category.categoryId).first()
+                realm.query<Category>("_id == $0", newProduct.category.categoryId).first()
                     .find()
 
             if (category != null) {
@@ -252,7 +252,7 @@ class ProductRealmDaoImpl(
                                 newProduct.productAvailability = product.productAvailability
                                 newProduct.updated_at = System.currentTimeMillis().toString()
 
-                                val category = this.query<CategoryRealm>(
+                                val category = this.query<Category>(
                                     "_id == $0",
                                     product.category.categoryId
                                 ).first().find()
@@ -260,12 +260,12 @@ class ProductRealmDaoImpl(
                                 if (category != null) {
                                     newProduct.category = category
                                 } else {
-                                    val newCategory = CategoryRealm()
-                                    newCategory._id = product.category.categoryId
+                                    val newCategory = Category()
+                                    newCategory.categoryId = product.category.categoryId
                                     newCategory.categoryName = product.category.categoryName
                                     newCategory.categoryAvailability =
                                         product.category.categoryAvailability
-                                    newCategory.updated_at = System.currentTimeMillis().toString()
+                                    newCategory.updatedAt = System.currentTimeMillis().toString()
 
                                     this.copyToRealm(newCategory)
 

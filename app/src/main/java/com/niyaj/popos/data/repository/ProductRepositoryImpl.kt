@@ -1,6 +1,5 @@
 package com.niyaj.popos.data.repository
 
-import com.niyaj.popos.domain.model.Category
 import com.niyaj.popos.domain.model.Product
 import com.niyaj.popos.domain.repository.ProductRepository
 import com.niyaj.popos.domain.util.Resource
@@ -26,13 +25,7 @@ class ProductRepositoryImpl(
                                 products.map { product ->
                                     Product(
                                         productId = product._id,
-                                        category = Category(
-                                            categoryId = product.category?._id ?: "",
-                                            categoryName = product.category?.categoryName ?:"",
-                                            categoryAvailability = product.category?.categoryAvailability ?: true,
-                                            createdAt = product.category?.created_at,
-                                            updatedAt = product.category?.updated_at
-                                        ),
+                                        category = product.category!!,
                                         productName = product.productName,
                                         productPrice = product.productPrice,
                                         productAvailability = product.productAvailability ?: true,
@@ -58,13 +51,7 @@ class ProductRepositoryImpl(
             Resource.Success(
                 Product(
                     productId = product._id,
-                    category = Category(
-                        categoryId = product.category?._id ?: "",
-                        categoryName = product.category?.categoryName ?:"",
-                        categoryAvailability = product.category?.categoryAvailability ?: true,
-                        createdAt = product.category?.created_at ,
-                        updatedAt = product.category?.updated_at
-                    ),
+                    category = product.category!!,
                     productName = product.productName,
                     productPrice = product.productPrice,
                     productAvailability = product.productAvailability ?: true,

@@ -1,5 +1,6 @@
 package com.niyaj.popos.domain.model
 
+import com.niyaj.popos.realm.category.domain.model.Category
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)

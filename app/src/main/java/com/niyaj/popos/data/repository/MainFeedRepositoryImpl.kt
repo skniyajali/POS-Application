@@ -1,10 +1,10 @@
 package com.niyaj.popos.data.repository
 
-import com.niyaj.popos.domain.model.Category
 import com.niyaj.popos.domain.model.Product
 import com.niyaj.popos.domain.repository.MainFeedRepository
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.presentation.main_feed.components.product.ProductWithQuantity
+import com.niyaj.popos.realm.category.domain.model.Category
 import com.niyaj.popos.realm.main_feed.MainFeedService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -28,19 +28,7 @@ class MainFeedRepositoryImpl(
                         emit(Resource.Loading(result.isLoading))
                     }
                     is Resource.Success -> {
-                        emit(Resource.Success(
-                            result.data?.let { categories ->
-                                categories.map { category ->
-                                    Category(
-                                        categoryId = category._id,
-                                        categoryName = category.categoryName,
-                                        categoryAvailability = category.categoryAvailability,
-                                        createdAt = category.created_at,
-                                        updatedAt = category.updated_at
-                                    )
-                                }
-                            }
-                        ))
+                        emit(Resource.Success(result.data))
                     }
                     is Resource.Error -> {
                         emit(Resource.Error(result.message ?: "Unable to get all categories"))
@@ -64,13 +52,7 @@ class MainFeedRepositoryImpl(
                                     ProductWithQuantity(
                                         product = Product(
                                             productId = product.productRealm._id,
-                                            category = Category(
-                                                categoryId = product.productRealm.category?._id ?: "",
-                                                categoryName = product.productRealm.category?.categoryName ?:"",
-                                                categoryAvailability = product.productRealm.category?.categoryAvailability ?: true,
-                                                createdAt = product.productRealm.category?.created_at,
-                                                updatedAt = product.productRealm.category?.updated_at
-                                            ),
+                                            category = product.productRealm.category!!,
                                             productName = product.productRealm.productName,
                                             productPrice = product.productRealm.productPrice,
                                             productAvailability = product.productRealm.productAvailability ?: true,
@@ -96,13 +78,7 @@ class MainFeedRepositoryImpl(
             ProductWithQuantity(
                 product = Product(
                     productId = product.productRealm._id,
-                    category = Category(
-                        categoryId = product.productRealm.category?._id ?: "",
-                        categoryName = product.productRealm.category?.categoryName ?:"",
-                        categoryAvailability = product.productRealm.category?.categoryAvailability ?: true,
-                        createdAt = product.productRealm.category?.created_at,
-                        updatedAt = product.productRealm.category?.updated_at
-                    ),
+                    category = product.productRealm.category!!,
                     productName = product.productRealm.productName,
                     productPrice = product.productRealm.productPrice,
                     productAvailability = product.productRealm.productAvailability ?: true,

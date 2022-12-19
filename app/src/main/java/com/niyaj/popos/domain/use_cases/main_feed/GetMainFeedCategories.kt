@@ -1,10 +1,10 @@
 package com.niyaj.popos.domain.use_cases.main_feed
 
-import com.niyaj.popos.domain.model.Category
+import com.niyaj.popos.realm.category.domain.model.Category
 import com.niyaj.popos.domain.repository.MainFeedRepository
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.SortType
-import com.niyaj.popos.domain.util.filter_items.FilterCategory
+import com.niyaj.popos.realm.category.domain.util.FilterCategory
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 

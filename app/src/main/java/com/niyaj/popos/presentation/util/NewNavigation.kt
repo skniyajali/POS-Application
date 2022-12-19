@@ -32,7 +32,7 @@ import com.niyaj.popos.destinations.ProductScreenDestination
 import com.niyaj.popos.domain.util.BottomSheetScreen
 import com.niyaj.popos.NavGraphs
 import com.niyaj.popos.realm.address.presentation.AddressScreen
-import com.niyaj.popos.presentation.category.CategoryScreen
+import com.niyaj.popos.realm.category.presentation.CategoryScreen
 import com.niyaj.popos.presentation.charges.ChargesScreen
 import com.niyaj.popos.presentation.customer.CustomerScreen
 import com.niyaj.popos.presentation.delivery_partner.PartnerScreen

@@ -8,9 +8,6 @@ import com.niyaj.popos.realm.cart_order.CartOrderRealm
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDaoImpl
 import com.niyaj.popos.realm.cart_order.SelectedCartOrderRealm
-import com.niyaj.popos.realm.category.CategoryRealm
-import com.niyaj.popos.realm.category.CategoryRealmDao
-import com.niyaj.popos.realm.category.CategoryRealmDaoImpl
 import com.niyaj.popos.realm.charges.ChargesRealm
 import com.niyaj.popos.realm.charges.ChargesRealmDao
 import com.niyaj.popos.realm.charges.ChargesRealmDaoImpl
@@ -61,7 +58,6 @@ import io.realm.kotlin.log.LogLevel
 object RealmModule {
 
     private val schema = setOf(
-        CategoryRealm::class,
         ProductRealm::class,
         CustomerRealm::class,
         CartOrderRealm::class,
@@ -88,11 +84,6 @@ object RealmModule {
     @Provides
     fun provideMainFeedServiceImpl(): MainFeedService {
         return MainFeedServiceImpl(config)
-    }
-
-    @Provides
-    fun provideCategoryRealmDaoImpl(): CategoryRealmDao {
-        return CategoryRealmDaoImpl(config)
     }
 
     @Provides

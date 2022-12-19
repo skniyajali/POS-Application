@@ -1,16 +1,15 @@
 package com.niyaj.popos.realm.product
 
-import com.niyaj.popos.realm.category.CategoryRealm
+import com.niyaj.popos.realm.category.domain.model.Category
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
-import org.mongodb.kbson.ObjectId
 
 class ProductRealm(): RealmObject {
 
     @PrimaryKey
-    var _id: String = ObjectId().toHexString()
+    var _id: String = ""
 
-    var category: CategoryRealm? = null
+    var category: Category? = null
 
     var productName: String = ""
 

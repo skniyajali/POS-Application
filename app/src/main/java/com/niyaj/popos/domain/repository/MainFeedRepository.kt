@@ -1,6 +1,6 @@
 package com.niyaj.popos.domain.repository
 
-import com.niyaj.popos.domain.model.Category
+import com.niyaj.popos.realm.category.domain.model.Category
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.presentation.main_feed.components.product.ProductWithQuantity
 import kotlinx.coroutines.flow.Flow

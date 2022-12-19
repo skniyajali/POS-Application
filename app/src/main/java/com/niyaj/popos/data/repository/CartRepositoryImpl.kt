@@ -3,7 +3,6 @@ package com.niyaj.popos.data.repository
 import com.niyaj.popos.domain.model.Cart
 import com.niyaj.popos.domain.model.CartOrder
 import com.niyaj.popos.domain.model.CartProduct
-import com.niyaj.popos.domain.model.Category
 import com.niyaj.popos.domain.model.Customer
 import com.niyaj.popos.domain.model.Product
 import com.niyaj.popos.domain.repository.CartOrderRepository
@@ -66,14 +65,7 @@ class CartRepositoryImpl(
                                                         orderId = cartOrder.cartOrderId,
                                                         product = Product(
                                                             productId = cartProducts.product?._id!!,
-                                                            category = Category(
-                                                                categoryId = cartProducts.product?.category?._id!!,
-                                                                categoryName = cartProducts.product?.category?.categoryName!!,
-                                                                categoryAvailability = cartProducts.product?.category?.categoryAvailability
-                                                                    ?: true,
-                                                                createdAt = cartProducts.product?.category?.created_at,
-                                                                updatedAt = cartProducts.product?.category?.updated_at
-                                                            ),
+                                                            category = cartProducts.product?.category!!,
                                                             productName = cartProducts.product!!.productName,
                                                             productPrice = cartProducts.product!!.productPrice,
                                                             productAvailability = cartProducts.product!!.productAvailability
@@ -150,14 +142,7 @@ class CartRepositoryImpl(
                                                         orderId = cartOrder.cartOrderId,
                                                         product = Product(
                                                             productId = cartProducts.product?._id!!,
-                                                            category = Category(
-                                                                categoryId = cartProducts.product?.category?._id!!,
-                                                                categoryName = cartProducts.product?.category?.categoryName!!,
-                                                                categoryAvailability = cartProducts.product?.category?.categoryAvailability
-                                                                    ?: true,
-                                                                createdAt = cartProducts.product?.category?.created_at,
-                                                                updatedAt = cartProducts.product?.category?.updated_at
-                                                            ),
+                                                            category = cartProducts.product?.category!!,
                                                             productName = cartProducts.product!!.productName,
                                                             productPrice = cartProducts.product!!.productPrice,
                                                             productAvailability = cartProducts.product!!.productAvailability
@@ -234,14 +219,7 @@ class CartRepositoryImpl(
                                                         orderId = cartOrder.cartOrderId,
                                                         product = Product(
                                                             productId = cartProducts.product?._id!!,
-                                                            category = Category(
-                                                                categoryId = cartProducts.product?.category?._id!!,
-                                                                categoryName = cartProducts.product?.category?.categoryName!!,
-                                                                categoryAvailability = cartProducts.product?.category?.categoryAvailability
-                                                                    ?: true,
-                                                                createdAt = cartProducts.product?.category?.created_at,
-                                                                updatedAt = cartProducts.product?.category?.updated_at
-                                                            ),
+                                                            category = cartProducts.product?.category!!,
                                                             productName = cartProducts.product!!.productName,
                                                             productPrice = cartProducts.product!!.productPrice,
                                                             productAvailability = cartProducts.product!!.productAvailability
@@ -282,14 +260,7 @@ class CartRepositoryImpl(
                     orderId = cartProducts.cartOrder?._id!!,
                     product = Product(
                         productId = cartProducts.product?._id!!,
-                        category = Category(
-                            categoryId = cartProducts.product?.category?._id!!,
-                            categoryName = cartProducts.product?.category?.categoryName!!,
-                            categoryAvailability = cartProducts.product?.category?.categoryAvailability
-                                ?: true,
-                            createdAt = cartProducts.product?.category?.created_at,
-                            updatedAt = cartProducts.product?.category?.updated_at
-                        ),
+                        category = cartProducts.product?.category!!,
                         productName = cartProducts.product!!.productName,
                         productPrice = cartProducts.product!!.productPrice,
                         productAvailability = cartProducts.product!!.productAvailability ?: true,
@@ -318,14 +289,7 @@ class CartRepositoryImpl(
                                         orderId = cartProducts.cartOrder?._id!!,
                                         product = Product(
                                             productId = cartProducts.product?._id!!,
-                                            category = Category(
-                                                categoryId = cartProducts.product?.category?._id!!,
-                                                categoryName = cartProducts.product?.category?.categoryName!!,
-                                                categoryAvailability = cartProducts.product?.category?.categoryAvailability
-                                                    ?: true,
-                                                createdAt = cartProducts.product?.category?.created_at,
-                                                updatedAt = cartProducts.product?.category?.updated_at
-                                            ),
+                                            category = cartProducts.product?.category!!,
                                             productName = cartProducts.product!!.productName,
                                             productPrice = cartProducts.product!!.productPrice,
                                             productAvailability = cartProducts.product!!.productAvailability ?: true,
