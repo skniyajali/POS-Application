@@ -1,10 +1,10 @@
-package com.niyaj.popos.domain.use_cases.customer
+package com.niyaj.popos.realm.customer.domain.use_cases
 
-import com.niyaj.popos.domain.model.Customer
-import com.niyaj.popos.domain.repository.CustomerRepository
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.SortType
-import com.niyaj.popos.domain.util.filter_items.FilterCustomer
+import com.niyaj.popos.realm.customer.domain.model.Customer
+import com.niyaj.popos.realm.customer.domain.repository.CustomerRepository
+import com.niyaj.popos.realm.customer.domain.util.FilterCustomer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -49,7 +49,7 @@ class GetAllCustomers(
                                         customer.customerEmail?.contains(searchText, true) == true ||
                                         customer.customerPhone.contains(searchText, true) ||
                                         customer.customerName?.contains(searchText, true) == true ||
-                                        customer.created_at?.contains(searchText, true) == true ||
+                                        customer.created_at.contains(searchText, true) ||
                                         customer.updated_at?.contains(searchText, true) == true
                                     }else{
                                         true

@@ -1,14 +1,14 @@
-package com.niyaj.popos.realm.customer
+package com.niyaj.popos.realm.customer.domain.repository
 
-import com.niyaj.popos.domain.model.Customer
+import com.niyaj.popos.realm.customer.domain.model.Customer
 import com.niyaj.popos.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
 
-interface CustomerRealmDao {
+interface CustomerRepository {
 
-    suspend fun getAllCustomer(): Flow<Resource<List<CustomerRealm>>>
+    suspend fun getAllCustomers(): Flow<Resource<List<com.niyaj.popos.realm.customer.domain.model.Customer>>>
 
-    suspend fun getCustomerById(customerId: String): Resource<CustomerRealm?>
+    suspend fun getCustomerById(customerId: String): Resource<com.niyaj.popos.realm.customer.domain.model.Customer?>
 
     fun findCustomerByPhone(customerPhone: String, customerId: String?): Boolean
 

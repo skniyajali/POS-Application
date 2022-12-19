@@ -1,13 +1,12 @@
-package com.niyaj.popos.realm.customer
+package com.niyaj.popos.realm.customer.domain.model
 
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
-import org.mongodb.kbson.ObjectId
 
-class CustomerRealm(): RealmObject {
+class Customer: RealmObject {
 
     @PrimaryKey
-    var _id: String = ObjectId().toHexString()
+    var customerId: String = ""
 
     var customerPhone: String = ""
 
@@ -15,7 +14,7 @@ class CustomerRealm(): RealmObject {
 
     var customerEmail: String? = null
 
-    var created_at: String? = System.currentTimeMillis().toString()
+    var created_at: String = ""
 
     var updated_at: String? = null
 }

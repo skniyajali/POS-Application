@@ -1,7 +1,7 @@
 package com.niyaj.popos.data.repository
 
 import com.niyaj.popos.domain.model.CartOrder
-import com.niyaj.popos.domain.model.Customer
+import com.niyaj.popos.realm.customer.domain.model.Customer
 import com.niyaj.popos.domain.repository.CartOrderRepository
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
@@ -34,7 +34,7 @@ class CartOrderRepositoryImpl(
                                     cartOrderStatus = cartOrder.cartOrderStatus,
                                     customer = if(cartOrder.customer != null) {
                                         Customer(
-                                            customerId = cartOrder.customer!!._id,
+                                            customerId = cartOrder.customer!!.customerId,
                                             customerPhone = cartOrder.customer!!.customerPhone,
                                             customerName = cartOrder.customer!!.customerName,
                                             customerEmail = cartOrder.customer!!.customerEmail,
@@ -71,7 +71,7 @@ class CartOrderRepositoryImpl(
                     cartOrderStatus = cartOrder.cartOrderStatus,
                     customer = if(cartOrder.customer != null) {
                         Customer(
-                            customerId = cartOrder.customer!!._id,
+                            customerId = cartOrder.customer!!.customerId,
                             customerPhone = cartOrder.customer!!.customerPhone,
                             customerName = cartOrder.customer!!.customerName,
                             customerEmail = cartOrder.customer!!.customerEmail,

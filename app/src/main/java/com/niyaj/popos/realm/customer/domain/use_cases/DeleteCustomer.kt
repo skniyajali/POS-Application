@@ -1,7 +1,7 @@
-package com.niyaj.popos.domain.use_cases.customer
+package com.niyaj.popos.realm.customer.domain.use_cases
 
-import com.niyaj.popos.domain.repository.CustomerRepository
 import com.niyaj.popos.domain.util.Resource
+import com.niyaj.popos.realm.customer.domain.repository.CustomerRepository
 
 class DeleteCustomer(
     private val customerRepository: CustomerRepository

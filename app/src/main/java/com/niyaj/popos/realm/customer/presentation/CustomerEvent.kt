@@ -1,6 +1,6 @@
-package com.niyaj.popos.presentation.customer
+package com.niyaj.popos.realm.customer.presentation
 
-import com.niyaj.popos.domain.util.filter_items.FilterCustomer
+import com.niyaj.popos.realm.customer.domain.util.FilterCustomer
 
 sealed class CustomerEvent{
 

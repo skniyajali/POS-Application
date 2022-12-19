@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.customer
+package com.niyaj.popos.realm.customer.presentation
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -8,18 +8,22 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.model.Customer
-import com.niyaj.popos.domain.use_cases.customer.CustomerUseCases
-import com.niyaj.popos.domain.use_cases.customer.validation.ValidateCustomerEmail
-import com.niyaj.popos.domain.use_cases.customer.validation.ValidateCustomerName
-import com.niyaj.popos.domain.use_cases.customer.validation.ValidateCustomerPhone
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.SortType
 import com.niyaj.popos.domain.util.UiEvent
-import com.niyaj.popos.domain.util.filter_items.FilterCustomer
+import com.niyaj.popos.realm.customer.domain.model.Customer
+import com.niyaj.popos.realm.customer.domain.use_cases.CustomerUseCases
+import com.niyaj.popos.realm.customer.domain.use_cases.validation.ValidateCustomerEmail
+import com.niyaj.popos.realm.customer.domain.use_cases.validation.ValidateCustomerName
+import com.niyaj.popos.realm.customer.domain.use_cases.validation.ValidateCustomerPhone
+import com.niyaj.popos.realm.customer.domain.util.FilterCustomer
 import com.niyaj.popos.util.capitalizeWords
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -61,7 +65,7 @@ class CustomerViewModel @Inject constructor(
         }
     }
 
-    fun onCustomerEvent(event:CustomerEvent) {
+    fun onCustomerEvent(event: CustomerEvent) {
         when (event){
             is CustomerEvent.CustomerNameChanged -> {
                 addEditCustomerState = addEditCustomerState.copy(
@@ -242,15 +246,14 @@ class CustomerViewModel @Inject constructor(
             return
         }else{
             viewModelScope.launch {
+                val customer = Customer()
+                customer.customerName = addEditCustomerState.customerName
+                customer.customerEmail = addEditCustomerState.customerEmail
+                customer.customerPhone = addEditCustomerState.customerPhone
+
+
                 if(customerId.isNullOrEmpty()){
-                    val result = customerUseCases.createNewCustomer(
-                        Customer(
-                            customerName = addEditCustomerState.customerName,
-                            customerEmail = addEditCustomerState.customerEmail,
-                            customerPhone = addEditCustomerState.customerPhone,
-                        )
-                    )
-                    when(result){
+                    when(val result = customerUseCases.createNewCustomer(customer)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("Customer Created Successfully"))
@@ -261,11 +264,7 @@ class CustomerViewModel @Inject constructor(
                     }
                 }else{
                     val result = customerUseCases.updateCustomer(
-                        Customer(
-                            customerName = addEditCustomerState.customerName?.capitalizeWords,
-                            customerEmail = addEditCustomerState.customerEmail,
-                            customerPhone = addEditCustomerState.customerPhone,
-                        ),
+                        customer,
                         customerId
                     )
 

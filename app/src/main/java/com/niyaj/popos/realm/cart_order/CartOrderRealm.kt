@@ -4,7 +4,7 @@ import com.niyaj.popos.domain.util.CartOrderType
 import com.niyaj.popos.domain.util.OrderStatus
 import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
 import com.niyaj.popos.realm.address.domain.model.Address
-import com.niyaj.popos.realm.customer.CustomerRealm
+import com.niyaj.popos.realm.customer.domain.model.Customer
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
@@ -20,7 +20,7 @@ class CartOrderRealm(): RealmObject {
 
     var orderType: String? = CartOrderType.DineIn.orderType
 
-    var customer: CustomerRealm? = null
+    var customer: Customer? = null
 
     var address: Address? = null
 

@@ -1,4 +1,4 @@
-package com.niyaj.popos.domain.util.filter_items
+package com.niyaj.popos.realm.customer.domain.util
 
 import com.niyaj.popos.domain.util.SortType
 

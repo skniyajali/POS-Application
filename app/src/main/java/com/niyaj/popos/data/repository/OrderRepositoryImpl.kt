@@ -3,7 +3,7 @@ package com.niyaj.popos.data.repository
 import com.niyaj.popos.domain.model.Cart
 import com.niyaj.popos.domain.model.CartOrder
 import com.niyaj.popos.domain.model.CartProduct
-import com.niyaj.popos.domain.model.Customer
+import com.niyaj.popos.realm.customer.domain.model.Customer
 import com.niyaj.popos.domain.model.Product
 import com.niyaj.popos.domain.repository.CartOrderRepository
 import com.niyaj.popos.domain.repository.CommonRepository

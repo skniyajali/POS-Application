@@ -1,4 +1,4 @@
-package com.niyaj.popos.domain.use_cases.customer
+package com.niyaj.popos.realm.customer.domain.use_cases
 
 data class CustomerUseCases(
     val getAllCustomers: GetAllCustomers,

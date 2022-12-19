@@ -1,20 +1,46 @@
-package com.niyaj.popos.presentation.customer
+package com.niyaj.popos.realm.customer.presentation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.FabPosition
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Rule
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,13 +54,13 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
+import com.niyaj.popos.destinations.AddEditCustomerScreenDestination
 import com.niyaj.popos.domain.util.BottomSheetScreen
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.presentation.components.ExtendedFabButton
 import com.niyaj.popos.presentation.components.ItemNotAvailable
 import com.niyaj.popos.presentation.components.StandardScaffold
 import com.niyaj.popos.presentation.components.StandardSearchBar
-import com.niyaj.popos.destinations.AddEditCustomerScreenDestination
 import com.niyaj.popos.presentation.ui.theme.SpaceMini
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall
 import com.ramcosta.composedestinations.annotation.Destination
@@ -250,7 +276,11 @@ fun CustomerScreen(
                                 BottomSheetScreen.FilterCustomerScreen(
                                     filterCustomer = customerViewModel.customers.value.filterCustomer,
                                     onFilterChanged = {
-                                        customerViewModel.onCustomerEvent(CustomerEvent.OnFilterCustomer(it))
+                                        customerViewModel.onCustomerEvent(
+                                            CustomerEvent.OnFilterCustomer(
+                                                it
+                                            )
+                                        )
                                     },
                                 )
                             )
@@ -289,7 +319,11 @@ fun CustomerScreen(
                 positiveButton(
                     text = "Delete",
                     onClick = {
-                        customerViewModel.onCustomerEvent(CustomerEvent.DeleteCustomer(selectedCustomers))
+                        customerViewModel.onCustomerEvent(
+                            CustomerEvent.DeleteCustomer(
+                                selectedCustomers
+                            )
+                        )
                     }
                 )
                 negativeButton(
@@ -370,7 +404,7 @@ fun CustomerScreen(
                                     if(!customer.customerName.isNullOrEmpty()){
                                         Spacer(modifier = Modifier.height(SpaceMini))
                                         Text(
-                                            text = customer.customerName,
+                                            text = customer.customerName!!,
                                             style = MaterialTheme.typography.body1,
                                             textAlign = TextAlign.Center,
                                         )

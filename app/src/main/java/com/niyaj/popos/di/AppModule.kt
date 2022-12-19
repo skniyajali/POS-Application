@@ -6,7 +6,6 @@ import com.niyaj.popos.domain.use_cases.cart.*
 import com.niyaj.popos.domain.use_cases.cart_order.*
 import com.niyaj.popos.domain.use_cases.common.CommonUseCases
 import com.niyaj.popos.domain.use_cases.common.GetTotalPriceOfOrder
-import com.niyaj.popos.domain.use_cases.customer.*
 import com.niyaj.popos.domain.use_cases.data_deletion.DataDeletionUseCases
 import com.niyaj.popos.domain.use_cases.data_deletion.DeleteAllRecords
 import com.niyaj.popos.domain.use_cases.data_deletion.DeleteData
@@ -30,7 +29,6 @@ import com.niyaj.popos.domain.use_cases.reports.ReportsUseCases
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
 import com.niyaj.popos.realm.common.CommonRealmDao
-import com.niyaj.popos.realm.customer.CustomerRealmDao
 import com.niyaj.popos.realm.data_deletion.DataDeletionService
 import com.niyaj.popos.realm.delivery_partner.PartnerRealmDao
 import com.niyaj.popos.realm.employee.EmployeeRealmDao
@@ -61,11 +59,6 @@ object AppModule {
     @Provides
     fun provideProductRepository(productRealmDao: ProductRealmDao): ProductRepository {
         return ProductRepositoryImpl(productRealmDao)
-    }
-
-    @Provides
-    fun provideCustomerRepository(customerRealmDao: CustomerRealmDao): CustomerRepository {
-        return CustomerRepositoryImpl(customerRealmDao)
     }
 
     @Provides
@@ -173,21 +166,6 @@ object AppModule {
             importProducts = ImportProducts(productRepository),
             findProductByName = FindProductByName(productRepository),
 
-        )
-    }
-
-
-
-    @Provides
-    @Singleton
-    fun provideCustomerCases(customerRepository: CustomerRepository): CustomerUseCases {
-        return CustomerUseCases(
-            getAllCustomers = GetAllCustomers(customerRepository),
-            getCustomerById = GetCustomerById(customerRepository),
-            findCustomerByPhone = FindCustomerByPhone(customerRepository),
-            createNewCustomer = CreateNewCustomer(customerRepository),
-            updateCustomer = UpdateCustomer(customerRepository),
-            deleteCustomer = DeleteCustomer(customerRepository),
         )
     }
 

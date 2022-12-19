@@ -1,8 +1,8 @@
-package com.niyaj.popos.presentation.customer
+package com.niyaj.popos.realm.customer.presentation
 
-import com.niyaj.popos.domain.model.Customer
+import com.niyaj.popos.realm.customer.domain.model.Customer
 import com.niyaj.popos.domain.util.SortType
-import com.niyaj.popos.domain.util.filter_items.FilterCustomer
+import com.niyaj.popos.realm.customer.domain.util.FilterCustomer
 
 data class CustomerState(
     val customers: List<Customer> = emptyList(),

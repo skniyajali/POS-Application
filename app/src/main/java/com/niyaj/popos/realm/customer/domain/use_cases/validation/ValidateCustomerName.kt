@@ -1,4 +1,4 @@
-package com.niyaj.popos.domain.use_cases.customer.validation
+package com.niyaj.popos.realm.customer.domain.use_cases.validation
 
 import com.niyaj.popos.domain.util.ValidationResult
 import javax.inject.Inject

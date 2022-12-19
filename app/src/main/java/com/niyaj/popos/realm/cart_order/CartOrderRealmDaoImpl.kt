@@ -8,7 +8,7 @@ import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
 import com.niyaj.popos.realm.address.domain.model.Address
 import com.niyaj.popos.realm.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.realm.cart.CartRealm
-import com.niyaj.popos.realm.customer.CustomerRealm
+import com.niyaj.popos.realm.customer.domain.model.Customer
 import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
@@ -126,13 +126,13 @@ class CartOrderRealmDaoImpl(
 
     override suspend fun createNewOrder(newOrder: CartOrder): Resource<Boolean> {
         return try {
-            var customer: CustomerRealm? = null
+            var customer: Customer? = null
 
             var address: Address? = null
 
             if (newOrder.customer != null) {
                 if (newOrder.customer.customerId.isEmpty() && newOrder.customer.customerPhone.isNotEmpty()) {
-                    val newCustomer = CustomerRealm()
+                    val newCustomer = Customer()
                     newCustomer.customerPhone = newOrder.customer.customerPhone
 
                     CoroutineScope(Dispatchers.IO).launch {
@@ -142,7 +142,7 @@ class CartOrderRealmDaoImpl(
                     }
 
                 } else {
-                    customer = realm.query<CustomerRealm>("_id == $0", newOrder.customer.customerId)
+                    customer = realm.query<Customer>("_id == $0", newOrder.customer.customerId)
                         .first().find()
                 }
             }
@@ -200,14 +200,14 @@ class CartOrderRealmDaoImpl(
         cartOrderId: String,
     ): Resource<Boolean> {
         return try {
-            var customer: CustomerRealm? = null
+            var customer: Customer? = null
 
             var address: Address? = null
 
             if (newOrder.customer != null) {
 
                 if (newOrder.customer.customerId.isEmpty() && newOrder.customer.customerPhone.isNotEmpty()) {
-                    val newCustomer = CustomerRealm()
+                    val newCustomer = Customer()
                     newCustomer.customerPhone = newOrder.customer.customerPhone
 
                     CoroutineScope(Dispatchers.IO).launch {
@@ -218,7 +218,7 @@ class CartOrderRealmDaoImpl(
 
                 } else {
                     customer =
-                        realm.query<CustomerRealm>("_id == $0", newOrder.customer.customerId)
+                        realm.query<Customer>("_id == $0", newOrder.customer.customerId)
                             .first().find()
                 }
             }

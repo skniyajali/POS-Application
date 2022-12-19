@@ -22,9 +22,9 @@ import com.niyaj.popos.realm.charges.domain.repository.ChargesRepository
 import com.niyaj.popos.realm.charges.data.repository.ChargesRepositoryImpl
 import com.niyaj.popos.realm.common.CommonRealmDao
 import com.niyaj.popos.realm.common.CommonRealmDaoImpl
-import com.niyaj.popos.realm.customer.CustomerRealm
-import com.niyaj.popos.realm.customer.CustomerRealmDao
-import com.niyaj.popos.realm.customer.CustomerRealmDaoImpl
+import com.niyaj.popos.realm.customer.domain.model.Customer
+import com.niyaj.popos.realm.customer.domain.repository.CustomerRepository
+import com.niyaj.popos.realm.customer.data.repository.CustomerRepositoryImpl
 import com.niyaj.popos.realm.data_deletion.DataDeletionService
 import com.niyaj.popos.realm.data_deletion.DataDeletionServiceImpl
 import com.niyaj.popos.realm.delivery_partner.PartnerRealm
@@ -69,7 +69,7 @@ object RealmModule {
     private val schema = setOf(
         Category::class,
         ProductRealm::class,
-        CustomerRealm::class,
+        Customer::class,
         Address::class,
         CartOrderRealm::class,
         CartRealm::class,
@@ -109,8 +109,8 @@ object RealmModule {
     }
 
     @Provides
-    fun provideCustomerRealmDaoImpl(): CustomerRealmDao {
-        return CustomerRealmDaoImpl(config)
+    fun provideCustomerRealmDaoImpl(): CustomerRepository {
+        return CustomerRepositoryImpl(config)
     }
 
     @Provides

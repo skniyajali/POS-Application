@@ -7,7 +7,7 @@ import com.niyaj.popos.realm.address.presentation.FilterAddressScreen
 import com.niyaj.popos.presentation.cart_order.GetAndSelectCartOrderScreen
 import com.niyaj.popos.realm.category.presentation.FilterCategoryScreen
 import com.niyaj.popos.realm.charges.presentation.FilterChargesScreen
-import com.niyaj.popos.presentation.customer.FilterCustomerScreen
+import com.niyaj.popos.realm.customer.presentation.FilterCustomerScreen
 import com.niyaj.popos.presentation.delivery_partner.FilterPartnerScreen
 import com.niyaj.popos.presentation.employee.FilterEmployeeScreen
 import com.niyaj.popos.presentation.expenses.FilterExpensesScreen

@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.customer
+package com.niyaj.popos.realm.customer.presentation
 
 data class AddEditCustomerState(
 

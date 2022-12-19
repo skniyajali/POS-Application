@@ -10,7 +10,7 @@ import com.niyaj.popos.realm.cart_order.CartOrderRealm
 import com.niyaj.popos.realm.cart_order.SelectedCartOrderRealm
 import com.niyaj.popos.realm.category.domain.model.Category
 import com.niyaj.popos.realm.charges.domain.model.Charges
-import com.niyaj.popos.realm.customer.CustomerRealm
+import com.niyaj.popos.realm.customer.domain.model.Customer
 import com.niyaj.popos.realm.delivery_partner.PartnerRealm
 import com.niyaj.popos.realm.employee.EmployeeRealm
 import com.niyaj.popos.realm.employee_attendance.AttendanceRealm
@@ -84,7 +84,7 @@ class DataDeletionServiceImpl(
                     delete(Category::class)
                     delete(ProductRealm::class)
                     delete(Address::class)
-                    delete(CustomerRealm::class)
+                    delete(Customer::class)
                     delete(CartOrderRealm::class)
                     delete(CartRealm::class)
                     delete(AddOnItem::class)
