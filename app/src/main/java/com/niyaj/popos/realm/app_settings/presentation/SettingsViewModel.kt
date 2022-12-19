@@ -3,7 +3,7 @@ package com.niyaj.popos.realm.app_settings.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.realm.app_settings.domain.use_cases.SettingsUseCases
-import com.niyaj.popos.domain.use_cases.data_deletion.DataDeletionUseCases
+import com.niyaj.popos.realm.data_deletion.domain.use_cases.DataDeletionUseCases
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel

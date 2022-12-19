@@ -6,12 +6,7 @@ import com.niyaj.popos.domain.use_cases.cart.*
 import com.niyaj.popos.domain.use_cases.cart_order.*
 import com.niyaj.popos.domain.use_cases.common.CommonUseCases
 import com.niyaj.popos.domain.use_cases.common.GetTotalPriceOfOrder
-import com.niyaj.popos.domain.use_cases.data_deletion.DataDeletionUseCases
-import com.niyaj.popos.domain.use_cases.data_deletion.DeleteAllRecords
-import com.niyaj.popos.domain.use_cases.data_deletion.DeleteData
 import com.niyaj.popos.domain.use_cases.delivery_partner.*
-import com.niyaj.popos.domain.use_cases.delivery_partner.validation.ValidatePartnerEmail
-import com.niyaj.popos.domain.use_cases.delivery_partner.validation.ValidatePartnerPhone
 import com.niyaj.popos.domain.use_cases.employee.*
 import com.niyaj.popos.domain.use_cases.employee_attendance.*
 import com.niyaj.popos.domain.use_cases.employee_salary.*
@@ -29,8 +24,6 @@ import com.niyaj.popos.domain.use_cases.reports.ReportsUseCases
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
 import com.niyaj.popos.realm.common.CommonRealmDao
-import com.niyaj.popos.realm.data_deletion.DataDeletionService
-import com.niyaj.popos.realm.delivery_partner.PartnerRealmDao
 import com.niyaj.popos.realm.employee.EmployeeRealmDao
 import com.niyaj.popos.realm.employee_attendance.AttendanceService
 import com.niyaj.popos.realm.employee_salary.SalaryRealmDao
@@ -71,12 +64,6 @@ object AppModule {
         return OrderRepositoryImpl(orderDao, cartOrderRepository, commonRepository)
     }
 
-
-    @Provides
-    fun providePartnerRepository(partnerRealmDao: PartnerRealmDao): PartnerRepository {
-        return PartnerRepositoryImpl(partnerRealmDao)
-    }
-
     @Provides
     fun provideEmployeeRepository(employeeRealmDao: EmployeeRealmDao): EmployeeRepository {
         return EmployeeRepositoryImpl(employeeRealmDao)
@@ -98,16 +85,6 @@ object AppModule {
     }
 
     @Provides
-    fun providePartnerEmailValidationUseCase(partnerUseCases: PartnerUseCases): ValidatePartnerEmail {
-        return ValidatePartnerEmail(partnerUseCases)
-    }
-
-    @Provides
-    fun providePartnerPhoneValidationUseCase(partnerUseCases: PartnerUseCases): ValidatePartnerPhone {
-        return ValidatePartnerPhone(partnerUseCases)
-    }
-
-    @Provides
     fun provideReportsRepository(reportsRealmDao: ReportsRealmDao, productRepository: ProductRepository): ReportsRepository {
         return ReportsRepositoryImpl(reportsRealmDao, productRepository)
     }
@@ -125,11 +102,6 @@ object AppModule {
     @Provides
     fun provideAttendanceRepository(attendanceService: AttendanceService): AttendanceRepository {
         return AttendanceRepositoryImpl(attendanceService)
-    }
-
-    @Provides
-    fun provideDataDeletionRepository(dataDeletionService: DataDeletionService): DataDeletionRepository {
-        return DataDeletionRepositoryImpl(dataDeletionService)
     }
 
     @Provides
@@ -205,20 +177,6 @@ object AppModule {
             getMainFeedSelectedOrder = GetMainFeedSelectedOrder(mainFeedRepository, cartOrderRepository),
             getMainFeedCategories = GetMainFeedCategories(mainFeedRepository),
             getProductsPager = GetProductsPager(mainFeedRepository),
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun providePartnerUseCases(partnerRepository: PartnerRepository): PartnerUseCases {
-        return PartnerUseCases(
-            getAllPartners = GetAllPartners(partnerRepository),
-            getPartnerById = GetPartnerById(partnerRepository),
-            createNewPartner = CreateNewPartner(partnerRepository),
-            updatePartner = UpdatePartner(partnerRepository),
-            deletePartner = DeletePartner(partnerRepository),
-            getPartnerByEmail = GetPartnerByEmail(partnerRepository),
-            getPartnerByPhone = GetPartnerByPhone(partnerRepository)
         )
     }
 
@@ -312,13 +270,5 @@ object AppModule {
         )
     }
 
-    @Provides
-    @Singleton
-    fun provideDataDeletionUseCases(dataDeletionRepository: DataDeletionRepository): DataDeletionUseCases {
-        return DataDeletionUseCases(
-            deleteData = DeleteData(dataDeletionRepository),
-            deleteAllRecords = DeleteAllRecords(dataDeletionRepository),
-        )
-    }
 
 }

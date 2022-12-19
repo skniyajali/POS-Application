@@ -25,11 +25,11 @@ import com.niyaj.popos.realm.common.CommonRealmDaoImpl
 import com.niyaj.popos.realm.customer.domain.model.Customer
 import com.niyaj.popos.realm.customer.domain.repository.CustomerRepository
 import com.niyaj.popos.realm.customer.data.repository.CustomerRepositoryImpl
-import com.niyaj.popos.realm.data_deletion.DataDeletionService
-import com.niyaj.popos.realm.data_deletion.DataDeletionServiceImpl
-import com.niyaj.popos.realm.delivery_partner.PartnerRealm
-import com.niyaj.popos.realm.delivery_partner.PartnerRealmDao
-import com.niyaj.popos.realm.delivery_partner.PartnerRealmDaoImpl
+import com.niyaj.popos.realm.data_deletion.domain.repository.DataDeletionRepository
+import com.niyaj.popos.realm.data_deletion.data.repository.DataDeletionRepositoryImpl
+import com.niyaj.popos.realm.delivery_partner.domain.model.DeliveryPartner
+import com.niyaj.popos.realm.delivery_partner.domain.repository.PartnerRepository
+import com.niyaj.popos.realm.delivery_partner.data.repository.PartnerRepositoryImpl
 import com.niyaj.popos.realm.employee.EmployeeRealm
 import com.niyaj.popos.realm.employee.EmployeeRealmDao
 import com.niyaj.popos.realm.employee.EmployeeRealmDaoImpl
@@ -75,7 +75,7 @@ object RealmModule {
         CartRealm::class,
         Charges::class,
         AddOnItem::class,
-        PartnerRealm::class,
+        DeliveryPartner::class,
         EmployeeRealm::class,
         ExpensesCategoryRealm::class,
         ExpensesRealm::class,
@@ -144,8 +144,8 @@ object RealmModule {
     }
 
     @Provides
-    fun providePartnerRealmDaoImpl(): PartnerRealmDao {
-        return PartnerRealmDaoImpl(config)
+    fun providePartnerRealmDaoImpl(): PartnerRepository {
+        return PartnerRepositoryImpl(config)
     }
 
     @Provides
@@ -184,7 +184,7 @@ object RealmModule {
     }
 
     @Provides
-    fun provideDataDeletionServiceImpl(settingsRepository: SettingsRepository): DataDeletionService {
-        return DataDeletionServiceImpl(config, settingsRepository)
+    fun provideDataDeletionServiceImpl(settingsRepository: SettingsRepository): DataDeletionRepository {
+        return DataDeletionRepositoryImpl(config, settingsRepository)
     }
 }

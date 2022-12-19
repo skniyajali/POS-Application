@@ -14,6 +14,7 @@ import com.niyaj.popos.realm.address.domain.util.FilterAddress
 import com.niyaj.popos.realm.category.domain.util.FilterCategory
 import com.niyaj.popos.realm.charges.domain.util.FilterCharges
 import com.niyaj.popos.realm.customer.domain.util.FilterCustomer
+import com.niyaj.popos.realm.delivery_partner.domain.util.FilterPartner
 
 sealed class BottomSheetScreen(val type: String, val route: String){
 
