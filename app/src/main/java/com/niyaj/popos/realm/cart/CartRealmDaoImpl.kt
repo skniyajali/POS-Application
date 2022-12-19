@@ -4,7 +4,7 @@ import com.niyaj.popos.domain.util.CartOrderType
 import com.niyaj.popos.domain.util.OrderStatus
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.cart_order.CartOrderRealm
-import com.niyaj.popos.realm.charges.ChargesRealm
+import com.niyaj.popos.realm.charges.domain.model.Charges
 import com.niyaj.popos.realm.product.ProductRealm
 import com.niyaj.popos.util.getStartTime
 import io.realm.kotlin.Realm
@@ -316,7 +316,7 @@ class CartRealmDaoImpl(
 
         if (cartOrder != null && cartOrders.isNotEmpty()) {
             if (cartOrder.doesChargesIncluded) {
-                val charges = realm.query<ChargesRealm>().find()
+                val charges = realm.query<Charges>().find()
                 for (charge in charges) {
                     if (charge.isApplicable && cartOrder.orderType != CartOrderType.DineIn.orderType) {
                         totalPrice += charge.chargesPrice

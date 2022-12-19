@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.charges
+package com.niyaj.popos.realm.charges.presentation
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -6,15 +6,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.model.Charges
-import com.niyaj.popos.domain.use_cases.charges.ChargesUseCases
-import com.niyaj.popos.domain.use_cases.charges.validation.ValidateChargesName
-import com.niyaj.popos.domain.use_cases.charges.validation.ValidateChargesPrice
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.SortType
 import com.niyaj.popos.domain.util.UiEvent
-import com.niyaj.popos.domain.util.filter_items.FilterCharges
 import com.niyaj.popos.domain.util.safeString
+import com.niyaj.popos.realm.charges.domain.model.Charges
+import com.niyaj.popos.realm.charges.domain.use_cases.ChargesUseCases
+import com.niyaj.popos.realm.charges.domain.use_cases.validation.ValidateChargesName
+import com.niyaj.popos.realm.charges.domain.use_cases.validation.ValidateChargesPrice
+import com.niyaj.popos.realm.charges.domain.util.FilterCharges
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -191,15 +191,13 @@ class ChargesViewModel @Inject constructor(
             return
         }else {
             viewModelScope.launch {
+                val charges = Charges()
+                charges.chargesName = addEditState.chargesName
+                charges.chargesPrice = safeString(addEditState.chargesPrice)
+                charges.isApplicable = addEditState.chargesApplicable
+
                 if(chargesId.isNullOrEmpty()){
-                    val result = chargesUseCases.createNewCharges(
-                        Charges(
-                            chargesName = addEditState.chargesName,
-                            chargesPrice = safeString(addEditState.chargesPrice),
-                            isApplicable = addEditState.chargesApplicable,
-                        )
-                    )
-                    when(result){
+                    when(val result = chargesUseCases.createNewCharges(charges)){
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -214,11 +212,7 @@ class ChargesViewModel @Inject constructor(
                 }else {
 
                     val result = chargesUseCases.updateCharges(
-                        Charges(
-                            chargesName = addEditState.chargesName,
-                            chargesPrice = safeString(addEditState.chargesPrice),
-                            isApplicable = addEditState.chargesApplicable,
-                        ),
+                        charges,
                         chargesId
                     )
                     when(result){

@@ -4,7 +4,6 @@ import com.niyaj.popos.data.repository.*
 import com.niyaj.popos.domain.repository.*
 import com.niyaj.popos.domain.use_cases.cart.*
 import com.niyaj.popos.domain.use_cases.cart_order.*
-import com.niyaj.popos.domain.use_cases.charges.*
 import com.niyaj.popos.domain.use_cases.common.CommonUseCases
 import com.niyaj.popos.domain.use_cases.common.GetTotalPriceOfOrder
 import com.niyaj.popos.domain.use_cases.customer.*
@@ -30,7 +29,6 @@ import com.niyaj.popos.domain.use_cases.reports.GetReportsBarData
 import com.niyaj.popos.domain.use_cases.reports.ReportsUseCases
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
-import com.niyaj.popos.realm.charges.ChargesRealmDao
 import com.niyaj.popos.realm.common.CommonRealmDao
 import com.niyaj.popos.realm.customer.CustomerRealmDao
 import com.niyaj.popos.realm.data_deletion.DataDeletionService
@@ -80,11 +78,6 @@ object AppModule {
         return OrderRepositoryImpl(orderDao, cartOrderRepository, commonRepository)
     }
 
-
-    @Provides
-    fun provideChargesRepository(chargesRealmDao: ChargesRealmDao): ChargesRepository {
-        return ChargesRepositoryImpl(chargesRealmDao)
-    }
 
     @Provides
     fun providePartnerRepository(partnerRealmDao: PartnerRealmDao): PartnerRepository {
@@ -234,19 +227,6 @@ object AppModule {
             getMainFeedSelectedOrder = GetMainFeedSelectedOrder(mainFeedRepository, cartOrderRepository),
             getMainFeedCategories = GetMainFeedCategories(mainFeedRepository),
             getProductsPager = GetProductsPager(mainFeedRepository),
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun provideChargesUseCases(chargesRepository: ChargesRepository): ChargesUseCases {
-        return ChargesUseCases(
-            getAllCharges = GetAllCharges(chargesRepository),
-            getChargesById = GetChargesById(chargesRepository),
-            findChargesByName = FindChargesByName(chargesRepository),
-            createNewCharges = CreateNewCharges(chargesRepository),
-            updateCharges = UpdateCharges(chargesRepository),
-            deleteCharges = DeleteCharges(chargesRepository),
         )
     }
 

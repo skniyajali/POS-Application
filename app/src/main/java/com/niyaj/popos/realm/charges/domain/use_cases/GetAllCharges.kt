@@ -1,13 +1,12 @@
-package com.niyaj.popos.domain.use_cases.charges
+package com.niyaj.popos.realm.charges.domain.use_cases
 
-import com.niyaj.popos.domain.model.Charges
-import com.niyaj.popos.domain.repository.ChargesRepository
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.SortType
-import com.niyaj.popos.domain.util.filter_items.FilterCharges
+import com.niyaj.popos.realm.charges.domain.model.Charges
+import com.niyaj.popos.realm.charges.domain.repository.ChargesRepository
+import com.niyaj.popos.realm.charges.domain.util.FilterCharges
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import timber.log.Timber
 
 class GetAllCharges(
     private val chargesRepository: ChargesRepository
@@ -48,7 +47,7 @@ class GetAllCharges(
                                     if (searchText.isNotEmpty()){
                                         chargesItem.chargesName.contains(searchText, true) ||
                                                 chargesItem.chargesPrice.toString().contains(searchText, true) ||
-                                                chargesItem.createdAt?.contains(searchText, true) == true ||
+                                                chargesItem.createdAt.contains(searchText, true) ||
                                                 chargesItem.updatedAt?.contains(searchText, true) == true
                                     }else{
                                         true
@@ -58,7 +57,6 @@ class GetAllCharges(
                         ))
                     }
                     is Resource.Error -> {
-                        Timber.d("Unable to get data from repository")
                         emit(Resource.Error(result.message ?: "Unable to get data from repository"))
                     }
                 }

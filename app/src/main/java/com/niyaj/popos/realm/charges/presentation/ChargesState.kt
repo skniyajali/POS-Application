@@ -1,8 +1,8 @@
-package com.niyaj.popos.presentation.charges
+package com.niyaj.popos.realm.charges.presentation
 
-import com.niyaj.popos.domain.model.Charges
+import com.niyaj.popos.realm.charges.domain.model.Charges
 import com.niyaj.popos.domain.util.SortType
-import com.niyaj.popos.domain.util.filter_items.FilterCharges
+import com.niyaj.popos.realm.charges.domain.util.FilterCharges
 
 data class ChargesState(
     val chargesItem: List<Charges> = emptyList(),

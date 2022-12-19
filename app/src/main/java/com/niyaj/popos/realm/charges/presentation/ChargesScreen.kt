@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.charges
+package com.niyaj.popos.realm.charges.presentation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColor
@@ -262,7 +262,11 @@ fun ChargesScreen(
                                 BottomSheetScreen.FilterChargesScreen(
                                     filterCharges = chargesViewModel.state.filterCharges,
                                     onFilterChanged = {
-                                        chargesViewModel.onChargesEvent(ChargesEvent.OnFilterCharges(it))
+                                        chargesViewModel.onChargesEvent(
+                                            ChargesEvent.OnFilterCharges(
+                                                it
+                                            )
+                                        )
                                     },
                                 )
                             )
@@ -281,7 +285,11 @@ fun ChargesScreen(
             if(selectedChargesItem.isNotEmpty()) {
                 IconButton(
                     onClick = {
-                        chargesViewModel.onChargesEvent(ChargesEvent.SelectCharges(selectedChargesItem))
+                        chargesViewModel.onChargesEvent(
+                            ChargesEvent.SelectCharges(
+                                selectedChargesItem
+                            )
+                        )
                     }
                 ) {
                     Icon(
@@ -301,7 +309,11 @@ fun ChargesScreen(
                 positiveButton(
                     text = "Delete",
                     onClick = {
-                        chargesViewModel.onChargesEvent(ChargesEvent.DeleteCharges(selectedChargesItem))
+                        chargesViewModel.onChargesEvent(
+                            ChargesEvent.DeleteCharges(
+                                selectedChargesItem
+                            )
+                        )
                     }
                 )
                 negativeButton(

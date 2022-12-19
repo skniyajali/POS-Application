@@ -1,4 +1,4 @@
-package com.niyaj.popos.domain.use_cases.charges
+package com.niyaj.popos.realm.charges.domain.use_cases
 
 data class ChargesUseCases(
     val getAllCharges: GetAllCharges,

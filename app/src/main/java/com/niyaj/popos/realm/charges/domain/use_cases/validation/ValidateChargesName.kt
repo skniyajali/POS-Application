@@ -1,6 +1,6 @@
-package com.niyaj.popos.domain.use_cases.charges.validation
+package com.niyaj.popos.realm.charges.domain.use_cases.validation
 
-import com.niyaj.popos.domain.use_cases.charges.ChargesUseCases
+import com.niyaj.popos.realm.charges.domain.use_cases.ChargesUseCases
 import com.niyaj.popos.domain.util.ValidationResult
 import javax.inject.Inject
 

@@ -14,6 +14,7 @@ import io.realm.kotlin.query.RealmResults
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
 class CategoryRepositoryImpl(
@@ -79,8 +80,10 @@ class CategoryRepositoryImpl(
     override suspend fun createNewCategory(newCategory: Category): Resource<Boolean> {
         return try {
             val category = Category()
+            category.categoryId = BsonObjectId().toHexString()
             category.categoryName = newCategory.categoryName
             category.categoryAvailability = newCategory.categoryAvailability
+            category.createdAt = System.currentTimeMillis().toString()
 
             realm.write {
                 this.copyToRealm(category)

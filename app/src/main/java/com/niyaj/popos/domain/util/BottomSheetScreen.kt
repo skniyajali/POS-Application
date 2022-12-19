@@ -4,7 +4,7 @@ import com.niyaj.popos.domain.util.filter_items.*
 import com.niyaj.popos.realm.addon_item.presentation.AddOnItemViewModel
 import com.niyaj.popos.realm.address.presentation.AddressViewModel
 import com.niyaj.popos.realm.category.presentation.CategoryViewModel
-import com.niyaj.popos.presentation.charges.ChargesViewModel
+import com.niyaj.popos.realm.charges.presentation.ChargesViewModel
 import com.niyaj.popos.presentation.customer.CustomerViewModel
 import com.niyaj.popos.presentation.expenses.ExpensesViewModel
 import com.niyaj.popos.presentation.expenses_category.ExpensesCategoryViewModel
@@ -12,6 +12,7 @@ import com.niyaj.popos.presentation.product.ProductsViewModel
 import com.niyaj.popos.realm.addon_item.domain.util.FilterAddOnItem
 import com.niyaj.popos.realm.address.domain.util.FilterAddress
 import com.niyaj.popos.realm.category.domain.util.FilterCategory
+import com.niyaj.popos.realm.charges.domain.util.FilterCharges
 
 sealed class BottomSheetScreen(val type: String, val route: String){
 

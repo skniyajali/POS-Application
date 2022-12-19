@@ -1,6 +1,6 @@
-package com.niyaj.popos.domain.use_cases.charges
+package com.niyaj.popos.realm.charges.domain.use_cases
 
-import com.niyaj.popos.domain.repository.ChargesRepository
+import com.niyaj.popos.realm.charges.domain.repository.ChargesRepository
 import com.niyaj.popos.domain.util.Resource
 
 class DeleteCharges(

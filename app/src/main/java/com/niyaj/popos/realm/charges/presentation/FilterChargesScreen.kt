@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.charges
+package com.niyaj.popos.realm.charges.presentation
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.domain.util.SortType
-import com.niyaj.popos.domain.util.filter_items.FilterCharges
+import com.niyaj.popos.realm.charges.domain.util.FilterCharges
 import com.niyaj.popos.presentation.components.FilterItem
 import com.niyaj.popos.presentation.ui.theme.SpaceMedium
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall

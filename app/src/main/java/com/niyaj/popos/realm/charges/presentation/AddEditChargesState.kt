@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.charges
+package com.niyaj.popos.realm.charges.presentation
 
 data class AddEditChargesState(
     val chargesName: String = "",

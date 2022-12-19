@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.niyaj.popos.domain.util.CartOrderType
-import com.niyaj.popos.presentation.charges.ChargesViewModel
+import com.niyaj.popos.realm.charges.presentation.ChargesViewModel
 import com.niyaj.popos.presentation.components.*
 import com.niyaj.popos.presentation.order.components.TextDivider
 import com.niyaj.popos.presentation.order.components.ThreeGridTexts

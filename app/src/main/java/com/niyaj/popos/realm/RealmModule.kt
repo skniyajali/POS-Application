@@ -1,5 +1,11 @@
 package com.niyaj.popos.realm
 
+import com.niyaj.popos.realm.addon_item.data.repository.AddOnItemRepositoryImpl
+import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
+import com.niyaj.popos.realm.addon_item.domain.repository.AddOnItemRepository
+import com.niyaj.popos.realm.address.data.repository.AddressRepositoryImpl
+import com.niyaj.popos.realm.address.domain.model.Address
+import com.niyaj.popos.realm.address.domain.repository.AddressRepository
 import com.niyaj.popos.realm.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.cart.CartRealmDao
@@ -8,9 +14,12 @@ import com.niyaj.popos.realm.cart_order.CartOrderRealm
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDaoImpl
 import com.niyaj.popos.realm.cart_order.SelectedCartOrderRealm
-import com.niyaj.popos.realm.charges.ChargesRealm
-import com.niyaj.popos.realm.charges.ChargesRealmDao
-import com.niyaj.popos.realm.charges.ChargesRealmDaoImpl
+import com.niyaj.popos.realm.category.data.repository.CategoryRepositoryImpl
+import com.niyaj.popos.realm.category.domain.model.Category
+import com.niyaj.popos.realm.category.domain.repository.CategoryRepository
+import com.niyaj.popos.realm.charges.domain.model.Charges
+import com.niyaj.popos.realm.charges.domain.repository.ChargesRepository
+import com.niyaj.popos.realm.charges.data.repository.ChargesRepositoryImpl
 import com.niyaj.popos.realm.common.CommonRealmDao
 import com.niyaj.popos.realm.common.CommonRealmDaoImpl
 import com.niyaj.popos.realm.customer.CustomerRealm
@@ -58,11 +67,14 @@ import io.realm.kotlin.log.LogLevel
 object RealmModule {
 
     private val schema = setOf(
+        Category::class,
         ProductRealm::class,
         CustomerRealm::class,
+        Address::class,
         CartOrderRealm::class,
         CartRealm::class,
-        ChargesRealm::class,
+        Charges::class,
+        AddOnItem::class,
         PartnerRealm::class,
         EmployeeRealm::class,
         ExpensesCategoryRealm::class,
@@ -87,6 +99,11 @@ object RealmModule {
     }
 
     @Provides
+    fun provideCategoryRealmDaoImpl(): CategoryRepository {
+        return CategoryRepositoryImpl(config)
+    }
+
+    @Provides
     fun provideProductRealmDaoImpl(): ProductRealmDao {
         return ProductRealmDaoImpl(config)
     }
@@ -94,6 +111,11 @@ object RealmModule {
     @Provides
     fun provideCustomerRealmDaoImpl(): CustomerRealmDao {
         return CustomerRealmDaoImpl(config)
+    }
+
+    @Provides
+    fun provideAddressRealmDaoImpl(): AddressRepository {
+        return AddressRepositoryImpl(config)
     }
 
     @Provides
@@ -112,8 +134,13 @@ object RealmModule {
     }
 
     @Provides
-    fun provideChargesRealmDaoImpl(): ChargesRealmDao {
-        return ChargesRealmDaoImpl(config)
+    fun provideChargesRealmDaoImpl(): ChargesRepository {
+        return ChargesRepositoryImpl(config)
+    }
+
+    @Provides
+    fun provideAddOnItemRealmDaoImpl(): AddOnItemRepository {
+        return AddOnItemRepositoryImpl(config)
     }
 
     @Provides

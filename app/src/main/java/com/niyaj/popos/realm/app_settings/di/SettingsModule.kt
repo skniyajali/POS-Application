@@ -23,7 +23,7 @@ object SettingsModule {
     private val config = RealmConfiguration
         .Builder(schema)
         .deleteRealmIfMigrationNeeded()
-        .name("settings.realm")
+        .name("popos.realm")
         .log(LogLevel.ALL)
         .build()
 

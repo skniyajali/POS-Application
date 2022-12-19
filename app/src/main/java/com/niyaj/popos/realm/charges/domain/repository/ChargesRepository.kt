@@ -1,14 +1,14 @@
-package com.niyaj.popos.realm.charges
+package com.niyaj.popos.realm.charges.domain.repository
 
-import com.niyaj.popos.domain.model.Charges
 import com.niyaj.popos.domain.util.Resource
+import com.niyaj.popos.realm.charges.domain.model.Charges
 import kotlinx.coroutines.flow.Flow
 
-interface ChargesRealmDao {
+interface ChargesRepository {
 
-    suspend fun getAllCharges(): Flow<Resource<List<ChargesRealm>>>
+    suspend fun getAllCharges(): Flow<Resource<List<Charges>>>
 
-    suspend fun getChargesById(chargesId: String): Resource<ChargesRealm?>
+    suspend fun getChargesById(chargesId: String): Resource<Charges?>
 
     fun findChargesByName(chargesName: String, chargesId: String?): Boolean
 

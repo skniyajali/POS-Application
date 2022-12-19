@@ -8,8 +8,8 @@ import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.niyaj.popos.domain.model.CartOrder
 import com.niyaj.popos.domain.model.CartProduct
-import com.niyaj.popos.domain.model.Charges
-import com.niyaj.popos.domain.use_cases.charges.ChargesUseCases
+import com.niyaj.popos.realm.charges.domain.model.Charges
+import com.niyaj.popos.realm.charges.domain.use_cases.ChargesUseCases
 import com.niyaj.popos.domain.use_cases.order.OrderUseCases
 import com.niyaj.popos.domain.util.CartOrderType
 import com.niyaj.popos.domain.util.Resource

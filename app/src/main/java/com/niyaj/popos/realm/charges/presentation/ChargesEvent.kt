@@ -1,6 +1,6 @@
-package com.niyaj.popos.presentation.charges
+package com.niyaj.popos.realm.charges.presentation
 
-import com.niyaj.popos.domain.util.filter_items.FilterCharges
+import com.niyaj.popos.realm.charges.domain.util.FilterCharges
 
 sealed class ChargesEvent{
 
@@ -24,5 +24,5 @@ sealed class ChargesEvent{
 
     object ToggleSearchBar : ChargesEvent()
 
-    object RefreshCharges :ChargesEvent()
+    object RefreshCharges : ChargesEvent()
 }
