@@ -1,5 +1,7 @@
 package com.niyaj.popos.realm.addon_item.di
 
+import com.niyaj.popos.realm.addon_item.data.repository.AddOnItemRepositoryImpl
+import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
 import com.niyaj.popos.realm.addon_item.domain.repository.AddOnItemRepository
 import com.niyaj.popos.realm.addon_item.domain.use_cases.AddOnItemUseCases
 import com.niyaj.popos.realm.addon_item.domain.use_cases.CreateNewAddOnItem
@@ -12,11 +14,28 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.realm.kotlin.RealmConfiguration
+import io.realm.kotlin.log.LogLevel
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AddOnItemModule {
+
+
+    private val schema = setOf(AddOnItem::class)
+
+    private val config = RealmConfiguration
+        .Builder(schema)
+        .deleteRealmIfMigrationNeeded()
+        .name("addOnItem.realm")
+        .log(LogLevel.ALL)
+        .build()
+
+    @Provides
+    fun provideAddOnItemRealmDaoImpl(): AddOnItemRepository {
+        return AddOnItemRepositoryImpl(config)
+    }
 
     @Provides
     @Singleton

@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.settings
+package com.niyaj.popos.realm.app_settings.presentation
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,7 +25,7 @@ import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.presentation.components.ExtendedFabButton
 import com.niyaj.popos.presentation.components.SettingsCard
 import com.niyaj.popos.presentation.components.StandardScaffold
-import com.niyaj.popos.presentation.destinations.DeletionSettingsDestination
+import com.niyaj.popos.destinations.DeletionSettingsDestination
 import com.niyaj.popos.presentation.ui.theme.SpaceMedium
 import com.niyaj.popos.presentation.ui.theme.SpaceSmall
 import com.ramcosta.composedestinations.annotation.Destination

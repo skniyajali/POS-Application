@@ -1,4 +1,4 @@
-package com.niyaj.popos.domain.use_cases.app_settings
+package com.niyaj.popos.realm.app_settings.domain.use_cases
 
 data class SettingsUseCases(
     val getSetting: GetSetting,

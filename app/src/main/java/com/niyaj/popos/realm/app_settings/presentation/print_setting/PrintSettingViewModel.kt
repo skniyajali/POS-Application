@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.settings.print_setting
+package com.niyaj.popos.realm.app_settings.presentation.print_setting
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel

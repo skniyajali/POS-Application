@@ -1,13 +1,15 @@
-package com.niyaj.popos.realm.app_settings
+package com.niyaj.popos.realm.app_settings.data.repository
 
 import com.niyaj.popos.domain.util.Resource
+import com.niyaj.popos.realm.app_settings.domain.model.Settings
+import com.niyaj.popos.realm.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.util.Constants.SETTINGS_ID
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
 import timber.log.Timber
 
-class SettingsServiceImpl(config: RealmConfiguration) : SettingsService {
+class SettingsRepositoryImpl(config: RealmConfiguration) : SettingsRepository {
 
     val realm = Realm.open(config)
 
@@ -16,24 +18,24 @@ class SettingsServiceImpl(config: RealmConfiguration) : SettingsService {
     }
 
 
-    override fun getSetting(): Resource<SettingsRealm> {
+    override fun getSetting(): Resource<Settings> {
         return try {
-            val settings = realm.query<SettingsRealm>().first().find()
+            val settings = realm.query<Settings>().first().find()
 
             if (settings == null) {
-                Resource.Success(SettingsRealm())
+                Resource.Success(Settings())
             }else {
                 Resource.Success(settings)
             }
         }catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to get settings", SettingsRealm())
+            Resource.Error(e.message ?: "Unable to get settings", Settings())
         }
     }
 
-    override suspend fun updateSetting(newSettings: SettingsRealm): Resource<Boolean> {
+    override suspend fun updateSetting(newSettings: Settings): Resource<Boolean> {
         return try {
             realm.write {
-                val settings = this.query<SettingsRealm>("_id == $0", SETTINGS_ID).first().find()
+                val settings = this.query<Settings>("settingsId == $0", SETTINGS_ID).first().find()
 
                 if (settings != null) {
                     settings.expensesDataDeletionInterval = newSettings.expensesDataDeletionInterval
@@ -42,7 +44,7 @@ class SettingsServiceImpl(config: RealmConfiguration) : SettingsService {
                     settings.cartOrderDataDeletionInterval = newSettings.cartOrderDataDeletionInterval
                     settings.updatedAt = System.currentTimeMillis().toString()
                 }else {
-                    val createdSettings = SettingsRealm()
+                    val createdSettings = Settings()
                     createdSettings.expensesDataDeletionInterval = newSettings.expensesDataDeletionInterval
                     createdSettings.reportDataDeletionInterval = newSettings.reportDataDeletionInterval
                     createdSettings.cartDataDeletionInterval = newSettings.cartDataDeletionInterval

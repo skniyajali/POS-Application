@@ -1,15 +1,15 @@
-package com.niyaj.popos.presentation.settings.data_deletion
+package com.niyaj.popos.realm.app_settings.presentation.data_deletion
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.use_cases.app_settings.SettingsUseCases
-import com.niyaj.popos.domain.use_cases.app_settings.validation.ValidateCartInterval
-import com.niyaj.popos.domain.use_cases.app_settings.validation.ValidateCartOrderInterval
-import com.niyaj.popos.domain.use_cases.app_settings.validation.ValidateExpensesInterval
-import com.niyaj.popos.domain.use_cases.app_settings.validation.ValidateReportsInterval
+import com.niyaj.popos.realm.app_settings.domain.use_cases.SettingsUseCases
+import com.niyaj.popos.realm.app_settings.domain.use_cases.validation.ValidateCartInterval
+import com.niyaj.popos.realm.app_settings.domain.use_cases.validation.ValidateCartOrderInterval
+import com.niyaj.popos.realm.app_settings.domain.use_cases.validation.ValidateExpensesInterval
+import com.niyaj.popos.realm.app_settings.domain.use_cases.validation.ValidateReportsInterval
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.domain.util.UiEvent
 import com.niyaj.popos.realm.app_settings.domain.model.Settings

@@ -1,4 +1,4 @@
-package com.niyaj.popos.domain.use_cases.app_settings.validation
+package com.niyaj.popos.realm.app_settings.domain.use_cases.validation
 
 import com.niyaj.popos.domain.util.ValidationResult
 import com.niyaj.popos.util.isContainsArithmeticCharacter

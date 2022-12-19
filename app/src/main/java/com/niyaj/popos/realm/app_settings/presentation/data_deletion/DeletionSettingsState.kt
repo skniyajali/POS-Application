@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.settings.data_deletion
+package com.niyaj.popos.realm.app_settings.presentation.data_deletion
 
 data class DeletionSettingsState(
     val expensesInterval: String = "",

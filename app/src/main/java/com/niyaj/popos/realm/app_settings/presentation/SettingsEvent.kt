@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.settings
+package com.niyaj.popos.realm.app_settings.presentation
 
 sealed class SettingsEvent {
 

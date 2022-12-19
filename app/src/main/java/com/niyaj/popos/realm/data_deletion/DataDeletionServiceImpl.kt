@@ -4,7 +4,7 @@ import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
 import com.niyaj.popos.realm.address.domain.model.Address
 import com.niyaj.popos.realm.app_settings.domain.model.Settings
-import com.niyaj.popos.realm.app_settings.domain.repository.SettingsService
+import com.niyaj.popos.realm.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.cart_order.CartOrderRealm
 import com.niyaj.popos.realm.cart_order.SelectedCartOrderRealm
@@ -30,7 +30,7 @@ import timber.log.Timber
 
 class DataDeletionServiceImpl(
     config: RealmConfiguration,
-    private val settingsService: SettingsService
+    private val settingsRepository: SettingsRepository
 ) : DataDeletionService {
 
     val realm = Realm.open(config)
@@ -48,7 +48,7 @@ class DataDeletionServiceImpl(
      */
     override suspend fun deleteData(): Resource<Boolean> {
         return try {
-            val settings = settingsService.getSetting().data!!
+            val settings = settingsRepository.getSetting().data!!
 
             val expensesDate = getCalculatedStartDate(days = "-${settings.expensesDataDeletionInterval}")
             val cartDate = getCalculatedStartDate(days = "-${settings.cartDataDeletionInterval}")

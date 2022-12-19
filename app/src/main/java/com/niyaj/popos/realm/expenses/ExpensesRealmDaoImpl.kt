@@ -2,7 +2,7 @@ package com.niyaj.popos.realm.expenses
 
 import com.niyaj.popos.domain.model.Expenses
 import com.niyaj.popos.domain.util.Resource
-import com.niyaj.popos.realm.app_settings.domain.repository.SettingsService
+import com.niyaj.popos.realm.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealm
 import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm
@@ -20,7 +20,7 @@ import timber.log.Timber
 
 class ExpensesRealmDaoImpl(
     config: RealmConfiguration,
-    private val settingsService: SettingsService
+    private val settingsRepository: SettingsRepository
 ) : ExpensesRealmDao {
 
     val realm = Realm.open(config)
@@ -148,7 +148,7 @@ class ExpensesRealmDaoImpl(
 
     override suspend fun deletePastExpanses(deleteAll: Boolean): Resource<Boolean> {
         return try {
-            val settings = settingsService.getSetting().data!!
+            val settings = settingsRepository.getSetting().data!!
 
             val expensesDate =
                 getCalculatedStartDate(days = "-${settings.expensesDataDeletionInterval}")

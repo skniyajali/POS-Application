@@ -1,4 +1,4 @@
-package com.niyaj.popos.presentation.settings.data_deletion
+package com.niyaj.popos.realm.app_settings.presentation.data_deletion
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -69,7 +69,11 @@ fun DeletionSettings(
                 keyboardType = KeyboardType.Number,
                 error = deletionSettingsViewModel.state.expensesIntervalError,
                 onValueChange = {
-                    deletionSettingsViewModel.onEvent(DeletionSettingsEvent.ExpensesIntervalChanged(it))
+                    deletionSettingsViewModel.onEvent(
+                        DeletionSettingsEvent.ExpensesIntervalChanged(
+                            it
+                        )
+                    )
                 },
             )
 
@@ -82,7 +86,11 @@ fun DeletionSettings(
                 keyboardType = KeyboardType.Number,
                 error = deletionSettingsViewModel.state.reportsIntervalError,
                 onValueChange = {
-                    deletionSettingsViewModel.onEvent(DeletionSettingsEvent.ReportsIntervalChanged(it))
+                    deletionSettingsViewModel.onEvent(
+                        DeletionSettingsEvent.ReportsIntervalChanged(
+                            it
+                        )
+                    )
                 },
             )
 
@@ -108,7 +116,11 @@ fun DeletionSettings(
                 keyboardType = KeyboardType.Number,
                 error = deletionSettingsViewModel.state.cartOrderIntervalError,
                 onValueChange = {
-                    deletionSettingsViewModel.onEvent(DeletionSettingsEvent.CartOrderIntervalChanged(it))
+                    deletionSettingsViewModel.onEvent(
+                        DeletionSettingsEvent.CartOrderIntervalChanged(
+                            it
+                        )
+                    )
                 },
             )
             Spacer(modifier = Modifier.height(SpaceMini))

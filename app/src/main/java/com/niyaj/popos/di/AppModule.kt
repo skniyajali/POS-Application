@@ -2,9 +2,6 @@ package com.niyaj.popos.di
 
 import com.niyaj.popos.data.repository.*
 import com.niyaj.popos.domain.repository.*
-import com.niyaj.popos.domain.use_cases.app_settings.GetSetting
-import com.niyaj.popos.domain.use_cases.app_settings.SettingsUseCases
-import com.niyaj.popos.domain.use_cases.app_settings.UpdateSetting
 import com.niyaj.popos.domain.use_cases.cart.*
 import com.niyaj.popos.domain.use_cases.cart_order.*
 import com.niyaj.popos.domain.use_cases.category.*
@@ -32,7 +29,6 @@ import com.niyaj.popos.domain.use_cases.reports.GetProductWiseReport
 import com.niyaj.popos.domain.use_cases.reports.GetReport
 import com.niyaj.popos.domain.use_cases.reports.GetReportsBarData
 import com.niyaj.popos.domain.use_cases.reports.ReportsUseCases
-import com.niyaj.popos.realm.app_settings.domain.repository.SettingsService
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
 import com.niyaj.popos.realm.category.CategoryRealmDao
@@ -155,12 +151,6 @@ object AppModule {
     @Provides
     fun provideDataDeletionRepository(dataDeletionService: DataDeletionService): DataDeletionRepository {
         return DataDeletionRepositoryImpl(dataDeletionService)
-    }
-
-
-    @Provides
-    fun provideSettingsRepository(settingService: SettingsService): SettingsRepository {
-        return SettingsRepositoryImpl(settingService)
     }
 
     @Provides
@@ -392,12 +382,4 @@ object AppModule {
         )
     }
 
-    @Provides
-    @Singleton
-    fun provideSettingsUseCases(settingsRepository: SettingsRepository): SettingsUseCases {
-        return SettingsUseCases(
-            getSetting = GetSetting(settingsRepository),
-            updateSetting = UpdateSetting(settingsRepository)
-        )
-    }
 }

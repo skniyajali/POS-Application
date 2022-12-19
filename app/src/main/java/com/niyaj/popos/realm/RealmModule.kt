@@ -1,14 +1,6 @@
 package com.niyaj.popos.realm
 
-import com.niyaj.popos.realm.addon_item.data.repository.AddOnItemRepositoryImpl
-import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
-import com.niyaj.popos.realm.addon_item.domain.repository.AddOnItemRepository
-import com.niyaj.popos.realm.address.data.repository.AddressRepositoryImpl
-import com.niyaj.popos.realm.address.domain.model.Address
-import com.niyaj.popos.realm.address.domain.repository.AddressRepository
-import com.niyaj.popos.realm.app_settings.domain.model.Settings
-import com.niyaj.popos.realm.app_settings.domain.repository.SettingsService
-import com.niyaj.popos.realm.app_settings.SettingsServiceImpl
+import com.niyaj.popos.realm.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart.CartRealmDaoImpl
@@ -71,11 +63,9 @@ object RealmModule {
     private val schema = setOf(
         CategoryRealm::class,
         ProductRealm::class,
-        Address::class,
         CustomerRealm::class,
         CartOrderRealm::class,
         CartRealm::class,
-        AddOnItem::class,
         ChargesRealm::class,
         PartnerRealm::class,
         EmployeeRealm::class,
@@ -85,7 +75,6 @@ object RealmModule {
         SalaryRealm::class,
         AttendanceRealm::class,
         ReportsRealm::class,
-        Settings::class,
     )
 
     private val config = RealmConfiguration
@@ -112,18 +101,13 @@ object RealmModule {
     }
 
     @Provides
-    fun provideAddressRealmDaoImpl(): AddressRepository {
-        return AddressRepositoryImpl(config)
-    }
-
-    @Provides
     fun provideCustomerRealmDaoImpl(): CustomerRealmDao {
         return CustomerRealmDaoImpl(config)
     }
 
     @Provides
-    fun provideCartOrderRealmDaoImpl(settingsService: SettingsService): CartOrderRealmDao {
-        return CartOrderRealmDaoImpl(config, settingsService)
+    fun provideCartOrderRealmDaoImpl(settingsRepository: SettingsRepository): CartOrderRealmDao {
+        return CartOrderRealmDaoImpl(config, settingsRepository)
     }
 
     @Provides
@@ -134,11 +118,6 @@ object RealmModule {
     @Provides
     fun provideOrderRealmDaoImpl(): OrderRealmDao {
         return OrderRealmDaoImpl(config)
-    }
-
-    @Provides
-    fun provideAddOnItemRealmDaoImpl(): AddOnItemRepository {
-        return AddOnItemRepositoryImpl(config)
     }
 
     @Provides
@@ -162,8 +141,8 @@ object RealmModule {
     }
 
     @Provides
-    fun provideExpensesRealmDaoImpl(settingsService: SettingsService): ExpensesRealmDao {
-        return ExpensesRealmDaoImpl(config, settingsService)
+    fun provideExpensesRealmDaoImpl(settingsRepository: SettingsRepository): ExpensesRealmDao {
+        return ExpensesRealmDaoImpl(config, settingsRepository)
     }
 
     @Provides
@@ -187,12 +166,7 @@ object RealmModule {
     }
 
     @Provides
-    fun provideDataDeletionServiceImpl(settingsService: SettingsService): DataDeletionService {
-        return DataDeletionServiceImpl(config, settingsService)
-    }
-
-    @Provides
-    fun provideSettingsServiceImpl(): SettingsService {
-        return SettingsServiceImpl(config)
+    fun provideDataDeletionServiceImpl(settingsRepository: SettingsRepository): DataDeletionService {
+        return DataDeletionServiceImpl(config, settingsRepository)
     }
 }

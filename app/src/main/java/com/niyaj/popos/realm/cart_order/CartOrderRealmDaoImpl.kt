@@ -6,7 +6,7 @@ import com.niyaj.popos.domain.util.OrderStatus
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.addon_item.domain.model.AddOnItem
 import com.niyaj.popos.realm.address.domain.model.Address
-import com.niyaj.popos.realm.app_settings.domain.repository.SettingsService
+import com.niyaj.popos.realm.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.customer.CustomerRealm
 import com.niyaj.popos.util.getCalculatedStartDate
@@ -32,7 +32,7 @@ import timber.log.Timber
 
 class CartOrderRealmDaoImpl(
     config: RealmConfiguration,
-    private val settingsService: SettingsService
+    private val settingsRepository: SettingsRepository
 ) : CartOrderRealmDao {
 
     val realm = Realm.open(config)
@@ -453,7 +453,7 @@ class CartOrderRealmDaoImpl(
 
     override suspend fun deleteCartOrders(deleteAll: Boolean): Resource<Boolean> {
         return try {
-            val settings = settingsService.getSetting().data!!
+            val settings = settingsRepository.getSetting().data!!
             val cartOrderDate =
                 getCalculatedStartDate(days = "-${settings.cartOrderDataDeletionInterval}")
 
