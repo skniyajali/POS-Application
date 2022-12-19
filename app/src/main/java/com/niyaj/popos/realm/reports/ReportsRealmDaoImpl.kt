@@ -7,7 +7,7 @@ import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.cart.CartRealm
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealm
-import com.niyaj.popos.realm.expenses.ExpensesRealm
+import com.niyaj.popos.realm.expenses.domain.model.Expenses
 import com.niyaj.popos.util.getCalculatedStartDate
 import com.niyaj.popos.util.toSalaryDate
 import io.realm.kotlin.Realm
@@ -127,12 +127,12 @@ class ReportsRealmDaoImpl(
 
     override suspend fun getTotalSales(startDate: String, endDate: String): Number {
         try {
-            val totalExpensesItem = realm.query<ExpensesRealm>(
+            val totalExpensesItem = realm.query<Expenses>(
                 "created_at >= $0 AND created_at <= $1",
                 startDate,
                 endDate
             ).find().sumOf {
-                it.expansesPrice.toInt()
+                it.expensesPrice.toInt()
             }
 
             val totalDineInItems = realm.query<CartOrderRealm>(
@@ -223,7 +223,7 @@ class ReportsRealmDaoImpl(
     private fun getItemsReport(startDate: String, endDate: String): Triple<Pair<Long, Long>, Pair<Long, Long>, Pair<Long, Long>> {
         try {
             //Get Today Expenses
-            val expensesItem = realm.query<ExpensesRealm>(
+            val expensesItem = realm.query<Expenses>(
                 "created_at >= $0 AND created_at <= $1",
                 startDate,
                 endDate
@@ -231,7 +231,7 @@ class ReportsRealmDaoImpl(
 
             val totalExpensesItem = expensesItem.size.toLong()
             val totalExpensesAmount = expensesItem.sumOf {
-                it.expansesPrice.toLong()
+                it.expensesPrice.toLong()
             }
 
             //Get Today DineIn Orders

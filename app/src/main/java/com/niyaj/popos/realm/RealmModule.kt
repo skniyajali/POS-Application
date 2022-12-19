@@ -39,12 +39,12 @@ import com.niyaj.popos.realm.employee_attendance.data.repository.AttendanceRepos
 import com.niyaj.popos.realm.employee_salary.domain.model.EmployeeSalary
 import com.niyaj.popos.realm.employee_salary.domain.repository.SalaryRepository
 import com.niyaj.popos.realm.employee_salary.data.repository.SalaryRepositoryImpl
-import com.niyaj.popos.realm.expenses.ExpensesRealm
-import com.niyaj.popos.realm.expenses.ExpensesRealmDao
-import com.niyaj.popos.realm.expenses.ExpensesRealmDaoImpl
-import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealm
-import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealmDao
-import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealmDaoImpl
+import com.niyaj.popos.realm.expenses.domain.model.Expenses
+import com.niyaj.popos.realm.expenses.domain.repository.ExpensesRepository
+import com.niyaj.popos.realm.expenses.data.repository.ExpensesRepositoryImpl
+import com.niyaj.popos.realm.expenses_category.domain.model.ExpensesCategory
+import com.niyaj.popos.realm.expenses_category.domain.repository.ExpensesCategoryRepository
+import com.niyaj.popos.realm.expenses_category.data.repository.ExpensesCategoryRepositoryImpl
 import com.niyaj.popos.realm.main_feed.MainFeedService
 import com.niyaj.popos.realm.main_feed.MainFeedServiceImpl
 import com.niyaj.popos.realm.order.OrderRealmDao
@@ -77,8 +77,8 @@ object RealmModule {
         AddOnItem::class,
         DeliveryPartner::class,
         Employee::class,
-        ExpensesCategoryRealm::class,
-        ExpensesRealm::class,
+        ExpensesCategory::class,
+        Expenses::class,
         SelectedCartOrderRealm::class,
         EmployeeSalary::class,
         EmployeeAttendance::class,
@@ -154,13 +154,13 @@ object RealmModule {
     }
 
     @Provides
-    fun provideExpensesCategoryRealmDaoImpl(): ExpensesCategoryRealmDao {
-        return ExpensesCategoryRealmDaoImpl(config)
+    fun provideExpensesCategoryRealmDaoImpl(): ExpensesCategoryRepository {
+        return ExpensesCategoryRepositoryImpl(config)
     }
 
     @Provides
-    fun provideExpensesRealmDaoImpl(settingsRepository: SettingsRepository): ExpensesRealmDao {
-        return ExpensesRealmDaoImpl(config, settingsRepository)
+    fun provideExpensesRealmDaoImpl(settingsRepository: SettingsRepository): ExpensesRepository {
+        return ExpensesRepositoryImpl(config, settingsRepository)
     }
 
     @Provides

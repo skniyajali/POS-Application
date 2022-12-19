@@ -24,19 +24,6 @@ import com.niyaj.popos.domain.use_cases.reports.ReportsUseCases
 import com.niyaj.popos.realm.cart.CartRealmDao
 import com.niyaj.popos.realm.cart_order.CartOrderRealmDao
 import com.niyaj.popos.realm.common.CommonRealmDao
-import com.niyaj.popos.realm.employee_salary.data.repository.SalaryRepositoryImpl
-import com.niyaj.popos.realm.employee_salary.domain.use_cases.AddNewSalary
-import com.niyaj.popos.realm.employee_salary.domain.use_cases.DeleteSalary
-import com.niyaj.popos.realm.employee_salary.domain.use_cases.GetAllSalary
-import com.niyaj.popos.realm.employee_salary.domain.use_cases.GetEmployeeSalary
-import com.niyaj.popos.realm.employee_salary.domain.use_cases.GetSalaryByEmployeeId
-import com.niyaj.popos.realm.employee_salary.domain.use_cases.GetSalaryById
-import com.niyaj.popos.realm.employee_salary.domain.use_cases.GetSalaryCalculableDate
-import com.niyaj.popos.realm.employee_salary.domain.use_cases.SalaryUseCases
-import com.niyaj.popos.realm.employee_salary.domain.use_cases.UpdateSalary
-import com.niyaj.popos.realm.employee_salary.domain.repository.SalaryRepository
-import com.niyaj.popos.realm.expenses.ExpensesRealmDao
-import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealmDao
 import com.niyaj.popos.realm.main_feed.MainFeedService
 import com.niyaj.popos.realm.order.OrderRealmDao
 import com.niyaj.popos.realm.product.ProductRealmDao
@@ -73,16 +60,6 @@ object AppModule {
     }
 
     @Provides
-    fun provideExpensesCategoryRepository(expensesCategoryRealmDao: ExpensesCategoryRealmDao): ExpensesCategoryRepository {
-        return ExpensesCategoryRepositoryImpl(expensesCategoryRealmDao)
-    }
-
-    @Provides
-    fun provideExpensesRepository(expensesRealmDao: ExpensesRealmDao): ExpensesRepository {
-        return ExpensesRepositoryImpl(expensesRealmDao)
-    }
-
-    @Provides
     fun provideCommonRepository(commonRealmDao: CommonRealmDao): CommonRepository {
         return CommonRepositoryImpl(commonRealmDao)
     }
@@ -95,11 +72,6 @@ object AppModule {
     @Provides
     fun provideMainFeedRepository(mainFeedService: MainFeedService): MainFeedRepository {
         return MainFeedRepositoryImpl(mainFeedService)
-    }
-
-    @Provides
-    fun provideSalaryRepository(salaryRepository: SalaryRepository): SalaryRepository {
-        return SalaryRepositoryImpl(salaryRepository)
     }
 
     @Provides
@@ -180,31 +152,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideExpensesCategoryUseCases(expensesCategoryRepository: ExpensesCategoryRepository): ExpensesCategoryUseCases {
-        return ExpensesCategoryUseCases(
-            getAllExpensesCategory = GetAllExpensesCategory(expensesCategoryRepository),
-            getExpensesCategoryById = GetExpensesCategoryById(expensesCategoryRepository),
-            createNewExpensesCategory = CreateNewExpensesCategory(expensesCategoryRepository),
-            updateExpensesCategory = UpdateExpensesCategory(expensesCategoryRepository),
-            deleteExpensesCategory = DeleteExpensesCategory(expensesCategoryRepository)
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun provideExpensesUseCases(expensesRepository: ExpensesRepository): ExpensesUseCases {
-        return ExpensesUseCases(
-            getAllExpenses = GetAllExpenses(expensesRepository),
-            getExpensesById = GetExpensesById(expensesRepository),
-            createNewExpenses = CreateNewExpenses(expensesRepository),
-            updateExpenses = UpdateExpenses(expensesRepository),
-            deleteExpenses = DeleteExpenses(expensesRepository),
-            deletePastExpenses = DeletePastExpenses(expensesRepository),
-        )
-    }
-
-    @Provides
-    @Singleton
     fun provideCommonUseCases(commonRepository: CommonRepository): CommonUseCases {
         return CommonUseCases(
             getTotalPriceOfOrder = GetTotalPriceOfOrder(commonRepository)
@@ -220,21 +167,6 @@ object AppModule {
             getReportsBarData = GetReportsBarData(reportsRepository),
             getProductWiseReport = GetProductWiseReport(reportsRepository),
             deletePastData = DeletePastData(reportsRepository),
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun provideSalaryUseCases(salaryRepository: SalaryRepository): SalaryUseCases {
-        return SalaryUseCases(
-            getAllSalary = GetAllSalary(salaryRepository),
-            getSalaryById = GetSalaryById(salaryRepository),
-            getSalaryByEmployeeId = GetSalaryByEmployeeId(salaryRepository),
-            addNewSalary = AddNewSalary(salaryRepository),
-            updateSalary = UpdateSalary(salaryRepository),
-            deleteSalary = DeleteSalary(salaryRepository),
-            getEmployeeSalary = GetEmployeeSalary(salaryRepository),
-            getSalaryCalculableDate = GetSalaryCalculableDate(salaryRepository),
         )
     }
 }

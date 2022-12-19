@@ -16,8 +16,8 @@ import com.niyaj.popos.realm.delivery_partner.domain.model.DeliveryPartner
 import com.niyaj.popos.realm.employee.domain.model.Employee
 import com.niyaj.popos.realm.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.realm.employee_salary.domain.model.EmployeeSalary
-import com.niyaj.popos.realm.expenses.ExpensesRealm
-import com.niyaj.popos.realm.expenses_category.ExpensesCategoryRealm
+import com.niyaj.popos.realm.expenses.domain.model.Expenses
+import com.niyaj.popos.realm.expenses_category.domain.model.ExpensesCategory
 import com.niyaj.popos.realm.product.ProductRealm
 import com.niyaj.popos.realm.reports.ReportsRealm
 import com.niyaj.popos.util.getCalculatedStartDate
@@ -58,7 +58,7 @@ class DataDeletionRepositoryImpl(
 
 
             realm.write {
-                val expenses = this.query<ExpensesRealm>("created_at < $0", reportDate).find()
+                val expenses = this.query<Expenses>("created_at < $0", reportDate).find()
                 val carts = this.query<CartRealm>("created_at < $0", cartDate).find()
                 val cartOrder = this.query<CartOrderRealm>("updated_at < $0", cartOrderDate).find()
                 val reports = this.query<ReportsRealm>("createdAt < $0", expensesDate).find()
@@ -92,8 +92,8 @@ class DataDeletionRepositoryImpl(
                     delete(Charges::class)
                     delete(DeliveryPartner::class)
                     delete(Employee::class)
-                    delete(ExpensesCategoryRealm::class)
-                    delete(ExpensesRealm::class)
+                    delete(ExpensesCategory::class)
+                    delete(Expenses::class)
                     delete(SelectedCartOrderRealm::class)
                     delete(EmployeeSalary::class)
                     delete(EmployeeAttendance::class)

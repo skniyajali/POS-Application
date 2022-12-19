@@ -10,8 +10,8 @@ import com.niyaj.popos.realm.charges.presentation.FilterChargesScreen
 import com.niyaj.popos.realm.customer.presentation.FilterCustomerScreen
 import com.niyaj.popos.realm.delivery_partner.presentation.FilterPartnerScreen
 import com.niyaj.popos.realm.employee.presentation.FilterEmployeeScreen
-import com.niyaj.popos.presentation.expenses.FilterExpensesScreen
-import com.niyaj.popos.presentation.expenses_category.FilterExpensesCategoryScreen
+import com.niyaj.popos.realm.expenses.presentation.FilterExpensesScreen
+import com.niyaj.popos.realm.expenses_category.presentation.FilterExpensesCategoryScreen
 import com.niyaj.popos.presentation.order.FilterOrderScreen
 import com.niyaj.popos.presentation.product.FilterProductScreen
 

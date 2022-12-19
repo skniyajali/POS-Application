@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
+import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
 class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepository {
@@ -149,11 +150,12 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
                     .find()
 
             if (employee != null) {
-                val newAttendance =
-                    EmployeeAttendance()
+                val newAttendance = EmployeeAttendance()
+                newAttendance.attendeeId = BsonObjectId().toHexString()
                 newAttendance.isAbsent = attendance.isAbsent
                 newAttendance.absentDate = attendance.absentDate
                 newAttendance.absentReason = attendance.absentReason
+                newAttendance.createdAt = System.currentTimeMillis().toString()
 
                 CoroutineScope(Dispatchers.IO).launch {
                     realm.write {

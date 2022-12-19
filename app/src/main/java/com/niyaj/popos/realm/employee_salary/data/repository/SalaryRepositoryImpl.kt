@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
+import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
 class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
@@ -145,11 +146,13 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
 
             if (employee != null) {
                 val salary = EmployeeSalary()
+                salary.salaryId = BsonObjectId().toHexString()
                 salary.employeeSalary = newSalary.employeeSalary
                 salary.salaryType = newSalary.salaryType
                 salary.salaryGivenDate = newSalary.salaryGivenDate
                 salary.salaryPaymentType = newSalary.salaryPaymentType
                 salary.salaryNote = newSalary.salaryNote
+                salary.createdAt = System.currentTimeMillis().toString()
 
                 realm.write {
                     findLatest(employee)?.also {

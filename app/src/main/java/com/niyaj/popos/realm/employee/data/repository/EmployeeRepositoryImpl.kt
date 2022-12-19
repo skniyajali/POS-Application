@@ -3,7 +3,7 @@ package com.niyaj.popos.realm.employee.data.repository
 import com.niyaj.popos.domain.util.Resource
 import com.niyaj.popos.realm.employee.domain.model.Employee
 import com.niyaj.popos.realm.employee.domain.repository.EmployeeRepository
-import com.niyaj.popos.realm.expenses.ExpensesRealm
+import com.niyaj.popos.realm.expenses.domain.model.Expenses
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.exceptions.RealmException
@@ -130,7 +130,7 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
         return try {
             realm.write {
                 val employee: Employee = this.query<Employee>("employeeId == $0", employeeId).find().first()
-                val expenses = this.query<ExpensesRealm>("expansesSubCategory == $0", employeeId).find()
+                val expenses = this.query<Expenses>("expansesSubCategory == $0", employeeId).find()
 
                 delete(expenses)
 

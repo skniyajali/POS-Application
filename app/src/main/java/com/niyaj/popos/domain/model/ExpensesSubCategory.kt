@@ -1,5 +1,7 @@
 package com.niyaj.popos.domain.model
 
+import com.niyaj.popos.realm.expenses_category.domain.model.ExpensesCategory
+
 data class ExpensesSubCategory(
     val expansesSubCategoryId: String = "",
     val expensesCategory: ExpensesCategory = ExpensesCategory(),
