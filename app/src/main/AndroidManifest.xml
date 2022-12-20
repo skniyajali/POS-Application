@@ -34,7 +34,7 @@
             tools:targetApi="29" />
 
         <activity
-            android:name=".presentation.MainActivity"
+            android:name=".features.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Popos">
             <intent-filter>

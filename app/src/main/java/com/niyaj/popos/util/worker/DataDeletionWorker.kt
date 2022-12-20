@@ -8,7 +8,7 @@ import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.niyaj.popos.R
-import com.niyaj.popos.realm.data_deletion.domain.use_cases.DataDeletionUseCases
+import com.niyaj.popos.features.data_deletion.domain.use_cases.DataDeletionUseCases
 import com.niyaj.popos.util.Constants.DELETE_DATA_NOTIFICATION_CHANNEL_ID
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
