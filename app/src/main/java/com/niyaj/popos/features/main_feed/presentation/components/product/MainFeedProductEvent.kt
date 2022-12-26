@@ -4,9 +4,9 @@ import com.niyaj.popos.features.product.domain.util.FilterProduct
 
 sealed class MainFeedProductEvent{
 
-    data class AddProductToCart(val orderId: String, val productId: String): MainFeedProductEvent()
+    data class AddProductToCart(val cartOrderId: String, val productId: String): MainFeedProductEvent()
 
-    data class RemoveProductFromCart(val orderId: String, val productId: String): MainFeedProductEvent()
+    data class RemoveProductFromCart(val cartOrderId: String, val productId: String): MainFeedProductEvent()
 
     data class OnFilterProduct(val filterProduct: FilterProduct): MainFeedProductEvent()
 

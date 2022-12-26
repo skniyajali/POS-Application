@@ -19,8 +19,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -31,7 +29,10 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
 import com.niyaj.popos.features.common.util.BottomSheetScreen
 import com.niyaj.popos.features.common.util.Navigation
+import com.niyaj.popos.features.common.util.hasBluetoothPermission
+import com.niyaj.popos.features.common.util.hasStoragePermission
 import com.niyaj.popos.features.components.util.SheetLayout
+import com.niyaj.popos.util.Constants.DELETE_DATA_INTERVAL_HOUR
 import com.niyaj.popos.util.Constants.DELETE_DATA_NOTIFICATION_CHANNEL_ID
 import com.niyaj.popos.util.Constants.GENERATE_REPORT_CHANNEL_ID
 import com.niyaj.popos.util.Constants.GENERATE_REPORT_INTERVAL_HOUR
@@ -40,7 +41,6 @@ import com.niyaj.popos.util.worker.GenerateReportWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 
@@ -58,24 +58,41 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+//        window.setDecorFitsSystemWindows(false)
 
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_CONNECT,
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.BLUETOOTH_ADMIN,
-            ),
-            0
-        )
+        val hasBluetoothPermission = applicationContext.hasBluetoothPermission()
+        val hasStoragePermission = applicationContext.hasStoragePermission()
 
-        val currentTime = LocalDateTime.now().hour
+        if (!hasBluetoothPermission) {
+            ActivityCompat.requestPermissions(
+                /* activity = */ this,
+                /* permissions = */ arrayOf(
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+
+                    ),
+                /* requestCode = */ 0
+            )
+        }
+
+        if (!hasStoragePermission) {
+            ActivityCompat.requestPermissions(
+                /* activity = */ this,
+                /* permissions = */ arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+                    ),
+                /* requestCode = */ 0
+            )
+        }
 
         val periodicDeletionWorker =
-            OneTimeWorkRequestBuilder<DataDeletionWorker>()
-                .addTag(DELETE_DATA_NOTIFICATION_CHANNEL_ID)
-                .build()
+            PeriodicWorkRequestBuilder<DataDeletionWorker>(
+                24, TimeUnit.HOURS, DELETE_DATA_INTERVAL_HOUR, TimeUnit.HOURS
+            ).addTag(DELETE_DATA_NOTIFICATION_CHANNEL_ID).build()
 
         val generateReportWorker = PeriodicWorkRequestBuilder<GenerateReportWorker>(
             GENERATE_REPORT_INTERVAL_HOUR, TimeUnit.HOURS
@@ -83,13 +100,11 @@ class MainActivity : ComponentActivity() {
 
         val workManager = WorkManager.getInstance(applicationContext)
 
-        if(currentTime == 14){
-            workManager.beginUniqueWork(
-                DELETE_DATA_NOTIFICATION_CHANNEL_ID,
-                ExistingWorkPolicy.APPEND,
-                periodicDeletionWorker
-            ).enqueue()
-        }
+        workManager.enqueueUniquePeriodicWork(
+            DELETE_DATA_NOTIFICATION_CHANNEL_ID,
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+            periodicDeletionWorker
+        )
 
         workManager.enqueueUniquePeriodicWork(
             GENERATE_REPORT_CHANNEL_ID,
@@ -97,13 +112,16 @@ class MainActivity : ComponentActivity() {
             generateReportWorker
         )
 
-
         setContent {
             PoposTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     color = MaterialTheme.colors.background,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+//                        .statusBarsPadding()
+//                        .navigationBarsPadding()
+//                        .imePadding(),
                 ) {
                     val scaffoldState = rememberScaffoldState()
                     val navController = rememberAnimatedNavController()
@@ -118,11 +136,6 @@ class MainActivity : ComponentActivity() {
                             when (workInfo.state) {
                                 WorkInfo.State.SUCCEEDED -> {
                                     Timber.d("Data Deletion Successfully")
-                                    Toast.makeText(
-                                        context,
-                                        "Data Deletion Successfully",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
                                 }
 
                                 WorkInfo.State.FAILED -> {
@@ -136,21 +149,10 @@ class MainActivity : ComponentActivity() {
 
                                 WorkInfo.State.CANCELLED -> {
                                     Timber.d("Data Deletion CANCELLED")
-                                    Toast.makeText(
-                                        context,
-                                        "Data Deletion Cancelled",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
                                 }
 
                                 WorkInfo.State.ENQUEUED -> {
                                     Timber.d("Data Deletion ENQUEUED")
-                                    Toast.makeText(
-                                        context,
-                                        "Data Deletion Enqueued",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
                                 }
 
                                 WorkInfo.State.RUNNING -> {
@@ -164,12 +166,6 @@ class MainActivity : ComponentActivity() {
 
                                 WorkInfo.State.BLOCKED -> {
                                     Timber.d("Data Deletion BLOCKED")
-                                    Toast.makeText(
-                                        context,
-                                        "Data Deletion Blocked",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
                                 }
                             }
                         }
@@ -180,58 +176,51 @@ class MainActivity : ComponentActivity() {
                             when (workInfo.state) {
                                 WorkInfo.State.SUCCEEDED -> {
                                     Timber.d("Report Generated Successfully")
-                                    Toast.makeText(
-                                        context,
-                                        "Report Generated Successfully",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            "Report Generated Successfully"
+                                        )
+                                    }
                                 }
 
                                 WorkInfo.State.FAILED -> {
                                     Timber.d("Unable to generate report")
-                                    Toast.makeText(
-                                        context,
-                                        "Unable to generate report",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            "Unable to generate report"
+                                        )
+                                    }
                                 }
 
                                 WorkInfo.State.CANCELLED -> {
                                     Timber.d("Report Generate CANCELLED")
-                                    Toast.makeText(
-                                        context,
-                                        "Report Generate Cancelled",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            "Report Generate Cancelled",
+                                        )
+                                    }
                                 }
 
                                 WorkInfo.State.ENQUEUED -> {
                                     Timber.d("Report Generate ENQUEUED")
-                                    Toast.makeText(
-                                        context,
-                                        "Report Generate Enqueued",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
                                 }
 
                                 WorkInfo.State.RUNNING -> {
                                     Timber.d("Report Generate RUNNING")
-                                    Toast.makeText(
-                                        context,
-                                        "Report Generate Running",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            "Report Generate Running"
+                                        )
+                                    }
                                 }
 
                                 WorkInfo.State.BLOCKED -> {
                                     Timber.d("Report Generate BLOCKED")
-                                    Toast.makeText(
-                                        context,
-                                        "Report Generate Blocked",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            "Report Generate Blocked"
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -271,8 +260,9 @@ class MainActivity : ComponentActivity() {
                         sheetContent = {
                             currentBottomSheet.value?.let { currentSheet ->
                                 SheetLayout(
-                                    currentSheet,
-                                    closeSheet,
+                                    currentScreen = currentSheet,
+                                    onCloseBottomSheet = closeSheet,
+                                    navController = navController,
                                 )
                             }
                         },

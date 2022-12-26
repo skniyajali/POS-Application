@@ -1,9 +1,7 @@
 package com.niyaj.popos.features.order.presentation
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -52,11 +50,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -66,7 +62,6 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.R
 import com.niyaj.popos.features.cart.presentation.CartTabItem
-import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.common.ui.theme.LightColor12
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
@@ -471,33 +466,6 @@ fun OrderScreen(
                                                             text = (order.orderPrice.first.minus(order.orderPrice.second)).toString(),
                                                             icon = ImageVector.vectorResource(id = R.drawable.round_currency_rupee_20)
                                                         )
-                                                        Spacer(modifier = Modifier.height(SpaceSmall))
-                                                        if(order.cartOrder.cartOrderStatus != OrderStatus.Placed.orderStatus){
-                                                            Box(
-                                                                modifier = Modifier
-                                                                    .padding(SpaceMini)
-                                                                    .clip(RoundedCornerShape(
-                                                                        SpaceMini
-                                                                    ))
-                                                                    .background(
-                                                                        if (order.cartOrder.cartOrderStatus == OrderStatus.Delivered.orderStatus)
-                                                                            MaterialTheme.colors.primary
-                                                                        else MaterialTheme.colors.error
-                                                                    ),
-                                                                contentAlignment = Alignment.Center
-                                                            ){
-                                                                Text(
-                                                                    modifier = Modifier.padding(
-                                                                        SpaceMini
-                                                                    ),
-                                                                    text = order.cartOrder.cartOrderStatus,
-                                                                    style = MaterialTheme.typography.body1,
-                                                                    textAlign = TextAlign.Center,
-                                                                    color = MaterialTheme.colors.onPrimary,
-                                                                )
-                                                            }
-                                                        }
-
                                                     }
 
                                                     Row(
@@ -695,33 +663,6 @@ fun OrderScreen(
                                                             text = (order.orderPrice.first.minus(order.orderPrice.second)).toString(),
                                                             icon = ImageVector.vectorResource(id = R.drawable.round_currency_rupee_20)
                                                         )
-                                                        Spacer(modifier = Modifier.height(SpaceSmall))
-                                                        if(order.cartOrder.cartOrderStatus != OrderStatus.Placed.orderStatus){
-                                                            Box(
-                                                                modifier = Modifier
-                                                                    .padding(SpaceMini)
-                                                                    .clip(RoundedCornerShape(
-                                                                        SpaceMini
-                                                                    ))
-                                                                    .background(
-                                                                        if (order.cartOrder.cartOrderStatus == OrderStatus.Delivered.orderStatus)
-                                                                            MaterialTheme.colors.primary
-                                                                        else MaterialTheme.colors.error
-                                                                    ),
-                                                                contentAlignment = Alignment.Center
-                                                            ){
-                                                                Text(
-                                                                    modifier = Modifier.padding(
-                                                                        SpaceMini
-                                                                    ),
-                                                                    text = order.cartOrder.cartOrderStatus,
-                                                                    style = MaterialTheme.typography.body1,
-                                                                    textAlign = TextAlign.Center,
-                                                                    color = MaterialTheme.colors.onPrimary,
-                                                                )
-                                                            }
-                                                        }
-
                                                     }
 
                                                     Row(

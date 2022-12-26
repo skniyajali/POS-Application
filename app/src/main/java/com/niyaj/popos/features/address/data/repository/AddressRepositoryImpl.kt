@@ -45,7 +45,8 @@ class AddressRepositoryImpl(
                     }
                 }
             } catch (e: Exception){
-                send(Resource.Error(e.message ?: "Unable to get addresses"))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get addresses", emptyList()))
             }
         }
     }

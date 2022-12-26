@@ -7,9 +7,7 @@ import com.niyaj.popos.features.common.util.Resource
 class GetCartOrder(
     private val cartOrderRepository: CartOrderRepository
 ) {
-
     suspend operator fun invoke(cartOrderId: String): Resource<CartOrder?> {
         return cartOrderRepository.getCartOrderById(cartOrderId)
     }
-
 }

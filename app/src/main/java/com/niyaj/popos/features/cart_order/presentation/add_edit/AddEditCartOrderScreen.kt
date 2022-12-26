@@ -25,13 +25,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardOutlinedTextField
-import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
+import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.common.ui.theme.IconSizeMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
+import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.components.StandardOutlinedTextField
+import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
@@ -58,11 +58,7 @@ fun AddEditCartOrderScreen(
 
 
     LaunchedEffect(key1 = cartOrderId) {
-        if (!cartOrderId.isNullOrEmpty()) {
-            addEditCartOrderViewModel.onAddEditCartOrderEvent(
-                AddEditCartOrderEvent.OnUpdateCartOrder(cartOrderId)
-            )
-        }else {
+        if (cartOrderId.isNullOrEmpty()) {
             addEditCartOrderViewModel.onAddEditCartOrderEvent(AddEditCartOrderEvent.ResetFields)
             addEditCartOrderViewModel.onAddEditCartOrderEvent(AddEditCartOrderEvent.GetAndSetCartOrderId)
         }

@@ -38,7 +38,7 @@ import timber.log.Timber
 fun CartOrderSettingScreen(
     navController: NavController = rememberNavController(),
     cartOrderViewModel: CartOrderViewModel = hiltViewModel(),
-    resultBackNavigator: ResultBackNavigator<String>
+    resultBackNavigator: ResultBackNavigator<String>,
 ) {
 
     val deleteLastSevenDaysState = rememberMaterialDialogState()
@@ -146,11 +146,11 @@ fun CartOrderSettingScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.DeleteForever,
-                    contentDescription = "Delete All Data",
+                    contentDescription = "Delete All Cart Orders",
                     tint = MaterialTheme.colors.error
                 )
                 Text(
-                    text = "Delete All Data",
+                    text = "Delete All Cart Orders",
                     style = MaterialTheme.typography.button,
                 )
             }

@@ -347,7 +347,7 @@ fun EmployeeScreen(
                                 id = R.string.no_items_in_employee),
                         buttonText = stringResource(id = R.string.create_new_employee).uppercase(),
                         onClick = {
-                            navController.navigate(AddEditPartnerScreenDestination())
+                            navController.navigate(AddEditEmployeeScreenDestination())
                         }
                     )
                 } else {

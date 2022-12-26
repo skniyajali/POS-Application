@@ -29,3 +29,20 @@ fun Context.hasBluetoothPermission(): Boolean {
         ) == PackageManager.PERMISSION_GRANTED
 
 }
+
+@RequiresApi(Build.VERSION_CODES.S)
+fun Context.hasStoragePermission(): Boolean {
+    return ContextCompat.checkSelfPermission(
+        this,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED &&
+
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.MANAGE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+}

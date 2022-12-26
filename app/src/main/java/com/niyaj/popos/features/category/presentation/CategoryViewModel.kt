@@ -15,6 +15,7 @@ import com.niyaj.popos.features.category.domain.util.FilterCategory
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.util.capitalizeWords
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,7 +64,7 @@ class CategoryViewModel @Inject constructor(
         when (event) {
 
             is CategoryEvent.CategoryNameChanged -> {
-                addEditCategoryState = addEditCategoryState.copy(categoryName = event.categoryName)
+                addEditCategoryState = addEditCategoryState.copy(categoryName = event.categoryName.capitalizeWords)
             }
 
             is CategoryEvent.CategoryAvailabilityChanged -> {

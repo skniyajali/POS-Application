@@ -26,7 +26,7 @@ class CartRealm(): RealmObject {
         cartOrder: CartOrder? = null,
         product: Product? = null,
         quantity: Int = 0,
-        createdAt: String = "",
+        createdAt: String = System.currentTimeMillis().toString(),
         updatedAt: String = "",
     ): this() {
         this.cartId = cartId

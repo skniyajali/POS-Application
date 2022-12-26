@@ -136,12 +136,12 @@ class MainFeedViewModel @Inject constructor(
 
             is MainFeedProductEvent.AddProductToCart -> {
                 viewModelScope.launch {
-                    if (event.orderId.isEmpty()) {
+                    if (event.cartOrderId.isEmpty()) {
                         _eventFlow.emit(UiEvent.OnError("Create New Order First"))
                     }else if(event.productId.isEmpty()){
                         _eventFlow.emit(UiEvent.OnError("Unable to get product"))
                     }else {
-                        when (val result = cartUseCases.addProductToCart(event.orderId, event.productId)){
+                        when (val result = cartUseCases.addProductToCart(event.cartOrderId, event.productId)){
                             is Resource.Loading -> {}
                             is Resource.Success -> {
                                 _eventFlow.emit(UiEvent.OnSuccess("Item added to cart"))
@@ -156,7 +156,7 @@ class MainFeedViewModel @Inject constructor(
 
             is MainFeedProductEvent.RemoveProductFromCart -> {
                 viewModelScope.launch {
-                    when (cartUseCases.removeProductFromCart(event.orderId, event.productId)){
+                    when (cartUseCases.removeProductFromCart(event.cartOrderId, event.productId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("Item removed from cart"))
@@ -166,6 +166,16 @@ class MainFeedViewModel @Inject constructor(
                         }
                     }
                 }
+            }
+        }
+    }
+
+    fun onEvent(event: MainFeedEvent){
+        when(event){
+            is MainFeedEvent.RefreshMainFeed -> {
+//                getAllMainFeedProducts()
+//                getAllCategories()
+                getSelectedCartOrder()
             }
         }
     }
@@ -201,7 +211,7 @@ class MainFeedViewModel @Inject constructor(
     }
 
     private fun getAllMainFeedProducts(
-        filterProduct: FilterProduct = FilterProduct.ByCategoryId(SortType.Ascending),
+        filterProduct: FilterProduct = FilterProduct.ByProductId(SortType.Ascending),
         selectedCategory: String = _selectedCategory.value,
         searchText: String = "",
     ) {

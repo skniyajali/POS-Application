@@ -56,7 +56,7 @@ import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardChip
+import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardExpandable
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.TextWithCount
@@ -141,7 +141,7 @@ fun ProductPriceScreen(
                 )
 
                 Row {
-                    StandardChip(
+                    StandardOutlinedChip(
                         text = "All",
                         isToggleable = true,
                         isSelected = !isChoose,
@@ -153,7 +153,7 @@ fun ProductPriceScreen(
 
                     Spacer(modifier = Modifier.width(SpaceMini))
 
-                    StandardChip(
+                    StandardOutlinedChip(
                         text = "Choose",
                         isToggleable = true,
                         isSelected = isChoose,

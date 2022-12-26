@@ -4,8 +4,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,13 +14,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -27,26 +35,32 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.TaskAlt
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -54,14 +68,18 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
+import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.ui.theme.TextGray
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.ExtendedFabButton
 import com.niyaj.popos.features.components.ItemNotAvailable
+import com.niyaj.popos.features.components.StandardChip
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.StandardSearchBar
+import com.niyaj.popos.features.components.TextWithCount
+import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.features.destinations.CartOrderSettingScreenDestination
 import com.niyaj.popos.features.destinations.OrderDetailsScreenDestination
@@ -77,6 +95,7 @@ import com.vanpra.composematerialdialogs.title
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+@OptIn(ExperimentalMaterialApi::class)
 @Destination
 @Composable
 fun CartOrderScreen(
@@ -92,6 +111,7 @@ fun CartOrderScreen(
     val systemUiController = rememberSystemUiController()
 
     val cartOrders = cartOrderViewModel.cartOrders.collectAsState().value.cartOrders
+    val groupedByDate = cartOrders.groupBy { it.createdAt.toBarDate }
     val isLoading = cartOrderViewModel.cartOrders.collectAsState().value.isLoading
     val hasError = cartOrderViewModel.cartOrders.collectAsState().value.error
 
@@ -107,6 +127,7 @@ fun CartOrderScreen(
             MaterialTheme.colors.primary
         }
     }
+
     val backgroundColor by transition.animateColor(label = "actionBarContextual") { isContextualMode ->
         if (isContextualMode) {
             MaterialTheme.colors.secondary
@@ -116,6 +137,8 @@ fun CartOrderScreen(
     }
 
     val showSearchBar = cartOrderViewModel.toggledSearchBar.collectAsState().value
+
+    var showMenu by remember { mutableStateOf(false) }
 
     val showScrollToTop = remember {
         derivedStateOf {
@@ -231,6 +254,18 @@ fun CartOrderScreen(
             if (selectedOrder.isNotEmpty()) {
                 IconButton(
                     onClick = {
+                        cartOrderViewModel.onCartOrderEvent(CartOrderEvent.SelectCartOrderEvent(selectedOrder))
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.TaskAlt,
+                        contentDescription = stringResource(id = R.string.select_cart_order),
+                        tint = MaterialTheme.colors.onPrimary,
+                    )
+                }
+
+                IconButton(
+                    onClick = {
                         navController.navigate(AddEditCartOrderScreenDestination(cartOrderId = selectedOrder))
                     },
                 ) {
@@ -296,16 +331,57 @@ fun CartOrderScreen(
                         )
                     }
                 }
+
                 IconButton(
                     onClick = {
                         navController.navigate(CartOrderSettingScreenDestination())
                     },
                 ) {
                     Icon(
-                        imageVector = Icons.Default.MoreVert,
+                        imageVector = Icons.Default.Settings,
                         contentDescription = "Open Settings",
                         tint = MaterialTheme.colors.onPrimary,
                     )
+                }
+                Box {
+                    IconButton(
+                        onClick = {
+                            showMenu = !showMenu
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "View More Settings",
+                            tint = MaterialTheme.colors.onPrimary,
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu  = false },
+                    ) {
+                        DropdownMenuItem(
+                            onClick = {
+                                cartOrderViewModel.onCartOrderEvent(CartOrderEvent.ViewAllOrders)
+                                showMenu = false
+                            }
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Visibility,
+                                    contentDescription = "View All",
+                                    tint = MaterialTheme.colors.secondaryVariant
+                                )
+                                Spacer(modifier = Modifier.width(SpaceSmall))
+                                Text(
+                                    text = "View All",
+                                    style = MaterialTheme.typography.body1,
+                                )
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -390,54 +466,87 @@ fun CartOrderScreen(
                         columns = GridCells.Fixed(2),
                         state = lazyListState,
                     ) {
-                        itemsIndexed(cartOrders) { _, cartOrder ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(SpaceSmall)
-                                    .clickable {
+                        groupedByDate.forEach { (date, orders) ->
+                            header {
+                                TextWithCount(
+                                    modifier = Modifier
+                                        .background(
+                                            if (showScrollToTop.value)
+                                                MaterialTheme.colors.onPrimary
+                                            else Color.Transparent
+                                        )
+                                        .clip(
+                                            RoundedCornerShape(if (showScrollToTop.value) 4.dp else 0.dp)
+                                        ),
+                                    text = date,
+                                    leadingIcon = Icons.Default.CalendarMonth,
+                                    count = orders.count(),
+                                    onClick = {}
+                                )
+                            }
+
+                            itemsIndexed(orders) { _, cartOrder ->
+                                Card(
+                                    onClick = {
                                         cartOrderViewModel.onCartOrderEvent(
                                             CartOrderEvent.SelectCartOrder(cartOrder.cartOrderId)
                                         )
                                     },
-                                shape = RoundedCornerShape(4.dp),
-                                backgroundColor = MaterialTheme.colors.surface,
-                                border = if (selectedOrder == cartOrder.cartOrderId)
-                                    BorderStroke(1.dp, MaterialTheme.colors.primary)
-                                else if (cartOrder.cartOrderId == selectedCartOrder.cartOrderId)
-                                    BorderStroke(1.dp, MaterialTheme.colors.secondaryVariant)
-                                else null,
-                                elevation = 2.dp,
-                            ) {
-                                Column(
+                                    enabled = cartOrder.cartOrderStatus == OrderStatus.Processing.orderStatus,
                                     modifier = Modifier
-                                        .padding(SpaceSmall)
-                                        .fillMaxWidth(),
-                                    verticalArrangement = Arrangement.SpaceBetween
+                                        .fillMaxWidth()
+                                        .padding(SpaceSmall),
+                                    shape = RoundedCornerShape(4.dp),
+                                    backgroundColor = MaterialTheme.colors.surface,
+                                    border = if (selectedOrder == cartOrder.cartOrderId)
+                                        BorderStroke(1.dp, MaterialTheme.colors.primary)
+                                    else if (cartOrder.cartOrderId == selectedCartOrder.cartOrderId)
+                                        BorderStroke(1.dp, MaterialTheme.colors.secondaryVariant)
+                                    else null,
+                                    elevation = 2.dp,
                                 ) {
-                                    Text(
-                                        text = cartOrder.orderId,
-                                        style = MaterialTheme.typography.body1,
-                                        textAlign = TextAlign.Center,
-                                        fontWeight = FontWeight.Bold,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                    Spacer(modifier = Modifier.height(SpaceMini))
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(SpaceSmall)
+                                            .fillMaxWidth(),
+                                        verticalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Text(
-                                            text = cartOrder.orderType,
-                                            style = MaterialTheme.typography.body1,
-                                        )
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            TextWithIcon(
+                                                text = cartOrder.orderId,
+                                                isTitle = true,
+                                                icon = Icons.Default.Tag
+                                            )
 
-                                        Text(
-                                            text = cartOrder.createdAt.toBarDate,
-                                            style = MaterialTheme.typography.overline,
-                                            color = TextGray
-                                        )
+                                            if (cartOrder.cartOrderStatus != OrderStatus.Processing.orderStatus){
+                                                StandardChip(
+                                                    text = cartOrder.cartOrderStatus,
+                                                    isPrimary = cartOrder.cartOrderStatus == OrderStatus.Processing.orderStatus
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(SpaceMini))
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = cartOrder.orderType,
+                                                style = MaterialTheme.typography.body1,
+                                            )
+
+                                            Text(
+                                                text = cartOrder.createdAt.toBarDate,
+                                                style = MaterialTheme.typography.overline,
+                                                color = TextGray
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -447,4 +556,11 @@ fun CartOrderScreen(
             }
         }
     }
+}
+
+
+fun LazyGridScope.header(
+    content: @Composable LazyGridItemScope.() -> Unit
+) {
+    item(span = { GridItemSpan(this.maxLineSpan) }, content = content)
 }

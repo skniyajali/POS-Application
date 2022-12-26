@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.provider.MediaStore
 import androidx.annotation.RequiresApi
-import com.niyaj.popos.util.Constants.FILE_URI
 import com.niyaj.popos.util.Constants.JSON_FILE_EXTENSION
 import com.niyaj.popos.util.Constants.JSON_FILE_TYPE
 import com.niyaj.popos.util.Constants.SAVEABLE_FILE_NAME
@@ -19,13 +19,16 @@ object ImportExport {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     internal fun openFile(
-        pickerInitialUri: Uri = FILE_URI,
+        context: Context,
+        pickerInitialUri: Uri = getUri(context),
     ): Intent {
         val intent = Intent(
             Intent.ACTION_OPEN_DOCUMENT,
             pickerInitialUri
         ).apply {
             type = JSON_FILE_TYPE
+            addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addCategory(Intent.CATEGORY_OPENABLE)
         }
 
@@ -33,10 +36,10 @@ object ImportExport {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    internal fun createFile(fileName: String = SAVEABLE_FILE_NAME): Intent {
+    internal fun createFile(context: Context, fileName: String = SAVEABLE_FILE_NAME): Intent {
         val intent = Intent(
             Intent.ACTION_CREATE_DOCUMENT,
-            FILE_URI
+            getUri(context)
         ).apply {
             type = JSON_FILE_TYPE
             addCategory(Intent.CATEGORY_OPENABLE)
@@ -98,5 +101,19 @@ object ImportExport {
             Timber.e(e)
             return emptyList()
         }
+    }
+
+    private fun getUri(context: Context): Uri {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Downloads.INTERNAL_CONTENT_URI
+        } else {
+            getUriBelowQ(context)
+        }
+    }
+
+    private fun getUriBelowQ(context: Context): Uri {
+        val result = context.filesDir
+
+        return Uri.fromFile(result)
     }
 }

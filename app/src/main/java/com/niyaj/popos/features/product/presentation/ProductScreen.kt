@@ -68,7 +68,7 @@ fun ProductScreen(
     val isLoading = productsViewModel.products.collectAsState().value.isLoading
     val error = productsViewModel.products.collectAsState().value.error
     val groupedProducts = products.groupBy {
-        it.category
+        it.category?.categoryName
     }
 
     val selectedProducts = productsViewModel.selectedProducts
@@ -377,7 +377,7 @@ fun ProductScreen(
                                         .clip(
                                             RoundedCornerShape(if (showScrollToTop.value) 4.dp else 0.dp)
                                         ),
-                                    text = category?.categoryName!!,
+                                    text = category!!,
                                     count = products_new.count(),
                                     onClick = {
                                         productsViewModel.onProductEvent(ProductEvent.SelectProducts(products_new.map { it.productId }))

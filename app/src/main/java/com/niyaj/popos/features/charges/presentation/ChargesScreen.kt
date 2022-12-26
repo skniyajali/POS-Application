@@ -58,7 +58,7 @@ import com.niyaj.popos.features.common.util.BottomSheetScreen
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.ExtendedFabButton
 import com.niyaj.popos.features.components.ItemNotAvailable
-import com.niyaj.popos.features.components.StandardChip
+import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.StandardSearchBar
 import com.niyaj.popos.features.destinations.AddEditChargesScreenDestination
@@ -400,7 +400,7 @@ fun ChargesScreen(
                                             style = MaterialTheme.typography.body1,
                                         )
 
-                                        StandardChip(
+                                        StandardOutlinedChip(
                                             text = if(chargesItem.isApplicable) "Applied" else "Not Applied",
                                             onClick = {}
                                         )

@@ -17,4 +17,6 @@ sealed class CartOrderEvent{
     object ToggleSearchBar : CartOrderEvent()
 
     object RefreshCartOrder: CartOrderEvent()
+
+    object ViewAllOrders: CartOrderEvent()
 }

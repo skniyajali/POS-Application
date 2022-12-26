@@ -10,34 +10,34 @@ class GetAllCartOrders(
     private val cartOrderRepository: CartOrderRepository
 ) {
     suspend operator fun invoke(
-        searchText: String = ""
+        searchText: String = "",
+        viewAll: Boolean = false,
     ): Flow<Resource<List<CartOrder>>> = flow {
-         cartOrderRepository.getAllCartOrders().collect { result ->
+         cartOrderRepository.getAllCartOrders(viewAll).collect { result ->
              when (result){
                  is Resource.Loading -> {
                      emit(Resource.Loading(result.isLoading))
                  }
                  is Resource.Success -> {
-                     emit(
-                         Resource.Success(
-                         result.data?.filter { cartOrder ->
-                             if (searchText.isNotEmpty()){
-                                 cartOrder.cartOrderStatus.contains(searchText, true) ||
-                                 cartOrder.cartOrderId.contains(searchText, true) ||
-                                 cartOrder.customer?.customerPhone?.contains(searchText, true) == true ||
-                                 cartOrder.customer?.customerName?.contains(searchText, true) == true ||
-                                 cartOrder.address?.addressName?.contains(searchText, true) == true ||
-                                 cartOrder.address?.shortName?.contains(searchText, true) == true ||
-                                 cartOrder.orderType.contains(searchText, true) ||
-                                 cartOrder.orderId.contains(searchText, true) ||
-                                 cartOrder.createdAt.contains(searchText, true) ||
-                                 cartOrder.updatedAt?.contains(searchText, true) == true
+                     val data = result.data?.filter { cartOrder ->
+                         if (searchText.isNotEmpty()){
+                             cartOrder.cartOrderStatus.contains(searchText, true) ||
+                                     cartOrder.cartOrderId.contains(searchText, true) ||
+                                     cartOrder.customer?.customerPhone?.contains(searchText, true) == true ||
+                                     cartOrder.customer?.customerName?.contains(searchText, true) == true ||
+                                     cartOrder.address?.addressName?.contains(searchText, true) == true ||
+                                     cartOrder.address?.shortName?.contains(searchText, true) == true ||
+                                     cartOrder.orderType.contains(searchText, true) ||
+                                     cartOrder.orderId.contains(searchText, true) ||
+                                     cartOrder.createdAt.contains(searchText, true) ||
+                                     cartOrder.updatedAt?.contains(searchText, true) == true
 
-                             }else {
-                                 true
-                             }
+                         }else {
+                             true
                          }
-                     ))
+                     }
+
+                     emit(Resource.Success(data))
                  }
                  is Resource.Error -> {
                      emit(Resource.Error(result.message ?: "Unable to get data from database"))

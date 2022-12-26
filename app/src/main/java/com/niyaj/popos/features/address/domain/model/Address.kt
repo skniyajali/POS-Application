@@ -21,7 +21,7 @@ class Address() : RealmObject {
         addressId: String = "",
         shortName: String = "",
         addressName: String = "",
-        createdAt: String = "",
+        createdAt: String = System.currentTimeMillis().toString(),
         updatedAt: String? = null
     ): this() {
         this.addressId = addressId

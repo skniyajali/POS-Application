@@ -13,12 +13,12 @@ class ValidateOrderId @Inject constructor() {
             )
         }
 
-        if(orderId.length < 6) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "The order id must be 6 characters long"
-            )
-        }
+//        if(orderId.length < 6) {
+//            return ValidationResult(
+//                successful = false,
+//                errorMessage = "The order id must be 6 characters long"
+//            )
+//        }
 
         return ValidationResult(
             successful = true

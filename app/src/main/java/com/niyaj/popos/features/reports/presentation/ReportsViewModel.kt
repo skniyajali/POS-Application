@@ -6,7 +6,7 @@ import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.reports.domain.model.Reports
-import com.niyaj.popos.features.reports.domain.reports.ReportsUseCases
+import com.niyaj.popos.features.reports.domain.use_cases.ReportsUseCases
 import com.niyaj.popos.util.Constants
 import com.niyaj.popos.util.Constants.PRINT_PRODUCT_WISE_REPORT_LIMIT
 import com.niyaj.popos.util.getCalculatedEndDate

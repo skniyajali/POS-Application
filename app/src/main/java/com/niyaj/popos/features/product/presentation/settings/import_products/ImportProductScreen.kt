@@ -39,8 +39,8 @@ import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.ImportExport
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardChip
 import com.niyaj.popos.features.components.StandardExpandable
+import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.TextWithCount
 import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
@@ -71,7 +71,7 @@ fun ImportProductScreen(
     val selectedProducts = importProductViewModel.selectedProducts.toList()
 
     val importedData = importProductViewModel.importedProducts.toList()
-    val groupedImportedProducts = importedData.toList().groupBy { it.category }
+    val groupedImportedProducts = importedData.toList().groupBy { it.category?.categoryName!! }
 
     val showImportedBtn = if(isChosen) selectedProducts.isNotEmpty() else importedData.isNotEmpty()
 
@@ -150,7 +150,7 @@ fun ImportProductScreen(
                     )
 
                     Row {
-                        StandardChip(
+                        StandardOutlinedChip(
                             text = "All",
                             isToggleable = isChosen,
                             isSelected = !isChosen,
@@ -162,7 +162,7 @@ fun ImportProductScreen(
 
                         Spacer(modifier = Modifier.width(SpaceMini))
 
-                        StandardChip(
+                        StandardOutlinedChip(
                             text = "Choose",
                             isToggleable = !isChosen,
                             isSelected = isChosen,
@@ -244,7 +244,7 @@ fun ImportProductScreen(
                                                     .clip(
                                                         RoundedCornerShape(if (showScrollToTop.value) 4.dp else 0.dp)
                                                     ),
-                                                text = category?.categoryName!!,
+                                                text = category,
                                                 count = products_new.count(),
                                                 onClick = {
                                                     importProductViewModel.onEvent(ImportProductEvent.SelectProducts(products_new.map { it.productId }))
@@ -339,7 +339,7 @@ fun ImportProductScreen(
                 Button(
                     onClick = {
                         scope.launch {
-                            val result = ImportExport.openFile()
+                            val result = ImportExport.openFile(context)
                             importLauncher.launch(result)
                         }
                     },

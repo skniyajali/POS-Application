@@ -3,6 +3,8 @@ package com.niyaj.popos.features.employee.data.repository
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
+import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
 import com.niyaj.popos.features.expenses.domain.model.Expenses
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
@@ -14,7 +16,7 @@ import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
@@ -26,26 +28,27 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
         Timber.d("Employee Session")
     }
     override suspend fun getAllEmployee(): Flow<Resource<List<Employee>>> {
-        return flow {
+        return channelFlow {
             try {
-                emit(Resource.Loading(true))
+                send(Resource.Loading(true))
 
                 val items = realm.query<Employee>().sort("employeeId", Sort.DESCENDING).find().asFlow()
 
                 items.collect { changes: ResultsChange<Employee> ->
                     when (changes) {
                         is UpdatedResults -> {
-                            emit(Resource.Success(changes.list))
-                            emit(Resource.Loading(false))
+                            send(Resource.Success(changes.list))
+                            send(Resource.Loading(false))
                         }
                         is InitialResults -> {
-                            emit(Resource.Success(changes.list))
-                            emit(Resource.Loading(false))
+                            send(Resource.Success(changes.list))
+                            send(Resource.Loading(false))
                         }
                     }
                 }
             }catch (e: Exception){
-                Resource.Error(e.message ?: "Unable to get employee items", null)
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get employee items", emptyList()))
             }
         }
     }
@@ -99,7 +102,7 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
 
             Resource.Success(result.isValid())
         }catch (e: RealmException){
-            Resource.Error(e.message ?: "Error creating Employee Item")
+            Resource.Error(e.message ?: "Error creating Employee Item", false)
         }
     }
 
@@ -122,7 +125,7 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
 
             Resource.Success(true)
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to update employee.")
+            Resource.Error(e.message ?: "Failed to update employee.", false)
         }
     }
 
@@ -131,6 +134,12 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
             realm.write {
                 val employee: Employee = this.query<Employee>("employeeId == $0", employeeId).find().first()
                 val expenses = this.query<Expenses>("expansesSubCategory == $0", employeeId).find()
+                val salary = this.query<EmployeeSalary>("employee.employeeId == $0", employeeId).find()
+                val attendance = this.query<EmployeeAttendance>("employee.employeeId == $0", employeeId).find()
+
+                delete(salary)
+
+                delete(attendance)
 
                 delete(expenses)
 
@@ -140,7 +149,7 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
             Resource.Success(true)
 
         } catch (e: Exception){
-            Resource.Error(e.message ?: "Failed to delete employee")
+            Resource.Error(e.message ?: "Failed to delete employee", false)
         }
     }
 }

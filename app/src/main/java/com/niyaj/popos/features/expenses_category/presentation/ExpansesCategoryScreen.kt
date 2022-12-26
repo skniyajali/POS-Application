@@ -108,11 +108,12 @@ fun ExpensesCategoryScreen(
             when (event) {
                 is UiEvent.OnSuccess -> {
                     Timber.d(event.successMessage)
-
+                    scaffoldState.snackbarHostState.showSnackbar(event.successMessage)
                 }
 
                 is UiEvent.OnError -> {
                     Timber.d(event.errorMessage)
+                    scaffoldState.snackbarHostState.showSnackbar(event.errorMessage)
                 }
 
                 is UiEvent.IsLoading -> {

@@ -45,7 +45,8 @@ class CustomerRepositoryImpl(
                     }
                 }
             } catch (e: Exception) {
-                send(Resource.Error(e.message ?: "Unable to get customers"))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get customers", emptyList()))
             }
         }
     }

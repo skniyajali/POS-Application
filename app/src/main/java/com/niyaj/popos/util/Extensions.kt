@@ -245,8 +245,7 @@ fun getSalaryDates(joinedDate: String): KotlinCollectionsList<Pair<String, Strin
 
     val currentYearAndMonth = YearMonth.now()
 
-
-    for (i in 1 until 5) {
+    for (i in 0 until 5) {
         var previousMonth = 0
         var previousYear = 0
 

@@ -34,7 +34,7 @@ import com.niyaj.popos.features.components.ExtendedFabButton
 import com.niyaj.popos.features.components.IconBox
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.PaymentStatusChip
-import com.niyaj.popos.features.components.StandardChip
+import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardExpandable
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.TextWithIcon
@@ -658,7 +658,7 @@ fun EmployeeDetailsScreen(
                                                                 SpaceSmall
                                                             ))
 
-                                                            StandardChip(
+                                                            StandardOutlinedChip(
                                                                 text = payment.salaryType,
                                                             )
                                                         }
@@ -782,7 +782,8 @@ fun EmployeeDetailsScreen(
                                                 FlowRow(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
-                                                        .padding(SpaceMedium)
+                                                        .padding(SpaceMedium),
+                                                    crossAxisSpacing = SpaceMini,
                                                 ) {
                                                     absentReport.absent.forEach{  attendance ->
                                                         Card(

@@ -23,7 +23,7 @@ class Customer(): RealmObject {
         customerPhone: String = "",
         customerName: String = "",
         customerEmail: String = "",
-        createdAt: String = "",
+        createdAt: String = System.currentTimeMillis().toString(),
         updatedAt: String? = null
     ): this() {
         this.customerId = customerId

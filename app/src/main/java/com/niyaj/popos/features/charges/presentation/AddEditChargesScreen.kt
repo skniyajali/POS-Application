@@ -86,7 +86,7 @@ fun AddEditChargesScreen(
             StandardOutlinedTextField(
                 modifier = Modifier,
                 text = chargesViewModel.addEditState.chargesPrice,
-                hint = "AddOn Price",
+                hint = "Charges Amount",
                 keyboardType = KeyboardType.Number,
                 error = chargesViewModel.addEditState.chargesPriceError,
                 onValueChange = {

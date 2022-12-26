@@ -3,6 +3,7 @@ package com.niyaj.popos.features.cart_order.presentation.add_edit
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.address.domain.model.Address
@@ -37,6 +38,7 @@ class AddEditCartOrderViewModel @Inject constructor(
     private val cartOrderUseCases: CartOrderUseCases,
     private val customerUseCases: CustomerUseCases,
     private val addressUseCases: AddressUseCases,
+    savedStateHandle: SavedStateHandle,
 ): ViewModel() {
 
     var addEditCartOrderState by mutableStateOf(AddEditCartOrderState())
@@ -51,26 +53,9 @@ class AddEditCartOrderViewModel @Inject constructor(
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
-//        savedStateHandle.get<String>("cartOrderId")?.let { cartOrderId ->
-//            viewModelScope.launch {
-//                when (val result = cartOrderUseCases.getCartOrder(cartOrderId)){
-//                    is Resource.Loading -> {}
-//                    is Resource.Success -> {
-//                        result.data?.let {cartOrder ->
-//                            addEditCartOrderState = addEditCartOrderState.copy(
-//                                orderId = cartOrder.orderId,
-//                                orderType = cartOrder.cartOrderType,
-//                                customer = cartOrder.customer,
-//                                address =  cartOrder.address,
-//                            )
-//                        }
-//                    }
-//                    is Resource.Error -> {
-//                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get cart order"))
-//                    }
-//                }
-//            }
-//        }
+        savedStateHandle.get<String>("cartOrderId")?.let { cartOrderId ->
+            getCartOrder(cartOrderId)
+        }
 
         getAllAddresses()
         getAllCustomers()

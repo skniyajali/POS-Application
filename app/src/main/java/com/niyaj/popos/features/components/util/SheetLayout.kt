@@ -1,6 +1,8 @@
 package com.niyaj.popos.features.components.util
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.features.addon_item.presentation.FilterAddOnItemScreen
 import com.niyaj.popos.features.address.presentation.FilterAddressScreen
 import com.niyaj.popos.features.cart_order.presentation.GetAndSelectCartOrderScreen
@@ -20,6 +22,7 @@ import com.niyaj.popos.features.product.presentation.FilterProductScreen
 fun SheetLayout(
     currentScreen: BottomSheetScreen,
     onCloseBottomSheet: () -> Unit,
+    navController: NavController = rememberNavController(),
 ) {
     BottomSheetWithCloseDialog(
         text = currentScreen.type,
@@ -28,7 +31,8 @@ fun SheetLayout(
         when(currentScreen){
             is BottomSheetScreen.GetAndSelectCartOrderScreen -> {
                 GetAndSelectCartOrderScreen(
-                    onClosePressed = onCloseBottomSheet
+                    onClosePressed = onCloseBottomSheet,
+                    navController = navController,
                 )
             }
 

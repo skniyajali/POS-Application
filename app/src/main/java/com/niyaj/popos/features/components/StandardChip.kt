@@ -2,9 +2,16 @@ package com.niyaj.popos.features.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -23,7 +30,7 @@ import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 
 @Composable
-fun StandardChip(
+fun StandardOutlinedChip(
     modifier: Modifier = Modifier,
     text: String = "",
     secondaryText: String? = null,
@@ -123,6 +130,62 @@ fun PaymentStatusChip(
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colors.onPrimary,
             )
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun StandardChip(
+    modifier: Modifier = Modifier,
+    text: String = "",
+    secondaryText: String = "",
+    isPrimary: Boolean = false,
+    isClickable: Boolean = false,
+    primaryColor: Color = MaterialTheme.colors.secondary,
+    secondaryColor: Color = MaterialTheme.colors.secondaryVariant,
+    onClick: () -> Unit = {},
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(2.dp))
+            .background(if (isPrimary) primaryColor else secondaryColor)
+            .clickable(isClickable){
+                onClick()
+            },
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(SpaceMini),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if(!isPrimary){
+                Icon(
+                    imageVector = Icons.Default.Done,
+                    contentDescription = "$text added",
+                    tint = MaterialTheme.colors.onPrimary,
+                    modifier = Modifier.size(IconSizeSmall)
+                )
+
+                Spacer(modifier = Modifier.width(SpaceSmall))
+            }
+
+            Text(
+                text = text,
+                style = MaterialTheme.typography.overline,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colors.onPrimary,
+            )
+
+            if(secondaryText.isNotEmpty() && text.startsWith("Cold")){
+                Text(
+                    text = " Rs. $secondaryText",
+                    style = MaterialTheme.typography.overline,
+                    textAlign = TextAlign.Center,
+                    color = if (isPrimary) secondaryColor else primaryColor,
+                )
+            }
         }
     }
 }

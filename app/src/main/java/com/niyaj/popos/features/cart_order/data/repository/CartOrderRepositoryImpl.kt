@@ -11,12 +11,12 @@ import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.customer.domain.model.Customer
+import com.niyaj.popos.util.Constants.SELECTED_CART_ORDER_ID
 import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
-import io.realm.kotlin.exceptions.RealmException
+import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.internal.interop.RealmCoreException
 import io.realm.kotlin.notifications.InitialObject
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
@@ -27,7 +27,6 @@ import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import org.mongodb.kbson.BsonObjectId
@@ -40,13 +39,6 @@ class CartOrderRepositoryImpl(
 
     val realm = Realm.open(config)
 
-    init {
-        Timber.d("CartOrder Session")
-    }
-
-    /**
-     * Get last created cart order ID [Long] else [0]
-     */
     override fun getLastCreatedOrderId(): Long {
         return try {
             val cartOrderId = realm.query<CartOrder>().find().last().orderId.toLongOrNull()
@@ -57,27 +49,25 @@ class CartOrderRepositoryImpl(
         }
     }
 
-    /**
-     * Get all [CartOrder] that wraps with [Resource].
-     *
-     */
-    override suspend fun getAllCartOrders(): Flow<Resource<List<CartOrder>>> {
+    override suspend fun getAllCartOrders(viewAll: Boolean): Flow<Resource<List<CartOrder>>> {
         return channelFlow {
             try {
                 send(Resource.Loading(true))
 
-                val items = realm.query<CartOrder>(
-                    "cartOrderStatus == $0",
-                    OrderStatus.Processing.orderStatus
-                ).sort("cartOrderId", Sort.DESCENDING)
+                val items = if (viewAll){
+                    realm.query<CartOrder>().sort("cartOrderId", Sort.DESCENDING)
+                }else{
+                    realm.query<CartOrder>(
+                        "cartOrderStatus == $0",
+                        OrderStatus.Processing.orderStatus
+                    ).sort("cartOrderId", Sort.DESCENDING)
+                }
 
                 val itemsFlow = items.asFlow()
 
                 itemsFlow.collect { changes: ResultsChange<CartOrder> ->
                     when (changes) {
                         is UpdatedResults -> {
-                            send(Resource.Success(changes.list))
-
                             if (changes.list.isNotEmpty()) {
                                 if (changes.insertions.isNotEmpty()) {
                                     addSelectedCartOrder(changes.list[changes.insertions.last()].cartOrderId)
@@ -90,12 +80,11 @@ class CartOrderRepositoryImpl(
                                 deleteSelectedCartOrder()
                             }
 
+                            send(Resource.Success(changes.list))
                             send(Resource.Loading(false))
                         }
 
                         is InitialResults -> {
-
-                            send(Resource.Success(changes.list))
 
                             val selectedCartOrder =
                                 realm.query<SelectedCartOrder>().first().find()
@@ -108,12 +97,15 @@ class CartOrderRepositoryImpl(
                                 deleteSelectedCartOrder()
                             }
 
+                            send(Resource.Success(changes.list))
+
                             send(Resource.Loading(false))
                         }
                     }
                 }
             } catch (e: Exception) {
-                send(Resource.Error(e.message ?: "Unable to get cartOrders"))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get cartOrders", emptyList()))
             }
         }
     }
@@ -135,21 +127,18 @@ class CartOrderRepositoryImpl(
 
             if (newOrder.customer != null) {
                 if (newOrder.customer!!.customerId.isEmpty() && newOrder.customer!!.customerPhone.isNotEmpty()) {
+
                     val newCustomer = Customer()
                     newCustomer.customerId = BsonObjectId().toHexString()
                     newCustomer.customerPhone = newOrder.customer!!.customerPhone
                     newCustomer.createdAt = System.currentTimeMillis().toString()
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        realm.write {
-                            customer = this.copyToRealm(newCustomer)
-                        }
+                    customer = realm.write {
+                        this.copyToRealm(newCustomer)
                     }
 
                 } else {
-                    customer =
-                        realm.query<Customer>("customerId == $0", newOrder.customer!!.customerId)
-                            .first().find()
+                    customer = realm.query<Customer>("customerId == $0", newOrder.customer!!.customerId).first().find()
                 }
             }
 
@@ -161,15 +150,12 @@ class CartOrderRepositoryImpl(
                     newAddress.addressName = newOrder.address!!.addressName
                     newAddress.createdAt = System.currentTimeMillis().toString()
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        realm.write {
-                            address = this.copyToRealm(newAddress)
-                        }
+                    address = realm.write {
+                        this.copyToRealm(newAddress)
                     }
+
                 } else {
-                    address =
-                        realm.query<Address>("addressId == $0", newOrder.address!!.addressId)
-                            .first().find()
+                    address = realm.query<Address>("addressId == $0", newOrder.address!!.addressId).first().find()
                 }
             }
 
@@ -179,29 +165,31 @@ class CartOrderRepositoryImpl(
             cartOrder.orderType = newOrder.orderType
             cartOrder.createdAt = System.currentTimeMillis().toString()
 
-            realm.write {
+            Timber.d("customer_d ${newOrder.customer?.customerPhone}")
 
+            realm.write {
                 if (customer != null) {
-                    findLatest(customer!!).also { cartOrder.customer = it }
+                    Timber.d("customer: ${customer.customerPhone}")
+
+                    findLatest(customer)?.also {
+                        cartOrder.customer = it
+                    }
                 }
 
                 if (address != null) {
-                    findLatest(address!!).also { cartOrder.address = it }
+                    findLatest(address)?.also {
+                        cartOrder.address = it
+                    }
                 }
 
                 this.copyToRealm(cartOrder)
-
             }
 
             this.addSelectedCartOrder(cartOrder.cartOrderId)
 
             Resource.Success(true)
-        } catch (e: RealmException) {
-            Resource.Error(e.message ?: "Unable to create cart order", false)
-        } catch (e: RealmCoreException) {
-            Resource.Error(e.message ?: "Unable to create cart order", false)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to create cart order", false)
+        }catch (e: Exception) {
+            Resource.Error(e.message ?: "Unable to create order", false)
         }
     }
 
@@ -215,7 +203,6 @@ class CartOrderRepositoryImpl(
             var address: Address? = null
 
             if (newOrder.customer != null) {
-
                 if (newOrder.customer!!.customerId.isEmpty() && newOrder.customer!!.customerPhone.isNotEmpty()) {
                     val newCustomer = Customer()
                     newCustomer.customerId = BsonObjectId().toHexString()
@@ -227,11 +214,8 @@ class CartOrderRepositoryImpl(
                             customer = this.copyToRealm(newCustomer)
                         }
                     }
-
                 } else {
-                    customer =
-                        realm.query<Customer>("customerId == $0", newOrder.customer!!.customerId)
-                            .first().find()
+                    customer = realm.query<Customer>("customerId == $0", newOrder.customer!!.customerId).first().find()
                 }
             }
 
@@ -249,29 +233,28 @@ class CartOrderRepositoryImpl(
                         }
                     }
                 } else {
-                    address = realm.query<Address>("addressId == $0", newOrder.address!!.addressId)
-                        .first().find()
+                    address = realm.query<Address>("addressId == $0", newOrder.address!!.addressId).first().find()
                 }
             }
 
             realm.write {
-                val cartOrder = this.query<CartOrder>("addressId == $0", cartOrderId).first().find()
+                val cartOrder = this.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
                 cartOrder?.orderId = newOrder.orderId
                 cartOrder?.orderType = newOrder.orderType
                 cartOrder?.updatedAt = System.currentTimeMillis().toString()
 
-                if (customer != null) {
-                    findLatest(customer!!).also { cartOrder?.customer = it }
-                } else if (newOrder.orderType == CartOrderType.DineIn.orderType) {
-                    cartOrder?.customer = null
+                if (newOrder.orderType == CartOrderType.DineOut.orderType) {
+                    if (customer != null){
+                        findLatest(customer!!).also { cartOrder?.customer = it }
+                    }
                 } else {
                     cartOrder?.customer = null
                 }
 
-                if (address != null) {
-                    findLatest(address!!).also { cartOrder?.address = it }
-                } else if (newOrder.orderType != CartOrderType.DineIn.orderType) {
-                    cartOrder?.address = null
+                if (newOrder.orderType == CartOrderType.DineOut.orderType) {
+                    if (address != null) {
+                        findLatest(address!!).also { cartOrder?.address = it }
+                    }
                 } else {
                     cartOrder?.address = null
                 }
@@ -309,7 +292,6 @@ class CartOrderRepositoryImpl(
                 }
 
                 cartOrder?.addOnItems = newAddOnItem
-
             }
 
             Resource.Success(true)
@@ -325,7 +307,7 @@ class CartOrderRepositoryImpl(
                     val cartOrder =
                         this.query<CartOrder>("cartOrderId == $0", cartOrderId).find().first()
                     val cartProducts: RealmResults<CartRealm> =
-                        this.query<CartRealm>("cartOrder.cartId == $0", cartOrderId).find()
+                        this.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
 
                     delete(cartProducts)
                     delete(cartOrder)
@@ -370,70 +352,46 @@ class CartOrderRepositoryImpl(
     }
 
     override suspend fun getSelectedCartOrders(): Flow<SelectedCartOrder?> {
-        val selectedCartOrder = realm.query<SelectedCartOrder>().first()
-        val cartOrders = MutableStateFlow<SelectedCartOrder?>(null)
+        return channelFlow {
+            val selectedCartOrder = realm.query<SelectedCartOrder>("selectedCartId == $0", SELECTED_CART_ORDER_ID).first().asFlow()
 
-        CoroutineScope(Dispatchers.Default).launch {
-            val items = selectedCartOrder.asFlow()
-            items.collect { changes ->
+            selectedCartOrder.collect { changes ->
                 when (changes) {
                     is InitialObject -> {
-                        cartOrders.emit(changes.obj)
+                        send(changes.obj)
                     }
-
                     is UpdatedObject -> {
-                        cartOrders.emit(changes.obj)
+                        send(changes.obj)
                     }
-
-                    else -> {
-                        cartOrders.emit(changes.obj)
-                    }
+                    else -> {}
                 }
             }
         }
-
-        return cartOrders
     }
 
     override suspend fun addSelectedCartOrder(cartOrderId: String): Boolean {
-        try {
-            if (cartOrderId.isNotEmpty()) {
-                val cartOrder =
-                    realm.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
+        return try {
+            realm.write {
+                val order = this.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
+                val selectedCartOrder = this.query<SelectedCartOrder>("selectedCartId == $0",
+                    SELECTED_CART_ORDER_ID
+                ).first().find()
 
-                realm.write {
-                    if (cartOrder != null) {
-                        val selectedCartOrder =
-                            this.query<SelectedCartOrder>().first().find()
-
-                        if (selectedCartOrder != null) {
-
-                            if (selectedCartOrder.cartOrder?.cartOrderId != cartOrderId) {
-                                findLatest(cartOrder)?.also {
-                                    selectedCartOrder.cartOrder = it
-                                }
-
-                                this.copyToRealm(selectedCartOrder)
-                            }
-                        } else {
-                            val newSelectedCartOrder = SelectedCartOrder()
-
-                            findLatest(cartOrder)?.also {
-                                newSelectedCartOrder.cartOrder = it
-                            }
-
-                            this.copyToRealm(newSelectedCartOrder)
+                if (order != null) {
+                    if (selectedCartOrder != null) {
+                        if (order.cartOrderId != selectedCartOrder.cartOrder?.cartOrderId){
+                            selectedCartOrder.cartOrder = order
                         }
+                    }else {
+                        this.copyToRealm(SelectedCartOrder(cartOrder = order), UpdatePolicy.ALL)
                     }
                 }
-
-                return true
             }
 
-            return false
-        } catch (e: Exception) {
+            true
+        }catch (e: Exception) {
             Timber.e(e)
-            return false
+            false
         }
     }
 
@@ -474,7 +432,7 @@ class CartOrderRepositoryImpl(
 
             Resource.Success(true)
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to delete all cart orders")
+            Resource.Error(e.message ?: "Unable to delete all cart orders", false)
         }
     }
 }

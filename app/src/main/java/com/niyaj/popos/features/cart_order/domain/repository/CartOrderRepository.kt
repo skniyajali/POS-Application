@@ -9,7 +9,7 @@ interface CartOrderRepository {
 
     fun getLastCreatedOrderId(): Long
 
-    suspend fun getAllCartOrders(): Flow<Resource<List<CartOrder>>>
+    suspend fun getAllCartOrders(viewAll: Boolean = false): Flow<Resource<List<CartOrder>>>
 
     suspend fun getCartOrderById(cartOrderId: String): Resource<CartOrder?>
 

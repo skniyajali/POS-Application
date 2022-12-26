@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.R
@@ -43,8 +44,9 @@ fun ItemNotAvailable(
         ) {
             Text(
                 text = text,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.body1
+                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.body1,
+                fontFamily = FontFamily.Monospace,
             )
             if(buttonText.isNotEmpty()){
                 Spacer(modifier = Modifier.height(SpaceMedium))

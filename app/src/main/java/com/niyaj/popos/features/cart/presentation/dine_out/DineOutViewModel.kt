@@ -56,7 +56,7 @@ class DineOutViewModel @Inject constructor(
                             cartUseCases.addProductToCart(event.orderId, event.productId)) {
                             is Resource.Loading -> {}
                             is Resource.Success -> {
-                                _eventFlow.emit(UiEvent.OnSuccess("Item added to cart"))
+//                                _eventFlow.emit(UiEvent.OnSuccess("Item added to cart"))
                             }
                             is Resource.Error -> {
                                 _eventFlow.emit(
@@ -74,7 +74,7 @@ class DineOutViewModel @Inject constructor(
                     when (cartUseCases.removeProductFromCart(event.orderId, event.productId)) {
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Item removed from cart"))
+//                            _eventFlow.emit(UiEvent.OnSuccess("Item removed from cart"))
                         }
                         is Resource.Error -> {
                             _eventFlow.emit(UiEvent.OnError("Error removing product from cart"))
@@ -89,7 +89,7 @@ class DineOutViewModel @Inject constructor(
                         event.cartOrderId)) {
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("AddOnItem Updated Successfully"))
+//                            _eventFlow.emit(UiEvent.OnSuccess("AddOnItem Updated Successfully"))
 
                         }
                         is Resource.Error -> {

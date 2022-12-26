@@ -65,6 +65,7 @@ class CartOrderViewModel @Inject constructor(
             is CartOrderEvent.SelectCartOrderEvent -> {
                 viewModelScope.launch {
                     cartOrderUseCases.selectCartOrder(event.cartOrderId)
+                    _selectedOrder.emit("")
                 }
             }
 
@@ -122,6 +123,10 @@ class CartOrderViewModel @Inject constructor(
             is CartOrderEvent.RefreshCartOrder -> {
                 getAllCartOrders()
             }
+
+            is CartOrderEvent.ViewAllOrders -> {
+                getAllCartOrders(viewAll = true)
+            }
         }
     }
 
@@ -134,13 +139,12 @@ class CartOrderViewModel @Inject constructor(
                     _selectedCartOrder.value = CartOrder()
                 }
             }
-
         }
     }
 
-    private fun getAllCartOrders(searchText : String = "") {
+    private fun getAllCartOrders(searchText : String = "", viewAll: Boolean = false) {
         viewModelScope.launch {
-            cartOrderUseCases.getAllCartOrders(searchText).collect { result ->
+            cartOrderUseCases.getAllCartOrders(searchText, viewAll).collect { result ->
                 when (result) {
                     is Resource.Loading -> {
                         _cartOrders.value = _cartOrders.value.copy(

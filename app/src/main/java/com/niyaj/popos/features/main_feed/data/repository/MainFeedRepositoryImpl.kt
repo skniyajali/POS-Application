@@ -1,6 +1,7 @@
 package com.niyaj.popos.features.main_feed.data.repository
 
 import com.niyaj.popos.features.cart.domain.model.CartRealm
+import com.niyaj.popos.features.cart_order.domain.model.CartOrder
 import com.niyaj.popos.features.cart_order.domain.model.SelectedCartOrder
 import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.category.domain.model.Category
@@ -26,7 +27,6 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import timber.log.Timber
 
 class MainFeedRepositoryImpl(
@@ -41,59 +41,59 @@ class MainFeedRepositoryImpl(
 
     private val productWithQuantity = MutableStateFlow<List<ProductWithQuantity>>(listOf())
 
-    override suspend fun getSelectedCartOrders(): Flow<String?> {
-        val selectedCartOrder = realm.query(SelectedCartOrder::class)
-        val cartOrders = MutableStateFlow<String?>(null)
+    override suspend fun getSelectedCartOrders(): Flow<CartOrder?> {
+        return flow {
+            val selectedCartOrder = realm.query<SelectedCartOrder>().asFlow()
 
-        CoroutineScope(Dispatchers.Default).launch {
-            val items = selectedCartOrder.asFlow()
-            items.collect { changes ->
-                when (changes){
+            selectedCartOrder.collect { changes ->
+                when (changes) {
                     is InitialResults -> {
-                        if (changes.list.isNotEmpty()){
-                            cartOrders.emit(changes.list.first().cartOrder?.cartOrderId)
+                        if (changes.list.isNotEmpty()) {
+                            emit(changes.list.first().cartOrder)
                         }else {
-                            cartOrders.emit(null)
+                            emit(null)
                         }
                     }
+
                     is UpdatedResults -> {
-                        if (changes.list.isNotEmpty()){
-                            cartOrders.emit(changes.list.first().cartOrder?.cartOrderId)
+                        if (changes.list.isNotEmpty()) {
+                            emit(changes.list.first().cartOrder)
                         }else {
-                            cartOrders.emit(null)
+                            emit(null)
                         }
                     }
                 }
             }
         }
-
-        return cartOrders
     }
 
     override suspend fun getAllCategories(): Flow<Resource<List<Category>>> {
-        return flow {
+        return channelFlow {
             try {
-                emit(Resource.Loading(true))
+                send(Resource.Loading(true))
 
-                val items: RealmResults<Category> = realm.query<Category>().sort("categoryId", Sort.DESCENDING).find()
+                val items: RealmResults<Category> =
+                    realm.query<Category>().sort("categoryId", Sort.DESCENDING).find()
                 // create a Flow from the Item collection, then add a listener to the Flow
                 val itemsFlow = items.asFlow()
                 itemsFlow.collect { changes: ResultsChange<Category> ->
                     when (changes) {
                         // UpdatedResults means this change represents an update/insert/delete operation
                         is UpdatedResults -> {
-                            emit(Resource.Success(changes.list))
-                            emit(Resource.Loading(false))
+                            send(Resource.Success(changes.list))
+                            send(Resource.Loading(false))
                         }
+
                         else -> {
                             // types other than UpdatedResults are not changes -- ignore them
-                            emit(Resource.Success(changes.list))
-                            emit(Resource.Loading(false))
+                            send(Resource.Success(changes.list))
+                            send(Resource.Loading(false))
                         }
                     }
                 }
-            }catch (e: Exception){
-                emit(Resource.Error(e.message ?: "Unable to get all categories"))
+            } catch (e: Exception) {
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get all categories", emptyList()))
             }
         }
     }
@@ -111,27 +111,31 @@ class MainFeedRepositoryImpl(
                     OrderStatus.Processing.orderStatus,
                 ).asFlow()
 
-                selectedCartOrder.combine(products){ cartOrder, productsChanges ->
-                    when(productsChanges){
+                selectedCartOrder.combine(products) { cartOrder, productsChanges ->
+                    when (productsChanges) {
                         is UpdatedResults -> {
                             ProductWithSelectedCartOrder(
                                 product = productsChanges.list,
-                                cartOrderId = when(cartOrder){
+                                cartOrderId = when (cartOrder) {
                                     is InitialObject -> {
-                                        if(cartOrder.obj.cartOrder != null){
+                                        if (cartOrder.obj.cartOrder != null) {
                                             cartOrder.obj.cartOrder!!.cartOrderId
-                                        }else {
+                                        } else {
                                             ""
                                         }
                                     }
+
                                     is UpdatedObject -> {
-                                        if(cartOrder.obj.cartOrder != null){
+                                        if (cartOrder.obj.cartOrder != null) {
                                             cartOrder.obj.cartOrder!!.cartOrderId
-                                        }else {
+                                        } else {
                                             ""
                                         }
                                     }
-                                    else -> ""
+
+                                    else -> {
+                                        ""
+                                    }
                                 }
                             )
                         }
@@ -139,44 +143,55 @@ class MainFeedRepositoryImpl(
                         is InitialResults -> {
                             ProductWithSelectedCartOrder(
                                 product = productsChanges.list,
-                                cartOrderId = when(cartOrder){
+                                cartOrderId = when (cartOrder) {
                                     is InitialObject -> {
-                                        if(cartOrder.obj.cartOrder != null){
+                                        if (cartOrder.obj.cartOrder != null) {
                                             cartOrder.obj.cartOrder!!.cartOrderId
-                                        }else {
+                                        } else {
                                             ""
                                         }
                                     }
+
                                     is UpdatedObject -> {
-                                        if(cartOrder.obj.cartOrder != null){
+                                        if (cartOrder.obj.cartOrder != null) {
                                             cartOrder.obj.cartOrder!!.cartOrderId
-                                        }else {
+                                        } else {
                                             ""
                                         }
                                     }
-                                    else -> ""
+
+                                    else -> {
+                                        ""
+                                    }
                                 }
                             )
                         }
                     }
-                }.combine(cart){ cartOrder, cartChanged ->
-                    when(cartChanged){
+                }.combine(cart) { cartOrder, cartChanged ->
+                    when (cartChanged) {
                         is InitialResults -> {
                             cartOrder.product.map {
                                 ProductWithQuantity(
                                     product = it,
-                                    quantity = if(cartChanged.list.isNotEmpty() && cartOrder.cartOrderId.isNotEmpty()) getProductQuantity(cartOrder.cartOrderId, it.productId) else 0
+                                    quantity = if (cartChanged.list.isNotEmpty() && cartOrder.cartOrderId.isNotEmpty())
+                                        getProductQuantity(cartOrder.cartOrderId,it.productId)
+                                    else 0
                                 )
                             }
                         }
+
                         is UpdatedResults -> {
                             cartOrder.product.map {
                                 ProductWithQuantity(
                                     product = it,
-                                    quantity = if(cartChanged.list.isNotEmpty() && cartOrder.cartOrderId.isNotEmpty()) getProductQuantity(cartOrder.cartOrderId, it.productId) else 0
+                                    quantity = if (cartChanged.list.isNotEmpty() && cartOrder.cartOrderId.isNotEmpty()) getProductQuantity(
+                                        cartOrder.cartOrderId,
+                                        it.productId
+                                    ) else 0
                                 )
                             }
                         }
+
                         else -> {
                             cartOrder.product.map {
                                 ProductWithQuantity(
@@ -186,114 +201,128 @@ class MainFeedRepositoryImpl(
                             }
                         }
                     }
-                }.collect{
+                }.collect {
                     send(Resource.Success(it))
                     send(Resource.Loading(false))
                 }
 
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 Timber.e(e)
-
-                send(Resource.Error(e.message ?: "Unable to get all products"))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get all products", emptyList()))
             }
         }
     }
 
     override suspend fun getProductQuantity(cartOrderId: String, productId: String): Int {
-        val cart =  realm.query<CartRealm>("cartOrder.cartOrderId == $0 AND product.productId == $1", cartOrderId, productId).first().find()
+        val cart = realm.query<CartRealm>(
+            "cartOrder.cartOrderId == $0 AND product.productId == $1",
+            cartOrderId,
+            productId
+        ).first().find()
 
         return cart?.quantity ?: 0
     }
 
     override suspend fun getProducts(limit: Int): List<ProductWithQuantity> {
         CoroutineScope(Dispatchers.Default).launch {
-            supervisorScope {
-                val selectedCartOrder = realm.query<SelectedCartOrder>().first().asFlow()
-                val products = realm.query<Product>().find().asFlow()
-                val cart = realm.query(
-                    CartRealm::class,
-                    "cartOrder.cartOrderStatus == $0",
-                    OrderStatus.Processing.orderStatus,
-                ).asFlow()
+            val selectedCartOrder = realm.query<SelectedCartOrder>().first().asFlow()
+            val products = realm.query<Product>().find().asFlow()
+            val cart = realm.query(
+                CartRealm::class,
+                "cartOrder.cartOrderStatus == $0",
+                OrderStatus.Processing.orderStatus,
+            ).asFlow()
 
-                selectedCartOrder.combine(products){ cartOrder, productsChanges ->
-                    when(productsChanges){
-                        is UpdatedResults -> {
-                            ProductWithSelectedCartOrder(
-                                product = productsChanges.list,
-                                cartOrderId = when(cartOrder){
-                                    is InitialObject -> {
-                                        if(cartOrder.obj.cartOrder != null){
-                                            cartOrder.obj.cartOrder!!.cartOrderId
-                                        }else {
-                                            ""
-                                        }
+            selectedCartOrder.combine(products) { cartOrder, productsChanges ->
+                when (productsChanges) {
+                    is UpdatedResults -> {
+                        ProductWithSelectedCartOrder(
+                            product = productsChanges.list,
+                            cartOrderId = when (cartOrder) {
+                                is InitialObject -> {
+                                    if (cartOrder.obj.cartOrder != null) {
+                                        cartOrder.obj.cartOrder!!.cartOrderId
+                                    } else {
+                                        ""
                                     }
-                                    is UpdatedObject -> {
-                                        if(cartOrder.obj.cartOrder != null){
-                                            cartOrder.obj.cartOrder!!.cartOrderId
-                                        }else {
-                                            ""
-                                        }
-                                    }
-                                    else -> ""
                                 }
-                            )
-                        }
 
-                        is InitialResults -> {
-                            ProductWithSelectedCartOrder(
-                                product = productsChanges.list,
-                                cartOrderId = when(cartOrder){
-                                    is InitialObject -> {
-                                        if(cartOrder.obj.cartOrder != null){
-                                            cartOrder.obj.cartOrder!!.cartOrderId
-                                        }else {
-                                            ""
-                                        }
+                                is UpdatedObject -> {
+                                    if (cartOrder.obj.cartOrder != null) {
+                                        cartOrder.obj.cartOrder!!.cartOrderId
+                                    } else {
+                                        ""
                                     }
-                                    is UpdatedObject -> {
-                                        if(cartOrder.obj.cartOrder != null){
-                                            cartOrder.obj.cartOrder!!.cartOrderId
-                                        }else {
-                                            ""
-                                        }
-                                    }
-                                    else -> ""
                                 }
-                            )
-                        }
+
+                                else -> ""
+                            }
+                        )
                     }
-                }.combine(cart){ cartOrder, cartChanged ->
-                    when(cartChanged){
-                        is InitialResults -> {
-                            cartOrder.product.map {
-                                ProductWithQuantity(
-                                    product = it,
-                                    quantity = if(cartChanged.list.isNotEmpty() && cartOrder.cartOrderId.isNotEmpty()) getProductQuantity(cartOrder.cartOrderId, it.productId) else 0
-                                )
+
+                    is InitialResults -> {
+                        ProductWithSelectedCartOrder(
+                            product = productsChanges.list,
+                            cartOrderId = when (cartOrder) {
+                                is InitialObject -> {
+                                    if (cartOrder.obj.cartOrder != null) {
+                                        cartOrder.obj.cartOrder!!.cartOrderId
+                                    } else {
+                                        ""
+                                    }
+                                }
+
+                                is UpdatedObject -> {
+                                    if (cartOrder.obj.cartOrder != null) {
+                                        cartOrder.obj.cartOrder!!.cartOrderId
+                                    } else {
+                                        ""
+                                    }
+                                }
+
+                                else -> ""
                             }
-                        }
-                        is UpdatedResults -> {
-                            cartOrder.product.map {
-                                ProductWithQuantity(
-                                    product = it,
-                                    quantity = if(cartChanged.list.isNotEmpty() && cartOrder.cartOrderId.isNotEmpty()) getProductQuantity(cartOrder.cartOrderId, it.productId) else 0
-                                )
-                            }
-                        }
-                        else -> {
-                            cartOrder.product.map {
-                                ProductWithQuantity(
-                                    product = it,
-                                    quantity = 0
-                                )
-                            }
-                        }
+                        )
                     }
-                }.collect{
-                    productWithQuantity.emit(it)
                 }
+            }.combine(cart) { cartOrder, cartChanged ->
+                when (cartChanged) {
+                    is InitialResults -> {
+                        cartOrder.product.map {
+                            ProductWithQuantity(
+                                product = it,
+                                quantity = if (cartChanged.list.isNotEmpty() && cartOrder.cartOrderId.isNotEmpty()) getProductQuantity(
+                                    cartOrder.cartOrderId,
+                                    it.productId
+                                ) else 0
+                            )
+                        }
+                    }
+
+                    is UpdatedResults -> {
+                        cartOrder.product.map {
+                            ProductWithQuantity(
+                                product = it,
+                                quantity = if (cartChanged.list.isNotEmpty() && cartOrder.cartOrderId.isNotEmpty()) getProductQuantity(
+                                    cartOrder.cartOrderId,
+                                    it.productId
+                                ) else 0
+                            )
+                        }
+                    }
+
+                    else -> {
+                        cartOrder.product.map {
+                            ProductWithQuantity(
+                                product = it,
+                                quantity = 0
+                            )
+                        }
+                    }
+                }
+            }.collect {
+                productWithQuantity.emit(it)
             }
         }
 

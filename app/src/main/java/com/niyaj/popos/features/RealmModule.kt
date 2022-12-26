@@ -52,6 +52,9 @@ import com.niyaj.popos.features.order.domain.repository.OrderRepository
 import com.niyaj.popos.features.product.data.repository.ProductRepositoryImpl
 import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.product.domain.repository.ProductRepository
+import com.niyaj.popos.features.profile.data.repository.RestaurantInfoRepositoryImpl
+import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
+import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoRepository
 import com.niyaj.popos.features.reports.data.repository.ReportsRepositoryImpl
 import com.niyaj.popos.features.reports.domain.model.Reports
 import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
@@ -67,8 +70,8 @@ import io.realm.kotlin.log.LogLevel
 object RealmModule {
 
     private val schema = setOf(
-        Category::class,
         Product::class,
+        Category::class,
         Customer::class,
         Address::class,
         CartOrder::class,
@@ -83,7 +86,8 @@ object RealmModule {
         EmployeeSalary::class,
         EmployeeAttendance::class,
         Reports::class,
-        Settings::class
+        Settings::class,
+        RestaurantInfo::class,
     )
 
     private val config = RealmConfiguration
@@ -95,97 +99,102 @@ object RealmModule {
 
 
     @Provides
-    fun provideMainFeedServiceImpl(): MainFeedRepository {
-        return MainFeedRepositoryImpl(config)
-    }
-
-    @Provides
-    fun provideCategoryRealmDaoImpl(): CategoryRepository {
+    fun provideCategoryRepositoryImpl(): CategoryRepository {
         return CategoryRepositoryImpl(config)
     }
 
     @Provides
-    fun provideProductRealmDaoImpl(): ProductRepository {
+    fun provideProductRepositoryImpl(): ProductRepository {
         return ProductRepositoryImpl(config)
     }
 
     @Provides
-    fun provideCustomerRealmDaoImpl(): CustomerRepository {
+    fun provideCustomerRepositoryImpl(): CustomerRepository {
         return CustomerRepositoryImpl(config)
     }
 
     @Provides
-    fun provideAddressRealmDaoImpl(): AddressRepository {
+    fun provideAddressRepositoryImpl(): AddressRepository {
         return AddressRepositoryImpl(config)
     }
 
     @Provides
-    fun provideCartOrderRealmDaoImpl(settingsRepository: SettingsRepository): CartOrderRepository {
+    fun provideCartOrderRepositoryImpl(settingsRepository: SettingsRepository): CartOrderRepository {
         return CartOrderRepositoryImpl(config, settingsRepository)
     }
 
     @Provides
-    fun provideCartRealmDaoImpl(settingsRepository: SettingsRepository): CartRepository {
+    fun provideCartRepositoryImpl(settingsRepository: SettingsRepository): CartRepository {
         return CartRepositoryImpl(config, settingsRepository)
     }
 
     @Provides
-    fun provideOrderRealmDaoImpl(): OrderRepository {
+    fun provideOrderRepositoryImpl(): OrderRepository {
         return OrderRepositoryImpl(config)
     }
 
     @Provides
-    fun provideChargesRealmDaoImpl(): ChargesRepository {
+    fun provideChargesRepositoryImpl(): ChargesRepository {
         return ChargesRepositoryImpl(config)
     }
 
     @Provides
-    fun provideAddOnItemRealmDaoImpl(): AddOnItemRepository {
+    fun provideAddOnItemRepositoryImpl(): AddOnItemRepository {
         return AddOnItemRepositoryImpl(config)
     }
 
     @Provides
-    fun providePartnerRealmDaoImpl(): PartnerRepository {
+    fun providePartnerRepositoryImpl(): PartnerRepository {
         return PartnerRepositoryImpl(config)
     }
 
     @Provides
-    fun provideEmployeeRealmDaoImpl(): EmployeeRepository {
+    fun provideEmployeeRepositoryImpl(): EmployeeRepository {
         return EmployeeRepositoryImpl(config)
     }
 
     @Provides
-    fun provideExpensesCategoryRealmDaoImpl(): ExpensesCategoryRepository {
+    fun provideExpensesCategoryRepositoryImpl(): ExpensesCategoryRepository {
         return ExpensesCategoryRepositoryImpl(config)
     }
 
     @Provides
-    fun provideExpensesRealmDaoImpl(settingsRepository: SettingsRepository): ExpensesRepository {
+    fun provideExpensesRepositoryImpl(settingsRepository: SettingsRepository): ExpensesRepository {
         return ExpensesRepositoryImpl(config, settingsRepository)
     }
 
     @Provides
-    fun provideReportsRealmDaoImpl(cartRepository: CartRepository): ReportsRepository {
+    fun provideReportsRepositoryImpl(cartRepository: CartRepository): ReportsRepository {
         return ReportsRepositoryImpl(config, cartRepository)
     }
 
     @Provides
-    fun provideSalaryRealmDaoImpl(): SalaryRepository {
+    fun provideSalaryRepositoryImpl(): SalaryRepository {
         return SalaryRepositoryImpl(config)
     }
 
     @Provides
-    fun provideAttendanceServiceImpl(): AttendanceRepository {
+    fun provideAttendanceRepositoryImpl(): AttendanceRepository {
         return AttendanceRepositoryImpl(config)
     }
 
     @Provides
-    fun provideDataDeletionServiceImpl(settingsRepository: SettingsRepository): DataDeletionRepository {
+    fun provideDataDeletionRepositoryImpl(settingsRepository: SettingsRepository): DataDeletionRepository {
         return DataDeletionRepositoryImpl(config, settingsRepository)
     }
 
     @Provides
-    fun provideSettingsServiceImpl(): SettingsRepository {
+    fun provideSettingsRepositoryImpl(): SettingsRepository {
         return SettingsRepositoryImpl(config)
+    }
+
+    @Provides
+    fun provideMainFeedRepositoryImpl(): MainFeedRepository {
+        return MainFeedRepositoryImpl(config)
+    }
+
+    @Provides
+    fun provideRestaurantInfoRepositoryImpl(): RestaurantInfoRepository {
+        return RestaurantInfoRepositoryImpl(config)
     }
 }

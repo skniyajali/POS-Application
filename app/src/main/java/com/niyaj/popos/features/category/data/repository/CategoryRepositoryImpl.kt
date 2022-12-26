@@ -52,7 +52,7 @@ class CategoryRepositoryImpl(
                     }
                 }
             } catch (e: Exception) {
-                send(Resource.Error(e.message ?: "Unable to get all categories"))
+                send(Resource.Error(e.message ?: "Unable to get all categories", emptyList()))
             }
         }
     }
@@ -95,10 +95,10 @@ class CategoryRepositoryImpl(
         }
     }
 
-    override suspend fun updateCategory(updatedCategory: Category, id: String): Resource<Boolean> {
+    override suspend fun updateCategory(updatedCategory: Category, categoryId: String): Resource<Boolean> {
         return try {
             realm.write {
-                val category = this.query<Category>("categoryId == $0", id).first().find()
+                val category = this.query<Category>("categoryId == $0", categoryId).first().find()
                 category?.categoryName = updatedCategory.categoryName
                 category?.categoryAvailability = updatedCategory.categoryAvailability
                 category?.updatedAt = System.currentTimeMillis().toString()

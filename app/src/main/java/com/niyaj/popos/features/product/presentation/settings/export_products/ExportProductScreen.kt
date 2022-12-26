@@ -40,8 +40,8 @@ import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.ImportExport.createFile
 import com.niyaj.popos.features.common.util.ImportExport.writeData
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardChip
 import com.niyaj.popos.features.components.StandardExpandable
+import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.TextWithCount
 import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
@@ -69,7 +69,7 @@ fun ExportProductScreen(
 
     val products = exportProductViewModel.products.collectAsState().value.products
     val groupedProducts = exportProductViewModel.products.collectAsState().value.products.groupBy {
-        it.category
+        it.category?.categoryName!!
     }
 
     val selectedProducts = exportProductViewModel.selectedProducts.toList()
@@ -145,7 +145,7 @@ fun ExportProductScreen(
                 )
 
                 Row {
-                    StandardChip(
+                    StandardOutlinedChip(
                         text = "All",
                         isToggleable = true,
                         isSelected = !isChoose,
@@ -157,7 +157,7 @@ fun ExportProductScreen(
 
                     Spacer(modifier = Modifier.width(SpaceMini))
 
-                    StandardChip(
+                    StandardOutlinedChip(
                         text = "Choose",
                         isToggleable = true,
                         isSelected = isChoose,
@@ -239,7 +239,7 @@ fun ExportProductScreen(
                                                 .clip(
                                                     RoundedCornerShape(if (showScrollToTop.value) 4.dp else 0.dp)
                                                 ),
-                                            text = category?.categoryName!!,
+                                            text = category,
                                             count = products_new.count(),
                                             onClick = {
                                                 exportProductViewModel.onEvent(ExportProductEvent.SelectProducts(products_new.map { it.productId }))
@@ -283,7 +283,7 @@ fun ExportProductScreen(
             Button(
                 onClick = {
                     scope.launch {
-                        val result = createFile(fileName = "products")
+                        val result = createFile(context = context, fileName = "products")
                         exportLauncher.launch(result)
                         exportProductViewModel.onEvent(ExportProductEvent.GetExportedProduct)
                     }

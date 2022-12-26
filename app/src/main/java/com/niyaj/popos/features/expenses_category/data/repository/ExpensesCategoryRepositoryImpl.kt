@@ -101,7 +101,7 @@ class ExpensesCategoryRepositoryImpl(config: RealmConfiguration) : ExpensesCateg
         return try {
             realm.write {
                 val expansesCategoryItem: ExpensesCategory = this.query<ExpensesCategory>("expensesCategoryId == $0", expensesCategoryId).find().first()
-                val expenses = this.query<Expenses>("expansesCategory.expensesCategoryId == $0", expensesCategoryId).find()
+                val expenses = this.query<Expenses>("expensesCategory.expensesCategoryId == $0", expensesCategoryId).find()
 
                 delete(expenses)
 

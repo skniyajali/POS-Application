@@ -22,40 +22,37 @@ class GetAllCategories(
                         emit(Resource.Loading(result.isLoading))
                     }
                     is Resource.Success -> {
-                        emit(
-                            Resource.Success(
-                            result.data?.let { categories ->
-                                when(filterCategory.sortType){
-                                    is SortType.Ascending -> {
-                                        when(filterCategory){
-                                            is FilterCategory.ByCategoryId -> categories.sortedBy { it.categoryId }
-                                            is FilterCategory.ByCategoryName -> categories.sortedBy { it.categoryName.lowercase() }
-                                            is FilterCategory.ByCategoryAvailability -> categories.sortedBy { it.categoryAvailability }
-                                            is FilterCategory.ByCategoryDate -> categories.sortedBy { it.createdAt }
-                                        }
+                        val data = result.data?.let { categories ->
+                            when(filterCategory.sortType){
+                                is SortType.Ascending -> {
+                                    when(filterCategory){
+                                        is FilterCategory.ByCategoryId -> categories.sortedBy { it.categoryId }
+                                        is FilterCategory.ByCategoryName -> categories.sortedBy { it.categoryName.lowercase() }
+                                        is FilterCategory.ByCategoryAvailability -> categories.sortedBy { it.categoryAvailability }
+                                        is FilterCategory.ByCategoryDate -> categories.sortedBy { it.createdAt }
                                     }
+                                }
 
-                                    is SortType.Descending -> {
-                                        when(filterCategory){
-                                            is FilterCategory.ByCategoryId -> categories.sortedByDescending { it.categoryId }
-                                            is FilterCategory.ByCategoryName -> categories.sortedByDescending { it.categoryName.lowercase() }
-                                            is FilterCategory.ByCategoryAvailability -> categories.sortedByDescending { it.categoryAvailability }
-                                            is FilterCategory.ByCategoryDate -> categories.sortedByDescending { it.createdAt }
-                                        }
+                                is SortType.Descending -> {
+                                    when(filterCategory){
+                                        is FilterCategory.ByCategoryId -> categories.sortedByDescending { it.categoryId }
+                                        is FilterCategory.ByCategoryName -> categories.sortedByDescending { it.categoryName.lowercase() }
+                                        is FilterCategory.ByCategoryAvailability -> categories.sortedByDescending { it.categoryAvailability }
+                                        is FilterCategory.ByCategoryDate -> categories.sortedByDescending { it.createdAt }
                                     }
-                                }.filter { category ->
-                                    if(searchText.isNotEmpty()){
-                                        category.categoryName.contains(searchText, true) ||
-                                        category.categoryAvailability.toString().contains(searchText, true) ||
-                                        category.createdAt.contains(searchText, true)
-                                    }else {
-                                        true
-                                    }
-                                }.filter {
-                                    it.categoryAvailability
+                                }
+                            }.filter { category ->
+                                if(searchText.isNotEmpty()){
+                                    category.categoryName.contains(searchText, true) ||
+                                            category.categoryAvailability.toString().contains(searchText, true) ||
+                                            category.createdAt.contains(searchText, true)
+                                }else {
+                                    true
                                 }
                             }
-                        ))
+                        }
+
+                        emit(Resource.Success(data))
                     }
                     is Resource.Error -> {
                         emit(Resource.Error(result.message ?: "Unable to load categories from repository"))

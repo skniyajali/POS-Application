@@ -48,7 +48,8 @@ class PartnerRepositoryImpl(config: RealmConfiguration) : PartnerRepository {
                     }
                 }
             } catch (e: Exception) {
-                send(Resource.Error(e.message ?: "Unable to get delivery partners", null))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get delivery partners", emptyList()))
             }
         }
     }
@@ -143,7 +144,7 @@ class PartnerRepositoryImpl(config: RealmConfiguration) : PartnerRepository {
             }
 
         } catch (e: RealmException) {
-            Resource.Error(e.message ?: "Error creating Delivery Partner")
+            Resource.Error(e.message ?: "Error creating Delivery Partner", true)
         }
     }
 
@@ -183,7 +184,7 @@ class PartnerRepositoryImpl(config: RealmConfiguration) : PartnerRepository {
                 Resource.Success(true)
             }
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to update delivery partner.")
+            Resource.Error(e.message ?: "Failed to update delivery partner.", false)
         }
     }
 
@@ -199,7 +200,7 @@ class PartnerRepositoryImpl(config: RealmConfiguration) : PartnerRepository {
             Resource.Success(true)
 
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to delete delivery partner")
+            Resource.Error(e.message ?: "Failed to delete delivery partner", false)
         }
     }
 }

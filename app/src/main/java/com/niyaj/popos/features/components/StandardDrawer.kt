@@ -80,6 +80,9 @@ fun StandardDrawer(
                     text = "Home",
                     icon = Icons.Default.Home,
                     selected = currentRoute == MainFeedScreenDestination.route,
+                    onClick = {
+                        navController.navigate(MainFeedScreenDestination())
+                    }
                 )
             }
 

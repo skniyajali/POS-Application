@@ -56,10 +56,7 @@ fun CartItemTotalPriceSection(
                 style = MaterialTheme.typography.subtitle1,
                 color = if (orderType == CartOrderType.DineOut.orderType) MaterialTheme.colors.secondaryVariant else MaterialTheme.colors.secondary
             )
-//            Text(
-//                text = "$itemCount Items",
-//                style = MaterialTheme.typography.body2
-//            )
+
             Text(
                 modifier = Modifier.weight(0.8f),
                 text = "Rs. ${totalPrice.minus(discountPrice)}",

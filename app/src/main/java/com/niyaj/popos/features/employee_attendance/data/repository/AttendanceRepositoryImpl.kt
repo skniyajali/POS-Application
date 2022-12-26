@@ -53,7 +53,8 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
                     }
                 }
             } catch (e: Exception) {
-                send(Resource.Error(e.message ?: "Unable to get all Attendance"))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get all Attendance", emptyList()))
             }
         }
     }
@@ -81,7 +82,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
             ).first().find()
         } else {
             realm.query<EmployeeAttendance>(
-                "_id != $0 && absentDate == $1 AND employee.employeeId == $2",
+                "attendeeId != $0 && absentDate == $1 AND employee.employeeId == $2",
                 attendanceId,
                 absentDate,
                 employeeId
@@ -134,11 +135,13 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
                     send(Resource.Loading(false))
 
                 } else {
-                    send(Resource.Error("Employee not found"))
+                    send(Resource.Loading(false))
+                    send(Resource.Error("Employee not found", emptyList()))
                 }
 
             } catch (e: Exception) {
-                send(Resource.Error(e.message ?: "Unable to get absent reports"))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get absent reports", emptyList()))
             }
         }
     }

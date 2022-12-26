@@ -48,7 +48,8 @@ class ChargesRepositoryImpl(
                     }
                 }
             } catch (e: Exception) {
-                send(Resource.Error(e.message ?: "Unable to get charges items", null))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get charges items", emptyList()))
             }
         }
     }
@@ -89,7 +90,7 @@ class ChargesRepositoryImpl(
 
             Resource.Success(result.isValid())
         } catch (e: RealmException) {
-            Resource.Error(e.message ?: "Error creating Charges Item")
+            Resource.Error(e.message ?: "Error creating Charges Item", false)
         }
     }
 
@@ -109,7 +110,7 @@ class ChargesRepositoryImpl(
 
             Resource.Success(true)
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to update charges item")
+            Resource.Error(e.message ?: "Failed to update charges item", false)
         }
     }
 
@@ -125,7 +126,7 @@ class ChargesRepositoryImpl(
             Resource.Success(true)
 
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to delete charges item")
+            Resource.Error(e.message ?: "Failed to delete charges item", false)
         }
     }
 

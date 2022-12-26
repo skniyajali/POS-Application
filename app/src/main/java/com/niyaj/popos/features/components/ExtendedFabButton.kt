@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -93,6 +94,7 @@ fun ExtendedFabButton(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(SpaceMini))
         }
     }
 }

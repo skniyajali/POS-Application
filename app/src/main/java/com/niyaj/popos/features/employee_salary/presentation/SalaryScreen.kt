@@ -33,8 +33,8 @@ import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.ExtendedFabButton
 import com.niyaj.popos.features.components.IconBox
 import com.niyaj.popos.features.components.ItemNotAvailable
-import com.niyaj.popos.features.components.StandardChip
 import com.niyaj.popos.features.components.StandardExpandable
+import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.StandardSearchBar
 import com.niyaj.popos.features.components.TextWithIcon
@@ -538,7 +538,7 @@ fun SalaryScreen(
                                                                     SpaceSmall
                                                                 ))
 
-                                                                StandardChip(
+                                                                StandardOutlinedChip(
                                                                     text = salary.salaryType,
                                                                 )
                                                             }

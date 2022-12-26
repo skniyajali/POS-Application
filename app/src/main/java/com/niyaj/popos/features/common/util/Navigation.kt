@@ -85,13 +85,15 @@ fun Navigation(
             dependenciesContainerBuilder = {
                 dependency(bottomSheetScaffoldState)
                 dependency(scaffoldState)
+                dependency(bottomSheetNavigator)
             },
         ){
             composable(MainFeedScreenDestination){
                 MainFeedScreen(
                     onOpenSheet = onOpenSheet,
                     scaffoldState = scaffoldState,
-                    navController = navController
+                    navController = navController,
+                    resultRecipient = resultRecipient()
                 )
             }
 

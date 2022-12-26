@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.ManagedVirtualDevice
+
 plugins {
     id 'com.android.test'
     id 'org.jetbrains.kotlin.android'
@@ -23,6 +25,17 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    testOptions {
+        managedDevices {
+            devices {
+                pixel4aApi33(ManagedVirtualDevice) {
+                    device = "Pixel 4a"
+                    apiLevel = 33
+                }
+            }
+        }
+    }
+
     buildTypes {
         // This benchmark buildType is used for benchmarking, and should function like your
         // release build (for example, with minification on). It's signed with a debug key
@@ -31,6 +44,7 @@ android {
             debuggable = true
             signingConfig = debug.signingConfig
             matchingFallbacks = ["release"]
+            proguardFiles("benchmark-rules.pro")
         }
     }
 
@@ -42,7 +56,7 @@ dependencies {
     implementation 'androidx.test.ext:junit:1.1.4'
     implementation 'androidx.test.espresso:espresso-core:3.5.0'
     implementation 'androidx.test.uiautomator:uiautomator:2.2.0'
-    implementation 'androidx.benchmark:benchmark-macro-junit4:1.1.0-beta05'
+    implementation 'androidx.benchmark:benchmark-macro-junit4:1.2.0-alpha08'
 }
 
 androidComponents {

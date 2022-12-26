@@ -7,6 +7,7 @@ import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.expenses.domain.model.Expenses
+import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.reports.domain.model.Reports
 import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
 import com.niyaj.popos.features.reports.domain.util.ProductWiseReport
@@ -100,7 +101,7 @@ class ReportsRepositoryImpl(
                 Resource.Success(report)
             }
         }catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to get report", null)
+            Resource.Error(message = e.message ?: "Unable to get report", data = null)
         }
     }
 
@@ -109,7 +110,7 @@ class ReportsRepositoryImpl(
             try {
                 send(Resource.Loading(true))
 
-                val reports = realm.query<Reports>("createdAt <= $0", startDate).sort("_id", Sort.DESCENDING).asFlow()
+                val reports = realm.query<Reports>("createdAt <= $0", startDate).sort("reportId", Sort.DESCENDING).asFlow()
 
                 reports.collect { report ->
                     when(report) {
@@ -124,7 +125,11 @@ class ReportsRepositoryImpl(
                     }
                 }
             }catch (e: Exception) {
-                send(Resource.Error(e.message ?: "Unable to get reports"))
+                send(Resource.Loading(false))
+                send(Resource.Error(
+                    message = e.message ?: "Unable to get reports",
+                    data = emptyList()
+                ))
             }
         }
     }
@@ -167,7 +172,7 @@ class ReportsRepositoryImpl(
             return (totalExpensesItem + totalDineInItems + totalDineOutItems)
         } catch (e: Exception) {
             Timber.d(e)
-            throw e
+            return 0
         }
     }
 
@@ -193,11 +198,11 @@ class ReportsRepositoryImpl(
                     }
                 }
 
-                val groupedProduct = cartOrders.groupBy({ it.product }) { it }
+                val groupedProduct = cartOrders.groupBy({ it.product?.productId }) { it }
 
                 val groupedProductWithQuantity = groupedProduct.map { cart ->
                     ProductWiseReport(
-                        product = cart.key!!,
+                        product = getProduct(cart.key!!),
                         quantity = cart.value.sumOf {
                             it.quantity
                         }
@@ -209,21 +214,19 @@ class ReportsRepositoryImpl(
                 send(Resource.Loading(false))
 
             } catch (e: Exception) {
-                Timber.e(e)
-                send(Resource.Error(e.message ?: "Unable to get data from database"))
+                send(Resource.Loading(false))
+                send(Resource.Error(
+                    message = e.message ?: "Unable to get data from database",
+                    data = emptyList()
+                ))
             }
         }
     }
 
-    /**
-     * @param startDate
-     * @param endDate
-     * This method will return [Triple]-[Pair] values of
-     * *Expenses* Size and Total Amount,
-     * *DineIn Order* Quantity and Total Amount,
-     * *DineOut Order* Quantity and Total Amount
-     * as sequence on specific date.
-     */
+    private fun getProduct(productId: String): Product {
+        return realm.query<Product>("productId == $0", productId).find().first()
+    }
+
     private fun getItemsReport(startDate: String, endDate: String): Triple<Pair<Long, Long>, Pair<Long, Long>, Pair<Long, Long>> {
         try {
             //Get Today Expenses
@@ -282,9 +285,6 @@ class ReportsRepositoryImpl(
         }
     }
 
-    /**
-     * Delete last 7 days before data from current date.
-     */
     override fun deleteLastSevenDaysBeforeData(): Resource<Boolean> {
         return try {
 
@@ -300,7 +300,10 @@ class ReportsRepositoryImpl(
 
             Resource.Success(true)
         }catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to delete last seven days before data", false)
+            Resource.Error(
+                message = e.message ?: "Unable to delete last seven days before data",
+                data = false
+            )
         }
     }
 }

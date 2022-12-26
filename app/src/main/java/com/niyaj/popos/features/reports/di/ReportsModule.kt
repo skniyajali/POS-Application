@@ -1,11 +1,11 @@
 package com.niyaj.popos.features.reports.di
 
-import com.niyaj.popos.features.reports.domain.reports.DeletePastData
-import com.niyaj.popos.features.reports.domain.reports.GenerateReport
-import com.niyaj.popos.features.reports.domain.reports.GetProductWiseReport
-import com.niyaj.popos.features.reports.domain.reports.GetReport
-import com.niyaj.popos.features.reports.domain.reports.GetReportsBarData
-import com.niyaj.popos.features.reports.domain.reports.ReportsUseCases
+import com.niyaj.popos.features.reports.domain.use_cases.DeletePastData
+import com.niyaj.popos.features.reports.domain.use_cases.GenerateReport
+import com.niyaj.popos.features.reports.domain.use_cases.GetProductWiseReport
+import com.niyaj.popos.features.reports.domain.use_cases.GetReport
+import com.niyaj.popos.features.reports.domain.use_cases.GetReportsBarData
+import com.niyaj.popos.features.reports.domain.use_cases.ReportsUseCases
 import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
 import dagger.Module
 import dagger.Provides

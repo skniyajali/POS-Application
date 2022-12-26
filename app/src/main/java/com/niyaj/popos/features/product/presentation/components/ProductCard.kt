@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.ui.theme.TextGray
-import com.niyaj.popos.features.components.StandardChip
+import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.util.toRupee
 
 @Composable
@@ -78,7 +78,7 @@ fun ProductCard(
                 )
             }
 
-            StandardChip(
+            StandardOutlinedChip(
                 text = productCategoryName,
                 onClick = {}
             )

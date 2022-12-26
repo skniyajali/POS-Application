@@ -1,6 +1,5 @@
 package com.niyaj.popos.features.main_feed.di
 
-import com.niyaj.popos.features.cart_order.domain.repository.CartOrderRepository
 import com.niyaj.popos.features.main_feed.domain.repository.MainFeedRepository
 import com.niyaj.popos.features.main_feed.domain.use_cases.GetMainFeedCategories
 import com.niyaj.popos.features.main_feed.domain.use_cases.GetMainFeedProducts
@@ -19,10 +18,10 @@ object MainFeedModule {
 
     @Singleton
     @Provides
-    fun provideMainFeedUseCases(mainFeedRepository: MainFeedRepository, cartOrderRepository: CartOrderRepository): MainFeedUseCases {
+    fun provideMainFeedUseCases(mainFeedRepository: MainFeedRepository): MainFeedUseCases {
         return MainFeedUseCases(
             getMainFeedProducts = GetMainFeedProducts(mainFeedRepository),
-            getMainFeedSelectedOrder = GetMainFeedSelectedOrder(mainFeedRepository, cartOrderRepository),
+            getMainFeedSelectedOrder = GetMainFeedSelectedOrder(mainFeedRepository),
             getMainFeedCategories = GetMainFeedCategories(mainFeedRepository),
             getProductsPager = GetProductsPager(mainFeedRepository),
         )

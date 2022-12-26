@@ -11,9 +11,12 @@ import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.charges.domain.model.Charges
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.product.domain.model.Product
+import com.niyaj.popos.util.Constants.ADD_ON_EXCLUDE_ITEM_ONE
+import com.niyaj.popos.util.Constants.ADD_ON_EXCLUDE_ITEM_TWO
 import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
+import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
@@ -60,7 +63,7 @@ class CartRepositoryImpl(
                 }
 
             } catch (e: Exception) {
-                emit(Resource.Error(e.message ?: "Unable to get cart products"))
+                emit(Resource.Error(e.message ?: "Unable to get cart products", emptyList()))
             }
         }
     }
@@ -91,6 +94,7 @@ class CartRepositoryImpl(
                     }
                 }
             } catch (e: Exception) {
+                send(Resource.Loading(false))
                 send(Resource.Error(e.message ?: "Unable to get cart products"))
             }
         }
@@ -124,7 +128,8 @@ class CartRepositoryImpl(
                 }
 
             } catch (e: Exception) {
-                send(Resource.Error(e.message ?: "Unable to get cart products"))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get cart products", emptyList()))
             }
         }
     }
@@ -160,64 +165,45 @@ class CartRepositoryImpl(
                 }
 
             } catch (e: Exception) {
-                emit(Resource.Error(e.message ?: "Unable to get cart products by order id"))
+                emit(Resource.Error(e.message ?: "Unable to get cart products by order id", emptyList()))
             }
         }
     }
 
     override suspend fun addProductToCart(cartOrderId: String, productId: String): Resource<Boolean> {
         return try {
-            val doesCartAndProductAlreadyExists = realm.query<CartRealm>(
-                "cartOrder.cartOrderId == $0 AND product._id == $1",
-                cartOrderId,
-                productId
-            ).first().find()
+            realm.write {
+                val cartOrder = this.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
+                val product = this.query<Product>("productId == $0", productId).first().find()
 
-            val cartOrder = realm.query<CartOrder>("cartOrderId = $0", cartOrderId).first().find()
-            val product = realm.query<Product>("productId == $0", productId).first().find()
-
-            if (cartOrder != null && product != null) {
-                if (doesCartAndProductAlreadyExists == null) {
-
-                    val cartProducts = CartRealm()
-
-                    realm.write {
-
-                        findLatest(cartOrder)?.also { cartProducts.cartOrder = it }
-
-                        findLatest(product)?.also { cartProducts.product = it }
-
-                        cartProducts.quantity = 1
-                        cartProducts.updatedAt = System.currentTimeMillis().toString()
-
-                        this.copyToRealm(cartProducts)
-                    }
-
-
-                    Resource.Success(true)
-                } else {
-                    realm.write {
-                        val cartProducts = realm.query<CartRealm>(
-                            "cartOrder.cartOrderId == $0 AND product.productId == $1",
-                            cartOrderId,
-                            productId
+                if (cartOrder != null && product != null) {
+                    val cart = this.query<CartRealm>(
+                        "cartOrder.cartOrderId == $0 AND product.productId == $1",
+                        cartOrderId,
+                        productId
                         ).first().find()
 
-                        if (cartProducts != null) {
-                            findLatest(cartProducts)?.also {
-                                it.updatedAt = System.currentTimeMillis().toString()
-                                it.quantity = doesCartAndProductAlreadyExists.quantity.plus(1)
-                            }
-                        }
+                    if (cart != null){
+                        cart.cartOrder = cartOrder
+                        cart.product = product
+                        cart.quantity = cart.quantity.plus(1)
+                        cart.updatedAt = System.currentTimeMillis().toString()
+                    }else {
+                        this.copyToRealm(CartRealm().apply {
+                            this.cartOrder = cartOrder
+                            this.product = product
+                            this.quantity = 1
+                            this.updatedAt = System.currentTimeMillis().toString()
+                        }, UpdatePolicy.ALL)
                     }
-
-                    Resource.Success(true)
+                }else {
+                    Resource.Error("Unable to get cart order and product", false)
                 }
-            } else {
-                Resource.Error("Unable to find cart order and product", false)
             }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to add product into cart", false)
+            
+            Resource.Success(true)
+        }catch (e: Exception) {
+            Resource.Error(e.message ?: "Unable to add product to cart", false)
         }
     }
 
@@ -237,7 +223,6 @@ class CartRepositoryImpl(
             if (cartOrder != null && product != null) {
                 if (doesCartAndProductAlreadyExists != null) {
                     realm.write {
-
                         val cartProducts = realm.query<CartRealm>(
                             "cartOrder.cartOrderId == $0 AND product.productId == $1",
                             cartOrderId,
@@ -246,10 +231,8 @@ class CartRepositoryImpl(
 
                         if (cartProducts != null) {
                             if (cartProducts.quantity == 1) {
-
                                 findLatest(cartProducts)?.also { delete(it) }
                             } else {
-
                                 findLatest(cartProducts)?.also {
                                     it.updatedAt = System.currentTimeMillis().toString()
                                     it.quantity = cartProducts.quantity.minus(1)
@@ -327,7 +310,7 @@ class CartRepositoryImpl(
                     totalPrice += addOnItem.itemPrice
 
                     // Todo: use dynamic fields for discount calculation.
-                    if (addOnItem.itemName == "Masala" || addOnItem.itemName == "Mayonnaise") {
+                    if (addOnItem.itemName == ADD_ON_EXCLUDE_ITEM_ONE || addOnItem.itemName == ADD_ON_EXCLUDE_ITEM_TWO) {
                         discountPrice += addOnItem.itemPrice
                     }
                 }
@@ -361,14 +344,18 @@ class CartRepositoryImpl(
         }
     }
 
+    private fun getCartOrderById(cartOrderId: String): CartOrder {
+        return realm.query<CartOrder>("cartOrderId == $0", cartOrderId).find().first()
+    }
+
     private fun mapCartRealmToCart(carts: List<CartRealm>): List<Cart>{
-        val groupedByOrder = carts.groupBy { it.cartOrder }
+        val groupedByOrder = carts.groupBy { it.cartOrder?.cartOrderId }
 
         val data = groupedByOrder.map { groupedCartProducts ->
             if (groupedCartProducts.key != null && groupedCartProducts.value.isNotEmpty()) {
-                val cartOrder = groupedCartProducts.key
+                val cartOrder = getCartOrderById(groupedCartProducts.key!!)
 
-                if (cartOrder != null && cartOrder.cartOrderStatus != OrderStatus.Placed.orderStatus) {
+                if (cartOrder.cartOrderStatus != OrderStatus.Placed.orderStatus) {
                     Cart(
                         cartOrder = cartOrder,
                         cartProducts = groupedCartProducts.value.map { cartProducts ->

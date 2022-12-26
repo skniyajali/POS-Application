@@ -8,7 +8,7 @@ import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.niyaj.popos.R
-import com.niyaj.popos.features.reports.domain.reports.ReportsUseCases
+import com.niyaj.popos.features.reports.domain.use_cases.ReportsUseCases
 import com.niyaj.popos.util.Constants
 import com.niyaj.popos.util.getEndTime
 import com.niyaj.popos.util.getStartTime

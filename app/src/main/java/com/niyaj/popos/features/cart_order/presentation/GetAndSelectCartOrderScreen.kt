@@ -149,6 +149,7 @@ fun GetAndSelectCartOrderScreen(
                                         )
                                     )
                                     navController.navigate(AddEditCartOrderScreenDestination(cartOrderId = item.cartOrderId))
+                                    onClosePressed()
                                 },
                                 modifier = Modifier
                                     .background(MaterialTheme.colors.primary, RoundedCornerShape(4.dp))

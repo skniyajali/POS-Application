@@ -1,6 +1,9 @@
 package com.niyaj.popos.features.order.presentation.print_order
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +17,8 @@ import com.niyaj.popos.features.charges.domain.model.Charges
 import com.niyaj.popos.features.charges.domain.use_cases.ChargesUseCases
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.order.domain.use_cases.OrderUseCases
+import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
+import com.niyaj.popos.features.profile.domain.use_cases.RestaurantInfoUseCases
 import com.niyaj.popos.util.Constants
 import com.niyaj.popos.util.toFormattedDateAndTime
 import com.niyaj.popos.util.toRupee
@@ -27,13 +32,17 @@ import javax.inject.Inject
 class PrintViewModel @Inject constructor(
     private val orderUseCases: OrderUseCases,
     private val chargesUseCases: ChargesUseCases,
+    private val restaurantInfoUseCases: RestaurantInfoUseCases,
 ) : ViewModel() {
 
     private lateinit var escposPrinter: EscPosPrinter
     private var chargesList = mutableStateListOf<Charges>()
 
+    private var resInfo by mutableStateOf(RestaurantInfo())
+
     init {
         getAllCharges()
+        getProfileInfo()
     }
 
 
@@ -112,25 +121,14 @@ class PrintViewModel @Inject constructor(
                 } catch (e: Exception) {
                     Timber.d(e.message ?: "Error printing order details")
                 }
-
-//                val printerCommands =
-//                    EscPosPrinterCommands(BluetoothPrintersConnections.selectFirstPaired())
-//                try {
-//                    printerCommands.connect()
-//                    printerCommands.reset()
-//                    printerCommands.feedPaper(50)
-//                    printerCommands.cutPaper()
-//                } catch (e: EscPosConnectionException) {
-//                    e.printStackTrace()
-//                }
             }
         }
 
     }
 
     private fun printRestaurantDetails(): String {
-        return "[C]<b><font size='big'>POPOS HIGHLIGHT</font></b>\n" +
-                "[C]-- Pure And Tasty --\n\n" +
+        return "[C]<b><font size='big'>${resInfo.name}</font></b>\n" +
+                "[C]-${resInfo.tagline}-\n\n" +
                 "[C]----------- POS BILL ----------\n\n"
 
     }
@@ -180,7 +178,7 @@ class PrintViewModel @Inject constructor(
     private fun printQrCode(): String {
         return "[C]Pay by scanning this QR code\n\n"+
                 "[L]\n" +
-                "[C]<qrcode size ='40'>${Constants.PRINTER_QR_DATA}</qrcode>\n\n\n\n" +
+                "[C]<qrcode size ='40'>${resInfo.paymentQrCode}</qrcode>\n\n\n\n" +
                 "[L]-------------------------------\n\n\n"
 
     }
@@ -188,7 +186,7 @@ class PrintViewModel @Inject constructor(
     private fun printFooterInfo(): String {
         return "[C]Thank you for ordering!\n" +
                 "[C]For order and inquiry, Call.\n" +
-                "[C]9500825077 / 9597185001\n\n"
+                "[C]${resInfo.primaryPhone} / ${resInfo.secondaryPhone}\n\n"
     }
 
     private fun printAddOnItems(addOnItemList: List<AddOnItem>): String {
@@ -235,6 +233,14 @@ class PrintViewModel @Inject constructor(
                     }
                     is Resource.Error -> {}
                 }
+            }
+        }
+    }
+
+    private fun getProfileInfo() {
+        viewModelScope.launch {
+            restaurantInfoUseCases.getRestaurantInfo().data?.let {
+                resInfo = it
             }
         }
     }

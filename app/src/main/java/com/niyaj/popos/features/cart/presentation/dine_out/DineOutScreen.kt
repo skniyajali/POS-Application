@@ -26,7 +26,7 @@ import com.niyaj.popos.features.cart.presentation.components.CartFooterPlaceOrde
 import com.niyaj.popos.features.cart.presentation.components.CartItemOrderDetailsSection
 import com.niyaj.popos.features.cart.presentation.components.CartItemProductDetailsSection
 import com.niyaj.popos.features.cart.presentation.components.CartItemTotalPriceSection
-import com.niyaj.popos.features.common.ui.theme.SpaceMedium
+import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.ItemNotAvailable
@@ -172,6 +172,8 @@ fun DineOutScreen(
                                         }
                                     )
 
+                                    Spacer(modifier = Modifier.height(SpaceMini))
+
                                     CartItemProductDetailsSection(
                                         cartProducts = cartItem.cartProducts,
                                         decreaseQuantity = {
@@ -192,26 +194,31 @@ fun DineOutScreen(
                                         }
                                     )
 
-                                    Spacer(modifier = Modifier.height(SpaceMedium))
 
-                                    val selectedAddOnItems = cartItem.cartOrder.addOnItems.map {
-                                        it.addOnItemId
+                                    if(addOnItems.isNotEmpty()){
+                                        val cartAddOnItem = cartItem.cartOrder.addOnItems
+
+                                        Spacer(modifier = Modifier.height(SpaceSmall))
+
+                                        val selectedAddOnItems = cartAddOnItem.map {
+                                            it.addOnItemId
+                                        }
+
+                                        CartAddOnItems(
+                                            addOnItems = addOnItems,
+                                            selectedAddOnItem = selectedAddOnItems,
+                                            onClick = {
+                                                dineOutViewModel.onDineOutEvent(
+                                                    DineOutEvent.UpdateAddOnItemInCart(
+                                                        it,
+                                                        cartItem.cartOrder.cartOrderId
+                                                    )
+                                                )
+                                            },
+                                        )
                                     }
 
-                                    CartAddOnItems(
-                                        addOnItems = addOnItems,
-                                        selectedAddOnItem = selectedAddOnItems,
-                                        onClick = {
-                                            dineOutViewModel.onDineOutEvent(
-                                                DineOutEvent.UpdateAddOnItemInCart(
-                                                    it,
-                                                    cartItem.cartOrder.cartOrderId
-                                                )
-                                            )
-                                        },
-                                    )
-
-                                    Spacer(modifier = Modifier.height(SpaceMedium))
+                                    Spacer(modifier = Modifier.height(SpaceSmall))
 
                                     CartItemTotalPriceSection(
                                         itemCount = cartItem.cartProducts.size,

@@ -7,6 +7,7 @@ import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.product.domain.repository.ProductRepository
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
+import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
@@ -15,7 +16,7 @@ import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
@@ -31,28 +32,29 @@ class ProductRepositoryImpl(
     }
 
     override suspend fun getAllProducts(): Flow<Resource<List<Product>>> {
-        return flow {
+        return channelFlow {
             try {
-                emit(Resource.Loading(true))
+                send(Resource.Loading(true))
 
                 val items = realm.query<Product>().sort("productId", Sort.DESCENDING).asFlow()
 
                 items.collect { changes: ResultsChange<Product> ->
                     when (changes) {
                         is UpdatedResults -> {
-                            emit(Resource.Success(changes.list))
-                            emit(Resource.Loading(false))
+                            send(Resource.Success(changes.list))
+                            send(Resource.Loading(false))
                         }
 
                         is InitialResults -> {
-                            emit(Resource.Success(changes.list))
-                            emit(Resource.Loading(false))
+                            send(Resource.Success(changes.list))
+                            send(Resource.Loading(false))
                         }
                     }
                 }
 
             } catch (e: Exception) {
-                emit(Resource.Error(e.message ?: "Unable to get all products", emptyList()))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get all products", emptyList()))
             }
         }
     }
@@ -89,7 +91,8 @@ class ProductRepositoryImpl(
     override suspend fun createNewProduct(newProduct: Product): Resource<Boolean> {
         return try {
             val category =
-                realm.query<Category>("categoryId == $0", newProduct.category?.categoryId).first().find()
+                realm.query<Category>("categoryId == $0", newProduct.category?.categoryId).first()
+                    .find()
 
             if (category != null) {
                 val product = Product()
@@ -235,26 +238,26 @@ class ProductRepositoryImpl(
     override suspend fun importProducts(products: List<Product>): Resource<Boolean> {
         return try {
             if (products.isNotEmpty()) {
+                realm.write {
+                    products.forEach { product ->
 
-                CoroutineScope(Dispatchers.IO).launch {
-                    realm.write {
-                        products.forEach { product ->
+                        val findProduct = this.query<Product>(
+                            "productId == $0 OR productName == $1 AND productPrice == $2",
+                            product.productId,
+                            product.productName,
+                            product.productPrice
+                        ).first().find()
 
-                            val findProduct = this.query<Product>(
-                                "productId == $0 OR productName == $1 AND productPrice == $2",
-                                product.productId,
-                                product.productName,
-                                product.productPrice
-                            ).first().find()
+                        if (findProduct == null) {
+                            val newProduct = Product()
+                            newProduct.productId = product.productId
+                            newProduct.productName = product.productName
+                            newProduct.productPrice = product.productPrice
+                            newProduct.productAvailability = product.productAvailability
+                            newProduct.createdAt = product.createdAt
+                            newProduct.updatedAt = System.currentTimeMillis().toString()
 
-                            if (findProduct == null) {
-                                val newProduct = Product()
-                                newProduct.productId = product.productId
-                                newProduct.productName = product.productName
-                                newProduct.productPrice = product.productPrice
-                                newProduct.productAvailability = product.productAvailability
-                                newProduct.updatedAt = System.currentTimeMillis().toString()
-
+                            if (product.category != null){
                                 val category = this.query<Category>(
                                     "categoryId == $0",
                                     product.category?.categoryId
@@ -263,21 +266,20 @@ class ProductRepositoryImpl(
                                 if (category != null) {
                                     newProduct.category = category
                                 } else {
-                                    if (product.category != null){
-                                        val newCategory = Category()
-                                        newCategory.categoryId = product.category!!.categoryId
-                                        newCategory.categoryName = product.category!!.categoryName
-                                        newCategory.categoryAvailability = product.category!!.categoryAvailability
-                                        newCategory.updatedAt = System.currentTimeMillis().toString()
 
-                                        this.copyToRealm(newCategory)
+                                    val newCategory = this.copyToRealm(instance = Category().apply {
+                                        categoryId = product.category!!.categoryId
+                                        categoryName = product.category!!.categoryName
+                                        categoryAvailability = product.category!!.categoryAvailability
+                                        createdAt = product.category!!.createdAt
+                                        updatedAt = System.currentTimeMillis().toString()
+                                    }, updatePolicy = UpdatePolicy.ALL)
 
-                                        newProduct.category = newCategory
-                                    }
+                                    newProduct.category = newCategory
                                 }
-
-                                this.copyToRealm(newProduct)
                             }
+
+                            this.copyToRealm(newProduct)
                         }
                     }
                 }

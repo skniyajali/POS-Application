@@ -14,7 +14,7 @@ interface CategoryRepository {
 
     suspend fun createNewCategory(newCategory: Category): Resource<Boolean>
 
-    suspend fun updateCategory(updatedCategory: Category, id: String): Resource<Boolean>
+    suspend fun updateCategory(updatedCategory: Category, categoryId: String): Resource<Boolean>
 
     suspend fun deleteCategory(categoryId: String): Resource<Boolean>
 }

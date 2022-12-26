@@ -3,7 +3,7 @@ package com.niyaj.popos.features.product.presentation.add_edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.rounded.AddBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +20,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.ButtonSize
+import com.niyaj.popos.features.common.ui.theme.IconSizeExtraLarge
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardOutlinedTextField
@@ -135,15 +136,18 @@ fun AddEditProductScreen(
 
                 Spacer(modifier = Modifier.width(SpaceSmall))
 
-                Button(
+                IconButton(
                     onClick = {
                         navController.navigate(AddEditCategoryScreenDestination())
                     },
-                    modifier = Modifier.sizeIn(
-                        minHeight = 56.dp,
-                    )
                 ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = null )
+                    Icon(
+                        imageVector = Icons.Rounded.AddBox,
+                        contentDescription = null,
+                        tint = MaterialTheme.colors.primary,
+                        modifier = Modifier
+                            .size(IconSizeExtraLarge)
+                    )
                 }
             }
 
@@ -216,6 +220,8 @@ fun AddEditProductScreen(
                     style = MaterialTheme.typography.button,
                 )
             }
+
+            Spacer(modifier = Modifier.height(SpaceSmall))
         }
     }
 

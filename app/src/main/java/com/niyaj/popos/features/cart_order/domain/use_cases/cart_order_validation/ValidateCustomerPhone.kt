@@ -15,7 +15,7 @@ class ValidateCustomerPhone @Inject constructor() {
                     errorMessage = "Phone no must not be empty",
                 )
             }
-            if(customerPhone.length < 10) {
+            if(customerPhone.length != 10) {
                 return ValidationResult(
                     successful = false,
                     errorMessage = "The phone no must be 10 digits long"

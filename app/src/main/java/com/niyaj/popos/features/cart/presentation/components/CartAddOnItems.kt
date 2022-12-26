@@ -13,7 +13,7 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.niyaj.popos.features.addon_item.domain.model.AddOnItem
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.features.components.StandardChip
+import com.niyaj.popos.features.components.StandardOutlinedChip
 
 @Composable
 fun CartAddOnItems(
@@ -30,7 +30,7 @@ fun CartAddOnItems(
     ) {
         FlowRow {
             for (addOnItem in addOnItems){
-                StandardChip(
+                StandardOutlinedChip(
                     modifier = Modifier
                         .padding(SpaceMini),
                     text = addOnItem.itemName,

@@ -59,7 +59,8 @@ class ExpensesRepositoryImpl(
                 }
                 send(Resource.Loading(false))
             } catch (e: Exception) {
-                send(Resource.Error(e.message ?: "Unable to get expanses items", null))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get expanses items", emptyList()))
             }
         }
     }
@@ -111,7 +112,6 @@ class ExpensesRepositoryImpl(
         expensesId: String,
     ): Resource<Boolean> {
         return try {
-
             realm.write {
                 val expansesCategory = this.query<ExpensesCategory>(
                     "expensesCategoryId == $0",
@@ -130,7 +130,7 @@ class ExpensesRepositoryImpl(
 
             Resource.Success(true)
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to update expanses.")
+            Resource.Error(e.message ?: "Failed to update expanses.", false)
         }
     }
 
@@ -146,7 +146,7 @@ class ExpensesRepositoryImpl(
             Resource.Success(true)
 
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to delete expanses.")
+            Resource.Error(e.message ?: "Failed to delete expanses.", false)
         }
     }
 
@@ -170,7 +170,7 @@ class ExpensesRepositoryImpl(
 
             Resource.Success(true)
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to delete expanses")
+            Resource.Error(e.message ?: "Unable to delete expanses", false)
         }
     }
 }

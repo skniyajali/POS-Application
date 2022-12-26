@@ -61,6 +61,8 @@ class OrderRepositoryImpl(
                     }
                 }
             } catch (e: Exception) {
+                Timber.e(e)
+                send(Resource.Loading(false))
                 send(Resource.Error(e.message ?: "Unable to get order", emptyList()))
             }
         }
@@ -133,6 +135,10 @@ class OrderRepositoryImpl(
         }
     }
 
+    private fun getCartOrderById(cartOrderId: String): CartOrder {
+        return realm.query<CartOrder>("cartOrderId == $0", cartOrderId).find().first()
+    }
+
     private fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
         var totalPrice = 0
         var discountPrice = 0
@@ -173,43 +179,14 @@ class OrderRepositoryImpl(
     }
 
     private fun mapCartRealmToCartList(carts: List<CartRealm>): List<Cart>{
-        val groupedByOrder = carts.groupBy { it.cartOrder }
+        val groupedByOrder = carts.groupBy { it.cartOrder?.cartOrderId }
 
         val data = groupedByOrder.map { groupedCartProducts ->
             if (groupedCartProducts.key != null && groupedCartProducts.value.isNotEmpty()) {
-                val cartOrder = groupedCartProducts.key
+                val cartOrder = getCartOrderById(groupedCartProducts.key!!)
 
-                if (cartOrder != null && cartOrder.cartOrderStatus != OrderStatus.Placed.orderStatus) {
-                    Cart(
-                        cartOrder = cartOrder,
-                        cartProducts = groupedCartProducts.value.map { cartProducts ->
-                            CartProduct(
-                                cartProductId = cartProducts.cartId,
-                                orderId = cartOrder.cartOrderId,
-                                product = cartProducts.product,
-                                quantity = cartProducts.quantity
-                            )
-                        },
-                        orderPrice = countTotalPrice(cartOrder.cartOrderId)
-                    )
-                } else {
-                    Cart()
-                }
-            } else {
-                Cart()
-            }
-        }
-
-        return data
-    }
-
-    private fun mapCartRealmToCart(carts: List<CartRealm>): Cart? {
-        val groupedByOrder = carts.groupBy { it.cartOrder }
-        groupedByOrder.map { groupedCartProducts ->
-            val cartOrder = groupedCartProducts.key
-            return if (cartOrder != null) {
                 Cart(
-                    cartOrder = null,
+                    cartOrder = cartOrder,
                     cartProducts = groupedCartProducts.value.map { cartProducts ->
                         CartProduct(
                             cartProductId = cartProducts.cartId,
@@ -221,8 +198,30 @@ class OrderRepositoryImpl(
                     orderPrice = countTotalPrice(cartOrder.cartOrderId)
                 )
             } else {
-                null
+                Cart()
             }
+        }
+
+        return data
+    }
+
+    private fun mapCartRealmToCart(carts: List<CartRealm>): Cart? {
+        val groupedByOrder = carts.groupBy { it.cartOrder?.cartOrderId }
+
+        groupedByOrder.map { groupedCartProducts ->
+            val cartOrder = getCartOrderById(groupedCartProducts.key!!)
+            return Cart(
+                cartOrder = cartOrder,
+                cartProducts = groupedCartProducts.value.map { cartProducts ->
+                    CartProduct(
+                        cartProductId = cartProducts.cartId,
+                        orderId = cartOrder.cartOrderId,
+                        product = cartProducts.product,
+                        quantity = cartProducts.quantity
+                    )
+                },
+                orderPrice = countTotalPrice(cartOrder.cartOrderId)
+            )
         }
 
         return null

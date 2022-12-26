@@ -56,7 +56,8 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
                     }
                 }
             }catch (e: Exception){
-                send(Resource.Error(e.message ?: "Unable to get salary items", null))
+                send(Resource.Loading(false))
+                send(Resource.Error(e.message ?: "Unable to get salary items", emptyList()))
             }
         }
     }
@@ -195,7 +196,7 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
 
             Resource.Success(true)
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to update employee.")
+            Resource.Error(e.message ?: "Failed to update employee.", false)
         }
     }
 
@@ -213,63 +214,69 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
             }
             Resource.Success(true)
         }catch (e:Exception) {
-            Resource.Error(e.message ?: "Unable to delete salary.")
+            Resource.Error(e.message ?: "Unable to delete salary.", false)
         }
     }
 
     override fun getEmployeeSalary(employeeId: String): Flow<Resource<List<SalaryCalculation>>> {
         return channelFlow {
-            send(Resource.Loading(true))
-            val employee = realm.query<Employee>("employeeId == $0", employeeId).first().find()
-            if (employee != null) {
+            try {
+                send(Resource.Loading(true))
+                val employee = realm.query<Employee>("employeeId == $0", employeeId).first().find()
 
-                val salary = mutableListOf<SalaryCalculation>()
+                if (employee != null) {
 
-                val joinedDate = employee.employeeJoinedDate
-                val dates = getSalaryDates(joinedDate)
+                    val salary = mutableListOf<SalaryCalculation>()
 
-                dates.forEach { date ->
+                    val joinedDate = employee.employeeJoinedDate
+                    val dates = getSalaryDates(joinedDate)
 
-                    if (joinedDate <= date.first) {
-                        val advancedPayment = mutableListOf<EmployeeSalary>()
-                        var amountPaid: Long = 0
-                        val employeeSalary = employee.employeeSalary.toLong()
+                    dates.forEach { date ->
+                        if (joinedDate <= date.first) {
+                            val advancedPayment = mutableListOf<EmployeeSalary>()
+                            var amountPaid: Long = 0
+                            val employeeSalary = employee.employeeSalary.toLong()
 
-                        val payments = realm.query<EmployeeSalary>("employee.employeeId == $0 AND salaryGivenDate >= $1 AND salaryGivenDate <= $2", employeeId, date.first, date.second).find()
+                            val payments = realm.query<EmployeeSalary>("employee.employeeId == $0 AND salaryGivenDate >= $1 AND salaryGivenDate <= $2", employeeId, date.first, date.second).find()
 
-                        if (payments.isNotEmpty()) {
-                            payments.forEach { payment ->
-                                amountPaid += payment.employeeSalary.toLong()
+                            if (payments.isNotEmpty()) {
+                                payments.forEach { payment ->
+                                    amountPaid += payment.employeeSalary.toLong()
 
-                                advancedPayment.add(payment)
+                                    advancedPayment.add(payment)
+                                }
                             }
-                        }
 
-                        val status = if(employeeSalary >= amountPaid) NOT_PAID else PAID
+                            val status = if(employeeSalary >= amountPaid) NOT_PAID else PAID
 
-                        val message: String? = if (employeeSalary < amountPaid) {
-                            "Paid Extra ${amountPaid.minus(employeeSalary).toString().toRupee} Amount"
-                        } else if(employeeSalary > amountPaid) {
-                            "Remaining  ${employeeSalary.minus(amountPaid).toString().toRupee} have to pay."
-                        } else null
+                            val message: String? = if (employeeSalary < amountPaid) {
+                                "Paid Extra ${amountPaid.minus(employeeSalary).toString().toRupee} Amount"
+                            } else if(employeeSalary > amountPaid) {
+                                "Remaining  ${employeeSalary.minus(amountPaid).toString().toRupee} have to pay."
+                            } else null
 
-                        salary.add(
-                            SalaryCalculation(
-                                startDate = date.first,
-                                endDate = date.second,
-                                status = status,
-                                message = message,
-                                payments = advancedPayment.toList()
+                            salary.add(
+                                SalaryCalculation(
+                                    startDate = date.first,
+                                    endDate = date.second,
+                                    status = status,
+                                    message = message,
+                                    payments = advancedPayment.toList()
+                                )
                             )
-                        )
+                        }
                     }
+
+                    send(Resource.Success(salary.toList()))
+                    send(Resource.Loading(false))
+
+                }else {
+                    send(Resource.Loading(false))
+                    send(Resource.Error("Unable to find employee", emptyList()))
                 }
-
-                send(Resource.Success(salary.toList()))
+            }catch (e:Exception) {
                 send(Resource.Loading(false))
-
-            }else {
-                send(Resource.Error("Unable to find employee"))
+                send(Resource.Error(e.message ?: "Unable to get details", emptyList()))
             }
         }
     }
@@ -297,13 +304,11 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
 
                 Resource.Success(list)
             }else {
-                Resource.Error("Unable to find employee")
+                Resource.Error("Unable to find employee", emptyList())
             }
 
         }catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to get Salary Calculable Date")
+            Resource.Error(e.message ?: "Unable to get Salary Calculable Date", emptyList())
         }
-
     }
-
 }

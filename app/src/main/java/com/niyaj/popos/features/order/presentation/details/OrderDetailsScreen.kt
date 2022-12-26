@@ -18,7 +18,7 @@ import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.charges.presentation.ChargesViewModel
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.components.ItemNotAvailable
-import com.niyaj.popos.features.components.StandardChip
+import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardExpandable
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.TextWithIcon
@@ -122,7 +122,7 @@ fun OrderDetailsScreen(
                                     )
                                 },
                                 trailing = {
-                                    StandardChip(
+                                    StandardOutlinedChip(
                                         text = orderDetails.cartOrder.cartOrderStatus,
                                         isSelected = false,
                                         isToggleable = false,
@@ -385,7 +385,7 @@ fun OrderDetailsScreen(
                                         )
                                     },
                                     trailing = {
-                                        StandardChip(
+                                        StandardOutlinedChip(
                                             text = "${orderDetails.cartProducts.size} Items",
                                             isToggleable = false,
                                             isSelected = false,

@@ -48,7 +48,8 @@ class AddOnItemRepositoryImpl(
                     }
                 }
             }catch (e: Exception){
-                send(Resource.Error(e.message ?: "Unable to get AddOnItems"))
+                send(Resource.Loading(false))
+                send(Resource.Error(message = e.message ?: "Unable to get AddOnItems", data = emptyList()))
             }
         }
     }
@@ -88,7 +89,7 @@ class AddOnItemRepositoryImpl(
             Resource.Success(result.isValid())
         }catch (e: RealmException){
             Timber.e(e)
-            Resource.Error(e.message ?: "Error creating AddOn Item")
+            Resource.Error(e.message ?: "Error creating AddOn Item", false)
         }
     }
 
@@ -103,7 +104,7 @@ class AddOnItemRepositoryImpl(
 
             Resource.Success(true)
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to update item")
+            Resource.Error(e.message ?: "Failed to update item", false)
         }
     }
 
@@ -118,7 +119,7 @@ class AddOnItemRepositoryImpl(
             Resource.Success(true)
 
         } catch (e: Exception){
-            Resource.Error(e.message ?: "Failed to delete AddOnItem")
+            Resource.Error(e.message ?: "Failed to delete AddOnItem", false)
         }
     }
 }

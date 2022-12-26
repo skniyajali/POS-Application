@@ -287,7 +287,7 @@ class OrderViewModel @Inject constructor(
         if(_dineOutOrders.value.cartItems.isNotEmpty()){
             val dineOutOrders = _dineOutOrders.value.cartItems.asReversed()
 
-            orders += "[L]ID[Address][R]Price\n"
+            orders += "[L]ID[C]Address[R]Price\n"
             orders += "[L]-------------------------------\n"
 
             dineOutOrders.forEach { cart ->

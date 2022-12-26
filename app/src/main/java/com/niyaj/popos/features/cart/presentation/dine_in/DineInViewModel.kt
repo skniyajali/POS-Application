@@ -55,7 +55,7 @@ class DineInViewModel @Inject constructor(
                         when (val result = cartUseCases.addProductToCart(event.cartOrderId, event.productId)){
                             is Resource.Loading -> {}
                             is Resource.Success -> {
-                                _eventFlow.emit(UiEvent.OnSuccess("Item added to cart"))
+//                                _eventFlow.emit(UiEvent.OnSuccess("Item added to cart"))
                             }
                             is Resource.Error -> {
                                 _eventFlow.emit(UiEvent.OnError(result.message ?: "Error adding product to cart"))
@@ -71,7 +71,7 @@ class DineInViewModel @Inject constructor(
                     when (cartUseCases.removeProductFromCart(event.cartOrderId, event.productId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Item removed from cart"))
+//                            _eventFlow.emit(UiEvent.OnSuccess("Item removed from cart"))
                         }
                         is Resource.Error -> {
                             _eventFlow.emit(UiEvent.OnError("Error removing product from cart"))
@@ -85,8 +85,7 @@ class DineInViewModel @Inject constructor(
                     when(cartOrderUseCases.updateAddOnItemInCart(event.addOnItemId, event.cartOrderId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("AddOnItem Updated Successfully"))
-
+//                            _eventFlow.emit(UiEvent.OnSuccess("AddOnItem Updated Successfully"))
                         }
                         is Resource.Error -> {
                             _eventFlow.emit(UiEvent.OnError("Unable To Update AddOnItem"))

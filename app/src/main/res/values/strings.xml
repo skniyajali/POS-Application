@@ -109,5 +109,7 @@
     <string name="data_deletion_settings">Data Deletion Settings</string>
     <string name="update_deletion_settings">Update Deletion Settings</string>
     <string name="delete_all_records">Are you sure to delete all records including today?</string>
+    <string name="select_cart_order">Select Cart Order</string>
+    <string name="update_restaurant_info">Update Restaurant Info</string>
 
 </resources>

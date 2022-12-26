@@ -55,21 +55,21 @@ fun CartItemProductDetailsSection(
                         .fillMaxWidth()
                         .height(48.dp)
                         .padding(SpaceMini),
-                    Arrangement.SpaceBetween,
-                    Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
                             .background(LightColor10, RoundedCornerShape(4.dp))
-                            .weight(2.2f, true)
+                            .weight(2f, true)
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(SpaceMini),
-                            Arrangement.SpaceBetween,
-                            Alignment.CenterVertically
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 modifier = Modifier.weight(2.5f, true),
@@ -90,7 +90,7 @@ fun CartItemProductDetailsSection(
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
-                            .weight(0.8f, true),
+                            .weight(1f, true),
                         contentAlignment = Alignment.CenterEnd
                     ) {
                         Row(

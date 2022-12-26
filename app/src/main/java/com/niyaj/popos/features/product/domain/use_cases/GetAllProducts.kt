@@ -25,64 +25,66 @@ class GetAllProducts(
                     }
 
                     is Resource.Success -> {
-                        emit(
-                            Resource.Success(
-                            result.data?.let {products ->
-                                when(filterProduct.sortType){
-                                    is SortType.Ascending -> {
-                                        when(filterProduct){
-                                            is FilterProduct.ByProductId -> products.sortedBy { it.productId }
+                        val groupedProducts = result.data?.groupBy { it.category?.categoryId }
+                        val newProducts = groupedProducts?.values?.flatten()?.sortedBy { it.productPrice }
 
-                                            is FilterProduct.ByCategoryId -> products.sortedBy { it.category?.categoryId }
+                        val data = newProducts?.let {products ->
+                            when(filterProduct.sortType){
+                                is SortType.Ascending -> {
+                                    when(filterProduct){
+                                        is FilterProduct.ByProductId -> products.sortedBy { it.productId }
 
-                                            is FilterProduct.ByProductName -> products.sortedBy { it.productName.lowercase() }
+                                        is FilterProduct.ByCategoryId -> products.sortedBy { it.category?.categoryId }
 
-                                            is FilterProduct.ByProductPrice -> products.sortedBy { it.productPrice }
+                                        is FilterProduct.ByProductName -> products.sortedBy { it.productName.lowercase() }
 
-                                            is FilterProduct.ByProductAvailability -> products.sortedBy { it.productAvailability }
+                                        is FilterProduct.ByProductPrice -> products.sortedBy { it.productPrice }
 
-                                            is FilterProduct.ByProductDate -> products.sortedBy { it.createdAt }
+                                        is FilterProduct.ByProductAvailability -> products.sortedBy { it.productAvailability }
 
-                                            is FilterProduct.ByProductQuantity -> products.sortedBy { it.productPrice }
+                                        is FilterProduct.ByProductDate -> products.sortedBy { it.createdAt }
 
-                                        }
-                                    }
-                                    is SortType.Descending -> {
-                                        when(filterProduct){
-                                            is FilterProduct.ByProductId -> products.sortedByDescending { it.productId }
+                                        is FilterProduct.ByProductQuantity -> products.sortedBy { it.productPrice }
 
-                                            is FilterProduct.ByCategoryId -> products.sortedByDescending { it.category?.categoryId }
-
-                                            is FilterProduct.ByProductName -> products.sortedByDescending { it.productName.lowercase() }
-
-                                            is FilterProduct.ByProductPrice -> products.sortedByDescending { it.productPrice }
-
-                                            is FilterProduct.ByProductAvailability -> products.sortedByDescending { it.productAvailability }
-
-                                            is FilterProduct.ByProductDate -> products.sortedByDescending { it.createdAt }
-
-                                            is FilterProduct.ByProductQuantity -> products.sortedByDescending { it.productPrice }
-
-                                        }
                                     }
                                 }
-                            }?.filter { product ->
-                                if(selectedCategory.isNotEmpty()){
-                                    product.category?.categoryId == selectedCategory
-                                }else{
-                                    true
-                                }
-                            }?.filter { product ->
-                                if(searchText.isNotEmpty()){
-                                    product.productName.contains(searchText, true) ||
-                                    product.productPrice.toString().contains(searchText, true) ||
-                                    product.productAvailability.toString().contains(searchText, true) ||
-                                    getAllCapitalizedLetters(product.productName).contains(searchText, true)
-                                }else{
-                                    true
+                                is SortType.Descending -> {
+                                    when(filterProduct){
+                                        is FilterProduct.ByProductId -> products.sortedByDescending { it.productId }
+
+                                        is FilterProduct.ByCategoryId -> products.sortedByDescending { it.category?.categoryId }
+
+                                        is FilterProduct.ByProductName -> products.sortedByDescending { it.productName.lowercase() }
+
+                                        is FilterProduct.ByProductPrice -> products.sortedByDescending { it.productPrice }
+
+                                        is FilterProduct.ByProductAvailability -> products.sortedByDescending { it.productAvailability }
+
+                                        is FilterProduct.ByProductDate -> products.sortedByDescending { it.createdAt }
+
+                                        is FilterProduct.ByProductQuantity -> products.sortedByDescending { it.productPrice }
+
+                                    }
                                 }
                             }
-                        ))
+                        }?.filter { product ->
+                            if(selectedCategory.isNotEmpty()){
+                                product.category?.categoryId == selectedCategory
+                            }else{
+                                true
+                            }
+                        }?.filter { product ->
+                            if(searchText.isNotEmpty()){
+                                product.productName.contains(searchText, true) ||
+                                        product.productPrice.toString().contains(searchText, true) ||
+                                        product.productAvailability.toString().contains(searchText, true) ||
+                                        getAllCapitalizedLetters(product.productName).contains(searchText, true)
+                            }else{
+                                true
+                            }
+                        }
+
+                        emit(Resource.Success(data))
                     }
 
                     is Resource.Error -> {
