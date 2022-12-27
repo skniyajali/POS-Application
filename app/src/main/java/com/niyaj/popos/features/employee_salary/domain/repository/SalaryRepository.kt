@@ -13,7 +13,7 @@ interface SalaryRepository {
 
     fun getSalaryById(salaryId: String): Resource<EmployeeSalary?>
 
-    fun getSalaryByEmployeeId(employeeId: String, selectedDate: Pair<String, String>): Resource<CalculatedSalary?>
+    suspend fun getSalaryByEmployeeId(employeeId: String, selectedDate: Pair<String, String>): Resource<CalculatedSalary?>
 
     suspend fun addNewSalary(newSalary: EmployeeSalary): Resource<Boolean>
 
@@ -21,7 +21,7 @@ interface SalaryRepository {
 
     suspend fun deleteSalaryById(salaryId: String): Resource<Boolean>
 
-    fun getEmployeeSalary(employeeId: String): Flow<Resource<List<SalaryCalculation>>>
+    suspend fun getEmployeeSalary(employeeId: String): Flow<Resource<List<SalaryCalculation>>>
 
-    fun getSalaryCalculableDate(employeeId: String): Resource<List<SalaryCalculableDate>>
+    suspend fun getSalaryCalculableDate(employeeId: String): Resource<List<SalaryCalculableDate>>
 }

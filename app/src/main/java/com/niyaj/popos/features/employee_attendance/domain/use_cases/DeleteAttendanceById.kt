@@ -5,7 +5,7 @@ import com.niyaj.popos.features.employee_attendance.domain.repository.Attendance
 
 class DeleteAttendanceById(private val attendanceRepository: AttendanceRepository) {
 
-    operator fun invoke(attendanceId: String): Resource<Boolean> {
+    suspend operator fun invoke(attendanceId: String): Resource<Boolean> {
         return attendanceRepository.removeAttendanceById(attendanceId)
     }
 }

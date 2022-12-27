@@ -26,6 +26,7 @@ import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.StandardScaffold
+import com.niyaj.popos.features.employee.domain.util.EmployeeSalaryType
 import com.niyaj.popos.features.employee.domain.util.EmployeeType
 import com.niyaj.popos.util.toMilliSecond
 import com.niyaj.popos.util.toSalaryDate
@@ -53,6 +54,10 @@ fun AddEditEmployeeScreen(
     var textFieldSize by remember { mutableStateOf(Size.Zero) }
 
     var positionDropdownToggled by remember {
+        mutableStateOf(false)
+    }
+
+    var salaryTypeToggled by remember {
         mutableStateOf(false)
     }
 
@@ -160,7 +165,7 @@ fun AddEditEmployeeScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = addEditEmployeeViewModel.addEditState.employeeSalary,
-                    hint = "Employee Salary",
+                    hint = "Employee Monthly Salary",
                     keyboardType = KeyboardType.Number,
                     error = addEditEmployeeViewModel.addEditState.employeeSalaryError,
                     onValueChange = {
@@ -171,6 +176,99 @@ fun AddEditEmployeeScreen(
                         )
                     },
                 )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(SpaceSmall))
+
+                ExposedDropdownMenuBox(
+                    expanded = salaryTypeToggled,
+                    onExpandedChange = {
+                        salaryTypeToggled = !salaryTypeToggled
+                    }
+                ) {
+                    StandardOutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onGloballyPositioned { coordinates ->
+                                //This value is used to assign to the DropDown the same width
+                                textFieldSize = coordinates.size.toSize()
+                            },
+                        text = addEditEmployeeViewModel.addEditState.employeeSalaryType,
+                        hint = "Employee Salary Type",
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                expanded = salaryTypeToggled
+                            )
+                        },
+                    )
+
+                    DropdownMenu(
+                        expanded = salaryTypeToggled,
+                        onDismissRequest = {
+                            salaryTypeToggled = false
+                        },
+                        modifier = Modifier
+                            .width(with(LocalDensity.current){textFieldSize.width.toDp()}),
+                    ) {
+                        DropdownMenuItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                addEditEmployeeViewModel.onAddEditEmployeeEvent(
+                                    AddEditEmployeeEvent.EmployeeSalaryTypeChanged(
+                                        EmployeeSalaryType.Monthly.salaryType
+                                    )
+                                )
+                                salaryTypeToggled = false
+                            }
+                        ) {
+                            Text(
+                                text = EmployeeSalaryType.Monthly.salaryType,
+                                style = MaterialTheme.typography.body1,
+                            )
+                        }
+
+                        Divider(modifier = Modifier.fillMaxWidth(), color = Color.Gray, thickness = 0.8.dp)
+
+                        DropdownMenuItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                addEditEmployeeViewModel.onAddEditEmployeeEvent(
+                                    AddEditEmployeeEvent.EmployeeSalaryTypeChanged(
+                                        EmployeeSalaryType.Daily.salaryType
+                                    )
+                                )
+                                salaryTypeToggled = false
+                            }
+                        ) {
+                            Text(
+                                text = EmployeeSalaryType.Daily.salaryType,
+                                style = MaterialTheme.typography.body1,
+                            )
+                        }
+
+                        Divider(modifier = Modifier.fillMaxWidth(), color = Color.Gray, thickness = 0.8.dp)
+
+                        DropdownMenuItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                addEditEmployeeViewModel.onAddEditEmployeeEvent(
+                                    AddEditEmployeeEvent.EmployeeSalaryTypeChanged(
+                                        EmployeeSalaryType.Weekly.salaryType
+                                    )
+                                )
+                                salaryTypeToggled = false
+                            }
+                        ) {
+                            Text(
+                                text = EmployeeSalaryType.Weekly.salaryType,
+                                style = MaterialTheme.typography.body1,
+                            )
+                        }
+                    }
+                }
             }
 
             item {

@@ -6,7 +6,7 @@ import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculableDate
 
 class GetSalaryCalculableDate(private val salaryRepository: SalaryRepository) {
 
-    operator fun invoke(employeeId: String): Resource<List<SalaryCalculableDate>> {
+    suspend operator fun invoke(employeeId: String): Resource<List<SalaryCalculableDate>> {
         return salaryRepository.getSalaryCalculableDate(employeeId)
     }
 }

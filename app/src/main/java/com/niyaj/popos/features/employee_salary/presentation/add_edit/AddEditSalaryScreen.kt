@@ -102,7 +102,7 @@ fun AddEditSalaryScreen(
                         date.toMilliSecond >= addEditSalaryViewModel.addEditSalaryState.employee.employeeJoinedDate
                     } else true
                 }
-            ) { date ->
+            ) {date ->
                 addEditSalaryViewModel.onEvent(
                     AddEditSalaryEvent.SalaryDateChanged(date.toMilliSecond)
                 )

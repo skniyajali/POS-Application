@@ -330,21 +330,26 @@ fun formattedDateToStartMillis(formattedDate: String): String {
     return calendar.timeInMillis.toString()
 }
 
-fun formattedDateToEndMillis(formattedDate: String): String {
-    val s = SimpleDateFormat("dd-MM-yyyy",Locale.getDefault())
+fun localDateToCurrentMillis(date: LocalDate): String {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
     val calendar = Calendar.getInstance()
-
-    try {
-        if (formattedDate.isNotEmpty()) {
-            calendar.time = s.parse(formattedDate) as Date
-        }
-    } catch (e: Exception) {
-        calendar.timeInMillis = formattedDate.toLong()
-    }
-
-    calendar[Calendar.HOUR_OF_DAY] = 23
-    calendar[Calendar.MINUTE] = 59
-    calendar[Calendar.SECOND] = 59
+    calendar.time = dateFormat.parse(date.toString()) as Date
 
     return calendar.timeInMillis.toString()
+}
+
+fun compareSalaryDates(joinedDate: String, comparableDate: String): Boolean {
+    val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+    val firstDate = sdf.parse(joinedDate.toSalaryDate) as Date
+    val secondDate = sdf.parse(comparableDate.toSalaryDate) as Date
+
+    val cmp = firstDate.compareTo(secondDate)
+
+    return when {
+        cmp < 0 -> true
+        cmp > 0 -> false
+        else -> true
+    }
 }

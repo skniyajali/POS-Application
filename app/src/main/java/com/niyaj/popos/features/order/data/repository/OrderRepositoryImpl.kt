@@ -17,8 +17,9 @@ import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.RealmResults
 import io.realm.kotlin.query.Sort
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 
 class OrderRepositoryImpl(
@@ -35,9 +36,9 @@ class OrderRepositoryImpl(
         startDate: String,
         endDate: String
     ): Flow<Resource<List<Cart>>> {
-        return channelFlow {
+        return flow {
             try {
-                send(Resource.Loading(true))
+                emit(Resource.Loading(true))
 
                 val items = realm.query<CartRealm>(
                     "cartOrder.cartOrderStatus != $0 AND cartOrder.updatedAt >= $1 AND cartOrder.updatedAt <= $2",
@@ -50,30 +51,30 @@ class OrderRepositoryImpl(
                 itemFlow.collect { changes: ResultsChange<CartRealm> ->
                     when (changes) {
                         is InitialResults -> {
-                            send(Resource.Success(mapCartRealmToCartList(changes.list)))
-                            send(Resource.Loading(false))
+                            emit(Resource.Success(mapCartRealmToCartList(changes.list)))
+                            delay(50L)
+                            emit(Resource.Loading(false))
                         }
 
                         is UpdatedResults -> {
-                            send(Resource.Success(mapCartRealmToCartList(changes.list)))
-                            send(Resource.Loading(false))
+                            emit(Resource.Success(mapCartRealmToCartList(changes.list)))
+                            delay(50L)
+                            emit(Resource.Loading(false))
                         }
                     }
                 }
             } catch (e: Exception) {
-                Timber.e(e)
-                send(Resource.Loading(false))
-                send(Resource.Error(e.message ?: "Unable to get order", emptyList()))
+                emit(Resource.Error(e.message ?: "Unable to get order", emptyList()))
             }
         }
     }
 
     override suspend fun getOrderDetails(cartOrderId: String): Resource<Cart?> {
         return try {
-            val cartOrder = realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
+            val carts = realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
 
-            if (cartOrder.isNotEmpty()) {
-                Resource.Success(mapCartRealmToCart(cartOrder))
+            if (carts.isNotEmpty()) {
+                Resource.Success(mapCartRealmToCart(carts))
             } else {
                 Resource.Success(null)
             }

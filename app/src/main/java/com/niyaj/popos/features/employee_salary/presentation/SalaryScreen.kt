@@ -72,7 +72,7 @@ fun SalaryScreen(
     val isLoading = salaryViewModel.salaries.collectAsState().value.isLoading
     val hasError = salaryViewModel.salaries.collectAsState().value.hasError
 
-    val groupedByEmployeeSalaries = salaries.groupBy { it.employee }
+    val groupedByEmployeeSalaries = salaries.groupBy { it.employee?.employeeId }
 
     val totalAmount = salaries.sumOf { it.employeeSalary.toLong() }.toString()
     val employeeCount = groupedByEmployeeSalaries.keys.size.toString()
@@ -425,139 +425,142 @@ fun SalaryScreen(
                         }
 
                         item(key = "employeePayments") {
-                            groupedByEmployeeSalaries.forEach { (employee, employeeSalaries) ->
-                                if(employee != null){
-                                    Card(
-                                        onClick = {
-                                            salaryViewModel.onEvent(
-                                                SalaryEvent.SelectEmployee(employee.employeeId)
-                                            )
-                                        },
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        shape = RoundedCornerShape(4.dp),
-                                        elevation = SpaceMini
-                                    ) {
-                                        StandardExpandable(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(SpaceSmall),
-                                            expanded = selectedEmployee == employee.employeeId,
-                                            onExpandChanged = {
+                            groupedByEmployeeSalaries.forEach { (employeeId, employeeSalaries) ->
+                                if (employeeId != null) {
+                                    val employee = salaryViewModel.getEmployeeById(employeeId)
+                                    if (employee != null) {
+                                        Card(
+                                            onClick = {
                                                 salaryViewModel.onEvent(
                                                     SalaryEvent.SelectEmployee(employee.employeeId)
                                                 )
                                             },
-                                            title = {
-                                                TextWithIcon(
-                                                    text = employee.employeeName,
-                                                    icon = Icons.Default.Person,
-                                                    isTitle = true
-                                                )
-                                            },
-                                            trailing = {
-                                                IconBox(
-                                                    text = "Add Entry",
-                                                    icon = Icons.Default.Add,
-                                                    onClick = {
-                                                        navController.navigate(
-                                                            AddEditSalaryScreenDestination(employeeId = employee.employeeId)
-                                                        )
-                                                    }
-                                                )
-                                            },
-                                            rowClickable = true,
-                                            expand = { modifier: Modifier ->
-                                                IconButton(
-                                                    modifier = modifier,
-                                                    onClick = {
-                                                        salaryViewModel.onEvent(
-                                                            SalaryEvent.SelectEmployee(employee.employeeId)
-                                                        )
-                                                    }
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.Filled.KeyboardArrowDown,
-                                                        contentDescription = "Expand More",
-                                                        tint = MaterialTheme.colors.secondary
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
+                                            shape = RoundedCornerShape(4.dp),
+                                            elevation = SpaceMini
+                                        ) {
+                                            StandardExpandable(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(SpaceSmall),
+                                                expanded = selectedEmployee == employee.employeeId,
+                                                onExpandChanged = {
+                                                    salaryViewModel.onEvent(
+                                                        SalaryEvent.SelectEmployee(employee.employeeId)
                                                     )
-                                                }
-                                            },
-                                            content = {
-                                                employeeSalaries.forEachIndexed { index, salary ->
-                                                    Card(
+                                                },
+                                                title = {
+                                                    TextWithIcon(
+                                                        text = employee.employeeName,
+                                                        icon = Icons.Default.Person,
+                                                        isTitle = true
+                                                    )
+                                                },
+                                                trailing = {
+                                                    IconBox(
+                                                        text = "Add Entry",
+                                                        icon = Icons.Default.Add,
+                                                        onClick = {
+                                                            navController.navigate(
+                                                                AddEditSalaryScreenDestination(employeeId = employee.employeeId)
+                                                            )
+                                                        }
+                                                    )
+                                                },
+                                                rowClickable = true,
+                                                expand = { modifier: Modifier ->
+                                                    IconButton(
+                                                        modifier = modifier,
                                                         onClick = {
                                                             salaryViewModel.onEvent(
-                                                                SalaryEvent.SelectSalary(salary.salaryId)
+                                                                SalaryEvent.SelectEmployee(employee.employeeId)
                                                             )
-                                                        },
-                                                        modifier = Modifier
-                                                            .fillMaxWidth(),
-                                                        elevation = if (selectedSalary == salary.salaryId) 2.dp else 0.dp,
-                                                        backgroundColor = if (selectedSalary == salary.salaryId) LightColor6 else MaterialTheme.colors.surface,
-                                                        border = if (selectedSalary == salary.salaryId) BorderStroke(1.dp, MaterialTheme.colors.primary) else null,
+                                                        }
                                                     ) {
-                                                        Row(
+                                                        Icon(
+                                                            imageVector = Icons.Filled.KeyboardArrowDown,
+                                                            contentDescription = "Expand More",
+                                                            tint = MaterialTheme.colors.secondary
+                                                        )
+                                                    }
+                                                },
+                                                content = {
+                                                    employeeSalaries.forEachIndexed { index, salary ->
+                                                        Card(
+                                                            onClick = {
+                                                                salaryViewModel.onEvent(
+                                                                    SalaryEvent.SelectSalary(salary.salaryId)
+                                                                )
+                                                            },
                                                             modifier = Modifier
-                                                                .fillMaxWidth()
-                                                                .padding(SpaceSmall),
-                                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                                            verticalAlignment = Alignment.CenterVertically,
+                                                                .fillMaxWidth(),
+                                                            elevation = if (selectedSalary == salary.salaryId) 2.dp else 0.dp,
+                                                            backgroundColor = if (selectedSalary == salary.salaryId) LightColor6 else MaterialTheme.colors.surface,
+                                                            border = if (selectedSalary == salary.salaryId) BorderStroke(1.dp, MaterialTheme.colors.primary) else null,
                                                         ) {
-                                                            Text(
-                                                                text = salary.employeeSalary.toRupee,
-                                                                style = MaterialTheme.typography.body1,
-                                                                textAlign = TextAlign.Start,
-                                                                fontWeight = FontWeight.SemiBold,
-                                                                modifier = Modifier.weight(0.8F),
-                                                            )
-
-                                                            Text(
-                                                                text = salary.salaryGivenDate.toSalaryDate,
-                                                                textAlign = TextAlign.Start,
-                                                                style = MaterialTheme.typography.body1,
-                                                                modifier = Modifier.weight(0.8F),
-                                                            )
-
                                                             Row(
-                                                                modifier = Modifier.weight(1.4F),
+                                                                modifier = Modifier
+                                                                    .fillMaxWidth()
+                                                                    .padding(SpaceSmall),
+                                                                horizontalArrangement = Arrangement.SpaceBetween,
                                                                 verticalAlignment = Alignment.CenterVertically,
-                                                                horizontalArrangement = Arrangement.End,
                                                             ) {
-                                                                IconBox(
-                                                                    text = salary.salaryPaymentType,
-                                                                    icon = when (salary.salaryPaymentType) {
-                                                                        PaymentType.Cash.paymentType -> Icons.Default.Money
-                                                                        PaymentType.Online.paymentType -> Icons.Default.AccountBalance
-                                                                        else -> Icons.Default.Payments
-                                                                    },
-                                                                    selected = false,
+                                                                Text(
+                                                                    text = salary.employeeSalary.toRupee,
+                                                                    style = MaterialTheme.typography.body1,
+                                                                    textAlign = TextAlign.Start,
+                                                                    fontWeight = FontWeight.SemiBold,
+                                                                    modifier = Modifier.weight(0.8F),
                                                                 )
 
-                                                                Spacer(modifier = Modifier.width(
-                                                                    SpaceSmall
-                                                                ))
-
-                                                                StandardOutlinedChip(
-                                                                    text = salary.salaryType,
+                                                                Text(
+                                                                    text = salary.salaryGivenDate.toSalaryDate,
+                                                                    textAlign = TextAlign.Start,
+                                                                    style = MaterialTheme.typography.body1,
+                                                                    modifier = Modifier.weight(0.8F),
                                                                 )
+
+                                                                Row(
+                                                                    modifier = Modifier.weight(1.4F),
+                                                                    verticalAlignment = Alignment.CenterVertically,
+                                                                    horizontalArrangement = Arrangement.End,
+                                                                ) {
+                                                                    IconBox(
+                                                                        text = salary.salaryPaymentType,
+                                                                        icon = when (salary.salaryPaymentType) {
+                                                                            PaymentType.Cash.paymentType -> Icons.Default.Money
+                                                                            PaymentType.Online.paymentType -> Icons.Default.AccountBalance
+                                                                            else -> Icons.Default.Payments
+                                                                        },
+                                                                        selected = false,
+                                                                    )
+
+                                                                    Spacer(modifier = Modifier.width(
+                                                                        SpaceSmall
+                                                                    ))
+
+                                                                    StandardOutlinedChip(
+                                                                        text = salary.salaryType,
+                                                                    )
+                                                                }
+
                                                             }
+                                                        }
 
+
+                                                        if (index != employeeSalaries.size - 1) {
+                                                            Spacer(modifier = Modifier.height(SpaceSmall))
+                                                            Divider(modifier = Modifier.fillMaxWidth())
+                                                            Spacer(modifier = Modifier.height(SpaceSmall))
                                                         }
                                                     }
-
-
-                                                    if (index != employeeSalaries.size - 1) {
-                                                        Spacer(modifier = Modifier.height(SpaceSmall))
-                                                        Divider(modifier = Modifier.fillMaxWidth())
-                                                        Spacer(modifier = Modifier.height(SpaceSmall))
-                                                    }
                                                 }
-                                            }
-                                        )
-                                    }
+                                            )
+                                        }
 
-                                    Spacer(modifier = Modifier.height(SpaceMedium))
+                                        Spacer(modifier = Modifier.height(SpaceMedium))
+                                    }
                                 }
                             }
                         }

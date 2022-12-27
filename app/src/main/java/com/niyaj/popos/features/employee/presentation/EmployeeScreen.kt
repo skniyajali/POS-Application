@@ -406,6 +406,7 @@ fun EmployeeScreen(
 
                                     IconButton(onClick = {
                                         dialogState.show()
+                                        employeeViewModel.onEmployeeEvent(EmployeeEvent.SelectEmployee(employee.employeeId))
                                     }) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,

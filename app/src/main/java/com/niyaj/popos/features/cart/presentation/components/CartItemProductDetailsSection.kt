@@ -72,7 +72,7 @@ fun CartItemProductDetailsSection(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                modifier = Modifier.weight(2.5f, true),
+                                modifier = Modifier.weight(2.2f, true),
                                 text = cartProduct.product.productName,
                                 style = MaterialTheme.typography.subtitle1,
                                 maxLines = 1,
@@ -81,7 +81,7 @@ fun CartItemProductDetailsSection(
                             Spacer(modifier = Modifier.width(SpaceMini))
                             Text(
                                 text = cartProduct.product.productPrice.toString().toRupee,
-                                modifier = Modifier.weight(0.5f, true),
+                                modifier = Modifier.weight(0.8f, true),
                                 textAlign = TextAlign.End
                             )
                         }

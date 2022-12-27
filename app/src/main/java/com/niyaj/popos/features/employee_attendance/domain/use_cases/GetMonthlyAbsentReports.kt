@@ -10,7 +10,7 @@ class GetMonthlyAbsentReports @Inject constructor(
     private val attendanceRepository: AttendanceRepository
 ) {
 
-    operator fun invoke(employeeId: String): Flow<Resource<List<AbsentReport>>> {
+    suspend operator fun invoke(employeeId: String): Flow<Resource<List<AbsentReport>>> {
         return attendanceRepository.getMonthlyAbsentReport(employeeId)
     }
 }

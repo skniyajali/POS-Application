@@ -1,11 +1,34 @@
 package com.niyaj.popos.features.cart_order.presentation.add_edit
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.Divider
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
+import androidx.compose.material.ExposedDropdownMenuDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -45,8 +68,8 @@ fun AddEditCartOrderScreen(
     addEditCartOrderViewModel: AddEditCartOrderViewModel = hiltViewModel(),
     resultNavigator: ResultBackNavigator<String>
 ) {
-    val addresses by lazy { addEditCartOrderViewModel.addresses.addresses }
-    val customers by lazy { addEditCartOrderViewModel.customers.customers }
+    val addresses = addEditCartOrderViewModel.addresses.collectAsState().value.addresses
+    val customers = addEditCartOrderViewModel.customers.collectAsState().value.customers
 
     var textFieldSize by remember { mutableStateOf(Size.Zero) }
 
@@ -235,8 +258,11 @@ fun AddEditCartOrderScreen(
                             focusable = false,
                             dismissOnBackPress = true,
                             dismissOnClickOutside = true,
+                            clippingEnabled = true,
+                            excludeFromSystemGesture = true,
                         ),
                         modifier = Modifier
+                            .heightIn(max = 250.dp)
                             .width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                     ) {
                         customers.forEachIndexed { index, customer ->
@@ -325,8 +351,11 @@ fun AddEditCartOrderScreen(
                             focusable = false,
                             dismissOnBackPress = true,
                             dismissOnClickOutside = true,
+                            clippingEnabled = true,
+                            excludeFromSystemGesture = true,
                         ),
                         modifier = Modifier
+                            .heightIn(max = 250.dp)
                             .width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                     ) {
                         addresses.forEachIndexed { index, address ->

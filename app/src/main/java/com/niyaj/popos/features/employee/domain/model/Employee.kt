@@ -35,7 +35,7 @@ class Employee(): RealmObject {
         employeePosition: String = "",
         employeeType: String = "",
         employeeJoinedDate: String = "",
-        createdAt: String = "",
+        createdAt: String = System.currentTimeMillis().toString(),
         updatedAt: String? = null,
     ) : this() {
         this.employeeId = employeeId

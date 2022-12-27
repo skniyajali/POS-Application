@@ -6,7 +6,7 @@ import com.niyaj.popos.features.employee_attendance.domain.repository.Attendance
 
 class GetAttendanceById(private val attendanceRepository: AttendanceRepository) {
 
-    operator fun invoke(attendanceId: String): Resource<EmployeeAttendance?> {
+    suspend operator fun invoke(attendanceId: String): Resource<EmployeeAttendance?> {
         return attendanceRepository.getAttendanceById(attendanceId)
     }
 }

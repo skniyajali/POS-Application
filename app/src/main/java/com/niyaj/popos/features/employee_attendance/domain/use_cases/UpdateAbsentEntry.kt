@@ -6,7 +6,7 @@ import com.niyaj.popos.features.employee_attendance.domain.repository.Attendance
 
 class UpdateAbsentEntry(private val attendanceRepository: AttendanceRepository) {
 
-    operator fun invoke(attendanceId: String, attendance: EmployeeAttendance): Resource<Boolean> {
+    suspend operator fun invoke(attendanceId: String, attendance: EmployeeAttendance): Resource<Boolean> {
         return attendanceRepository.updateAbsentEntry(attendanceId, attendance)
     }
 }

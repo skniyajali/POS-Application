@@ -49,9 +49,7 @@ class GetAllCustomers(
                                     if(searchText.isNotEmpty()){
                                         customer.customerEmail?.contains(searchText, true) == true ||
                                         customer.customerPhone.contains(searchText, true) ||
-                                        customer.customerName?.contains(searchText, true) == true ||
-                                        customer.createdAt.contains(searchText, true) ||
-                                        customer.updatedAt?.contains(searchText, true) == true
+                                        customer.customerName?.contains(searchText, true) == true
                                     }else{
                                         true
                                     }

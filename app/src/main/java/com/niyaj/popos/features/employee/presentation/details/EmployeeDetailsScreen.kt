@@ -34,8 +34,8 @@ import com.niyaj.popos.features.components.ExtendedFabButton
 import com.niyaj.popos.features.components.IconBox
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.PaymentStatusChip
-import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardExpandable
+import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.destinations.AddEditAbsentScreenDestination
@@ -189,7 +189,7 @@ fun EmployeeDetailsScreen(
         navigationIcon = {},
     ) {
         SwipeRefresh(
-            state = rememberSwipeRefreshState(isRefreshing = isLoading || salariesIsLoading || absentReportsIsLoading),
+            state = rememberSwipeRefreshState(isRefreshing = isLoading),
             onRefresh = {
                 employeeDetailsViewModel.onEvent(EmployeeDetailsEvent.RefreshEmployeeDetails)
             }
@@ -441,9 +441,7 @@ fun EmployeeDetailsScreen(
                                         .padding(SpaceSmall)
                                 ) {
                                     if (isLoading) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.fillMaxWidth(),
-                                        )
+                                        CircularProgressIndicator()
                                     } else if (error != null) {
                                         ItemNotAvailable(
                                             text = error
@@ -551,9 +549,7 @@ fun EmployeeDetailsScreen(
                             },
                             content = {
                                 if (salariesIsLoading) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
+                                    CircularProgressIndicator()
                                 } else if (salaries.isEmpty() || salariesHasError != null) {
                                     ItemNotAvailable(
                                         text = salariesHasError
@@ -741,9 +737,7 @@ fun EmployeeDetailsScreen(
                             },
                             content = {
                                 if (absentReportsIsLoading) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
+                                    CircularProgressIndicator()
                                 } else if (absentReports.isEmpty() || absentReportsHasError != null) {
                                     ItemNotAvailable(
                                         text = absentReportsHasError

@@ -30,7 +30,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
     }
 
 
-    override fun getAllAttendance(): Flow<Resource<List<EmployeeAttendance>>> {
+    override suspend fun getAllAttendance(): Flow<Resource<List<EmployeeAttendance>>> {
         return channelFlow {
             try {
                 send(Resource.Loading(true))
@@ -59,7 +59,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
         }
     }
 
-    override fun getAttendanceById(attendanceId: String): Resource<EmployeeAttendance?> {
+    override suspend fun getAttendanceById(attendanceId: String): Resource<EmployeeAttendance?> {
         return try {
             val attendance = realm.query<EmployeeAttendance>("attendeeId == $0", attendanceId).first().find()
 
@@ -92,7 +92,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
         return employeeAttendance != null
     }
 
-    override fun getMonthlyAbsentReport(employeeId: String): Flow<Resource<List<AbsentReport>>> {
+    override suspend fun getMonthlyAbsentReport(employeeId: String): Flow<Resource<List<AbsentReport>>> {
         return channelFlow {
             try {
                 send(Resource.Loading(true))
@@ -146,7 +146,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
         }
     }
 
-    override fun addAbsentEntry(attendance: EmployeeAttendance): Resource<Boolean> {
+    override suspend fun addAbsentEntry(attendance: EmployeeAttendance): Resource<Boolean> {
         return try {
             val employee =
                 realm.query<Employee>("employeeId == $0", attendance.employee?.employeeId).first()
@@ -181,7 +181,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
         }
     }
 
-    override fun updateAbsentEntry(
+    override suspend fun updateAbsentEntry(
         attendanceId: String,
         attendance: EmployeeAttendance,
     ): Resource<Boolean> {
@@ -217,7 +217,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
         }
     }
 
-    override fun removeAttendanceById(attendanceId: String): Resource<Boolean> {
+    override suspend fun removeAttendanceById(attendanceId: String): Resource<Boolean> {
         return try {
             CoroutineScope(Dispatchers.IO).launch {
                 realm.write {
@@ -236,7 +236,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
         }
     }
 
-    override fun removeAttendanceByEmployeeId(employeeId: String, date: String): Resource<Boolean> {
+    override suspend fun removeAttendanceByEmployeeId(employeeId: String, date: String): Resource<Boolean> {
         return try {
             CoroutineScope(Dispatchers.IO).launch {
                 realm.write {

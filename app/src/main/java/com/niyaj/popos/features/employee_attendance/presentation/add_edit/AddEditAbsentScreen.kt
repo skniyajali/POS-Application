@@ -23,6 +23,7 @@ import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
+import com.niyaj.popos.util.localDateToCurrentMillis
 import com.niyaj.popos.util.toMilliSecond
 import com.niyaj.popos.util.toSalaryDate
 import com.ramcosta.composedestinations.annotation.Destination
@@ -95,9 +96,9 @@ fun AddEditAbsentScreen(
                         date.toMilliSecond >= absentViewModel.absentState.employee.employeeJoinedDate
                     } else true
                 }
-            ) { date ->
+            ) {date ->
                 absentViewModel.onEvent(
-                    AbsentEvent.AbsentDateChanged(date.toMilliSecond)
+                    AbsentEvent.AbsentDateChanged(localDateToCurrentMillis(date))
                 )
             }
         }

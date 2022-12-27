@@ -5,11 +5,9 @@ import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
 import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
-import com.niyaj.popos.features.expenses.domain.model.Expenses
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.exceptions.RealmException
-import io.realm.kotlin.ext.isValid
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
@@ -96,11 +94,11 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
             employee.employeeJoinedDate = newEmployee.employeeJoinedDate
             employee.createdAt = System.currentTimeMillis().toString()
 
-            val result = realm.write {
+            realm.write {
                 this.copyToRealm(employee)
             }
 
-            Resource.Success(result.isValid())
+            Resource.Success(true)
         }catch (e: RealmException){
             Resource.Error(e.message ?: "Error creating Employee Item", false)
         }
@@ -132,18 +130,21 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
     override suspend fun deleteEmployee(employeeId: String): Resource<Boolean> {
         return try {
             realm.write {
-                val employee: Employee = this.query<Employee>("employeeId == $0", employeeId).find().first()
-                val expenses = this.query<Expenses>("expansesSubCategory == $0", employeeId).find()
+                val employee = this.query<Employee>("employeeId == $0", employeeId).first().find()
                 val salary = this.query<EmployeeSalary>("employee.employeeId == $0", employeeId).find()
                 val attendance = this.query<EmployeeAttendance>("employee.employeeId == $0", employeeId).find()
 
-                delete(salary)
+                if(salary.isNotEmpty()){
+                    delete(salary)
+                }
 
-                delete(attendance)
+                if (attendance.isNotEmpty()){
+                    delete(attendance)
+                }
 
-                delete(expenses)
-
-                delete(employee)
+                if (employee != null){
+                    delete(employee)
+                }
             }
 
             Resource.Success(true)

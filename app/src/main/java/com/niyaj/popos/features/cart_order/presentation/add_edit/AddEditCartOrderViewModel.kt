@@ -25,7 +25,9 @@ import com.niyaj.popos.util.getAllCapitalizedLetters
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -43,9 +45,11 @@ class AddEditCartOrderViewModel @Inject constructor(
 
     var addEditCartOrderState by mutableStateOf(AddEditCartOrderState())
 
-    var addresses by mutableStateOf(AddressState())
+    private val _addresses = MutableStateFlow(AddressState())
+    val addresses = _addresses.asStateFlow()
 
-    var customers by mutableStateOf(CustomerState())
+    private val _customers = MutableStateFlow(CustomerState())
+    val customers = _customers.asStateFlow()
 
     var expanded by mutableStateOf(false)
 
@@ -239,19 +243,19 @@ class AddEditCartOrderViewModel @Inject constructor(
             customerUseCases.getAllCustomers(searchText = searchText).collect { result ->
                 when (result){
                     is Resource.Loading -> {
-                        customers = customers.copy(
+                        _customers.value = customers.value.copy(
                             isLoading = result.isLoading
                         )
                     }
                     is Resource.Success -> {
                         result.data?.let {
-                            customers = customers.copy(
+                            _customers.value = customers.value.copy(
                                 customers = it
                             )
                         }
                     }
                     is Resource.Error -> {
-                        customers = customers.copy(
+                        _customers.value = _customers.value.copy(
                             error = result.message
                         )
                     }
@@ -265,19 +269,19 @@ class AddEditCartOrderViewModel @Inject constructor(
             addressUseCases.getAllAddress(searchText = searchText).collect { result ->
                 when (result){
                     is Resource.Loading -> {
-                        addresses = addresses.copy(
+                        _addresses.value = _addresses.value.copy(
                             isLoading = result.isLoading
                         )
                     }
                     is Resource.Success -> {
                         result.data?.let {
-                            addresses = addresses.copy(
+                            _addresses.value = _addresses.value.copy(
                                 addresses = it
                             )
                         }
                     }
                     is Resource.Error -> {
-                        addresses = addresses.copy(
+                        _addresses.value = _addresses.value.copy(
                             error = result.message
                         )
                     }

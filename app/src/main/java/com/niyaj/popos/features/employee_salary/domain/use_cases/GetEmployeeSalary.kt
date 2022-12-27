@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 class GetEmployeeSalary(private val salaryRepository: SalaryRepository) {
 
-    operator fun invoke(employeeId: String): Flow<Resource<List<SalaryCalculation>>> {
+    suspend operator fun invoke(employeeId: String): Flow<Resource<List<SalaryCalculation>>> {
         return salaryRepository.getEmployeeSalary(employeeId)
     }
 }

@@ -42,11 +42,13 @@ class EmployeeDetailsViewModel @Inject constructor(
 
     init {
         savedStateHandle.get<String>("employeeId")?.let { employeeId ->
-            getEmployeeById(employeeId)
-            getSalaryDetails(employeeId)
-            getSalaryCalculableDate(employeeId)
-            getPaymentDetails(employeeId)
-            getMonthlyAbsentReport(employeeId)
+            viewModelScope.launch {
+                getEmployeeById(employeeId)
+                getSalaryDetails(employeeId)
+                getSalaryCalculableDate(employeeId)
+                getPaymentDetails(employeeId)
+                getMonthlyAbsentReport(employeeId)
+            }
         }
     }
 
@@ -154,12 +156,14 @@ class EmployeeDetailsViewModel @Inject constructor(
     }
 
     private fun getSalaryCalculableDate(employeeId: String) {
-        val result = salaryUseCases.getSalaryCalculableDate(employeeId)
+        viewModelScope.launch {
+            val result = salaryUseCases.getSalaryCalculableDate(employeeId)
 
-        result.data?.let {
-            _salaryDates.value = _salaryDates.value.copy(
-                dates = it
-            )
+            result.data?.let {
+                _salaryDates.value = _salaryDates.value.copy(
+                    dates = it
+                )
+            }
         }
     }
 

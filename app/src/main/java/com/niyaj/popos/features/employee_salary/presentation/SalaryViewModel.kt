@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.employee.domain.model.Employee
+import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
 import com.niyaj.popos.features.employee_salary.domain.use_cases.SalaryUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -15,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SalaryViewModel @Inject constructor(
-    private val salaryUseCases: SalaryUseCases
+    private val salaryUseCases: SalaryUseCases,
+    private val employeeUseCases: EmployeeUseCases,
 ): ViewModel(){
 
     private val _salaries = MutableStateFlow(SalaryState())
@@ -139,5 +142,14 @@ class SalaryViewModel @Inject constructor(
               }
           }
         }
+    }
+
+    fun getEmployeeById(employeeId: String): Employee? {
+        var employee: Employee? = null
+
+        viewModelScope.launch {
+            employee = employeeUseCases.getEmployeeById(employeeId).data
+        }
+        return employee
     }
 }

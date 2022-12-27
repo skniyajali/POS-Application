@@ -92,7 +92,7 @@ fun AddEditExpensesScreen(
                             textFieldSize = coordinates.size.toSize()
                         },
                     text = expensesCategoryName,
-                    hint = "Category Name",
+                    hint = "Expenses Type/Name",
                     error = expensesCategoryError,
                     onValueChange = {},
                     readOnly = true,
@@ -142,7 +142,7 @@ fun AddEditExpensesScreen(
             StandardOutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 text = addEditExpensesViewModel.addEditState.collectAsState().value.expensesPrice,
-                hint = "Expense Price",
+                hint = "Expenses Amount",
                 keyboardType = KeyboardType.Number,
                 error = addEditExpensesViewModel.addEditState.collectAsState().value.expensesPriceError,
                 onValueChange = {
@@ -159,7 +159,7 @@ fun AddEditExpensesScreen(
             StandardOutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 text = addEditExpensesViewModel.addEditState.collectAsState().value.expensesRemarks,
-                hint = "Expense Remarks",
+                hint = "Payment Note/Remarks",
                 error = null,
                 onValueChange = {
                     addEditExpensesViewModel.onExpensesEvent(

@@ -10,6 +10,7 @@ import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculableDate
 import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculation
 import com.niyaj.popos.util.Constants.NOT_PAID
 import com.niyaj.popos.util.Constants.PAID
+import com.niyaj.popos.util.compareSalaryDates
 import com.niyaj.popos.util.getSalaryDates
 import com.niyaj.popos.util.toRupee
 import io.realm.kotlin.Realm
@@ -56,7 +57,6 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
                     }
                 }
             }catch (e: Exception){
-                send(Resource.Loading(false))
                 send(Resource.Error(e.message ?: "Unable to get salary items", emptyList()))
             }
         }
@@ -72,12 +72,14 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
         }
     }
 
-    override fun getSalaryByEmployeeId(
+    override suspend fun getSalaryByEmployeeId(
         employeeId: String,
         selectedDate: Pair<String, String>
     ): Resource<CalculatedSalary?> {
         return try {
             val employee = realm.query<Employee>("employeeId == $0", employeeId).first().find()
+
+            Timber.d("selected date = $selectedDate")
 
             if (employee != null) {
                 val employeeSalary = employee.employeeSalary.toLong()
@@ -102,7 +104,6 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
                 val noOfAbsents: Long = absents.size.toLong()
                 val absentSalary = perDaySalary.times(noOfAbsents)
                 val currentSalary = employeeSalary.minus(absentSalary)
-
 
                 if (payments.isNotEmpty()) {
                     payments.forEach { payment ->
@@ -202,14 +203,12 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
 
     override suspend fun deleteSalaryById(salaryId: String): Resource<Boolean> {
         return try {
-            CoroutineScope(Dispatchers.IO).launch {
-                realm.write {
-                    val salary = this.query<EmployeeSalary>("salaryId == $0", salaryId).first().find()
-                    if (salary != null) {
-                        delete(salary)
-                    }else {
-                        Resource.Error("Unable to find salary.", false)
-                    }
+            realm.write {
+                val salary = this.query<EmployeeSalary>("salaryId == $0", salaryId).first().find()
+                if (salary != null) {
+                    delete(salary)
+                }else {
+                    Resource.Error("Unable to find salary.", false)
                 }
             }
             Resource.Success(true)
@@ -218,7 +217,7 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
         }
     }
 
-    override fun getEmployeeSalary(employeeId: String): Flow<Resource<List<SalaryCalculation>>> {
+    override suspend fun getEmployeeSalary(employeeId: String): Flow<Resource<List<SalaryCalculation>>> {
         return channelFlow {
             try {
                 send(Resource.Loading(true))
@@ -232,7 +231,7 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
                     val dates = getSalaryDates(joinedDate)
 
                     dates.forEach { date ->
-                        if (joinedDate <= date.first) {
+                        if (compareSalaryDates(joinedDate, date.first)) {
                             val advancedPayment = mutableListOf<EmployeeSalary>()
                             var amountPaid: Long = 0
                             val employeeSalary = employee.employeeSalary.toLong()
@@ -271,17 +270,15 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
                     send(Resource.Loading(false))
 
                 }else {
-                    send(Resource.Loading(false))
                     send(Resource.Error("Unable to find employee", emptyList()))
                 }
             }catch (e:Exception) {
-                send(Resource.Loading(false))
                 send(Resource.Error(e.message ?: "Unable to get details", emptyList()))
             }
         }
     }
 
-    override fun getSalaryCalculableDate(employeeId: String): Resource<List<SalaryCalculableDate>> {
+    override suspend fun getSalaryCalculableDate(employeeId: String): Resource<List<SalaryCalculableDate>> {
         return try {
             val employee = realm.query<Employee>("employeeId == $0", employeeId).first().find()
 
