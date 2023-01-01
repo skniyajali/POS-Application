@@ -138,6 +138,7 @@ fun SettingsScreen(
                 .fillMaxWidth()
                 .padding(SpaceSmall)
         ) {
+
             item {
                 Spacer(modifier = Modifier.height(SpaceSmall))
                 SettingsCard(
@@ -149,6 +150,7 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(SpaceMedium))
             }
+
             item {
                 SettingsCard(
                     text = "Delete All Records",

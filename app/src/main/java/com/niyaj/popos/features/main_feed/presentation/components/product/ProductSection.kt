@@ -10,13 +10,14 @@ import androidx.paging.compose.LazyPagingItems
 import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.ui.theme.TextGray
+import com.niyaj.popos.features.main_feed.data.repository.ProductWithFlowQuantity
 import com.niyaj.popos.features.main_feed.domain.model.ProductWithQuantity
 import com.niyaj.popos.features.main_feed.presentation.components.components.TitleWithIcon
 
 @Composable
 fun ProductSection(
     onProductFilterClick: () -> Unit = {},
-    products: List<ProductWithQuantity> = emptyList(),
+    products: List<ProductWithFlowQuantity> = emptyList(),
     pagingProducts: LazyPagingItems<ProductWithQuantity>,
     onProductLeftClick: (String) -> Unit = {},
     onProductRightClick: (String) -> Unit = {},

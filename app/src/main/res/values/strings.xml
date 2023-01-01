@@ -1,31 +1,20 @@
 <resources>
     <string name="app_name">Popos</string>
     <string name="logo_description">Popos Highlight</string>
-    <string name="login">Login</string>
     <string name="password_visible_content_description">Password Visible</string>
     <string name="password_hidden_content_description">Password Hidden</string>
-    <string name="login_hint">Username or Email</string>
-    <string name="password_hint">Password</string>
     <string name="create_order">Create Order</string>
     <string name="back">Navigate Back</string>
-    <string name="your_feed">Main Screen</string>
-    <string name="drawer_icon">Drawer Icon</string>
     <string name="search_icon">Search Icon</string>
     <string name="popos_highlight">Popos Highlight</string>
-    <string name="shopping_cart">Shopping Cart</string>
-    <string name="order_screen">Go to order screen</string>
-    <string name="generate_new_order_id">Generate new order id</string>
     <string name="increaseQuantity">Increase Quantity</string>
     <string name="decreaseQuantity">Decrease Quantity</string>
-    <string name="no_items_in_cart">No items in cart..</string>
     <string name="add_items_to_cart_button">Add Items to cart</string>
     <string name="add_icon">Add Icon</string>
     <string name="cart_screen">Cart Screen</string>
     <string name="edit_cart_order_icon">Edit Cart Order</string>
     <string name="delete_cart_order_icon">Delete Cart Order Icon</string>
     <string name="edit_cart_order">Update Order Details</string>
-    <string name="filter_category">Filter Category</string>
-    <string name="order_icon">go to order screen</string>
     <string name="edit_category">Edit Category</string>
     <string name="create_category">Create New Category</string>
     <string name="no_items_in_category">Categories Not Available</string>
@@ -58,8 +47,6 @@
     <string name="update_employee">Update Employee Details</string>
     <string name="create_new_partner">Create New Partner</string>
     <string name="update_partner">Update Partner Details</string>
-    <string name="create_new_sub_category">Create New</string>
-    <string name="update_expenses_sub">Update Sub Category</string>
     <string name="create_new_expenses_category">Create New Category</string>
     <string name="filter_expenses_category">Filter Expenses Category</string>
     <string name="filter_employee">Filter Employee</string>
@@ -67,14 +54,12 @@
     <string name="add_new_expense">Add Expense Entry</string>
     <string name="update_expense">Update Expense Entry</string>
     <string name="no_items_in_employee">Employee Not Found</string>
-    <string name="no_items_in_sub_category">Sub Category Not Found</string>
     <string name="no_items_in_expenses_category">Expenses Category Not Found</string>
     <string name="filter_delivery_partner">Filter Delivery Partner</string>
     <string name="no_items_in_partner">Delivery Partner Not Found</string>
     <string name="no_item_in_expenses">Expenses Not Available</string>
     <string name="delete_partner_message">Make sure partner is not currently logged in and all data must be deleted before taking this action.</string>
     <string name="delete_employee_msg">Are you sure to delete employee, this action can not be undone..</string>
-    <string name="delete_expenses_sub_category">Make sure all expenses of this sub category has been deleted before taking this action, otherwise this will cause error..</string>
     <string name="delete_expenses_category_msg">Make sure to delete all expanses before this action will taken, otherwise it will occurs some issues on your app..</string>
     <string name="dine_in_orders_not_found">DineIn Orders Not Available..</string>
     <string name="dine_out_orders_not_found">DineOut Orders Not Available..</string>
@@ -111,5 +96,8 @@
     <string name="delete_all_records">Are you sure to delete all records including today?</string>
     <string name="select_cart_order">Select Cart Order</string>
     <string name="update_restaurant_info">Update Restaurant Info</string>
+    <string name="import_customers">Import Customers</string>
+    <string name="customer_settings">Customer Setting Screen</string>
+    <string name="delete_all_customers">Are you sure to delete all customer including of his all orders?</string>
 
 </resources>

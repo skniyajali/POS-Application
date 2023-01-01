@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,19 +49,29 @@ fun TextWithCount(
             fontWeight = FontWeight.Bold
         )
 
-        Column(
+        CountBox(count = count.toString())
+    }
+}
+
+
+@Composable
+fun CountBox(
+    modifier: Modifier = Modifier,
+    count: String,
+    backGroundColor: Color =  MaterialTheme.colors.secondaryVariant
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(2.dp))
+            .background(backGroundColor)
+            .padding(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = count,
+            style = MaterialTheme.typography.caption,
+            color = MaterialTheme.colors.onSecondary,
             modifier = Modifier
-                .clip(RoundedCornerShape(2.dp))
-                .background(MaterialTheme.colors.secondaryVariant)
-                .padding(4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = count.toString(),
-                style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onSecondary,
-                modifier = Modifier
-            )
-        }
+        )
     }
 }

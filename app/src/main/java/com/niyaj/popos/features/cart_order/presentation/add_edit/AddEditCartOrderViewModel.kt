@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -77,7 +78,7 @@ class AddEditCartOrderViewModel @Inject constructor(
             }
 
             is AddEditCartOrderEvent.CustomerPhoneChanged -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     if(event.customerId != null){
                         val customer = customerUseCases.getCustomerById(event.customerId).data
 
@@ -86,6 +87,8 @@ class AddEditCartOrderViewModel @Inject constructor(
                         }
 
                     }else {
+                        getAllCustomers(event.customerPhone)
+
                         addEditCartOrderState = addEditCartOrderState.copy(
                             customer =  Customer(
                                 customerPhone = event.customerPhone
@@ -96,7 +99,7 @@ class AddEditCartOrderViewModel @Inject constructor(
             }
 
             is AddEditCartOrderEvent.CustomerAddressChanged -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     if(event.addressId != null) {
                         val address = addressUseCases.getAddressById(event.addressId).data
                         if (address != null) {
@@ -104,11 +107,13 @@ class AddEditCartOrderViewModel @Inject constructor(
                         }
 
                     }else {
-                        val address = Address()
-                        address.shortName = getAllCapitalizedLetters(event.customerAddress)
-                        address.addressName = event.customerAddress.capitalizeWords
+                        getAllAddresses(event.customerAddress)
+
                         addEditCartOrderState = addEditCartOrderState.copy(
-                            address = address,
+                            address = Address(
+                                shortName = getAllCapitalizedLetters(event.customerAddress),
+                                addressName = event.customerAddress.capitalizeWords
+                            ),
                         )
                     }
                 }
@@ -138,12 +143,16 @@ class AddEditCartOrderViewModel @Inject constructor(
                 addEditCartOrderState = addEditCartOrderState.copy(
                     address = null
                 )
+
+                getAllAddresses()
             }
 
             is AddEditCartOrderEvent.OnClearCustomer -> {
                 addEditCartOrderState = addEditCartOrderState.copy(
                     customer =  null
                 )
+
+                getAllCustomers()
             }
 
             is AddEditCartOrderEvent.OnUpdateCartOrder -> {
@@ -239,8 +248,8 @@ class AddEditCartOrderViewModel @Inject constructor(
     }
 
     private fun getAllCustomers(searchText: String = "") {
-        viewModelScope.launch {
-            customerUseCases.getAllCustomers(searchText = searchText).collect { result ->
+        viewModelScope.launch(Dispatchers.IO) {
+            customerUseCases.getAllCustomers(searchText = searchText).collectLatest { result ->
                 when (result){
                     is Resource.Loading -> {
                         _customers.value = customers.value.copy(
@@ -265,8 +274,8 @@ class AddEditCartOrderViewModel @Inject constructor(
     }
 
     private fun getAllAddresses(searchText: String = "") {
-        viewModelScope.launch {
-            addressUseCases.getAllAddress(searchText = searchText).collect { result ->
+        viewModelScope.launch(Dispatchers.IO) {
+            addressUseCases.getAllAddress(searchText = searchText).collectLatest { result ->
                 when (result){
                     is Resource.Loading -> {
                         _addresses.value = _addresses.value.copy(

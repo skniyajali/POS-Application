@@ -67,8 +67,15 @@ fun SplashScreen(
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = stringResource(id = R.string.logo_description),
-            modifier = Modifier.scale(scale.value)
+            modifier = Modifier
+                .scale(scale.value),
         )
+//        Text(
+//            text = stringResource(id = R.string.popos_highlight),
+//            style = MaterialTheme.typography.h4,
+//            fontWeight = FontWeight.SemiBold,
+//            modifier = Modifier.scale(scale.value),
+//        )
     }
 
 }

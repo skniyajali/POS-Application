@@ -7,4 +7,6 @@ data class CustomerUseCases(
     val createNewCustomer: CreateNewCustomer,
     val updateCustomer: UpdateCustomer,
     val deleteCustomer: DeleteCustomer,
+    val deleteAllCustomers: DeleteAllCustomers,
+    val importContacts: ImportContacts
 )

@@ -13,10 +13,10 @@ class ValidateProductPrice @Inject constructor() {
             )
         }
 
-        if(type.isNullOrEmpty() && productPrice <= 10) {
+        if(type.isNullOrEmpty() && productPrice < 10) {
             return ValidationResult(
                 successful = false,
-                errorMessage = "Product price must be larger than 10 rupees."
+                errorMessage = "Product price must be at least 10 rupees."
             )
         }
 

@@ -3,21 +3,15 @@ package com.niyaj.popos.features.customer.presentation
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
@@ -31,6 +25,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Rule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
@@ -44,10 +39,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -62,7 +53,9 @@ import com.niyaj.popos.features.components.ExtendedFabButton
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.StandardSearchBar
+import com.niyaj.popos.features.customer.presentation.components.ContactCard
 import com.niyaj.popos.features.destinations.AddEditCustomerScreenDestination
+import com.niyaj.popos.features.destinations.CustomerSettingsScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
@@ -293,6 +286,18 @@ fun CustomerScreen(
                         )
                     }
                 }
+
+                IconButton(
+                    onClick = {
+                        navController.navigate(CustomerSettingsScreenDestination)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(id = R.string.customer_settings),
+                        tint = MaterialTheme.colors.onPrimary,
+                    )
+                }
             }
         },
         navigationIcon = {
@@ -367,49 +372,26 @@ fun CustomerScreen(
                     )
                 } else {
                     LazyVerticalGrid(
-                        modifier = Modifier.padding(SpaceMini),
                         columns = GridCells.Fixed(2),
                         state = lazyListState,
                     ){
                         itemsIndexed(customers){ _, customer ->
-                            Card(
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(SpaceMini)
-                                    .clickable {
+                                    .padding(SpaceMini),
+                            ) {
+                                ContactCard(
+                                    phoneNo = customer.customerPhone,
+                                    contactName = customer.customerName,
+                                    contactEmail = customer.customerEmail,
+                                    doesSelected = selectedCustomers.contains(customer.customerId),
+                                    onSelectProduct = {
                                         customerViewModel.onCustomerEvent(
                                             CustomerEvent.SelectCustomer(customer.customerId)
                                         )
                                     },
-                                shape = RoundedCornerShape(4.dp),
-                                border = if(selectedCustomers.contains(customer.customerId))
-                                    BorderStroke(1.dp, MaterialTheme.colors.primary)
-                                else null,
-                                elevation = 2.dp,
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .padding(SpaceSmall)
-                                        .fillMaxWidth(),
-                                    verticalArrangement = Arrangement.SpaceBetween,
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = customer.customerPhone,
-                                        style = MaterialTheme.typography.body1,
-                                        textAlign = TextAlign.Center,
-                                        fontWeight = FontWeight.Bold,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                    if(!customer.customerName.isNullOrEmpty()){
-                                        Spacer(modifier = Modifier.height(SpaceMini))
-                                        Text(
-                                            text = customer.customerName!!,
-                                            style = MaterialTheme.typography.body1,
-                                            textAlign = TextAlign.Center,
-                                        )
-                                    }
-                                }
+                                )
                             }
                         }
                     }

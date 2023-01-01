@@ -11,6 +11,7 @@ import com.niyaj.popos.util.Constants.JSON_FILE_TYPE
 import com.niyaj.popos.util.Constants.SAVEABLE_FILE_NAME
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapter
+import kotlinx.coroutines.delay
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -76,16 +77,20 @@ object ImportExport {
 
 
     @OptIn(ExperimentalStdlibApi::class)
-    internal inline fun <reified T> readData(context: Context, uri: Uri): List<T> {
+    internal suspend inline fun <reified T> readData(context: Context, uri: Uri): List<T> {
         try {
             val container = mutableListOf<T>()
 
-            val moshi = Moshi.Builder().build().adapter<List<T>>()
+            val moshi = Moshi.Builder().build().adapter<List<T>>().nullSafe()
 
             context.applicationContext.contentResolver.openInputStream(uri)?.use {
                 it.bufferedReader().use { reader ->
-                    moshi.fromJson(reader.readLine())?.let { it1 -> container.addAll(it1) }
+                    delay(50L)
+
+                    moshi.fromJson(reader.readText())?.let { it1 -> container.addAll(it1) }
                 }
+
+                delay(50L)
 
                 it.close()
             }

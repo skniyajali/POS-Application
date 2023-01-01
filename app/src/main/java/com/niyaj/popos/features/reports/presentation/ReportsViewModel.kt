@@ -5,9 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.reports.domain.model.Reports
 import com.niyaj.popos.features.reports.domain.use_cases.ReportsUseCases
 import com.niyaj.popos.util.Constants
+import com.niyaj.popos.util.Constants.PRINT_ADDRESS_WISE_REPORT_LIMIT
+import com.niyaj.popos.util.Constants.PRINT_CUSTOMER_WISE_REPORT_LIMIT
 import com.niyaj.popos.util.Constants.PRINT_PRODUCT_WISE_REPORT_LIMIT
 import com.niyaj.popos.util.getCalculatedEndDate
 import com.niyaj.popos.util.getCalculatedStartDate
@@ -18,6 +19,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -29,7 +32,7 @@ class ReportsViewModel @Inject constructor(
 
     private lateinit var escposPrinter: EscPosPrinter
 
-    private val _reportState = MutableStateFlow(Reports())
+    private val _reportState = MutableStateFlow(ReportState())
     val reportState = _reportState.asStateFlow()
 
     private val _reportsBarData = MutableStateFlow(ReportsBarState())
@@ -38,17 +41,32 @@ class ReportsViewModel @Inject constructor(
     private val _productWiseData = MutableStateFlow(ProductWiseReportState())
     val productWiseData = _productWiseData.asStateFlow()
 
+    private val _categoryWiseData = MutableStateFlow(CategoryWiseReportState())
+    val categoryWiseData = _categoryWiseData.asStateFlow()
+
+    private val _customerWiseData = MutableStateFlow(CustomerWiseReportState())
+    val customerWiseData = _customerWiseData.asStateFlow()
+
+    private val _addressWiseData = MutableStateFlow(AddressWiseReportState())
+    val addressWiseData = _addressWiseData.asStateFlow()
+
+    private val _selectedCategory = MutableStateFlow("")
+    val selectedCategory = _selectedCategory.asStateFlow()
+
     private val _selectedDate = MutableStateFlow("")
     val selectedDate = _selectedDate.asStateFlow()
 
     val date = _selectedDate.value.ifEmpty { getStartTime }
-    val endDate = getCalculatedEndDate(date = date)
+    private val endTime = getCalculatedEndDate(date = date)
 
     init {
         generateReport()
         getReport(date)
-        getReportBarData(endDate)
+        getReportBarData(endTime)
         getProductWiseReport()
+        getCategoryWiseReport()
+        getAddressWiseReport()
+        getCustomerWiseReport()
     }
 
     fun onReportEvent(event: ReportsEvent) {
@@ -63,6 +81,9 @@ class ReportsViewModel @Inject constructor(
                     getReportBarData(endDate)
                     getReport(startDate)
                     getProductWiseReport(startDate, endDate)
+                    getCategoryWiseReport(startDate, endDate)
+                    getAddressWiseReport(startDate, endDate)
+                    getCustomerWiseReport(startDate, endDate)
                 }
             }
 
@@ -79,6 +100,19 @@ class ReportsViewModel @Inject constructor(
                 }
             }
 
+            is ReportsEvent.OnChangeCategoryOrderType -> {
+                if (event.orderType != _categoryWiseData.value.orderType) {
+                    val startDate =
+                        if (_selectedDate.value.isEmpty()) getStartTime else getCalculatedStartDate(
+                            date = _selectedDate.value
+                        )
+                    val endDate =
+                        if (_selectedDate.value.isEmpty()) getEndTime else getCalculatedEndDate(date = _selectedDate.value)
+
+                    getCategoryWiseReport(startDate, endDate, orderType = event.orderType)
+                }
+            }
+
             is ReportsEvent.PrintReport -> {
                 printAllReports()
             }
@@ -86,8 +120,21 @@ class ReportsViewModel @Inject constructor(
             is ReportsEvent.RefreshReport -> {
                 generateReport()
                 getReport(date)
-                getReportBarData(endDate)
+                getReportBarData(endTime)
                 getProductWiseReport()
+                getCategoryWiseReport()
+                getAddressWiseReport()
+                getCustomerWiseReport()
+            }
+
+            is ReportsEvent.OnSelectCategory -> {
+                viewModelScope.launch {
+                    if (_selectedCategory.value == event.categoryName){
+                        _selectedCategory.emit("")
+                    }else {
+                        _selectedCategory.emit(event.categoryName)
+                    }
+                }
             }
         }
     }
@@ -121,8 +168,8 @@ class ReportsViewModel @Inject constructor(
     }
 
     private fun getProductWiseReport(
-        startDate: String = getStartTime,
-        endDate: String = getEndTime,
+        startDate: String = date,
+        endDate: String = endTime,
         orderType: String = ""
     ) {
         viewModelScope.launch {
@@ -154,6 +201,90 @@ class ReportsViewModel @Inject constructor(
         }
     }
 
+    private fun getCategoryWiseReport(
+        startDate: String = date,
+        endDate: String = endTime,
+        orderType: String = ""
+    ) {
+        reportsUseCases.getCategoryWiseReport(startDate, endDate, orderType).onEach { result ->
+            when (result){
+                is Resource.Loading -> {
+                    _categoryWiseData.value = _categoryWiseData.value.copy(
+                        isLoading = result.isLoading
+                    )
+                }
+                is Resource.Success -> {
+                    result.data?.let { data ->
+                        _categoryWiseData.value = _categoryWiseData.value.copy(
+                            categoryWiseReport = data,
+                            orderType = orderType,
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _categoryWiseData.value = _categoryWiseData.value.copy(
+                        hasError = result.message
+                    )
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun getCustomerWiseReport(
+        startDate: String = date,
+        endDate: String = endTime,
+    ){
+        reportsUseCases.getCustomerWiseReport(startDate, endDate).onEach { result ->
+
+            when(result) {
+                is Resource.Loading -> {
+                    _customerWiseData.value = _customerWiseData.value.copy(
+                        isLoading = result.isLoading
+                    )
+                }
+                is Resource.Success -> {
+                    result.data?.let { data ->
+                        _customerWiseData.value = _customerWiseData.value.copy(
+                            reports = data
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _customerWiseData.value = _customerWiseData.value.copy(
+                        error = result.message
+                    )
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun getAddressWiseReport(
+        startDate: String = date,
+        endDate: String = endTime,
+    ){
+        reportsUseCases.getAddressWiseReport(startDate, endDate).onEach { result ->
+            when(result) {
+                is Resource.Loading -> {
+                    _addressWiseData.value = _addressWiseData.value.copy(
+                        isLoading = result.isLoading
+                    )
+                }
+                is Resource.Success -> {
+                    result.data?.let { data ->
+                        _addressWiseData.value = _addressWiseData.value.copy(
+                            reports = data
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _addressWiseData.value = _addressWiseData.value.copy(
+                        error = result.message
+                    )
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
     private fun generateReport() {
         viewModelScope.launch {
             reportsUseCases.generateReport(getStartTime, getEndTime)
@@ -161,13 +292,27 @@ class ReportsViewModel @Inject constructor(
     }
 
     private fun getReport(startDate: String) {
-        viewModelScope.launch {
-            val result = reportsUseCases.getReport(startDate)
-
-            result.data?.let {
-                _reportState.value = it
+        reportsUseCases.getReport(startDate).onEach { result ->
+            when(result){
+                is Resource.Loading -> {
+                    _reportState.value = _reportState.value.copy(
+                        isLoading = result.isLoading
+                    )
+                }
+                is Resource.Success -> {
+                    result.data?.let {
+                        _reportState.value = _reportState.value.copy(
+                            report = it
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _reportState.value = _reportState.value.copy(
+                        hasError = result.message
+                    )
+                }
             }
-        }
+        }.launchIn(viewModelScope)
     }
 
     private fun connectPrinter(): Boolean {
@@ -192,7 +337,9 @@ class ReportsViewModel @Inject constructor(
             printItems += getPrintableHeader()
             printItems += getPrintableBoxReport()
             printItems += getPrintableBarReport()
-            printItems += getPrintableProductWiseReport()
+            printItems += getPrintableCategoryWiseReport()
+            printItems += getPrintableAddressWiseReport()
+            printItems += getPrintableCustomerWiseReport()
 
             connectPrinter()
 
@@ -217,7 +364,7 @@ class ReportsViewModel @Inject constructor(
     }
 
     private fun getPrintableBoxReport(): String {
-        val report = _reportState.value
+        val report = _reportState.value.report
         val totalAmount = report.expensesAmount.plus(report.dineInSalesAmount).plus(report.dineOutSalesAmount).toString()
 
         var boxReport = "[C]TOTAL EXPENSES & SALES\n\n"
@@ -253,8 +400,9 @@ class ReportsViewModel @Inject constructor(
     }
 
     private fun getPrintableProductWiseReport(): String {
-        var productReport = "[C]TOP SALES PRODUCTS\n\n" +
-                "[L]-------------------------------\n"
+        var productReport = "[C]TOP SALES PRODUCTS\n\n"
+
+        productReport += "[L]-------------------------------\n"
 
         if (_productWiseData.value.data.isNotEmpty()) {
 
@@ -276,6 +424,98 @@ class ReportsViewModel @Inject constructor(
         productReport += "[L]-------------------------------\n"
 
         return productReport
+    }
+
+    private fun getPrintableCategoryWiseReport(): String {
+        var report = "[C]TOP SALES PRODUCTS\n\n"
+
+        report += "[L]-------------------------------\n"
+
+
+        val groupedByCategory = _categoryWiseData.value.categoryWiseReport.groupBy { it.product?.category?.categoryName }
+
+        if (groupedByCategory.isNotEmpty()) {
+            groupedByCategory.forEach { (category, products) ->
+                if (category != null && products.isNotEmpty()) {
+                    val totalQuantity = products.sumOf { it.quantity }.toString()
+
+                    report += "[L]-------------------------------\n"
+                    report += "[L]${category} [R]${totalQuantity}\n"
+                    report += "[L]-------------------------------\n"
+
+                    val sortedProducts = products.sortedByDescending { it.quantity}
+
+                    sortedProducts.forEachIndexed { _, product ->
+                        report += "[L]${product.product?.productName}[R]${product.quantity}\n"
+
+//
+//                        if (index != products.size - 1) {
+//                            report += "[L]-------------------------------\n"
+//                        }
+                    }
+
+                    report += "[L]-------------------------------\n"
+                }
+            }
+        } else{
+            report += "[C]Product report is not available"
+        }
+
+        report += "[L]-------------------------------\n\n"
+
+        return report
+    }
+
+    private fun getPrintableAddressWiseReport(): String {
+        var report = "[C]TOP DELIVERY PLACES\n\n"
+
+        report += "[L]-------------------------------\n"
+
+        val addresses = _addressWiseData.value.reports.take(PRINT_ADDRESS_WISE_REPORT_LIMIT)
+
+        if (addresses.isNotEmpty()){
+            addresses.forEachIndexed { _, address ->
+
+                report += "[L]${address.address?.addressName} [R]${address.orderQty}\n"
+
+//                if (index != addresses.size - 1){
+//                    report += "[L]-------------------------------\n"
+//                }
+            }
+
+        }else {
+            report += "[C]Address reports is not available"
+        }
+
+        report += "[L]-------------------------------\n\n"
+
+        return report
+    }
+
+    private fun getPrintableCustomerWiseReport(): String {
+        var report = "[C]MOST ORDERED CUSTOMERS\n\n"
+
+        report += "[L]-------------------------------\n"
+
+        val customers = _customerWiseData.value.reports.take(PRINT_CUSTOMER_WISE_REPORT_LIMIT)
+
+        if (customers.isNotEmpty()){
+            customers.forEachIndexed { _, customerWiseReport ->
+                val name = if (customerWiseReport.customer?.customerName != null) customerWiseReport.customer.customerName else ""
+
+                report += "[L]${customerWiseReport.customer?.customerPhone}[C]${name?.take(12)} [R]${customerWiseReport.orderQty}\n"
+
+//                if (index != customers.size -1){
+//                    report += "[L]-------------------------------\n"
+//                }
+            }
+        }else{
+            report += "[C]Customer reports is not available"
+        }
+
+        report += "[L]-------------------------------\n\n"
+
+        return report
     }
 
 }

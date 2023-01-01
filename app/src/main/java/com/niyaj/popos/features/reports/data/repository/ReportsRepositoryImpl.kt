@@ -16,14 +16,20 @@ import com.niyaj.popos.util.toSalaryDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
+import io.realm.kotlin.notifications.DeletedObject
+import io.realm.kotlin.notifications.InitialObject
 import io.realm.kotlin.notifications.InitialResults
+import io.realm.kotlin.notifications.PendingObject
+import io.realm.kotlin.notifications.UpdatedObject
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
@@ -40,48 +46,49 @@ class ReportsRepositoryImpl(
 
     override suspend fun generateReport(startDate: String, endDate: String): Resource<Boolean> {
         return try {
+            withContext(Dispatchers.IO){
+                val itemReport = getItemsReport(startDate, endDate)
+                val formattedDate = startDate.toSalaryDate
 
-            val itemReport = getItemsReport(startDate, endDate)
-            val formattedDate = startDate.toSalaryDate
+                realm.write {
+                    val existingReport = this.query<Reports>("reportDate == $0", formattedDate).first().find()
 
-            realm.write {
-                val existingReport = this.query<Reports>("reportDate == $0", formattedDate).first().find()
+                    //Update Report Data
+                    if (existingReport != null) {
+                        //Expenses Quantity and Total Amount
+                        existingReport.expensesQty = itemReport.first.first
+                        existingReport.expensesAmount = itemReport.first.second
 
-                //Update Report Data
-                if (existingReport != null) {
-                    //Expenses Quantity and Total Amount
-                    existingReport.expensesQty = itemReport.first.first
-                    existingReport.expensesAmount = itemReport.first.second
+                        // DineIn Order Quantity and Total Amount
+                        existingReport.dineInSalesQty = itemReport.second.first
+                        existingReport.dineInSalesAmount = itemReport.second.second
 
-                    // DineIn Order Quantity and Total Amount
-                    existingReport.dineInSalesQty = itemReport.second.first
-                    existingReport.dineInSalesAmount = itemReport.second.second
+                        // DineOut Order Quantity and Total Amount
+                        existingReport.dineOutSalesQty = itemReport.third.first
+                        existingReport.dineOutSalesAmount = itemReport.third.second
 
-                    // DineOut Order Quantity and Total Amount
-                    existingReport.dineOutSalesQty = itemReport.third.first
-                    existingReport.dineOutSalesAmount = itemReport.third.second
+                        existingReport.updatedAt = System.currentTimeMillis().toString()
 
-                    existingReport.updatedAt = System.currentTimeMillis().toString()
+                    }else { // Add New Report
+                        val newReport = Reports()
+                        newReport.reportId = BsonObjectId().toHexString()
 
-                }else { // Add New Report
-                    val newReport = Reports()
-                    newReport.reportId = BsonObjectId().toHexString()
+                        newReport.reportDate = formattedDate
 
-                    newReport.reportDate = formattedDate
+                        //Expenses Quantity and Total Amount
+                        newReport.expensesQty = itemReport.first.first
+                        newReport.expensesAmount = itemReport.first.second
 
-                    //Expenses Quantity and Total Amount
-                    newReport.expensesQty = itemReport.first.first
-                    newReport.expensesAmount = itemReport.first.second
+                        // DineIn Order Quantity and Total Amount
+                        newReport.dineInSalesQty = itemReport.second.first
+                        newReport.dineInSalesAmount = itemReport.second.second
 
-                    // DineIn Order Quantity and Total Amount
-                    newReport.dineInSalesQty = itemReport.second.first
-                    newReport.dineInSalesAmount = itemReport.second.second
+                        // DineOut Order Quantity and Total Amount
+                        newReport.dineOutSalesQty = itemReport.third.first
+                        newReport.dineOutSalesAmount = itemReport.third.second
 
-                    // DineOut Order Quantity and Total Amount
-                    newReport.dineOutSalesQty = itemReport.third.first
-                    newReport.dineOutSalesAmount = itemReport.third.second
-
-                    this.copyToRealm(newReport)
+                        this.copyToRealm(newReport)
+                    }
                 }
             }
 
@@ -91,17 +98,33 @@ class ReportsRepositoryImpl(
         }
     }
 
-    override fun getReport(startDate: String): Resource<Reports?> {
-        return try {
-            val report = realm.query<Reports>("reportDate == $0", startDate.toSalaryDate).first().find()
+    override fun getReport(startDate: String): Flow<Resource<Reports?>> {
+        return channelFlow {
+            withContext(Dispatchers.IO){
+                try {
+                    val report = realm.query<Reports>("reportDate == $0", startDate.toSalaryDate).first().asFlow()
 
-            if (report == null){
-                Resource.Success(Reports())
-            }else {
-                Resource.Success(report)
+                    report.collect { changes ->
+                        when(changes){
+                            is InitialObject -> {
+                                send(Resource.Success(changes.obj))
+                            }
+                            is UpdatedObject -> {
+                                send(Resource.Success(changes.obj))
+                            }
+                            is PendingObject -> {
+                                send(Resource.Success(changes.obj))
+                            }
+                            is DeletedObject -> {
+                                send(Resource.Success(changes.obj))
+                            }
+                        }
+                    }
+
+                }catch (e: Exception) {
+                    send(Resource.Error(message = e.message ?: "Unable to get report", data = null))
+                }
             }
-        }catch (e: Exception) {
-            Resource.Error(message = e.message ?: "Unable to get report", data = null)
         }
     }
 
@@ -182,43 +205,104 @@ class ReportsRepositoryImpl(
         orderType: String
     ): Flow<Resource<List<ProductWiseReport>>> {
         return channelFlow {
-            try {
-                send(Resource.Loading(true))
+            withContext(Dispatchers.IO){
+                try {
+                    send(Resource.Loading(true))
 
-                val cartOrders = realm.query<CartRealm>(
-                    "cartOrder.cartOrderStatus != $0 AND cartOrder.updatedAt >= $1 AND cartOrder.updatedAt <= $2",
-                    OrderStatus.Processing.orderStatus,
-                    startDate,
-                    endDate,
-                ).find().filter {
-                    if (orderType.isNotEmpty()){
-                        it.cartOrder?.orderType == orderType
-                    }else{
-                        true
-                    }
-                }
-
-                val groupedProduct = cartOrders.groupBy({ it.product?.productId }) { it }
-
-                val groupedProductWithQuantity = groupedProduct.map { cart ->
-                    ProductWiseReport(
-                        product = getProduct(cart.key!!),
-                        quantity = cart.value.sumOf {
-                            it.quantity
+                    val cartOrders = realm.query<CartRealm>(
+                        "cartOrder.cartOrderStatus != $0 AND cartOrder.updatedAt >= $1 AND cartOrder.updatedAt <= $2",
+                        OrderStatus.Processing.orderStatus,
+                        startDate,
+                        endDate,
+                    ).find().filter {
+                        if (orderType.isNotEmpty()){
+                            it.cartOrder?.orderType == orderType
+                        }else{
+                            true
                         }
-                    )
+                    }
+
+                    val groupedProduct = cartOrders.groupBy({ it.product?.productId }) { it }
+
+                    val groupedProductWithQuantity = groupedProduct.map { cart ->
+                        ProductWiseReport(
+                            product = getProduct(cart.key!!),
+                            quantity = cart.value.sumOf {
+                                it.quantity
+                            }
+                        )
+                    }
+
+                    send(Resource.Success(groupedProductWithQuantity))
+
+                    send(Resource.Loading(false))
+
+                } catch (e: Exception) {
+                    send(Resource.Loading(false))
+                    send(Resource.Error(
+                        message = e.message ?: "Unable to get data from database",
+                        data = emptyList()
+                    ))
                 }
+            }
+        }
+    }
 
-                send(Resource.Success(groupedProductWithQuantity))
+    override fun deleteLastSevenDaysBeforeData(): Resource<Boolean> {
+        return try {
 
-                send(Resource.Loading(false))
+            val date = getCalculatedStartDate("-7")
 
-            } catch (e: Exception) {
-                send(Resource.Loading(false))
-                send(Resource.Error(
-                    message = e.message ?: "Unable to get data from database",
-                    data = emptyList()
-                ))
+            CoroutineScope(Dispatchers.IO).launch {
+                realm.write {
+                    val reports = realm.query<Reports>("createdAt <= $0", date).find()
+
+                    delete(reports)
+                }
+            }
+
+            Resource.Success(true)
+        }catch (e: Exception) {
+            Resource.Error(
+                message = e.message ?: "Unable to delete last seven days before data",
+                data = false
+            )
+        }
+    }
+
+    override suspend fun getDineOutOrders(startDate: String, endDate: String): Flow<Resource<List<CartOrder>>> {
+        return channelFlow {
+            withContext(Dispatchers.IO){
+                try {
+                    send(Resource.Loading(true))
+
+                    val cartOrders = realm.query<CartOrder>(
+                        "cartOrderStatus != $0 AND updatedAt >= $1 AND updatedAt <= $2 AND orderType == $3",
+                        OrderStatus.Processing.orderStatus,
+                        startDate,
+                        endDate,
+                        CartOrderType.DineOut.orderType
+                    ).find().asFlow()
+
+                    cartOrders.catch {
+                        send(Resource.Error(it.message ?: "Unable to get cartOrders", data = emptyList()))
+                    }.collect {changes ->
+                        when(changes){
+                            is UpdatedResults -> {
+                                send(Resource.Success(changes.list))
+                                send(Resource.Loading(false))
+                            }
+                            is InitialResults -> {
+                                send(Resource.Success(changes.list))
+                                send(Resource.Loading(false))
+                            }
+                        }
+                    }
+
+
+                }catch (e: Exception) {
+                    send(Resource.Error(e.message ?: "Unable to get orders", data = emptyList()))
+                }
             }
         }
     }
@@ -285,25 +369,4 @@ class ReportsRepositoryImpl(
         }
     }
 
-    override fun deleteLastSevenDaysBeforeData(): Resource<Boolean> {
-        return try {
-
-            val date = getCalculatedStartDate("-7")
-
-            CoroutineScope(Dispatchers.IO).launch {
-                realm.write {
-                    val reports = realm.query<Reports>("createdAt <= $0", date).find()
-
-                    delete(reports)
-                }
-            }
-
-            Resource.Success(true)
-        }catch (e: Exception) {
-            Resource.Error(
-                message = e.message ?: "Unable to delete last seven days before data",
-                data = false
-            )
-        }
-    }
 }

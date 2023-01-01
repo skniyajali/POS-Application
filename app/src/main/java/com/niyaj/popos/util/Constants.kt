@@ -23,7 +23,11 @@ object Constants {
 
     const val REALM_PARTITION_NAME = "realm_partition"
 
-    const val PRINT_PRODUCT_WISE_REPORT_LIMIT = 15
+    const val PRINT_PRODUCT_WISE_REPORT_LIMIT = 30
+
+    const val PRINT_ADDRESS_WISE_REPORT_LIMIT = 15
+
+    const val PRINT_CUSTOMER_WISE_REPORT_LIMIT = 15
 
     const val IMPORT_TYPE = "Import"
 

@@ -100,7 +100,7 @@ class ProductRepositoryImpl(
                 product.productName = newProduct.productName
                 product.productAvailability = newProduct.productAvailability
                 product.productPrice = newProduct.productPrice
-                product.createdAt = newProduct.createdAt
+                product.createdAt = System.currentTimeMillis().toString()
 
                 realm.write {
 
@@ -254,7 +254,7 @@ class ProductRepositoryImpl(
                             newProduct.productName = product.productName
                             newProduct.productPrice = product.productPrice
                             newProduct.productAvailability = product.productAvailability
-                            newProduct.createdAt = product.createdAt
+                            newProduct.createdAt = product.createdAt.ifEmpty { System.currentTimeMillis().toString() }
                             newProduct.updatedAt = System.currentTimeMillis().toString()
 
                             if (product.category != null){
@@ -271,7 +271,7 @@ class ProductRepositoryImpl(
                                         categoryId = product.category!!.categoryId
                                         categoryName = product.category!!.categoryName
                                         categoryAvailability = product.category!!.categoryAvailability
-                                        createdAt = product.category!!.createdAt
+                                        createdAt = product.category!!.createdAt.ifEmpty { System.currentTimeMillis().toString() }
                                         updatedAt = System.currentTimeMillis().toString()
                                     }, updatePolicy = UpdatePolicy.ALL)
 

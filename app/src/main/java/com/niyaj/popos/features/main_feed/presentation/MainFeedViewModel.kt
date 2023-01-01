@@ -20,8 +20,10 @@ import com.niyaj.popos.features.main_feed.presentation.components.category.MainF
 import com.niyaj.popos.features.main_feed.presentation.components.category.MainFeedCategoryState
 import com.niyaj.popos.features.main_feed.presentation.components.product.MainFeedProductEvent
 import com.niyaj.popos.features.main_feed.presentation.components.product.MainFeedProductState
+import com.niyaj.popos.features.product.domain.use_cases.ProductUseCases
 import com.niyaj.popos.features.product.domain.util.FilterProduct
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +37,7 @@ import javax.inject.Inject
 class MainFeedViewModel @Inject constructor(
     private val mainFeedUseCases: MainFeedUseCases,
     private val cartUseCases: CartUseCases,
+    private val productUseCases: ProductUseCases,
 ): ViewModel() {
     
     private val _selectedCategory = mutableStateOf("")
@@ -118,7 +121,7 @@ class MainFeedViewModel @Inject constructor(
             }
 
             is MainFeedProductEvent.SearchProduct -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     _searchText.emit(event.searchText)
                     getAllMainFeedProducts(
                         _products.value.filterProduct,
@@ -135,7 +138,7 @@ class MainFeedViewModel @Inject constructor(
             }
 
             is MainFeedProductEvent.AddProductToCart -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     if (event.cartOrderId.isEmpty()) {
                         _eventFlow.emit(UiEvent.OnError("Create New Order First"))
                     }else if(event.productId.isEmpty()){
@@ -173,8 +176,8 @@ class MainFeedViewModel @Inject constructor(
     fun onEvent(event: MainFeedEvent){
         when(event){
             is MainFeedEvent.RefreshMainFeed -> {
-//                getAllMainFeedProducts()
-//                getAllCategories()
+                getAllMainFeedProducts(selectedCategory = _selectedCategory.value, searchText = _searchText.value)
+                getAllCategories()
                 getSelectedCartOrder()
             }
         }
@@ -212,11 +215,11 @@ class MainFeedViewModel @Inject constructor(
 
     private fun getAllMainFeedProducts(
         filterProduct: FilterProduct = FilterProduct.ByProductId(SortType.Ascending),
-        selectedCategory: String = _selectedCategory.value,
+        selectedCategory: String = "",
         searchText: String = "",
     ) {
-        viewModelScope.launch {
-            mainFeedUseCases.getMainFeedProducts(filterProduct, selectedCategory, searchText).collect { result ->
+        viewModelScope.launch(Dispatchers.IO) {
+            mainFeedUseCases.getMainFeedProducts(filterProduct, selectedCategory, searchText).collectLatest { result ->
                 when (result) {
                     is Resource.Loading -> {
                         _products.value = _products.value.copy(
@@ -226,7 +229,7 @@ class MainFeedViewModel @Inject constructor(
                     is Resource.Success -> {
                         result.data?.let {products ->
                             _products.value = _products.value.copy(
-                                products =  products,
+                                products = products,
                                 filterProduct = filterProduct,
                             )
                         }

@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -26,8 +28,13 @@ import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowRightAlt
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.DeliveryDining
+import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.RamenDining
 import androidx.compose.material.icons.filled.Receipt
@@ -56,16 +63,19 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.features.common.ui.theme.ButtonSize
 import com.niyaj.popos.features.common.ui.theme.KellyGreen
-import com.niyaj.popos.features.common.ui.theme.LimeGreen
 import com.niyaj.popos.features.common.ui.theme.MediumGray
+import com.niyaj.popos.features.common.ui.theme.PurpleHaze
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.ui.theme.TextGray
+import com.niyaj.popos.features.components.CountBox
 import com.niyaj.popos.features.components.ExtendedFabButton
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.RoundedBox
+import com.niyaj.popos.features.components.StandardExpandable
 import com.niyaj.popos.features.components.StandardScaffold
+import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.components.chart.common.dimens.ChartDimens
 import com.niyaj.popos.features.components.chart.horizontalbar.HorizontalBarChart
 import com.niyaj.popos.features.components.chart.horizontalbar.axis.HorizontalAxisConfig
@@ -74,6 +84,7 @@ import com.niyaj.popos.features.components.chart.horizontalbar.config.StartDirec
 import com.niyaj.popos.features.destinations.ExpensesScreenDestination
 import com.niyaj.popos.features.destinations.OrderScreenDestination
 import com.niyaj.popos.features.destinations.ViewLastSevenDaysReportsDestination
+import com.niyaj.popos.features.reports.presentation.components.CustomerReportCard
 import com.niyaj.popos.features.reports.presentation.components.OrderTypeDropdown
 import com.niyaj.popos.features.reports.presentation.components.ReportBox
 import com.niyaj.popos.util.getCalculatedStartDate
@@ -88,6 +99,7 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+@OptIn(ExperimentalMaterialApi::class)
 @Destination
 @Composable
 fun ReportScreen(
@@ -99,7 +111,7 @@ fun ReportScreen(
     val dialogState = rememberMaterialDialogState()
     val scope = rememberCoroutineScope()
 
-    val reportState = reportsViewModel.reportState.collectAsState().value
+    val reportState = reportsViewModel.reportState.collectAsState().value.report
     val totalAmount = reportState.expensesAmount.plus(reportState.dineInSalesAmount).plus(reportState.dineOutSalesAmount).toString()
 
     val reportBarData = reportsViewModel.reportsBarData.collectAsState().value.reportBarData
@@ -114,6 +126,29 @@ fun ReportScreen(
     val selectedDate = reportsViewModel.selectedDate.collectAsState().value
     val lastSevenStartDate = getCalculatedStartDate("-8")
 
+    val categoryWiseReport = reportsViewModel.categoryWiseData.collectAsState().value.categoryWiseReport
+    val groupedByCategoryWiseReport = categoryWiseReport.groupBy { it.product?.category?.categoryName }
+    val categoryOrderType = reportsViewModel.categoryWiseData.collectAsState().value.orderType
+    val categoryDataIsLoading = reportsViewModel.categoryWiseData.collectAsState().value.isLoading
+    val categoryDataError = reportsViewModel.categoryWiseData.collectAsState().value.hasError
+
+    val addressWiseReport = reportsViewModel.addressWiseData.collectAsState().value.reports
+    val addressRepLoading = reportsViewModel.addressWiseData.collectAsState().value.isLoading
+    val addressRepError = reportsViewModel.addressWiseData.collectAsState().value.error
+
+    val customerWiseReport = reportsViewModel.customerWiseData.collectAsState().value.reports
+    val customerRepLoading = reportsViewModel.customerWiseData.collectAsState().value.isLoading
+    val customerRepError = reportsViewModel.customerWiseData.collectAsState().value.error
+
+    val selectedCategory = reportsViewModel.selectedCategory.collectAsState().value
+
+    var categoryWiseRepExpanded by remember { mutableStateOf(false) }
+
+    var productWiseRepExpanded by remember { mutableStateOf(false) }
+
+    var customerWiseRepExpanded by remember { mutableStateOf(false) }
+
+    var addressWiseRepExpanded by remember { mutableStateOf(false) }
 
     var selectedBarData by remember {
         mutableStateOf("")
@@ -204,7 +239,7 @@ fun ReportScreen(
                     .fillMaxWidth()
                     .padding(SpaceSmall),
             ) {
-                if (reportBarIsLoading || productDataIsLoading) {
+                if (reportBarIsLoading || productDataIsLoading || categoryDataIsLoading || customerRepLoading || addressRepLoading) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
@@ -221,6 +256,21 @@ fun ReportScreen(
                 else if (productDataError != null) {
                     ItemNotAvailable(
                         text = productDataError,
+                    )
+                }
+                else if (categoryDataError != null) {
+                    ItemNotAvailable(
+                        text = categoryDataError,
+                    )
+                }
+                else if (customerRepError != null) {
+                    ItemNotAvailable(
+                        text = customerRepError,
+                    )
+                }
+                else if (addressRepError != null) {
+                    ItemNotAvailable(
+                        text = addressRepError,
                     )
                 }
                 else {
@@ -388,30 +438,153 @@ fun ReportScreen(
                             }
                         }
 
+                        item("categoryWiseReport") {
+                            Spacer(modifier = Modifier.height(SpaceMedium))
+
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                shape = RoundedCornerShape(4.dp),
+                            ) {
+                                StandardExpandable(
+                                    modifier = Modifier
+                                        .padding(SpaceSmall)
+                                        .fillMaxWidth(),
+                                    expanded = categoryWiseRepExpanded,
+                                    onExpandChanged = {
+                                        categoryWiseRepExpanded = !categoryWiseRepExpanded
+                                    },
+                                    title = {
+                                        TextWithIcon(
+                                            text = "Category Wise Report",
+                                            icon = Icons.Default.Category,
+                                            isTitle = true
+                                        )
+                                    },
+                                    trailing = {
+                                        OrderTypeDropdown(
+                                            text = categoryOrderType.ifEmpty { "All" }
+                                        ) {
+                                            reportsViewModel.onReportEvent(ReportsEvent.OnChangeCategoryOrderType(it))
+                                        }
+                                    },
+                                    expand = null,
+                                    content = {
+                                        if (groupedByCategoryWiseReport.isEmpty()) {
+                                            Text(
+                                                text = "Category wise report not available",
+                                                color = TextGray,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        } else {
+                                            groupedByCategoryWiseReport.forEach { (category, products) ->
+                                                if (category != null && products.isNotEmpty()){
+                                                    val totalQuantity = products.sumOf { it.quantity }.toString()
+
+                                                    StandardExpandable(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .padding(SpaceSmall),
+                                                        expanded = category == selectedCategory,
+                                                        onExpandChanged = {
+                                                            reportsViewModel.onReportEvent(ReportsEvent.OnSelectCategory(category))
+                                                        },
+                                                        title = {
+                                                            TextWithIcon(
+                                                                text = category,
+                                                                icon = Icons.Default.Category,
+                                                                isTitle = true
+                                                            )
+                                                        },
+                                                        trailing = {
+                                                            CountBox(count = totalQuantity)
+                                                        },
+                                                        rowClickable = true,
+                                                        expand = { modifier: Modifier ->
+                                                            IconButton(
+                                                                modifier = modifier,
+                                                                onClick = {
+                                                                    reportsViewModel.onReportEvent(ReportsEvent.OnSelectCategory(category))
+                                                                }
+                                                            ) {
+                                                                Icon(
+                                                                    imageVector = Icons.Filled.KeyboardArrowDown,
+                                                                    contentDescription = "Expand More",
+                                                                    tint = colors.secondary
+                                                                )
+                                                            }
+                                                        },
+                                                        content = {
+                                                            val sortedProducts = products.sortedByDescending { it.quantity}
+
+                                                            sortedProducts.forEachIndexed { index, productWithQty ->
+                                                                if (productWithQty.product != null) {
+                                                                    Row(
+                                                                        modifier = Modifier
+                                                                            .fillMaxWidth()
+                                                                            .padding(SpaceSmall),
+                                                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                                                        verticalAlignment = Alignment.CenterVertically,
+                                                                    ) {
+                                                                        Text(
+                                                                            text = productWithQty.product.productName,
+                                                                            style = MaterialTheme.typography.body1,
+                                                                            textAlign = TextAlign.Start,
+                                                                            fontWeight = FontWeight.SemiBold,
+                                                                        )
+
+                                                                        Text(
+                                                                            text = productWithQty.quantity.toString(),
+                                                                            style = MaterialTheme.typography.h6,
+                                                                            textAlign = TextAlign.End,
+                                                                            fontWeight = FontWeight.SemiBold,
+                                                                            color = colors.secondaryVariant,
+                                                                            modifier = Modifier.weight(0.5F)
+                                                                        )
+                                                                    }
+                                                                    if (index != products.size - 1) {
+                                                                        Spacer(modifier = Modifier.height(SpaceMini))
+                                                                        Divider(modifier = Modifier.fillMaxWidth())
+                                                                        Spacer(modifier = Modifier.height(SpaceMini))
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    )
+
+                                                    Spacer(modifier = Modifier.height(SpaceMini))
+                                                    Divider(modifier = Modifier.fillMaxWidth())
+                                                    Spacer(modifier = Modifier.height(SpaceMini))
+                                                }
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        }
+
                         item("productWiseData") {
                             Spacer(modifier = Modifier.height(SpaceMedium))
 
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth(),
-                                elevation = 2.dp,
+                                shape = RoundedCornerShape(4.dp),
                             ) {
-                                Column(
+                                StandardExpandable(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(SpaceSmall)
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                    ) {
+                                        .padding(SpaceSmall),
+                                    expanded = productWiseRepExpanded,
+                                    onExpandChanged = {
+                                        productWiseRepExpanded = !productWiseRepExpanded
+                                    },
+                                    title = {
                                         Column {
-                                            Text(
-                                                text = "Most Sales Products",
-                                                style = MaterialTheme.typography.body1,
-                                                fontWeight = FontWeight.Bold
+                                            TextWithIcon(
+                                                text = "Product Wise Report",
+                                                icon = Icons.Default.Dns,
+                                                fontWeight = FontWeight.SemiBold
                                             )
                                             if (selectedProductData.isNotEmpty()) {
                                                 Spacer(modifier = Modifier.height(SpaceSmall))
@@ -422,58 +595,195 @@ fun ReportScreen(
                                                 )
                                             }
                                         }
-
+                                    },
+                                    trailing = {
                                         OrderTypeDropdown(
                                             text = orderType.ifEmpty { "All" }
                                         ) {
                                             reportsViewModel.onReportEvent(ReportsEvent.OnChangeOrderType(it))
                                         }
+                                    },
+                                    expand = null,
+                                    content = {
+                                        if (productWiseData.isNotEmpty()) {
+                                            Spacer(modifier = Modifier.height(SpaceSmall))
+
+                                            HorizontalBarChart(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height((productWiseData.size.times(50)).dp)
+                                                    .padding(SpaceSmall),
+                                                onBarClick = {
+                                                    selectedProductData = "${it.yValue} - ${
+                                                        it.xValue.toString().substringBefore(".")
+                                                    } Qty"
+                                                },
+                                                colors = listOf(PurpleHaze, KellyGreen),
+                                                barDimens = ChartDimens(2.dp),
+                                                horizontalBarConfig = HorizontalBarConfig(
+                                                    showLabels = false,
+                                                    startDirection = StartDirection.Left
+                                                ),
+                                                horizontalAxisConfig = HorizontalAxisConfig(
+                                                    showAxes = true,
+                                                    showUnitLabels = false
+                                                ),
+                                                horizontalBarData = productWiseData,
+                                            )
+                                        } else {
+                                            Text(
+                                                text = "Product wise report not available",
+                                                color = TextGray,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
                                     }
+                                )
+                            }
+                        }
 
-                                    Spacer(modifier = Modifier.height(SpaceSmall))
-
-                                    Divider(
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-
-                                    if (productWiseData.isNotEmpty()) {
-                                        Spacer(modifier = Modifier.height(SpaceSmall))
-
-                                        HorizontalBarChart(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height((productWiseData.size.times(50)).dp)
-                                                .padding(SpaceSmall),
-                                            onBarClick = {
-                                                selectedProductData = "${it.yValue} - ${
-                                                    it.xValue.toString().substringBefore(".")
-                                                } Qty"
-                                            },
-                                            colors = listOf(LimeGreen, KellyGreen),
-                                            barDimens = ChartDimens(2.dp),
-                                            horizontalBarConfig = HorizontalBarConfig(
-                                                showLabels = false,
-                                                startDirection = StartDirection.Left
-                                            ),
-                                            horizontalAxisConfig = HorizontalAxisConfig(
-                                                showAxes = true,
-                                                showUnitLabels = false
-                                            ),
-                                            horizontalBarData = productWiseData,
+                        item("addressWiseReport") {
+                            Spacer(modifier = Modifier.height(SpaceMedium))
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                shape = RoundedCornerShape(4.dp),
+                            ) {
+                                StandardExpandable(
+                                    modifier = Modifier
+                                        .padding(SpaceSmall)
+                                        .fillMaxWidth(),
+                                    expanded = addressWiseRepExpanded,
+                                    onExpandChanged = {
+                                        addressWiseRepExpanded = !addressWiseRepExpanded
+                                    },
+                                    title = {
+                                        TextWithIcon(
+                                            text = "Address Wise Report",
+                                            icon = Icons.Default.Business,
+                                            isTitle = true
                                         )
-                                    } else {
-                                        Text(
-                                            text = "Product wise report not available",
-                                            color = TextGray,
-                                            textAlign = TextAlign.Center
-                                        )
+                                    },
+                                    trailing = {
+                                        CountBox(count = addressWiseReport.size.toString())
+                                    },
+                                    rowClickable = true,
+                                    expand = null,
+                                    content = {
+                                        if (addressWiseReport.isNotEmpty()){
+                                            addressWiseReport.forEachIndexed { index, address ->
+                                                if (address.address != null) {
+                                                    Row(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .padding(SpaceSmall),
+                                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                    ) {
+                                                        Text(
+                                                            text = address.address.addressName,
+                                                            style = MaterialTheme.typography.body1,
+                                                            textAlign = TextAlign.Start,
+                                                            fontWeight = FontWeight.SemiBold,
+                                                            modifier = Modifier.weight(2F)
+                                                        )
+
+                                                        Text(
+                                                            text = address.address.shortName,
+                                                            style = MaterialTheme.typography.body2,
+                                                            textAlign = TextAlign.End,
+                                                            fontWeight = FontWeight.SemiBold,
+                                                            modifier = Modifier.weight(0.5F)
+                                                        )
+
+                                                        Text(
+                                                            text = address.orderQty.toString(),
+                                                            style = MaterialTheme.typography.h6,
+                                                            textAlign = TextAlign.End,
+                                                            fontWeight = FontWeight.SemiBold,
+                                                            color = colors.secondaryVariant,
+                                                            modifier = Modifier.weight(0.5F)
+                                                        )
+                                                    }
+
+                                                    if (index != addressWiseReport.size - 1) {
+                                                        Spacer(modifier = Modifier.height(SpaceMini))
+                                                        Divider(modifier = Modifier.fillMaxWidth())
+                                                        Spacer(modifier = Modifier.height(SpaceMini))
+                                                    }
+                                                }
+                                            }
+                                        }else {
+                                            Text(
+                                                text = "Address wise report not available",
+                                                color = TextGray,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
                                     }
+                                )
+                            }
+                        }
 
-                                }
+                        item("customerWiseReport") {
+                            Spacer(modifier = Modifier.height(SpaceMedium))
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                shape = RoundedCornerShape(4.dp),
+                            ) {
+                                StandardExpandable(
+                                    modifier = Modifier
+                                        .padding(SpaceSmall)
+                                        .fillMaxWidth(),
+                                    expanded = customerWiseRepExpanded,
+                                    onExpandChanged = {
+                                        customerWiseRepExpanded = !customerWiseRepExpanded
+                                    },
+                                    title = {
+                                        TextWithIcon(
+                                            text = "Customer Wise Report",
+                                            icon = Icons.Default.PeopleAlt,
+                                            isTitle = true
+                                        )
+                                    },
+                                    trailing = {
+                                        CountBox(count = customerWiseReport.size.toString())
+                                    },
+                                    rowClickable = true,
+                                    expand = null,
+                                    content = {
+                                        if (customerWiseReport.isNotEmpty()){
+                                            customerWiseReport.forEachIndexed { index, customer ->
+                                                if (customer.customer != null) {
+                                                    CustomerReportCard(
+                                                        customerPhoneNo = customer.customer.customerPhone,
+                                                        customerName = customer.customer.customerName,
+                                                        customerEmail = customer.customer.customerEmail,
+                                                        orderQty = customer.orderQty
+                                                    )
+
+                                                    if (index != customerWiseReport.size - 1) {
+                                                        Spacer(modifier = Modifier.height(SpaceMini))
+                                                        Divider(modifier = Modifier.fillMaxWidth())
+                                                        Spacer(modifier = Modifier.height(SpaceMini))
+                                                    }
+                                                }
+                                            }
+                                        }else {
+                                            Text(
+                                                text = "Customer wise report not available",
+                                                color = TextGray,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
+                                )
                             }
 
                             Spacer(modifier = Modifier.height(SpaceSmall))
                         }
+
                     }
                 }
             }

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,17 +37,19 @@ import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.LightColor12
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeSmall
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.features.main_feed.domain.model.ProductWithQuantity
+import com.niyaj.popos.features.main_feed.data.repository.ProductWithFlowQuantity
 import com.niyaj.popos.util.toRupee
 
 @Composable
 fun ProductItems(
-    cartProducts: List<ProductWithQuantity>,
+    cartProducts: List<ProductWithFlowQuantity>,
     onLeftClick: (String) -> Unit = {},
     onRightClick: (String) -> Unit = {},
 ){
     LazyColumn{
         itemsIndexed(cartProducts){ index, productWithQuantity ->
+            val quantity = productWithQuantity.quantity.collectAsState(0).value
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -65,7 +68,7 @@ fun ProductItems(
                         modifier = Modifier
                             .weight(1.5f)
                             .clickable(
-                                enabled = productWithQuantity.quantity != 0
+                                enabled = quantity != 0
                             ) {
                                 onLeftClick(productWithQuantity.product.productId)
                             }
@@ -96,7 +99,7 @@ fun ProductItems(
                                     color = Color.Black
                                 )
                             }
-                            if(productWithQuantity.quantity != 0) {
+                            if(quantity != 0) {
                                 Image(
                                     imageVector = Icons.Default.Remove,
                                     contentDescription = null,
@@ -123,7 +126,7 @@ fun ProductItems(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if(productWithQuantity.quantity != 0) {
+                        if(quantity != 0) {
                             Image(
                                 painterResource(id = R.drawable.ic_clear),
                                 contentDescription = null,
@@ -131,7 +134,7 @@ fun ProductItems(
                             )
                             Spacer(modifier = Modifier.width(SpaceSmall))
                             Text(
-                                text = productWithQuantity.quantity.toString(),
+                                text = quantity.toString(),
                                 style = MaterialTheme.typography.h4,
                                 color = Color.Gray
                             )

@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 class GetAllDineInOrders(
     private val cartRepository: CartRepository
 ) {
-
     suspend operator fun invoke(): Flow<Resource<List<Cart>>> {
         return cartRepository.getAllDineInOrders()
     }

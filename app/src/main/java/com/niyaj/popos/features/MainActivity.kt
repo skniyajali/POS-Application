@@ -133,39 +133,41 @@ class MainActivity : ComponentActivity() {
                     workManager
                         .getWorkInfoByIdLiveData(periodicDeletionWorker.id)
                         .observe(this) { workInfo ->
-                            when (workInfo.state) {
-                                WorkInfo.State.SUCCEEDED -> {
-                                    Timber.d("Data Deletion Successfully")
-                                }
+                            if (workInfo != null){
+                                when (workInfo.state) {
+                                    WorkInfo.State.SUCCEEDED -> {
+                                        Timber.d("Data Deletion Successfully")
+                                    }
 
-                                WorkInfo.State.FAILED -> {
-                                    Timber.d("Unable to perform data deletion FAILED")
-                                    Toast.makeText(
-                                        context,
-                                        "Unable to perform data deletion",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+                                    WorkInfo.State.FAILED -> {
+                                        Timber.d("Unable to perform data deletion FAILED")
+                                        Toast.makeText(
+                                            context,
+                                            "Unable to perform data deletion",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
 
-                                WorkInfo.State.CANCELLED -> {
-                                    Timber.d("Data Deletion CANCELLED")
-                                }
+                                    WorkInfo.State.CANCELLED -> {
+                                        Timber.d("Data Deletion CANCELLED")
+                                    }
 
-                                WorkInfo.State.ENQUEUED -> {
-                                    Timber.d("Data Deletion ENQUEUED")
-                                }
+                                    WorkInfo.State.ENQUEUED -> {
+                                        Timber.d("Data Deletion ENQUEUED")
+                                    }
 
-                                WorkInfo.State.RUNNING -> {
-                                    Timber.d("Data Deletion RUNNING")
-                                    Toast.makeText(
-                                        context,
-                                        "Data Deletion Running",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+                                    WorkInfo.State.RUNNING -> {
+                                        Timber.d("Data Deletion RUNNING")
+                                        Toast.makeText(
+                                            context,
+                                            "Data Deletion Running",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
 
-                                WorkInfo.State.BLOCKED -> {
-                                    Timber.d("Data Deletion BLOCKED")
+                                    WorkInfo.State.BLOCKED -> {
+                                        Timber.d("Data Deletion BLOCKED")
+                                    }
                                 }
                             }
                         }
@@ -173,53 +175,55 @@ class MainActivity : ComponentActivity() {
                     workManager
                         .getWorkInfoByIdLiveData(generateReportWorker.id)
                         .observe(this) { workInfo ->
-                            when (workInfo.state) {
-                                WorkInfo.State.SUCCEEDED -> {
-                                    Timber.d("Report Generated Successfully")
-                                    scope.launch {
-                                        scaffoldState.snackbarHostState.showSnackbar(
-                                            "Report Generated Successfully"
-                                        )
+                            if (workInfo!= null) {
+                                when (workInfo.state) {
+                                    WorkInfo.State.SUCCEEDED -> {
+                                        Timber.d("Report Generated Successfully")
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                "Report Generated Successfully"
+                                            )
+                                        }
                                     }
-                                }
 
-                                WorkInfo.State.FAILED -> {
-                                    Timber.d("Unable to generate report")
-                                    scope.launch {
-                                        scaffoldState.snackbarHostState.showSnackbar(
-                                            "Unable to generate report"
-                                        )
+                                    WorkInfo.State.FAILED -> {
+                                        Timber.d("Unable to generate report")
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                "Unable to generate report"
+                                            )
+                                        }
                                     }
-                                }
 
-                                WorkInfo.State.CANCELLED -> {
-                                    Timber.d("Report Generate CANCELLED")
-                                    scope.launch {
-                                        scaffoldState.snackbarHostState.showSnackbar(
-                                            "Report Generate Cancelled",
-                                        )
+                                    WorkInfo.State.CANCELLED -> {
+                                        Timber.d("Report Generate CANCELLED")
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                "Report Generate Cancelled",
+                                            )
+                                        }
                                     }
-                                }
 
-                                WorkInfo.State.ENQUEUED -> {
-                                    Timber.d("Report Generate ENQUEUED")
-                                }
-
-                                WorkInfo.State.RUNNING -> {
-                                    Timber.d("Report Generate RUNNING")
-                                    scope.launch {
-                                        scaffoldState.snackbarHostState.showSnackbar(
-                                            "Report Generate Running"
-                                        )
+                                    WorkInfo.State.ENQUEUED -> {
+                                        Timber.d("Report Generate ENQUEUED")
                                     }
-                                }
 
-                                WorkInfo.State.BLOCKED -> {
-                                    Timber.d("Report Generate BLOCKED")
-                                    scope.launch {
-                                        scaffoldState.snackbarHostState.showSnackbar(
-                                            "Report Generate Blocked"
-                                        )
+                                    WorkInfo.State.RUNNING -> {
+                                        Timber.d("Report Generate RUNNING")
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                "Report Generate Running"
+                                            )
+                                        }
+                                    }
+
+                                    WorkInfo.State.BLOCKED -> {
+                                        Timber.d("Report Generate BLOCKED")
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                "Report Generate Blocked"
+                                            )
+                                        }
                                     }
                                 }
                             }

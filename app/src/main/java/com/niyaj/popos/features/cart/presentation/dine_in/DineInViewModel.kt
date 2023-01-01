@@ -8,6 +8,7 @@ import com.niyaj.popos.features.cart_order.domain.use_cases.CartOrderUseCases
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -46,7 +47,7 @@ class DineInViewModel @Inject constructor(
             }
 
             is DineInEvent.AddProductToCart -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     if (event.cartOrderId.isEmpty()) {
                         _eventFlow.emit(UiEvent.OnError("Create New Order First"))
                     }else if(event.productId.isEmpty()){
@@ -66,7 +67,7 @@ class DineInViewModel @Inject constructor(
             }
 
             is DineInEvent.RemoveProductFromCart -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
 
                     when (cartUseCases.removeProductFromCart(event.cartOrderId, event.productId)){
                         is Resource.Loading -> {}
@@ -131,7 +132,7 @@ class DineInViewModel @Inject constructor(
             }
 
             is DineInEvent.PlaceDineInOrder -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     when(cartOrderUseCases.placeOrder(event.cartOrderId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
@@ -145,7 +146,7 @@ class DineInViewModel @Inject constructor(
             }
 
             is DineInEvent.PlaceAllDineInOrder -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     val selectedCartItem = _selectedDineInOrder.value
 
                     when(cartOrderUseCases.placeAllOrder(selectedCartItem)){
@@ -167,7 +168,7 @@ class DineInViewModel @Inject constructor(
     }
 
     private fun getAllDineInItems() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             cartUseCases.getAllDineInOrders().collect { result ->
                 when (result){
                     is Resource.Loading -> {

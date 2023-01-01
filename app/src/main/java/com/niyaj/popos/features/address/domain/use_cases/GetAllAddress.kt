@@ -5,8 +5,10 @@ import com.niyaj.popos.features.address.domain.repository.AddressRepository
 import com.niyaj.popos.features.address.domain.util.FilterAddress
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.SortType
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.withContext
 
 class GetAllAddress(
     private val addressRepository: AddressRepository
@@ -15,16 +17,15 @@ class GetAllAddress(
         filterAddress: FilterAddress = FilterAddress.ByAddressId(SortType.Ascending),
         searchText :String =  ""
     ): Flow<Resource<List<Address>>>{
-        return flow {
-            addressRepository.getAllAddress().collect { result ->
-                when (result){
-                    is Resource.Loading -> {
-                        emit(Resource.Loading(result.isLoading))
-                    }
-                    is Resource.Success -> {
-                        emit(
-                            Resource.Success(
-                            result.data?.let { addresses ->
+        return channelFlow {
+            withContext(Dispatchers.IO) {
+                addressRepository.getAllAddress().collect { result ->
+                    when (result){
+                        is Resource.Loading -> {
+                            send(Resource.Loading(result.isLoading))
+                        }
+                        is Resource.Success -> {
+                            val data = result.data?.let { addresses ->
                                 when(filterAddress.sortType){
                                     SortType.Ascending -> {
                                         when(filterAddress){
@@ -51,14 +52,15 @@ class GetAllAddress(
                                     }
                                 }
                             }
-                        ))
-                    }
-                    is Resource.Error -> {
-                        emit(Resource.Error(result.message ?: "Unable to get addresses from repository"))
+
+                            send(Resource.Success(data))
+                        }
+                        is Resource.Error -> {
+                            send(Resource.Error(result.message ?: "Unable to get addresses from repository"))
+                        }
                     }
                 }
             }
         }
-
     }
 }

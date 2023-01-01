@@ -5,5 +5,8 @@ data class ReportsUseCases(
     val getReport: GetReport,
     val getReportsBarData: GetReportsBarData,
     val getProductWiseReport: GetProductWiseReport,
+    val getCategoryWiseReport: GetCategoryWiseReport,
+    val getAddressWiseReport: GetAddressWiseReport,
+    val getCustomerWiseReport: GetCustomerWiseReport,
     val deletePastData: DeletePastData,
 )

@@ -35,10 +35,11 @@ fun StandardBackdropScaffold(
     scaffoldState: ScaffoldState,
     scope: CoroutineScope,
     selectedOrderId: String? = null,
-    onSelectedOrderClick: () -> Unit,
     showSearchBar: Boolean = false,
-    onSearchButtonClick: () -> Unit = {},
     searchText: String = "",
+    showFloatingActionButton: Boolean = true,
+    onSelectedOrderClick: () -> Unit,
+    onSearchButtonClick: () -> Unit = {},
     onSearchTextChanged: (String) -> Unit = {},
     onClearClick: () -> Unit = {},
     onBackButtonClick: () -> Unit = {},
@@ -57,7 +58,7 @@ fun StandardBackdropScaffold(
         drawerGesturesEnabled = true,
         floatingActionButton = {
             AnimatedVisibility(
-                visible = !backdropScaffoldState.isRevealed,
+                visible = !backdropScaffoldState.isRevealed && showFloatingActionButton,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {

@@ -166,6 +166,8 @@ private fun DrawScope.drawBars(
 
     val textColor = if(horizontalBarData.xValue.toString().substringBefore(".").toLong() <= 0) {
         Color.Black
+    } else if(isProductReport) {
+        Color.Black
     } else {
         Color.White
     }

@@ -17,9 +17,11 @@ import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.RealmResults
 import io.realm.kotlin.query.Sort
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class OrderRepositoryImpl(
@@ -36,42 +38,46 @@ class OrderRepositoryImpl(
         startDate: String,
         endDate: String
     ): Flow<Resource<List<Cart>>> {
-        return flow {
-            try {
-                emit(Resource.Loading(true))
+        return channelFlow {
+            withContext(Dispatchers.IO){
+                try {
+                    send(Resource.Loading(true))
 
-                val items = realm.query<CartRealm>(
-                    "cartOrder.cartOrderStatus != $0 AND cartOrder.updatedAt >= $1 AND cartOrder.updatedAt <= $2",
-                    OrderStatus.Processing.orderStatus,
-                    startDate,
-                    endDate,
-                ).sort("cartId", Sort.DESCENDING).find()
+                    val items = realm.query<CartRealm>(
+                        "cartOrder.cartOrderStatus != $0 AND cartOrder.updatedAt >= $1 AND cartOrder.updatedAt <= $2",
+                        OrderStatus.Processing.orderStatus,
+                        startDate,
+                        endDate,
+                    ).sort("cartId", Sort.DESCENDING).find()
 
-                val itemFlow = items.asFlow()
-                itemFlow.collect { changes: ResultsChange<CartRealm> ->
-                    when (changes) {
-                        is InitialResults -> {
-                            emit(Resource.Success(mapCartRealmToCartList(changes.list)))
-                            delay(50L)
-                            emit(Resource.Loading(false))
-                        }
+                    val itemFlow = items.asFlow()
+                    itemFlow.collect { changes: ResultsChange<CartRealm> ->
+                        when (changes) {
+                            is InitialResults -> {
+                                send(Resource.Success(mapCartRealmToCartList(changes.list)))
+                                delay(50L)
+                                send(Resource.Loading(false))
+                            }
 
-                        is UpdatedResults -> {
-                            emit(Resource.Success(mapCartRealmToCartList(changes.list)))
-                            delay(50L)
-                            emit(Resource.Loading(false))
+                            is UpdatedResults -> {
+                                send(Resource.Success(mapCartRealmToCartList(changes.list)))
+                                delay(50L)
+                                send(Resource.Loading(false))
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    send(Resource.Error(e.message ?: "Unable to get order", emptyList()))
                 }
-            } catch (e: Exception) {
-                emit(Resource.Error(e.message ?: "Unable to get order", emptyList()))
             }
         }
     }
 
     override suspend fun getOrderDetails(cartOrderId: String): Resource<Cart?> {
         return try {
-            val carts = realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
+            val carts = withContext(Dispatchers.IO) {
+                realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
+            }
 
             if (carts.isNotEmpty()) {
                 Resource.Success(mapCartRealmToCart(carts))
@@ -101,10 +107,12 @@ class OrderRepositoryImpl(
             }
 
             if (cartOrder != null) {
-                realm.write {
-                    findLatest(cartOrder).also {
-                        it?.cartOrderStatus = newOrderStatus
-                        it?.updatedAt = System.currentTimeMillis().toString()
+                withContext(Dispatchers.IO){
+                    realm.write {
+                        findLatest(cartOrder).also {
+                            it?.cartOrderStatus = newOrderStatus
+                            it?.updatedAt = System.currentTimeMillis().toString()
+                        }
                     }
                 }
 

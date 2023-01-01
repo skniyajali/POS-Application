@@ -39,7 +39,7 @@ fun BackLayerContent(
 ) {
     val scope = rememberCoroutineScope()
 
-    val reportState = reportsViewModel.reportState.collectAsState().value
+    val reportState = reportsViewModel.reportState.collectAsState().value.report
     val totalAmount = reportState.expensesAmount.plus(reportState.dineInSalesAmount).plus(reportState.dineOutSalesAmount).toString()
 
     Column(

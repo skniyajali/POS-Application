@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 
 @Composable
@@ -42,6 +43,8 @@ fun TextWithIcon(
                 fontFamily = if(text.startsWith("Email") || text.startsWith("Password")) FontFamily.Monospace else null,
                 style = MaterialTheme.typography.body1,
                 fontWeight = if(isTitle) FontWeight.SemiBold else fontWeight,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

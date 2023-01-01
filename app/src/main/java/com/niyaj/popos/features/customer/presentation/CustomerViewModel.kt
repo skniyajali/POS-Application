@@ -23,7 +23,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -288,29 +289,27 @@ class CustomerViewModel @Inject constructor(
     }
 
     private fun getAllCustomers(filterCustomer: FilterCustomer, searchText:String = "") {
-        viewModelScope.launch {
-           customerUseCases.getAllCustomers(filterCustomer, searchText).collectLatest { result ->
-               when(result){
-                   is Resource.Loading -> {
-                       _customers.value = _customers.value.copy(
-                           isLoading = result.isLoading
-                       )
-                   }
-                   is Resource.Success -> {
-                       result.data?.let { customers ->
-                           _customers.value = _customers.value.copy(
-                               customers = customers,
-                               filterCustomer = filterCustomer,
-                           )
-                       }
-                   }
-                   is Resource.Error -> {
+        customerUseCases.getAllCustomers(filterCustomer, searchText).onEach { result ->
+            when(result){
+                is Resource.Loading -> {
+                    _customers.value = _customers.value.copy(
+                        isLoading = result.isLoading
+                    )
+                }
+                is Resource.Success -> {
+                    result.data?.let { customers ->
                         _customers.value = _customers.value.copy(
-                            error = result.message
+                            customers = customers,
+                            filterCustomer = filterCustomer,
                         )
-                   }
-               }
+                    }
+                }
+                is Resource.Error -> {
+                    _customers.value = _customers.value.copy(
+                        error = result.message
+                    )
+                }
             }
-        }
+        }.launchIn(viewModelScope)
     }
 }

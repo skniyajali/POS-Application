@@ -1,8 +1,1 @@
-<resources>
-    <string name="realm_app_id">popos-application-ibygm</string>
-    <string name="realm_app_url">https://realm.mongodb.com/groups/6341a5500fb5fd7e23f8468f/apps/6341a6aac1d23af56ca8347c</string>
-    <string name="realm_base_url">https://realm.mongodb.com</string>
-    <string name="realm_data_source_name">mongodb-atlas</string>
-    <string name="realm_user_email">niyaj320@gmail.com</string>
-    <string name="realm_user_password">password</string>
-</resources>
+<resources></resources>

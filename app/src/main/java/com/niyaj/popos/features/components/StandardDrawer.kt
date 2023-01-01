@@ -567,7 +567,7 @@ fun DrawerHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Image(
-                painterResource(id = R.drawable.rounded_logo),
+                painterResource(id = R.drawable.only_logo),
                 contentDescription = null,
                 modifier = Modifier.size(ProfilePictureSizeSmall)
             )

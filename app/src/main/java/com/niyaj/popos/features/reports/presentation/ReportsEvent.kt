@@ -6,6 +6,10 @@ sealed class ReportsEvent {
 
     data class OnChangeOrderType(val orderType: String = "") : ReportsEvent()
 
+    data class OnChangeCategoryOrderType(val orderType: String = "") : ReportsEvent()
+
+    data class OnSelectCategory(val categoryName: String) : ReportsEvent()
+
     object PrintReport : ReportsEvent()
 
     object RefreshReport : ReportsEvent()
