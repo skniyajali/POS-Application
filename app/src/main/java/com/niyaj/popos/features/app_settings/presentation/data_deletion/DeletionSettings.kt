@@ -4,10 +4,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoDelete
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -17,11 +18,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.ButtonSize
+import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.ui.theme.TextGray
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.ramcosta.composedestinations.annotation.Destination
@@ -54,6 +56,7 @@ fun DeletionSettings(
     BottomSheetWithCloseDialog(
         modifier = Modifier.fillMaxWidth(),
         text = stringResource(R.string.data_deletion_settings),
+        icon = Icons.Default.AutoDelete,
         onClosePressed = {
             navController.navigateUp()
         }
@@ -131,21 +134,15 @@ fun DeletionSettings(
                 maxLines = 2
             )
 
-            Spacer(modifier = Modifier.height(SpaceSmall))
+            Spacer(modifier = Modifier.height(SpaceMedium))
 
-            Button(
+            StandardButton(
+                text = stringResource(id = R.string.update_deletion_settings),
+                icon = Icons.Default.Save,
                 onClick = {
                     deletionSettingsViewModel.onEvent(DeletionSettingsEvent.UpdateSettings)
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(ButtonSize),
-            ) {
-                Text(
-                    text = stringResource(id = R.string.update_deletion_settings).uppercase(),
-                    style = MaterialTheme.typography.button,
-                )
-            }
+            )
         }
     }
 }

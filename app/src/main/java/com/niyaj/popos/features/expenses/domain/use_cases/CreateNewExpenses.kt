@@ -11,5 +11,4 @@ class CreateNewExpenses(
     suspend operator fun invoke(newExpenses: Expenses): Resource<Boolean> {
         return expensesRepository.createNewExpenses(newExpenses)
     }
-
 }

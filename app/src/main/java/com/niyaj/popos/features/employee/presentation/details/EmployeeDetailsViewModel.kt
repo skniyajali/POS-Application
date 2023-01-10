@@ -10,6 +10,8 @@ import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
 import com.niyaj.popos.features.employee_attendance.domain.use_cases.AttendanceUseCases
 import com.niyaj.popos.features.employee_salary.domain.use_cases.SalaryUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,23 +24,23 @@ class EmployeeDetailsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
-    private val _employeeDetails = mutableStateOf(EmployeeDetailsState())
-    val employeeDetails: State<EmployeeDetailsState> = _employeeDetails
+    private val _employeeDetails = MutableStateFlow(EmployeeDetailsState())
+    val employeeDetails = _employeeDetails.asStateFlow()
 
-    private val _paymentDetails = mutableStateOf(EmployeePaymentState())
-    val paymentDetails: State<EmployeePaymentState> = _paymentDetails
+    private val _paymentDetails = MutableStateFlow(EmployeePaymentState())
+    val paymentDetails = _paymentDetails.asStateFlow()
 
-    private val _salaries = mutableStateOf(EmployeeSalaryState())
-    val salaries: State<EmployeeSalaryState> = _salaries
+    private val _salaries = MutableStateFlow(EmployeeSalaryState())
+    val salaries= _salaries.asStateFlow()
 
-    private val _salaryDates = mutableStateOf(EmployeeSalaryDateState())
-    val salaryDates: State<EmployeeSalaryDateState> = _salaryDates
+    private val _salaryDates = MutableStateFlow(EmployeeSalaryDateState())
+    val salaryDates = _salaryDates.asStateFlow()
 
     private val _selectedSalaryDate = mutableStateOf<Pair<String, String>?>(null)
     val selectedSalaryDate: State<Pair<String, String>?> = _selectedSalaryDate
 
-    private val _absentReports = mutableStateOf(MonthlyAbsentReportState())
-    val absentReports: State<MonthlyAbsentReportState> = _absentReports
+    private val _absentReports = MutableStateFlow(MonthlyAbsentReportState())
+    val absentReports = _absentReports.asStateFlow()
 
     init {
         savedStateHandle.get<String>("employeeId")?.let { employeeId ->

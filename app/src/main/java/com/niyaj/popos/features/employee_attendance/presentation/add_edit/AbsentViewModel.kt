@@ -20,7 +20,9 @@ import com.niyaj.popos.features.employee_attendance.domain.use_cases.validation.
 import com.niyaj.popos.features.employee_attendance.domain.use_cases.validation.ValidateIsAbsent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,7 +37,8 @@ class AbsentViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    var employeeState by mutableStateOf(EmployeeState())
+    private val _employeeState = MutableStateFlow(EmployeeState())
+    val employeeState = _employeeState.asStateFlow()
 
     var absentState by mutableStateOf(AbsentState())
 
@@ -173,18 +176,18 @@ class AbsentViewModel @Inject constructor(
             employeeUseCases.getAllEmployee(filterEmployee, searchText).collect { result ->
                 when (result) {
                     is Resource.Loading -> {
-                        employeeState = employeeState.copy(isLoading = result.isLoading)
+                        _employeeState.value = _employeeState.value.copy(isLoading = result.isLoading)
                     }
                     is Resource.Success -> {
                         result.data?.let {
-                            employeeState = employeeState.copy(
+                            _employeeState.value = _employeeState.value.copy(
                                 employees = it,
                                 filterEmployee = filterEmployee
                             )
                         }
                     }
                     is Resource.Error -> {
-                        employeeState = employeeState.copy(error = "Unable to load resources")
+                        _employeeState.value = _employeeState.value.copy(error = "Unable to load resources")
                         _eventFlow.emit(
                             UiEvent.OnError(result.message
                             ?: "Unable to load resources"))

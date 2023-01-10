@@ -3,21 +3,30 @@ package com.niyaj.popos.features.cart_order.presentation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,8 +38,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
@@ -41,7 +54,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.spec.DestinationStyle
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
 @Composable
 fun GetAndSelectCartOrderScreen(
@@ -53,22 +66,16 @@ fun GetAndSelectCartOrderScreen(
     val selectedColor: Color = MaterialTheme.colors.secondary
     val unselectedColor: Color = Teal200
 
-    val allOrders = cartOrderViewModel.cartOrders.collectAsState().value.cartOrders
-    val isLoading = cartOrderViewModel.cartOrders.collectAsState().value.isLoading
-    val hasError = cartOrderViewModel.cartOrders.collectAsState().value.error
+    val allOrders = cartOrderViewModel.cartOrders.collectAsStateWithLifecycle().value.cartOrders
+    val isLoading = cartOrderViewModel.cartOrders.collectAsStateWithLifecycle().value.isLoading
+    val hasError = cartOrderViewModel.cartOrders.collectAsStateWithLifecycle().value.error
 
-    val selectedCartOrder = cartOrderViewModel.selectedCartOrder.collectAsState().value
+    val selectedCartOrder = cartOrderViewModel.selectedCartOrder.collectAsStateWithLifecycle().value
     val selectedOrderId = selectedCartOrder.cartOrderId
 
-    val pullRefreshState = rememberPullRefreshState(
-        isLoading,
-        { cartOrderViewModel.onCartOrderEvent(CartOrderEvent.RefreshCartOrder) }
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .pullRefresh(pullRefreshState)
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing = isLoading),
+        onRefresh = { cartOrderViewModel.onCartOrderEvent(CartOrderEvent.RefreshCartOrder) }
     ) {
         Column(
             modifier = Modifier
@@ -76,7 +83,7 @@ fun GetAndSelectCartOrderScreen(
         ) {
             if (isLoading) {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(0.5F),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -97,7 +104,8 @@ fun GetAndSelectCartOrderScreen(
                         .padding(vertical = SpaceMedium)
                 ) {
                     itemsIndexed(allOrders.asReversed()) { _, item ->
-                        val color: Color = if (selectedOrderId == item.cartOrderId) selectedColor else unselectedColor
+                        val color: Color =
+                            if (selectedOrderId == item.cartOrderId) selectedColor else unselectedColor
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -115,7 +123,6 @@ fun GetAndSelectCartOrderScreen(
                                         cartOrderViewModel.onCartOrderEvent(
                                             CartOrderEvent.SelectCartOrderEvent(item.cartOrderId)
                                         )
-//                                    navController.navigateUp()
                                         onClosePressed()
                                     }
                                     .padding(SpaceSmall),
@@ -123,8 +130,13 @@ fun GetAndSelectCartOrderScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                             ) {
                                 Text(buildAnnotatedString {
-                                    if(!item.address?.addressName.isNullOrEmpty()) {
-                                        withStyle(style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold)) {
+                                    if (!item.address?.addressName.isNullOrEmpty()) {
+                                        withStyle(
+                                            style = SpanStyle(
+                                                color = Color.Red,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        ) {
                                             item.address?.shortName?.let { append(it.uppercase()) }
                                             append(" - ")
                                         }
@@ -148,11 +160,18 @@ fun GetAndSelectCartOrderScreen(
                                             item.cartOrderId
                                         )
                                     )
-                                    navController.navigate(AddEditCartOrderScreenDestination(cartOrderId = item.cartOrderId))
+                                    navController.navigate(
+                                        AddEditCartOrderScreenDestination(
+                                            cartOrderId = item.cartOrderId
+                                        )
+                                    )
                                     onClosePressed()
                                 },
                                 modifier = Modifier
-                                    .background(MaterialTheme.colors.primary, RoundedCornerShape(4.dp))
+                                    .background(
+                                        MaterialTheme.colors.primary,
+                                        RoundedCornerShape(4.dp)
+                                    )
                             ) {
                                 Icon(
                                     contentDescription = stringResource(
@@ -174,7 +193,10 @@ fun GetAndSelectCartOrderScreen(
                                     onClosePressed()
                                 },
                                 modifier = Modifier
-                                    .background(MaterialTheme.colors.error, RoundedCornerShape(4.dp))
+                                    .background(
+                                        MaterialTheme.colors.error,
+                                        RoundedCornerShape(4.dp)
+                                    )
                             ) {
                                 Icon(
                                     contentDescription = stringResource(
@@ -191,11 +213,5 @@ fun GetAndSelectCartOrderScreen(
                 }
             }
         }
-
-        PullRefreshIndicator(
-            isLoading,
-            pullRefreshState,
-            Modifier.align(Alignment.TopCenter)
-        )
     }
 }

@@ -12,14 +12,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -27,9 +25,12 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Moving
 import androidx.compose.material.icons.filled.Rule
+import androidx.compose.material.icons.filled.TrendingDown
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -50,14 +51,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.ButtonSize
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeSmall
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardOutlinedChip
+import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardExpandable
+import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.TextWithCount
 import com.niyaj.popos.features.components.TextWithIcon
@@ -82,7 +83,7 @@ fun ProductPriceScreen(
 
     val products = productPriceViewModel.products.collectAsState().value.products
     val groupedProducts = productPriceViewModel.products.collectAsState().value.products.groupBy {
-        it.category
+        it.category?.categoryName
     }
 
     val selectedProducts = productPriceViewModel.selectedProducts.toList()
@@ -224,45 +225,47 @@ fun ProductPriceScreen(
                                 state = lazyListState,
                             ){
                                 groupedProducts.forEach{ (category, products_new) ->
-                                    stickyHeader {
-                                        TextWithCount(
-                                            modifier = Modifier
-                                                .background(
-                                                    if (showScrollToTop.value)
-                                                        MaterialTheme.colors.onPrimary
-                                                    else Color.Transparent
-                                                )
-                                                .clip(
-                                                    RoundedCornerShape(if (showScrollToTop.value) 4.dp else 0.dp)
-                                                ),
-                                            text = category?.categoryName!!,
-                                            count = products_new.count(),
-                                            onClick = {
-                                                productPriceViewModel.onEvent(ProductPriceEvent.SelectProducts(products_new.map { it.productId }))
+                                    if (category != null){
+                                        stickyHeader {
+                                            TextWithCount(
+                                                modifier = Modifier
+                                                    .background(
+                                                        if (showScrollToTop.value)
+                                                            MaterialTheme.colors.onPrimary
+                                                        else Color.Transparent
+                                                    )
+                                                    .clip(
+                                                        RoundedCornerShape(if (showScrollToTop.value) 4.dp else 0.dp)
+                                                    ),
+                                                text = category,
+                                                count = products_new.count(),
+                                                onClick = {
+                                                    productPriceViewModel.onEvent(ProductPriceEvent.SelectProducts(products_new.map { it.productId }))
+                                                }
+                                            )
+                                        }
+
+                                        itemsIndexed(
+                                            items = products_new,
+                                        ){ index, product ->
+                                            ProductCard(
+                                                productName = product.productName,
+                                                productPrice = product.productPrice.toString(),
+                                                productCategoryName = product.category?.categoryName!!,
+                                                doesSelected = selectedProducts.contains(product.productId),
+                                                isAvailable = product.productAvailability,
+                                                onSelectProduct = {
+                                                    productPriceViewModel.onEvent(ProductPriceEvent.SelectProduct(product.productId))
+                                                },
+                                            )
+
+                                            Spacer(modifier = Modifier.height(SpaceSmall))
+
+                                            if(index == products.size - 1) {
+                                                Spacer(modifier = Modifier.height(
+                                                    ProfilePictureSizeSmall
+                                                ))
                                             }
-                                        )
-                                    }
-
-                                    itemsIndexed(
-                                        items = products_new,
-                                    ){ index, product ->
-                                        ProductCard(
-                                            productName = product.productName,
-                                            productPrice = product.productPrice.toString(),
-                                            productCategoryName = product.category?.categoryName!!,
-                                            doesSelected = selectedProducts.contains(product.productId),
-                                            isAvailable = product.productAvailability,
-                                            onSelectProduct = {
-                                                productPriceViewModel.onEvent(ProductPriceEvent.SelectProduct(product.productId))
-                                            },
-                                        )
-
-                                        Spacer(modifier = Modifier.height(SpaceSmall))
-
-                                        if(index == products.size - 1) {
-                                            Spacer(modifier = Modifier.height(
-                                                ProfilePictureSizeSmall
-                                            ))
                                         }
                                     }
                                 }
@@ -278,6 +281,7 @@ fun ProductPriceScreen(
                 modifier = Modifier,
                 text = productPriceViewModel.productPrice.value.productPrice,
                 hint = "Product Price",
+                leadingIcon = Icons.Default.CurrencyRupee,
                 keyboardType = KeyboardType.Number,
                 error = productPriceViewModel.productPrice.value.productPriceError,
                 onValueChange = {
@@ -287,7 +291,12 @@ fun ProductPriceScreen(
 
             Spacer(modifier = Modifier.height(SpaceMedium))
 
-            Button(
+            StandardButton(
+                text = if (type == "Increase")
+                    stringResource(id = R.string.increase_product_price).uppercase()
+                else
+                    stringResource(id = R.string.decrease_product_price).uppercase(),
+                icon = if (type == "Increase") Icons.Default.Moving else Icons.Default.TrendingDown,
                 onClick = {
                     if (type == "Increase") {
                         productPriceViewModel.onEvent(ProductPriceEvent.IncreaseProductPrice)
@@ -295,19 +304,7 @@ fun ProductPriceScreen(
                         productPriceViewModel.onEvent(ProductPriceEvent.DecreaseProductPrice)
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(ButtonSize),
-            ) {
-                Text(
-                    text = if (type == "Increase")
-                        stringResource(id = R.string.increase_product_price).uppercase()
-                    else
-                        stringResource(id = R.string.decrease_product_price).uppercase(),
-
-                    style = MaterialTheme.typography.button,
-                )
-            }
+            )
         }
     }
 }

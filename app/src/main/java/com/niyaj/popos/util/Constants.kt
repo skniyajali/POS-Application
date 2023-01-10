@@ -78,4 +78,17 @@ object Constants {
     const val RESTAURANT_PRIMARY_PHONE: String = "9500825077"
     const val RESTAURANT_ADDRESS = "Chinna Seeragapadi, Salem, TamilNadu, India 636308, Opp. of VIMS Hospital"
 
+
+    //AddOn Screen Test Tags
+    const val ADDON_SCREEN = "AddOn Screen"
+    const val ADDON_NOT_AVAIlABLE = "AddOn Not Available"
+    const val CREATE_NEW_ADDON_SCREEN = "Create New Addon Screen"
+    const val CREATE_NEW_ADDON_BTN = "Create New Addon"
+
+
+    //Common Constants
+    const val SEARCH_ITEM_NOT_FOUND = "Searched Item Not Found"
+
+
+
 }

@@ -6,7 +6,6 @@ import com.niyaj.popos.features.delivery_partner.domain.repository.PartnerReposi
 class GetPartnerByPhone(
     private val partnerRepository: PartnerRepository
 ) {
-
     suspend operator fun invoke(partnerPhone: String, partnerId: String? = null): Resource<Boolean> {
         return partnerRepository.getPartnerByPhone(partnerPhone, partnerId)
     }

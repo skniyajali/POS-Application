@@ -14,7 +14,6 @@ import kotlinx.coroutines.withContext
 class GetAllCustomers(
     private val customerRepository: CustomerRepository
 ) {
-
     operator fun invoke(
         filterCustomer: FilterCustomer = FilterCustomer.ByCustomerId(SortType.Ascending),
         searchText: String = "",
@@ -27,8 +26,6 @@ class GetAllCustomers(
                             send(Resource.Loading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            send(Resource.Loading(true))
-
                             val data = result.data?.let { customers ->
                                 when(filterCustomer.sortType) {
                                     SortType.Ascending -> {
@@ -61,7 +58,6 @@ class GetAllCustomers(
                             }
 
                             send(Resource.Success(data))
-                            send(Resource.Loading(false))
                         }
                         is Resource.Error -> {
                             send(Resource.Error(result.message ?: "Unable to get customers from repository"))

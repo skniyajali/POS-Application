@@ -1,5 +1,6 @@
 package com.niyaj.popos.features.cart_order.presentation.add_edit
 
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -44,13 +45,14 @@ class AddEditCartOrderViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ): ViewModel() {
 
-    var addEditCartOrderState by mutableStateOf(AddEditCartOrderState())
+    var state by mutableStateOf(AddEditCartOrderState())
+        private set
 
     private val _addresses = MutableStateFlow(AddressState())
     val addresses = _addresses.asStateFlow()
 
-    private val _customers = MutableStateFlow(CustomerState())
-    val customers = _customers.asStateFlow()
+    private val _customers = mutableStateOf(CustomerState())
+    val customers: State<CustomerState> = _customers
 
     var expanded by mutableStateOf(false)
 
@@ -70,52 +72,33 @@ class AddEditCartOrderViewModel @Inject constructor(
         when (event){
 
             is AddEditCartOrderEvent.OrderIdChanged -> {
-                addEditCartOrderState = addEditCartOrderState.copy(orderId = event.orderId)
+                state = state.copy(orderId = event.orderId)
             }
 
             is AddEditCartOrderEvent.OrderTypeChanged -> {
-                addEditCartOrderState = addEditCartOrderState.copy(orderType =  event.orderType)
+                state = state.copy(orderType =  event.orderType)
             }
 
             is AddEditCartOrderEvent.CustomerPhoneChanged -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    if(event.customerId != null){
-                        val customer = customerUseCases.getCustomerById(event.customerId).data
-
-                        if (customer != null) {
-                            addEditCartOrderState = addEditCartOrderState.copy(customer =  customer)
-                        }
-
-                    }else {
-                        getAllCustomers(event.customerPhone)
-
-                        addEditCartOrderState = addEditCartOrderState.copy(
-                            customer =  Customer(
-                                customerPhone = event.customerPhone
-                            )
+                viewModelScope.launch {
+                    state = state.copy(
+                        customer =  Customer(
+                            customerId = event.customerId,
+                            customerPhone = event.customerPhone
                         )
-                    }
+                    )
                 }
             }
 
             is AddEditCartOrderEvent.CustomerAddressChanged -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    if(event.addressId != null) {
-                        val address = addressUseCases.getAddressById(event.addressId).data
-                        if (address != null) {
-                            addEditCartOrderState = addEditCartOrderState.copy(address = address)
-                        }
-
-                    }else {
-                        getAllAddresses(event.customerAddress)
-
-                        addEditCartOrderState = addEditCartOrderState.copy(
-                            address = Address(
-                                shortName = getAllCapitalizedLetters(event.customerAddress),
-                                addressName = event.customerAddress.capitalizeWords
-                            ),
-                        )
-                    }
+                viewModelScope.launch {
+                    state = state.copy(
+                        address = Address(
+                            addressId = event.addressId,
+                            shortName = getAllCapitalizedLetters(event.customerAddress),
+                            addressName = event.customerAddress.capitalizeWords
+                        ),
+                    )
                 }
             }
 
@@ -140,7 +123,7 @@ class AddEditCartOrderViewModel @Inject constructor(
             }
 
             is AddEditCartOrderEvent.OnClearAddress -> {
-                addEditCartOrderState = addEditCartOrderState.copy(
+                state = state.copy(
                     address = null
                 )
 
@@ -148,7 +131,7 @@ class AddEditCartOrderViewModel @Inject constructor(
             }
 
             is AddEditCartOrderEvent.OnClearCustomer -> {
-                addEditCartOrderState = addEditCartOrderState.copy(
+                state = state.copy(
                     customer =  null
                 )
 
@@ -160,7 +143,7 @@ class AddEditCartOrderViewModel @Inject constructor(
             }
 
             is AddEditCartOrderEvent.ResetFields -> {
-                addEditCartOrderState = AddEditCartOrderState()
+                state = AddEditCartOrderState()
             }
 
             is AddEditCartOrderEvent.GetAndSetCartOrderId -> {
@@ -171,15 +154,15 @@ class AddEditCartOrderViewModel @Inject constructor(
 
     private fun createOrUpdateCartOrder(cartOrderId: String? = null) {
 
-        val orderIdResult = validateOrderId.execute(addEditCartOrderState.orderId)
+        val orderIdResult = validateOrderId.execute(state.orderId)
 
         val customerPhoneResult = validateCustomerPhone.execute(
-            orderType = addEditCartOrderState.orderType,
-            customerPhone = addEditCartOrderState.customer?.customerPhone ?: ""
+            orderType = state.orderType,
+            customerPhone = state.customer?.customerPhone ?: ""
         )
         val customerAddressResult = validateCustomerAddress.execute(
-            orderType = addEditCartOrderState.orderType,
-            customerAddress = addEditCartOrderState.address?.addressName ?: "",
+            orderType = state.orderType,
+            customerAddress = state.address?.addressName ?: "",
         )
 
         val hasError = listOf(
@@ -191,7 +174,7 @@ class AddEditCartOrderViewModel @Inject constructor(
         }
 
         if(hasError) {
-            addEditCartOrderState = addEditCartOrderState.copy(
+            state = state.copy(
                 orderIdError = orderIdResult.errorMessage,
                 customerError = customerPhoneResult.errorMessage,
                 addressError = customerAddressResult.errorMessage,
@@ -203,10 +186,10 @@ class AddEditCartOrderViewModel @Inject constructor(
             if(cartOrderId == null){
                 val result = cartOrderUseCases.createCardOrder(
                     CartOrder(
-                        orderId = addEditCartOrderState.orderId,
-                        orderType = addEditCartOrderState.orderType,
-                        customer = if(addEditCartOrderState.orderType != CartOrderType.DineIn.orderType) addEditCartOrderState.customer else null,
-                        address = if(addEditCartOrderState.orderType != CartOrderType.DineIn.orderType) addEditCartOrderState.address else null,
+                        orderId = state.orderId,
+                        orderType = state.orderType,
+                        customer = if(state.orderType != CartOrderType.DineIn.orderType) state.customer else null,
+                        address = if(state.orderType != CartOrderType.DineIn.orderType) state.address else null,
                     )
                 )
 
@@ -222,10 +205,10 @@ class AddEditCartOrderViewModel @Inject constructor(
             }else {
                 val result = cartOrderUseCases.updateCartOrder(
                     CartOrder(
-                        orderId = addEditCartOrderState.orderId,
-                        orderType = addEditCartOrderState.orderType,
-                        customer = if(addEditCartOrderState.orderType != CartOrderType.DineIn.orderType) addEditCartOrderState.customer else null,
-                        address = if(addEditCartOrderState.orderType != CartOrderType.DineIn.orderType) addEditCartOrderState.address else null,
+                        orderId = state.orderId,
+                        orderType = state.orderType,
+                        customer = if(state.orderType != CartOrderType.DineIn.orderType) state.customer else null,
+                        address = if(state.orderType != CartOrderType.DineIn.orderType) state.address else null,
                     ),
                     cartOrderId
                 )
@@ -243,22 +226,22 @@ class AddEditCartOrderViewModel @Inject constructor(
                 }
             }
 
-            addEditCartOrderState = AddEditCartOrderState()
+            state = AddEditCartOrderState()
         }
     }
 
     private fun getAllCustomers(searchText: String = "") {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             customerUseCases.getAllCustomers(searchText = searchText).collectLatest { result ->
                 when (result){
                     is Resource.Loading -> {
-                        _customers.value = customers.value.copy(
+                        _customers.value = _customers.value.copy(
                             isLoading = result.isLoading
                         )
                     }
                     is Resource.Success -> {
                         result.data?.let {
-                            _customers.value = customers.value.copy(
+                            _customers.value = _customers.value.copy(
                                 customers = it
                             )
                         }
@@ -274,7 +257,7 @@ class AddEditCartOrderViewModel @Inject constructor(
     }
 
     private fun getAllAddresses(searchText: String = "") {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             addressUseCases.getAllAddress(searchText = searchText).collectLatest { result ->
                 when (result){
                     is Resource.Loading -> {
@@ -302,8 +285,8 @@ class AddEditCartOrderViewModel @Inject constructor(
     private fun getAndSetOrderId() {
         val lastOrderId = cartOrderUseCases.getLastCreatedOrderId()
 
-        if (addEditCartOrderState.orderId.isEmpty()){
-            addEditCartOrderState = addEditCartOrderState.copy(
+        if (state.orderId.isEmpty()){
+            state = state.copy(
                 orderId = lastOrderId.inc().toString()
             )
         }
@@ -319,7 +302,7 @@ class AddEditCartOrderViewModel @Inject constructor(
                 is Resource.Loading -> {}
                 is Resource.Success -> {
                     result.data?.let {cartOrder ->
-                        addEditCartOrderState = addEditCartOrderState.copy(
+                        state = state.copy(
                             orderId = cartOrder.orderId,
                             orderType = cartOrder.orderType,
                             customer = cartOrder.customer,
@@ -333,4 +316,5 @@ class AddEditCartOrderViewModel @Inject constructor(
             }
         }
     }
+
 }

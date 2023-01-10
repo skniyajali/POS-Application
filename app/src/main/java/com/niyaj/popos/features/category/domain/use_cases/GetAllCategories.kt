@@ -6,7 +6,8 @@ import com.niyaj.popos.features.category.domain.util.FilterCategory
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.SortType
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 
 class GetAllCategories(
     private val categoryRepository: CategoryRepository
@@ -15,11 +16,11 @@ class GetAllCategories(
         filterCategory: FilterCategory = FilterCategory.ByCategoryId(SortType.Ascending),
         searchText: String = ""
     ): Flow<Resource<List<Category>>> {
-        return flow {
-            categoryRepository.getAllCategories().collect { result ->
+        return channelFlow {
+            categoryRepository.getAllCategories().collectLatest { result ->
                 when (result){
                     is Resource.Loading -> {
-                        emit(Resource.Loading(result.isLoading))
+                        send(Resource.Loading(result.isLoading))
                     }
                     is Resource.Success -> {
                         val data = result.data?.let { categories ->
@@ -52,14 +53,13 @@ class GetAllCategories(
                             }
                         }
 
-                        emit(Resource.Success(data))
+                        send(Resource.Success(data))
                     }
                     is Resource.Error -> {
-                        emit(Resource.Error(result.message ?: "Unable to load categories from repository"))
+                        send(Resource.Error(result.message ?: "Unable to load categories from repository"))
                     }
                 }
             }
         }
-
     }
 }

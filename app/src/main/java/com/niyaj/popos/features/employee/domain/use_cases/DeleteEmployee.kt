@@ -6,7 +6,6 @@ import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
 class DeleteEmployee(
     private val employeeRepository: EmployeeRepository,
 ) {
-
     suspend operator fun invoke(employeeId: String): Resource<Boolean> {
         return employeeRepository.deleteEmployee(employeeId)
     }

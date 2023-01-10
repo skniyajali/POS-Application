@@ -7,7 +7,6 @@ import com.niyaj.popos.features.customer.domain.repository.CustomerRepository
 class CreateNewCustomer(
     private val customerRepository: CustomerRepository
 ) {
-
     suspend operator fun invoke(customer: Customer): Resource<Boolean> {
         return customerRepository.createNewCustomer(customer)
     }

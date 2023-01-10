@@ -1,11 +1,36 @@
 package com.niyaj.popos.features.employee_salary.presentation.add_edit
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.*
+import androidx.compose.material.Divider
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
+import androidx.compose.material.ExposedDropdownMenuDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MergeType
+import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.Person4
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -16,13 +41,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.ButtonSize
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.employee.domain.util.PaymentType
@@ -37,7 +64,7 @@ import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
 @Composable
 fun AddEditSalaryScreen(
@@ -48,7 +75,7 @@ fun AddEditSalaryScreen(
     resultBackNavigator: ResultBackNavigator<String>
 ) {
 
-    val employees by lazy { addEditSalaryViewModel.employeeState.employees }
+    val employees = addEditSalaryViewModel.employeeState.collectAsStateWithLifecycle().value.employees
 
     var employeeToggled by remember {
         mutableStateOf(false)
@@ -85,6 +112,7 @@ fun AddEditSalaryScreen(
             stringResource(id = R.string.update_salary_entry)
         else
             stringResource(id = R.string.create_salary_entry),
+        icon = Icons.Default.Payments,
         onClosePressed = {
             navController.navigateUp()
         }
@@ -131,6 +159,7 @@ fun AddEditSalaryScreen(
                             },
                         text = addEditSalaryViewModel.addEditSalaryState.employee.employeeName,
                         hint = "Employee Name",
+                        leadingIcon = Icons.Default.Person4,
                         error = addEditSalaryViewModel.addEditSalaryState.employeeError,
                         onValueChange = {},
                         readOnly = true,
@@ -194,6 +223,7 @@ fun AddEditSalaryScreen(
                         text = addEditSalaryViewModel.addEditSalaryState.salaryType,
                         error = addEditSalaryViewModel.addEditSalaryState.salaryTypeError,
                         hint = "Salary Type",
+                        leadingIcon = Icons.Default.MergeType,
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
@@ -255,6 +285,7 @@ fun AddEditSalaryScreen(
                 StandardOutlinedTextField(
                     text = addEditSalaryViewModel.addEditSalaryState.salaryDate.toSalaryDate,
                     hint = "Given Date",
+                    leadingIcon = Icons.Default.CalendarToday,
                     error = addEditSalaryViewModel.addEditSalaryState.salaryDateError,
                     onValueChange = {},
                     readOnly = true,
@@ -285,6 +316,7 @@ fun AddEditSalaryScreen(
                         text = addEditSalaryViewModel.addEditSalaryState.salaryPaymentType,
                         error = addEditSalaryViewModel.addEditSalaryState.salaryPaymentTypeError,
                         hint = "Payment Type",
+                        leadingIcon = Icons.Default.Payments,
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
@@ -359,6 +391,7 @@ fun AddEditSalaryScreen(
                 StandardOutlinedTextField(
                     text = addEditSalaryViewModel.addEditSalaryState.salary,
                     hint = "Given Amount",
+                    leadingIcon = Icons.Default.Money,
                     error = addEditSalaryViewModel.addEditSalaryState.salaryError,
                     keyboardType = KeyboardType.Number,
                     onValueChange = {
@@ -373,6 +406,7 @@ fun AddEditSalaryScreen(
                 StandardOutlinedTextField(
                     text = addEditSalaryViewModel.addEditSalaryState.salaryNote,
                     hint = "Salary Note",
+                    leadingIcon = Icons.Default.Description,
                     error = addEditSalaryViewModel.addEditSalaryState.salaryNoteError,
                     onValueChange = {
                         addEditSalaryViewModel.onEvent(AddEditSalaryEvent.SalaryNoteChanged(it))
@@ -383,7 +417,10 @@ fun AddEditSalaryScreen(
             }
 
             item {
-                Button(
+                StandardButton(
+                    text = if (salaryId.isNotEmpty()) stringResource(id = R.string.update_salary_entry)
+                    else stringResource(id = R.string.create_salary_entry),
+                    icon = if (salaryId.isNotEmpty()) Icons.Default.Edit else Icons.Default.Add,
                     onClick = {
                         if (salaryId.isNotEmpty()) {
                             addEditSalaryViewModel.onEvent(
@@ -393,18 +430,7 @@ fun AddEditSalaryScreen(
                             addEditSalaryViewModel.onEvent(AddEditSalaryEvent.AddSalaryEntry)
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(ButtonSize),
-                ) {
-                    Text(
-                        text = if (salaryId.isNotEmpty())
-                            stringResource(id = R.string.update_salary_entry).uppercase()
-                        else
-                            stringResource(id = R.string.create_salary_entry).uppercase(),
-                        style = MaterialTheme.typography.button,
-                    )
-                }
+                )
             }
 
         }

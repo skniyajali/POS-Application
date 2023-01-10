@@ -5,24 +5,25 @@ import com.niyaj.popos.features.cart.domain.repository.CartRepository
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
+import com.niyaj.popos.features.charges.domain.model.Charges
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.expenses.domain.model.Expenses
 import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.reports.domain.model.Reports
 import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
 import com.niyaj.popos.features.reports.domain.util.ProductWiseReport
+import com.niyaj.popos.util.Constants
 import com.niyaj.popos.util.getCalculatedStartDate
 import com.niyaj.popos.util.toSalaryDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
-import io.realm.kotlin.notifications.DeletedObject
 import io.realm.kotlin.notifications.InitialObject
 import io.realm.kotlin.notifications.InitialResults
-import io.realm.kotlin.notifications.PendingObject
 import io.realm.kotlin.notifications.UpdatedObject
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -36,6 +37,7 @@ import timber.log.Timber
 class ReportsRepositoryImpl(
     config: RealmConfiguration,
     private val cartRepository: CartRepository,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ReportsRepository {
 
     val realm = Realm.open(config)
@@ -48,6 +50,9 @@ class ReportsRepositoryImpl(
         return try {
             withContext(Dispatchers.IO){
                 val itemReport = getItemsReport(startDate, endDate)
+
+                Timber.d("Item Report $itemReport")
+
                 val formattedDate = startDate.toSalaryDate
 
                 realm.write {
@@ -112,11 +117,8 @@ class ReportsRepositoryImpl(
                             is UpdatedObject -> {
                                 send(Resource.Success(changes.obj))
                             }
-                            is PendingObject -> {
-                                send(Resource.Success(changes.obj))
-                            }
-                            is DeletedObject -> {
-                                send(Resource.Success(changes.obj))
+                            else -> {
+
                             }
                         }
                     }
@@ -336,7 +338,7 @@ class ReportsRepositoryImpl(
 
             val totalDineInItems = dineInItems.size.toLong()
             val totalDineInAmount = dineInItems.sumOf {
-                val price = cartRepository.countTotalPrice(it.cartOrderId)
+                val price = countTotalPrice(it.cartOrderId)
 
                 price.first.minus(price.second)
             }.toLong()
@@ -352,7 +354,7 @@ class ReportsRepositoryImpl(
 
             val totalDineOutItems = dineOutItems.size.toLong()
             val totalDineOutAmount = dineOutItems.sumOf {
-                val price = cartRepository.countTotalPrice(it.cartOrderId)
+                val price = countTotalPrice(it.cartOrderId)
 
                 price.first.minus(price.second)
             }.toLong()
@@ -367,6 +369,45 @@ class ReportsRepositoryImpl(
             Timber.e(e)
             return Triple(Pair(0,0), Pair(0,0), Pair(0,0))
         }
+    }
+
+    private fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
+        var totalPrice = 0
+        var discountPrice = 0
+
+        val cartOrder = realm.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
+        val cartOrders = realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
+
+        if (cartOrder != null && cartOrders.isNotEmpty()) {
+            if (cartOrder.doesChargesIncluded) {
+                val charges = realm.query<Charges>().find()
+                for (charge in charges) {
+                    if (charge.isApplicable && cartOrder.orderType != CartOrderType.DineIn.orderType) {
+                        totalPrice += charge.chargesPrice
+                    }
+                }
+            }
+
+            if (cartOrder.addOnItems.isNotEmpty()) {
+                for (addOnItem in cartOrder.addOnItems) {
+
+                    totalPrice += addOnItem.itemPrice
+
+                    // Todo: use dynamic fields for discount calculation.
+                    if (addOnItem.itemName == Constants.ADD_ON_EXCLUDE_ITEM_ONE || addOnItem.itemName == Constants.ADD_ON_EXCLUDE_ITEM_TWO) {
+                        discountPrice += addOnItem.itemPrice
+                    }
+                }
+            }
+
+            for (cartOrder1 in cartOrders) {
+                if (cartOrder1.product != null) {
+                    totalPrice += cartOrder1.quantity.times(cartOrder1.product?.productPrice!!)
+                }
+            }
+        }
+
+        return Pair(totalPrice, discountPrice)
     }
 
 }

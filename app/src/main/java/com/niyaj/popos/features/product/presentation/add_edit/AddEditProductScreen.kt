@@ -3,6 +3,12 @@ package com.niyaj.popos.features.product.presentation.add_edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.CurrencyRupee
+import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.rounded.AddBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,10 +25,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.ButtonSize
 import com.niyaj.popos.features.common.ui.theme.IconSizeExtraLarge
+import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.destinations.AddEditCategoryScreenDestination
@@ -64,6 +71,7 @@ fun AddEditProductScreen(
             stringResource(id = R.string.edit_product)
         else
             stringResource(id = R.string.create_product),
+        icon = Icons.Default.Dns,
         onClosePressed = {
             navController.navigateUp()
         }
@@ -94,6 +102,7 @@ fun AddEditProductScreen(
                             },
                         text = addEditProductViewModel.addEditProductState.category.categoryName,
                         hint = "Category Name",
+                        leadingIcon = Icons.Default.Category,
                         error = addEditProductViewModel.addEditProductState.categoryError,
                         onValueChange = {},
                         readOnly = true,
@@ -157,6 +166,7 @@ fun AddEditProductScreen(
                 modifier = Modifier,
                 text = addEditProductViewModel.addEditProductState.productName,
                 hint = "Product Name",
+                leadingIcon = Icons.Default.Badge,
                 error = addEditProductViewModel.addEditProductState.productNameError,
                 onValueChange = {
                     addEditProductViewModel.onAddEditEvent(AddEditProductEvent.ProductNameChanged(it))
@@ -169,6 +179,7 @@ fun AddEditProductScreen(
                 modifier = Modifier,
                 text = addEditProductViewModel.addEditProductState.productPrice,
                 hint = "Product Price",
+                leadingIcon = Icons.Default.CurrencyRupee,
                 keyboardType = KeyboardType.Number,
                 error = addEditProductViewModel.addEditProductState.productPriceError,
                 onValueChange = {
@@ -198,9 +209,14 @@ fun AddEditProductScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(SpaceSmall))
+            Spacer(modifier = Modifier.height(SpaceMedium))
 
-            Button(
+            StandardButton(
+                text = if (!productId.isNullOrEmpty())
+                    stringResource(id = R.string.edit_product).uppercase()
+                else
+                    stringResource(id = R.string.create_product).uppercase(),
+                icon = if (!productId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.Add,
                 onClick = {
                     if (!productId.isNullOrEmpty()) {
                         addEditProductViewModel.onAddEditEvent(AddEditProductEvent.UpdateProduct(productId))
@@ -208,20 +224,8 @@ fun AddEditProductScreen(
                         addEditProductViewModel.onAddEditEvent(AddEditProductEvent.CreateNewProduct)
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(ButtonSize),
-            ) {
-                Text(
-                    text = if (!productId.isNullOrEmpty())
-                        stringResource(id = R.string.edit_product).uppercase()
-                    else
-                        stringResource(id = R.string.create_product).uppercase(),
-                    style = MaterialTheme.typography.button,
-                )
-            }
+            )
 
-            Spacer(modifier = Modifier.height(SpaceSmall))
         }
     }
 

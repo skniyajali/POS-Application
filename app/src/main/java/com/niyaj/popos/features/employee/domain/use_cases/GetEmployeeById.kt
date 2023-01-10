@@ -7,8 +7,7 @@ import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
 class GetEmployeeById(
     private val employeeRepository: EmployeeRepository
 ) {
-
-    suspend operator fun invoke(employeeId: String): Resource<Employee?> {
+    operator fun invoke(employeeId: String): Resource<Employee?> {
         return employeeRepository.getEmployeeById(employeeId)
     }
 }

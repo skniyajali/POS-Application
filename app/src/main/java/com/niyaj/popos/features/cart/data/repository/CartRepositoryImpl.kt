@@ -23,15 +23,19 @@ import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.RealmResults
 import io.realm.kotlin.query.Sort
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class CartRepositoryImpl(
     config: RealmConfiguration,
     private val settingsRepository: SettingsRepository,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : CartRepository {
 
     val realm = Realm.open(config)
@@ -42,13 +46,16 @@ class CartRepositoryImpl(
 
     override suspend fun getAllCartProducts(): Flow<Resource<List<Cart>>> {
         return channelFlow {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 try {
                     send(Resource.Loading(true))
-                    val items = realm.query<CartRealm>(
+
+                    val carts = realm.query<CartRealm>(
                         "cartOrder.cartOrderStatus == $0",
                         OrderStatus.Processing.orderStatus
-                    ).sort("cartId", Sort.DESCENDING).asFlow()
+                    ).sort("cartId", Sort.DESCENDING)
+
+                    val items = carts.asFlow()
 
                     items.collect { changes: ResultsChange<CartRealm> ->
                         when (changes) {
@@ -73,16 +80,17 @@ class CartRepositoryImpl(
 
     override suspend fun getAllDineInOrders(): Flow<Resource<List<Cart>>> {
         return channelFlow {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 try {
                     send(Resource.Loading(true))
 
-                    val items = realm.query<CartRealm>(
+                    val carts = realm.query<CartRealm>(
                         "cartOrder.cartOrderStatus == $0 AND cartOrder.orderType == $1",
                         OrderStatus.Processing.orderStatus,
                         CartOrderType.DineIn.orderType
                     ).sort("cartId", Sort.DESCENDING)
-                        .asFlow()
+
+                    val items = carts.asFlow()
 
                     items.collect { changes: ResultsChange<CartRealm> ->
                         when (changes) {
@@ -91,15 +99,15 @@ class CartRepositoryImpl(
                                 send(Resource.Loading(false))
                             }
 
-                            is InitialResults -> {
+                            else -> {
                                 send(Resource.Success(mapCartRealmToCart(changes.list)))
                                 send(Resource.Loading(false))
                             }
                         }
                     }
+
                 } catch (e: Exception) {
-                    send(Resource.Loading(false))
-                    send(Resource.Error(e.message ?: "Unable to get cart products"))
+                    send(Resource.Error(e.message ?: "Unable to get cart products", emptyList()))
                 }
             }
         }
@@ -107,17 +115,17 @@ class CartRepositoryImpl(
 
     override suspend fun getAllDineOutOrders(): Flow<Resource<List<Cart>>> {
         return channelFlow {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 try {
                     send(Resource.Loading(true))
 
-                    val dineOutOrders = realm.query<CartRealm>(
+                    val carts = realm.query<CartRealm>(
                         "cartOrder.cartOrderStatus == $0 AND cartOrder.orderType == $1",
                         OrderStatus.Processing.orderStatus,
                         CartOrderType.DineOut.orderType
                     ).sort("cartId", Sort.DESCENDING)
 
-                    val items = dineOutOrders.asFlow()
+                    val items = carts.asFlow()
 
                     items.collect { changes: ResultsChange<CartRealm> ->
                         when (changes) {
@@ -126,7 +134,7 @@ class CartRepositoryImpl(
                                 send(Resource.Loading(false))
                             }
 
-                            is InitialResults -> {
+                            else -> {
                                 send(Resource.Success(mapCartRealmToCart(changes.list)))
                                 send(Resource.Loading(false))
                             }
@@ -134,7 +142,6 @@ class CartRepositoryImpl(
                     }
 
                 } catch (e: Exception) {
-                    send(Resource.Loading(false))
                     send(Resource.Error(e.message ?: "Unable to get cart products", emptyList()))
                 }
             }
@@ -144,7 +151,7 @@ class CartRepositoryImpl(
     override suspend fun getCartByCartId(cartId: String): Resource<CartProduct?> {
         return try {
 
-            val cartProducts = withContext(Dispatchers.IO) {
+            val cartProducts = withContext(ioDispatcher) {
                 realm.query<CartRealm>("cartId == $0", cartId).first().find()
             }
 
@@ -157,11 +164,11 @@ class CartRepositoryImpl(
 
     override suspend fun getCartByCartOrderId(cartOrderId: String): Flow<Resource<List<CartProduct>>> {
         return channelFlow {
-            withContext(Dispatchers.IO) {
-                try {
-                    val items: RealmResults<CartRealm> =
-                        realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
+            try {
+                val items: RealmResults<CartRealm> =
+                    realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
 
+                CoroutineScope(Dispatchers.Default).launch {
                     val itemsFlow = items.asFlow()
                     itemsFlow.collect { changes: ResultsChange<CartRealm> ->
                         when (changes) {
@@ -174,48 +181,53 @@ class CartRepositoryImpl(
                             }
                         }
                     }
-
-                } catch (e: Exception) {
-                    send(Resource.Error(e.message ?: "Unable to get cart products by order id", emptyList()))
                 }
+
+            } catch (e: Exception) {
+                send(Resource.Error(e.message ?: "Unable to get cart products by order id", emptyList()))
             }
         }
     }
 
     override suspend fun addProductToCart(cartOrderId: String, productId: String): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher) {
                 realm.write {
                     val cartOrder = this.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
                     val product = this.query<Product>("productId == $0", productId).first().find()
 
                     if (cartOrder != null && product != null) {
-                        val cart = this.query<CartRealm>(
-                            "cartOrder.cartOrderId == $0 AND product.productId == $1",
-                            cartOrderId,
-                            productId
-                        ).first().find()
+                        if (cartOrder.cartOrderStatus != OrderStatus.Placed.orderStatus){
 
-                        if (cart != null){
-                            cart.cartOrder = cartOrder
-                            cart.product = product
-                            cart.quantity = cart.quantity.plus(1)
-                            cart.updatedAt = System.currentTimeMillis().toString()
-                        }else {
-                            this.copyToRealm(CartRealm().apply {
-                                this.cartOrder = cartOrder
-                                this.product = product
-                                this.quantity = 1
-                                this.updatedAt = System.currentTimeMillis().toString()
-                            }, UpdatePolicy.ALL)
+                            val cart = this.query<CartRealm>(
+                                "cartOrder.cartOrderId == $0 AND product.productId == $1",
+                                cartOrderId,
+                                productId
+                            ).first().find()
+
+                            if (cart != null) {
+                                cart.cartOrder = cartOrder
+                                cart.product = product
+                                cart.quantity = cart.quantity.plus(1)
+                                cart.updatedAt = System.currentTimeMillis().toString()
+                            } else {
+                                this.copyToRealm(CartRealm().apply {
+                                    this.cartOrder = cartOrder
+                                    this.product = product
+                                    this.quantity = 1
+                                    this.updatedAt = System.currentTimeMillis().toString()
+                                }, UpdatePolicy.ALL)
+                            }
+
+                            Resource.Success(true)
+                        } else {
+                            Resource.Error("Order already placed.", false)
                         }
                     }else {
                         Resource.Error("Unable to get cart order and product", false)
                     }
                 }
             }
-
-            Resource.Success(true)
         }catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to add product to cart", false)
         }
@@ -226,7 +238,7 @@ class CartRepositoryImpl(
         productId: String
     ): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 val doesCartAndProductAlreadyExists = realm.query<CartRealm>(
                     "cartOrder.cartOrderId == $0 AND product.productId == $1",
                     cartOrderId,
@@ -272,7 +284,7 @@ class CartRepositoryImpl(
 
     override suspend fun deleteCartById(cartId: String): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 realm.write {
                     val cartProducts = realm.query<CartRealm>("cartId == $0", cartId).find().first()
 
@@ -288,7 +300,7 @@ class CartRepositoryImpl(
 
     override suspend fun deleteCartByCartOrderId(cartOrderId: String): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 realm.write {
                     val cartProducts: RealmResults<CartRealm> =
                         realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
@@ -349,7 +361,7 @@ class CartRepositoryImpl(
 
     override suspend fun deletePastData(): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 val cartInterval = settingsRepository.getSetting().data?.cartDataDeletionInterval!!
 
                 val startDate = getCalculatedStartDate("-$cartInterval")

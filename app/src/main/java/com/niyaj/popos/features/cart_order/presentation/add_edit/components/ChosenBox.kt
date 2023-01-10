@@ -7,24 +7,22 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,10 +32,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
-import com.niyaj.popos.features.common.ui.theme.PoposTheme
+import com.niyaj.popos.features.common.ui.theme.SpaceMini
+import com.niyaj.popos.features.common.ui.theme.TextGray
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -179,10 +177,11 @@ enum class MultiSelectorOption {
 
 @Composable
 fun MultiSelector(
+    modifier: Modifier = Modifier,
     options: List<String>,
+    icons: List<ImageVector> = emptyList(),
     selectedOption: String,
     onOptionSelect: (String) -> Unit,
-    modifier: Modifier = Modifier,
     selectedColor: Color = MaterialTheme.colors.onPrimary,
     unSelectedColor: Color = MaterialTheme.colors.onSurface,
     state: MultiSelectorState = rememberMultiSelectorState(
@@ -193,13 +192,14 @@ fun MultiSelector(
     ),
 ) {
     require(options.size >= 2) { "This composable requires at least 2 options" }
+    require(icons.size >= 2) { "This composable requires at least 2 icons" }
     require(options.contains(selectedOption)) { "Invalid selected option [$selectedOption]" }
     LaunchedEffect(key1 = options, key2 = selectedOption) {
         state.selectOption(this, options.indexOf(selectedOption))
     }
     Layout(
         modifier = modifier
-            .border(BorderStroke(0.5.dp, Color.DarkGray), RoundedCornerShape(8.dp))
+            .border(BorderStroke(0.5.dp, TextGray), RoundedCornerShape(8.dp))
             .background(MaterialTheme.colors.surface),
         content = {
             val colors = state.textColors
@@ -210,14 +210,28 @@ fun MultiSelector(
                         .clickable { onOptionSelect(option) },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        text = option,
-                        style = MaterialTheme.typography.body1,
-                        color = colors[index],
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(horizontal = 4.dp),
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (icons.isNotEmpty()){
+                            Icon(
+                                imageVector = icons[index],
+                                contentDescription = option,
+                                tint = colors[index]
+                            )
+                            Spacer(modifier = Modifier.width(SpaceMini))
+                        }
+
+                        Text(
+                            text = option,
+                            style = MaterialTheme.typography.body1,
+                            color = colors[index],
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(horizontal = 4.dp),
+                        )
+                    }
                 }
             }
             Box(
@@ -261,74 +275,5 @@ fun MultiSelector(
                 )
             }
         }
-    }
-}
-
-@Preview(widthDp = 420)
-@Composable
-fun PreviewMultiSelector() {
-    PoposTheme {
-        Surface(
-            color = MaterialTheme.colors.background,
-        ) {
-            val options1 = listOf("Lorem", "Ipsum", "Dolor")
-            var selectedOption1 by remember {
-                mutableStateOf(options1.first())
-            }
-
-            val options2 = listOf("Sit", "Amet", "Consectetur", "Elit", "Quis")
-            var selectedOption2 by remember {
-                mutableStateOf(options2.first())
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                MultiSelector(
-                    options = options1,
-                    selectedOption = selectedOption1,
-                    onOptionSelect = { option ->
-                        selectedOption1 = option
-                    },
-                    modifier = Modifier
-                        .padding(all = 16.dp)
-                        .fillMaxWidth()
-                        .height(56.dp)
-                )
-
-                MultiSelector(
-                    options = options2,
-                    selectedOption = selectedOption2,
-                    onOptionSelect = { option ->
-                        selectedOption2 = option
-                    },
-                    modifier = Modifier
-                        .padding(all = 16.dp)
-                        .fillMaxWidth()
-                        .height(56.dp)
-                )
-            }
-        }
-    }
-}
-
-
-@Composable
-fun ChosenBox(
-    items: Pair<String, String>,
-    icons: Pair<ImageVector, ImageVector>,
-    selectedItem: String,
-    onSelectItem: (String) -> Unit = {},
-    selectedColor: Color = MaterialTheme.colors.primary,
-    unselectedColor: Color = MaterialTheme.colors.onPrimary
-) {
-    Box(
-        modifier = Modifier
-            .padding(64.dp)
-            .fillMaxWidth(),
-    ) {
-
     }
 }

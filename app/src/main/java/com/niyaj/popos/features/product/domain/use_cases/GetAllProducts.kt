@@ -7,7 +7,8 @@ import com.niyaj.popos.features.product.domain.repository.ProductRepository
 import com.niyaj.popos.features.product.domain.util.FilterProduct
 import com.niyaj.popos.util.getAllCapitalizedLetters
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 
 class GetAllProducts(
     private val productRepository: ProductRepository
@@ -17,11 +18,11 @@ class GetAllProducts(
         searchText: String = "",
         selectedCategory: String = "",
     ): Flow<Resource<List<Product>>> {
-        return flow {
-            productRepository.getAllProducts().collect { result ->
+        return channelFlow {
+            productRepository.getAllProducts().collectLatest { result ->
                 when (result){
                     is Resource.Loading -> {
-                        emit(Resource.Loading(result.isLoading))
+                        send(Resource.Loading(result.isLoading))
                     }
 
                     is Resource.Success -> {
@@ -84,11 +85,11 @@ class GetAllProducts(
                             }
                         }
 
-                        emit(Resource.Success(data))
+                        send(Resource.Success(data))
                     }
 
                     is Resource.Error -> {
-                        emit(Resource.Error(result.message ?: "Unable to get products from repository"))
+                        send(Resource.Error(result.message ?: "Unable to get products from repository"))
                     }
                 }
             }

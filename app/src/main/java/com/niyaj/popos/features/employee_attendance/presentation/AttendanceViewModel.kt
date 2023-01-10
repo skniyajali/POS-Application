@@ -1,8 +1,5 @@
 package com.niyaj.popos.features.employee_attendance.presentation
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
@@ -21,7 +18,8 @@ class AttendanceViewModel @Inject constructor(
     private val attendanceUseCases: AttendanceUseCases
 ): ViewModel() {
 
-    var attendance by mutableStateOf(AttendanceState())
+    private val _attendance = MutableStateFlow(AttendanceState())
+    val attendance = _attendance.asStateFlow()
 
     private val _selectedAttendance = MutableStateFlow("")
     val selectedAttendance = _selectedAttendance.asStateFlow()
@@ -109,20 +107,20 @@ class AttendanceViewModel @Inject constructor(
             attendanceUseCases.getAllAttendance(searchText).collect { result ->
                 when(result) {
                     is Resource.Loading -> {
-                        attendance = attendance.copy(
+                        _attendance.value = _attendance.value.copy(
                             isLoading = result.isLoading
                         )
                     }
                     is Resource.Success -> {
                         result.data?.let {
-                            attendance = attendance.copy(
+                            _attendance.value = _attendance.value.copy(
                                 attendances = it
                             )
                         }
 
                     }
                     is Resource.Error -> {
-                        attendance = attendance.copy(
+                        _attendance.value = _attendance.value.copy(
                             error = result.message
                         )
                     }

@@ -43,26 +43,7 @@ class AddEditPartnerViewModel @Inject constructor(
 
     init {
         savedStateHandle.get<String>("partnerId")?.let { partnerId ->
-            if(partnerId.isNotEmpty()) {
-                viewModelScope.launch {
-                    when(val result = partnerUseCases.getPartnerById(partnerId)) {
-                        is Resource.Loading -> {}
-                        is Resource.Success -> {
-                            result.data?.let {
-                                addEditState = addEditState.copy(
-                                    partnerName = it.partnerName,
-                                    partnerEmail = it.partnerEmail,
-                                    partnerPhone = it.partnerPhone,
-                                    partnerPassword = it.partnerPassword,
-                                    partnerStatus = it.partnerStatus,
-                                    partnerType = it.partnerType,
-                                )
-                            }
-                        }
-                        is Resource.Error -> {}
-                    }
-                }
-            }
+            getPartnerById(partnerId)
         }
     }
 
@@ -96,6 +77,10 @@ class AddEditPartnerViewModel @Inject constructor(
             }
         }
 
+    }
+
+    fun togglePassword(status: Boolean){
+        _passwordToggle.value = status
     }
 
     private fun addOrEditPartner(partnerId: String? = null){
@@ -166,8 +151,27 @@ class AddEditPartnerViewModel @Inject constructor(
 
     }
 
-    fun togglePassword(status: Boolean){
-        _passwordToggle.value = status
+    private fun getPartnerById(partnerId: String) {
+        if(partnerId.isNotEmpty()) {
+            viewModelScope.launch {
+                when(val result = partnerUseCases.getPartnerById(partnerId)) {
+                    is Resource.Loading -> {}
+                    is Resource.Success -> {
+                        result.data?.let {
+                            addEditState = addEditState.copy(
+                                partnerName = it.partnerName,
+                                partnerEmail = it.partnerEmail,
+                                partnerPhone = it.partnerPhone,
+                                partnerPassword = it.partnerPassword,
+                                partnerStatus = it.partnerStatus,
+                                partnerType = it.partnerType,
+                            )
+                        }
+                    }
+                    is Resource.Error -> {}
+                }
+            }
+        }
     }
 
 }

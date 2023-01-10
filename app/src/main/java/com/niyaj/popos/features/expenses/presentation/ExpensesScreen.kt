@@ -7,15 +7,42 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +52,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -55,7 +84,7 @@ import com.vanpra.composematerialdialogs.title
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun ExpensesScreen(
@@ -70,11 +99,14 @@ fun ExpensesScreen(
     val scope = rememberCoroutineScope()
     val dialogState = rememberMaterialDialogState()
 
-    val expenses by lazy { expensesViewModel.state.expenses.groupBy { it.createdAt.toFormattedDate } }
-    val selectedExpensesItem = expensesViewModel.selectedExpenses.collectAsState().value
-    val isLoading: Boolean = expensesViewModel.state.isLoading
+    val expenses =
+        expensesViewModel.state.collectAsStateWithLifecycle().value.expenses.groupBy { it.createdAt.toFormattedDate }
+    val filterExpenses = expensesViewModel.state.collectAsStateWithLifecycle().value.filterExpenses
+    val selectedExpensesItem =
+        expensesViewModel.selectedExpenses.collectAsStateWithLifecycle().value
+    val isLoading: Boolean = expensesViewModel.state.collectAsStateWithLifecycle().value.isLoading
 
-    // Remember a SystemUiController
+// Remember a SystemUiController
     val systemUiController = rememberSystemUiController()
 
     val transition = updateTransition(selectedExpensesItem.isNotEmpty(), label = "isContextual")
@@ -125,9 +157,9 @@ fun ExpensesScreen(
     }
 
     resultRecipient.onNavResult { result ->
-        when(result) {
+        when (result) {
             is NavResult.Canceled -> {
-                if(selectedExpensesItem.isNotEmpty()){
+                if (selectedExpensesItem.isNotEmpty()) {
                     expensesViewModel.onExpensesEvent(
                         ExpensesEvent.SelectExpenses(
                             selectedExpensesItem
@@ -135,8 +167,9 @@ fun ExpensesScreen(
                     )
                 }
             }
+
             is NavResult.Value -> {
-                if(selectedExpensesItem.isNotEmpty()){
+                if (selectedExpensesItem.isNotEmpty()) {
                     expensesViewModel.onExpensesEvent(
                         ExpensesEvent.SelectExpenses(
                             selectedExpensesItem
@@ -159,17 +192,17 @@ fun ExpensesScreen(
     }
 
     BackHandler(true) {
-        if (showSearchBar){
+        if (showSearchBar) {
             expensesViewModel.onSearchBarCloseAndClearClick()
-        } else if(selectedExpensesItem.isNotEmpty()) {
+        } else if (selectedExpensesItem.isNotEmpty()) {
             expensesViewModel.onExpensesEvent(ExpensesEvent.SelectExpenses(selectedExpensesItem))
-        }else{
+        } else {
             navController.navigateUp()
         }
     }
 
     settingRecipient.onNavResult { result ->
-        when(result){
+        when (result) {
             is NavResult.Canceled -> {}
             is NavResult.Value -> {
                 scope.launch {
@@ -265,7 +298,7 @@ fun ExpensesScreen(
                         onClick = {
                             onOpenSheet(
                                 BottomSheetScreen.FilterExpensesScreen(
-                                    filterExpenses = expensesViewModel.state.filterExpenses,
+                                    filterExpenses = filterExpenses,
                                     onFilterChanged = {
                                         expensesViewModel.onExpensesEvent(
                                             ExpensesEvent.OnFilterExpenses(it)
@@ -353,7 +386,9 @@ fun ExpensesScreen(
             ) {
                 if (expenses.isEmpty()) {
                     ItemNotAvailable(
-                        text = if(showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(id = R.string.no_item_in_expenses),
+                        text = if (showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(
+                            id = R.string.no_item_in_expenses
+                        ),
                         buttonText = stringResource(id = R.string.add_new_expense).uppercase(),
                         onClick = {
                             navController.navigate(AddEditExpensesScreenDestination())
@@ -383,7 +418,9 @@ fun ExpensesScreen(
                                         .clip(
                                             RoundedCornerShape(if (showScrollToTop.value) 4.dp else 0.dp)
                                         ),
-                                    text = if(date == System.currentTimeMillis().toString().toFormattedDate) "Today" else date,
+                                    text = if (date == System.currentTimeMillis()
+                                            .toString().toFormattedDate
+                                    ) "Today" else date,
                                     count = expensesList.count(),
                                     onClick = {
 
@@ -438,7 +475,7 @@ fun ExpensesScreen(
                                             }
                                         }
 
-                                        if(expense.expensesRemarks.isNotEmpty()){
+                                        if (expense.expensesRemarks.isNotEmpty()) {
                                             Spacer(modifier = Modifier.height(SpaceSmall))
                                             Divider(
                                                 modifier = Modifier.fillMaxWidth(),

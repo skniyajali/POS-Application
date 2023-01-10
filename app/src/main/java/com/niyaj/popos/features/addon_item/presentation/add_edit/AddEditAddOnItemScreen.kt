@@ -4,24 +4,34 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Money
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.niyaj.popos.R
 import com.niyaj.popos.domain.util.safeString
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_ADD_EDIT_BUTTON
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_NAME_ERROR_TAG
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_NAME_FIELD
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_PRICE_ERROR_TAG
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_PRICE_FIELD
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.CREATE_NEW_ADD_ON
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.EDIT_ADD_ON_ITEM
+import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
+import com.niyaj.popos.util.Constants.CREATE_NEW_ADDON_SCREEN
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
@@ -52,11 +62,11 @@ fun AddEditAddOnItemScreen(
     }
 
     BottomSheetWithCloseDialog(
-        modifier = Modifier.fillMaxWidth(),
-        text = if (!addOnItemId.isNullOrEmpty())
-            stringResource(id = R.string.edit_add_on_item)
-        else
-            stringResource(id = R.string.create_new_add_on),
+        modifier = Modifier
+            .testTag(CREATE_NEW_ADDON_SCREEN)
+            .fillMaxWidth(),
+        text = if (!addOnItemId.isNullOrEmpty()) EDIT_ADD_ON_ITEM else CREATE_NEW_ADD_ON,
+        icon = Icons.Default.Link,
         onClosePressed = {
             navController.navigateUp()
         }
@@ -66,10 +76,12 @@ fun AddEditAddOnItemScreen(
                 .fillMaxWidth()
         ) {
             StandardOutlinedTextField(
-                modifier = Modifier,
+                modifier = Modifier.testTag(ADDON_NAME_FIELD),
                 text = addEditAddOnItemViewModel.addEditState.itemName,
-                hint = "AddOn Name",
+                hint = ADDON_NAME_FIELD,
+                leadingIcon = Icons.Default.Badge,
                 error = addEditAddOnItemViewModel.addEditState.itemNameError,
+                errorTag = ADDON_NAME_ERROR_TAG,
                 onValueChange = {
                     addEditAddOnItemViewModel.onEvent(AddEditAddOnItemEvent.ItemNameChanged(it))
                 },
@@ -78,9 +90,11 @@ fun AddEditAddOnItemScreen(
             Spacer(modifier = Modifier.height(SpaceSmall))
 
             StandardOutlinedTextField(
-                modifier = Modifier,
+                modifier = Modifier.testTag(ADDON_PRICE_FIELD),
                 text = addEditAddOnItemViewModel.addEditState.itemPrice,
-                hint = "AddOn Price",
+                hint = ADDON_PRICE_FIELD,
+                errorTag = ADDON_PRICE_ERROR_TAG,
+                leadingIcon = Icons.Default.Money,
                 keyboardType = KeyboardType.Number,
                 error = addEditAddOnItemViewModel.addEditState.itemPriceError,
                 onValueChange = {
@@ -90,9 +104,13 @@ fun AddEditAddOnItemScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(SpaceSmall))
+            Spacer(modifier = Modifier.height(SpaceMedium))
 
-            Button(
+            StandardButton(
+                modifier = Modifier.testTag(ADDON_ADD_EDIT_BUTTON),
+                text = if (!addOnItemId.isNullOrEmpty()) EDIT_ADD_ON_ITEM
+                    else CREATE_NEW_ADD_ON,
+                icon = if(!addOnItemId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.Add,
                 onClick = {
                     if (!addOnItemId.isNullOrEmpty()) {
                         addEditAddOnItemViewModel.onEvent(
@@ -102,19 +120,7 @@ fun AddEditAddOnItemScreen(
                         addEditAddOnItemViewModel.onEvent(AddEditAddOnItemEvent.CreateNewAddOnItem)
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(44.dp),
-            ) {
-                Text(
-                    text =
-                    if (!addOnItemId.isNullOrEmpty())
-                        stringResource(id = R.string.edit_add_on_item).uppercase()
-                    else
-                        stringResource(id = R.string.create_new_add_on).uppercase(),
-                    style = MaterialTheme.typography.button,
-                )
-            }
+            )
         }
     }
 }

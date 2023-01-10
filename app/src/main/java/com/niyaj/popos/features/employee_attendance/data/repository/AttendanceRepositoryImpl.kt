@@ -13,15 +13,18 @@ import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
-class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepository {
+class AttendanceRepositoryImpl(
+    config: RealmConfiguration,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+) : AttendanceRepository {
 
     val realm = Realm.open(config)
 
@@ -29,39 +32,43 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
         Timber.d("Attendance Session")
     }
 
-
     override suspend fun getAllAttendance(): Flow<Resource<List<EmployeeAttendance>>> {
         return channelFlow {
-            try {
-                send(Resource.Loading(true))
+            withContext(ioDispatcher) {
+                try {
+                    send(Resource.Loading(true))
 
-                val attendance =
-                    realm.query<EmployeeAttendance>().sort("absentDate", Sort.DESCENDING).find()
-                        .asFlow()
+                    val attendance =
+                        realm.query<EmployeeAttendance>().sort("absentDate", Sort.DESCENDING).find()
 
-                attendance.collect { changes: ResultsChange<EmployeeAttendance> ->
-                    when (changes) {
-                        is UpdatedResults -> {
-                            send(Resource.Success(changes.list))
-                            send(Resource.Loading(false))
-                        }
+                    val items = attendance.asFlow()
 
-                        is InitialResults -> {
-                            send(Resource.Success(changes.list))
-                            send(Resource.Loading(false))
+                    items.collect { changes: ResultsChange<EmployeeAttendance> ->
+                        when (changes) {
+                            is UpdatedResults -> {
+                                send(Resource.Success(changes.list))
+                                send(Resource.Loading(false))
+                            }
+
+                            is InitialResults -> {
+                                send(Resource.Success(changes.list))
+                                send(Resource.Loading(false))
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    send(Resource.Loading(false))
+                    send(Resource.Error(e.message ?: "Unable to get all Attendance", emptyList()))
                 }
-            } catch (e: Exception) {
-                send(Resource.Loading(false))
-                send(Resource.Error(e.message ?: "Unable to get all Attendance", emptyList()))
             }
         }
     }
 
     override suspend fun getAttendanceById(attendanceId: String): Resource<EmployeeAttendance?> {
         return try {
-            val attendance = realm.query<EmployeeAttendance>("attendeeId == $0", attendanceId).first().find()
+            val attendance = withContext(ioDispatcher) {
+                realm.query<EmployeeAttendance>("attendeeId == $0", attendanceId).first().find()
+            }
 
             Resource.Success(attendance)
         } catch (e: Exception) {
@@ -96,47 +103,49 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
         return channelFlow {
             try {
                 send(Resource.Loading(true))
-                val employee = realm.query<Employee>("employeeId == $0", employeeId).first().find()
 
-                if (employee != null) {
-                    val absentReportRealms = mutableListOf<AbsentReport>()
+                withContext(ioDispatcher) {
+                    val employee = realm.query<Employee>("employeeId == $0", employeeId).first().find()
 
-                    val joinedDate = employee.employeeJoinedDate
-                    val dates = getSalaryDates(joinedDate)
+                    if (employee != null) {
+                        val absentReportRealms = mutableListOf<AbsentReport>()
 
-                    dates.forEach { date ->
-                        if (joinedDate <= date.first) {
-                            val reports = mutableListOf<EmployeeAttendance>()
+                        val joinedDate = employee.employeeJoinedDate
+                        val dates = getSalaryDates(joinedDate)
 
-                            val attendances =
-                                realm.query<EmployeeAttendance>(
-                                    "employee.employeeId == $0 AND absentDate >= $1 AND absentDate <= $2",
-                                    employeeId,
-                                    date.first,
-                                    date.second
-                                ).sort("absentDate", Sort.DESCENDING).find()
+                        dates.forEach { date ->
+                            if (joinedDate <= date.first) {
+                                val reports = mutableListOf<EmployeeAttendance>()
 
-                            attendances.forEach { attendance ->
-                                reports.add(attendance)
-                            }
+                                val attendances =
+                                    realm.query<EmployeeAttendance>(
+                                        "employee.employeeId == $0 AND absentDate >= $1 AND absentDate <= $2",
+                                        employeeId,
+                                        date.first,
+                                        date.second
+                                    ).sort("absentDate", Sort.DESCENDING).find()
 
-                            absentReportRealms.add(
-                                AbsentReport(
-                                    startDate = date.first,
-                                    endDate = date.second,
-                                    absent = reports
+                                attendances.forEach { attendance ->
+                                    reports.add(attendance)
+                                }
+
+                                absentReportRealms.add(
+                                    AbsentReport(
+                                        startDate = date.first,
+                                        endDate = date.second,
+                                        absent = reports
+                                    )
                                 )
-                            )
+                            }
                         }
+
+                        send(Resource.Success(absentReportRealms))
+                        send(Resource.Loading(false))
+
+                    } else {
+                        send(Resource.Loading(false))
+                        send(Resource.Error("Employee not found", emptyList()))
                     }
-
-
-                    send(Resource.Success(absentReportRealms))
-                    send(Resource.Loading(false))
-
-                } else {
-                    send(Resource.Loading(false))
-                    send(Resource.Error("Employee not found", emptyList()))
                 }
 
             } catch (e: Exception) {
@@ -160,7 +169,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
                 newAttendance.absentReason = attendance.absentReason
                 newAttendance.createdAt = System.currentTimeMillis().toString()
 
-                CoroutineScope(Dispatchers.IO).launch {
+                withContext(ioDispatcher) {
                     realm.write {
                         findLatest(employee).also {
                             newAttendance.employee = it
@@ -191,7 +200,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
                     .find()
 
             if (employee != null) {
-                CoroutineScope(Dispatchers.IO).launch {
+                withContext(ioDispatcher) {
                     realm.write {
                         val newAttendance =
                             this.query<EmployeeAttendance>("attendeeId == $0", attendanceId).first()
@@ -219,7 +228,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
 
     override suspend fun removeAttendanceById(attendanceId: String): Resource<Boolean> {
         return try {
-            CoroutineScope(Dispatchers.IO).launch {
+            withContext(ioDispatcher) {
                 realm.write {
                     val attendance =
                         this.query<EmployeeAttendance>("attendeeId == $0", attendanceId).first().find()
@@ -238,7 +247,7 @@ class AttendanceRepositoryImpl(config: RealmConfiguration) : AttendanceRepositor
 
     override suspend fun removeAttendanceByEmployeeId(employeeId: String, date: String): Resource<Boolean> {
         return try {
-            CoroutineScope(Dispatchers.IO).launch {
+            withContext(ioDispatcher) {
                 realm.write {
                     val attendance =
                         this.query<EmployeeAttendance>(

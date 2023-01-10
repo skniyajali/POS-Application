@@ -1,5 +1,6 @@
 package com.niyaj.popos.features.components
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.FabPosition
@@ -34,7 +35,7 @@ fun StandardScaffold(
     floatingActionButtonPosition: FabPosition = FabPosition.Center,
     topAppBarBackgroundColor: Color = MaterialTheme.colors.primary,
     bottomBar: @Composable () -> Unit = {},
-    content: @Composable () -> Unit = {},
+    content: @Composable (PaddingValues) -> Unit = {},
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -65,9 +66,8 @@ fun StandardScaffold(
         floatingActionButton = floatingActionButton,
         isFloatingActionButtonDocked = isFloatingActionButtonDocked,
         floatingActionButtonPosition = floatingActionButtonPosition,
-
     ) {
-        content()
+        content(it)
     }
 }
 

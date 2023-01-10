@@ -7,7 +7,6 @@ import com.niyaj.popos.features.common.util.Resource
 class GetChargesById(
     private val chargesRepository: ChargesRepository
 ) {
-
     suspend operator fun invoke(chargesId: String): Resource<Charges?> {
         return chargesRepository.getChargesById(chargesId)
     }

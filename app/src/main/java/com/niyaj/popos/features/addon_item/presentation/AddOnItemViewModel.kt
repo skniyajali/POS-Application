@@ -138,6 +138,7 @@ class AddOnItemViewModel @Inject constructor(
                     _toggledSearchBar.emit(!_toggledSearchBar.value)
                 }
             }
+
             is AddOnItemEvent.RefreshAddOnItem -> {
                 getAllAddOnItems(_state.value.filterAddOnItem)
             }

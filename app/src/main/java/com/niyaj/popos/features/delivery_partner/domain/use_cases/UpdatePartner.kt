@@ -7,7 +7,6 @@ import com.niyaj.popos.features.delivery_partner.domain.repository.PartnerReposi
 class UpdatePartner(
     private val partnerRepository: PartnerRepository
 ) {
-
     suspend operator fun invoke(newDeliveryPartner: DeliveryPartner, partnerId: String): Resource<Boolean> {
         return partnerRepository.updatePartner(newDeliveryPartner, partnerId)
     }

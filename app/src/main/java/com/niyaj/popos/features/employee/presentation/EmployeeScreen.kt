@@ -3,15 +3,43 @@ package com.niyaj.popos.features.employee.presentation
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FabPosition
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EventBusy
+import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -20,6 +48,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -35,7 +65,12 @@ import com.niyaj.popos.features.components.ExtendedFabButton
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.StandardSearchBar
-import com.niyaj.popos.features.destinations.*
+import com.niyaj.popos.features.destinations.AddEditAbsentScreenDestination
+import com.niyaj.popos.features.destinations.AddEditEmployeeScreenDestination
+import com.niyaj.popos.features.destinations.AddEditSalaryScreenDestination
+import com.niyaj.popos.features.destinations.AttendanceScreenDestination
+import com.niyaj.popos.features.destinations.EmployeeDetailsScreenDestination
+import com.niyaj.popos.features.destinations.SalaryScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
@@ -48,7 +83,7 @@ import de.charlex.compose.RevealSwipe
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun EmployeeScreen(
@@ -64,11 +99,12 @@ fun EmployeeScreen(
     val dialogState = rememberMaterialDialogState()
     val scope = rememberCoroutineScope()
 
-    val employees by lazy { employeeViewModel.state.employees }
-    val isLoading = employeeViewModel.state.isLoading
-    val hasError by lazy { employeeViewModel.state.error }
+    val employees = employeeViewModel.state.collectAsStateWithLifecycle().value.employees
+    val filterEmployee = employeeViewModel.state.collectAsStateWithLifecycle().value.filterEmployee
+    val isLoading = employeeViewModel.state.collectAsStateWithLifecycle().value.isLoading
+    val hasError = employeeViewModel.state.collectAsStateWithLifecycle().value.error
 
-    val selectedEmployeeItem = employeeViewModel.selectedEmployee.collectAsState().value
+    val selectedEmployeeItem = employeeViewModel.selectedEmployee.collectAsStateWithLifecycle().value
 
     // Remember a SystemUiController
     val systemUiController = rememberSystemUiController()
@@ -91,7 +127,7 @@ fun EmployeeScreen(
         }
     }
 
-    val showSearchBar = employeeViewModel.toggledSearchBar.collectAsState().value
+    val showSearchBar = employeeViewModel.toggledSearchBar.collectAsStateWithLifecycle().value
 
     LaunchedEffect(key1 = true) {
         employeeViewModel.eventFlow.collect { event ->
@@ -237,7 +273,7 @@ fun EmployeeScreen(
         navActions = {
             if (showSearchBar) {
                 StandardSearchBar(
-                    searchText = employeeViewModel.searchText.collectAsState().value,
+                    searchText = employeeViewModel.searchText.collectAsStateWithLifecycle().value,
                     placeholderText = "Search for employees...",
                     onSearchTextChanged = {
                         employeeViewModel.onEmployeeEvent(EmployeeEvent.OnSearchEmployee(it))
@@ -264,7 +300,7 @@ fun EmployeeScreen(
                         onClick = {
                             onOpenSheet(
                                 BottomSheetScreen.FilterEmployeeScreen(
-                                    filterEmployee = employeeViewModel.state.filterEmployee,
+                                    filterEmployee = filterEmployee,
                                     onFilterChanged = {
                                         employeeViewModel.onEmployeeEvent(
                                             EmployeeEvent.OnFilterEmployee(
@@ -354,6 +390,7 @@ fun EmployeeScreen(
                     LazyColumn(
                         state = lazyListState,
                     ) {
+
                         itemsIndexed(employees) { index, employee ->
                             RevealSwipe(
                                 modifier = Modifier

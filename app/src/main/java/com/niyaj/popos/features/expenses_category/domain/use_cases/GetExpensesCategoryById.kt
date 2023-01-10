@@ -10,5 +10,4 @@ class GetExpensesCategoryById(
     suspend operator fun invoke(categoryId: String): Resource<ExpensesCategory?> {
         return expensesCategoryRepository.getExpensesCategoryById(categoryId)
     }
-
 }

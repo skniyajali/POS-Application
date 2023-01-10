@@ -8,7 +8,7 @@ interface EmployeeRepository {
 
     suspend fun getAllEmployee(): Flow<Resource<List<Employee>>>
 
-    suspend fun getEmployeeById(employeeId: String): Resource<Employee?>
+    fun getEmployeeById(employeeId: String): Resource<Employee?>
 
     fun findEmployeeByName(employeeName: String, employeeId: String?): Boolean
 

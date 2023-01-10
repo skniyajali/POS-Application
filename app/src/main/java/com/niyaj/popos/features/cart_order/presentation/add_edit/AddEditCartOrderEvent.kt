@@ -6,9 +6,9 @@ sealed class AddEditCartOrderEvent {
 
     data class OrderTypeChanged(val orderType: String) : AddEditCartOrderEvent()
 
-    data class CustomerPhoneChanged(val customerPhone: String, val customerId: String? = null) : AddEditCartOrderEvent()
+    data class CustomerPhoneChanged(val customerPhone: String, val customerId: String = "") : AddEditCartOrderEvent()
 
-    data class CustomerAddressChanged(val customerAddress: String, val addressId: String? = null) : AddEditCartOrderEvent()
+    data class CustomerAddressChanged(val customerAddress: String, val addressId: String = "") : AddEditCartOrderEvent()
 
     data class OnSearchAddress(val searchText: String): AddEditCartOrderEvent()
 

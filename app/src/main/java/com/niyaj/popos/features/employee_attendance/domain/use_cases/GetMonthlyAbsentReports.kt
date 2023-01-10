@@ -9,7 +9,6 @@ import javax.inject.Inject
 class GetMonthlyAbsentReports @Inject constructor(
     private val attendanceRepository: AttendanceRepository
 ) {
-
     suspend operator fun invoke(employeeId: String): Flow<Resource<List<AbsentReport>>> {
         return attendanceRepository.getMonthlyAbsentReport(employeeId)
     }

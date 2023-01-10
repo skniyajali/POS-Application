@@ -4,7 +4,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Accessibility
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MergeType
+import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.Person4
+import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -20,10 +29,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.ButtonSize
 import com.niyaj.popos.features.common.ui.theme.Primary
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.employee.domain.util.EmployeeSalaryType
@@ -92,9 +101,7 @@ fun AddEditEmployeeScreen(
         navController = navController,
         scaffoldState = scaffoldState,
         title = {
-            Text(
-                text = if (employeeId.isEmpty()) "Create New Employee" else "Update Employee",
-            )
+            Text(text = if (employeeId.isEmpty()) "Create New Employee" else "Update Employee")
         },
         showBackArrow = true,
     ){
@@ -130,6 +137,7 @@ fun AddEditEmployeeScreen(
                     modifier = Modifier,
                     text = addEditEmployeeViewModel.addEditState.employeeName,
                     hint = "Employee Name",
+                    leadingIcon = Icons.Default.Person4,
                     error = addEditEmployeeViewModel.addEditState.employeeNameError,
                     onValueChange = {
                         addEditEmployeeViewModel.onAddEditEmployeeEvent(
@@ -148,6 +156,7 @@ fun AddEditEmployeeScreen(
                     modifier = Modifier,
                     text = addEditEmployeeViewModel.addEditState.employeePhone,
                     hint = "Employee Phone",
+                    leadingIcon = Icons.Default.PhoneAndroid,
                     keyboardType = KeyboardType.Number,
                     error = addEditEmployeeViewModel.addEditState.employeePhoneError,
                     onValueChange = {
@@ -166,6 +175,7 @@ fun AddEditEmployeeScreen(
                     modifier = Modifier,
                     text = addEditEmployeeViewModel.addEditState.employeeSalary,
                     hint = "Employee Monthly Salary",
+                    leadingIcon = Icons.Default.Money,
                     keyboardType = KeyboardType.Number,
                     error = addEditEmployeeViewModel.addEditState.employeeSalaryError,
                     onValueChange = {
@@ -196,6 +206,7 @@ fun AddEditEmployeeScreen(
                             },
                         text = addEditEmployeeViewModel.addEditState.employeeSalaryType,
                         hint = "Employee Salary Type",
+                        leadingIcon = Icons.Default.MergeType,
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
@@ -289,6 +300,7 @@ fun AddEditEmployeeScreen(
                             },
                         text = addEditEmployeeViewModel.addEditState.employeeType,
                         hint = "Employee Type",
+                        leadingIcon = Icons.Default.Accessibility,
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
@@ -359,6 +371,7 @@ fun AddEditEmployeeScreen(
                             },
                         text = addEditEmployeeViewModel.addEditState.employeePosition,
                         hint = "Employee Position",
+                        leadingIcon = Icons.Default.Star,
                         error = addEditEmployeeViewModel.addEditState.employeePositionError,
                         onValueChange = {
                             addEditEmployeeViewModel.onAddEditEmployeeEvent(
@@ -418,6 +431,7 @@ fun AddEditEmployeeScreen(
                 StandardOutlinedTextField(
                     text = addEditEmployeeViewModel.addEditState.employeeJoinedDate.toSalaryDate,
                     hint = "Employee Joined Date",
+                    leadingIcon = Icons.Default.CalendarMonth,
                     error = null,
                     onValueChange = {},
                     trailingIcon = {
@@ -431,7 +445,10 @@ fun AddEditEmployeeScreen(
             item {
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
-                Button(
+                StandardButton(
+                    text = if (employeeId.isNotEmpty()) stringResource(id = R.string.update_employee)
+                        else stringResource(id = R.string.create_new_employee),
+                    icon = if (employeeId.isNotEmpty()) Icons.Default.Edit else Icons.Default.Add,
                     onClick = {
                         if (employeeId.isNotEmpty()) {
                             addEditEmployeeViewModel.onAddEditEmployeeEvent(
@@ -443,19 +460,7 @@ fun AddEditEmployeeScreen(
                             addEditEmployeeViewModel.onAddEditEmployeeEvent(AddEditEmployeeEvent.CreateNewEmployee)
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(ButtonSize),
-                ) {
-                    Text(
-                        text =
-                        if (employeeId.isNotEmpty())
-                            stringResource(id = R.string.update_employee).uppercase()
-                        else
-                            stringResource(id = R.string.create_new_employee).uppercase(),
-                        style = MaterialTheme.typography.button,
-                    )
-                }
+                )
             }
         }
     }

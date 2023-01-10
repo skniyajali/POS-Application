@@ -10,7 +10,6 @@ import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -83,7 +82,7 @@ class AddressViewModel @Inject constructor(
 
             is AddressEvent.DeleteAddress -> {
                 if (event.addresses.isNotEmpty()){
-                    viewModelScope.launch(Dispatchers.IO) {
+                    viewModelScope.launch {
                         event.addresses.forEach { address ->
                             when (val result = addressUseCases.deleteAddress(address)) {
                                 is Resource.Loading -> {

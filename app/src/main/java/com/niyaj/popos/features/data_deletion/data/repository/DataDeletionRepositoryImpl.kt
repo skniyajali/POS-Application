@@ -24,14 +24,17 @@ import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class DataDeletionRepositoryImpl(
     config: RealmConfiguration,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : DataDeletionRepository {
 
     val realm = Realm.open(config)
@@ -41,7 +44,7 @@ class DataDeletionRepositoryImpl(
     }
 
     /**
-     * ## Prerequisites
+     * ### Prerequisites
     -  Delete **CartOrder** data before today date.
     -  Delete **Cart** data before today start date.
     -  Generate **Report** Before Deleting Data
@@ -49,25 +52,27 @@ class DataDeletionRepositoryImpl(
      */
     override suspend fun deleteData(): Resource<Boolean> {
         return try {
-            val settings = settingsRepository.getSetting().data!!
+            withContext(ioDispatcher) {
+                val settings = settingsRepository.getSetting().data!!
 
-            val expensesDate = getCalculatedStartDate(days = "-${settings.expensesDataDeletionInterval}")
-            val cartDate = getCalculatedStartDate(days = "-${settings.cartDataDeletionInterval}")
-            val cartOrderDate = getCalculatedStartDate(days = "-${settings.cartOrderDataDeletionInterval}")
-            val reportDate = getCalculatedStartDate(days = "-${settings.reportDataDeletionInterval}")
+                val expensesDate = getCalculatedStartDate(days = "-${settings.expensesDataDeletionInterval}")
+                val cartDate = getCalculatedStartDate(days = "-${settings.cartDataDeletionInterval}")
+                val cartOrderDate = getCalculatedStartDate(days = "-${settings.cartOrderDataDeletionInterval}")
+                val reportDate = getCalculatedStartDate(days = "-${settings.reportDataDeletionInterval}")
 
 
-            realm.write {
-                val expenses = this.query<Expenses>("createdAt < $0", reportDate).find()
-                val carts = this.query<CartRealm>("createdAt < $0", cartDate).find()
-                val cartOrder = this.query<CartOrder>("updatedAt < $0", cartOrderDate).find()
-                val reports = this.query<Reports>("createdAt < $0", expensesDate).find()
+                realm.write {
+                    val expenses = this.query<Expenses>("createdAt < $0", reportDate).find()
+                    val carts = this.query<CartRealm>("createdAt < $0", cartDate).find()
+                    val cartOrder = this.query<CartOrder>("updatedAt < $0", cartOrderDate).find()
+                    val reports = this.query<Reports>("createdAt < $0", expensesDate).find()
 
-                delete(carts).also {
-                    delete(cartOrder).also {
-                        delete(reports).also {
-                             delete(expenses)
-                         }
+                    delete(carts).also {
+                        delete(cartOrder).also {
+                            delete(reports).also {
+                                delete(expenses)
+                            }
+                        }
                     }
                 }
             }

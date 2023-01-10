@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +56,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.rememberPagerState
@@ -62,6 +65,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.R
 import com.niyaj.popos.features.cart.presentation.CartTabItem
+import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.common.ui.theme.LightColor12
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
@@ -94,7 +98,9 @@ import de.charlex.compose.RevealSwipe
 import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalPagerApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalPagerApi::class,
+    ExperimentalLifecycleComposeApi::class
+)
 @Destination
 @Composable
 fun OrderScreen(
@@ -109,17 +115,30 @@ fun OrderScreen(
     val dialogState = rememberMaterialDialogState()
     val deleteOrderState = rememberMaterialDialogState()
 
-    val showSearchBar by orderViewModel.toggledSearchBar.collectAsState()
+    val showSearchBar by orderViewModel.toggledSearchBar.collectAsStateWithLifecycle()
 
-    val orders = orderViewModel.orders.value.orders
+    val orders = orderViewModel.orders.collectAsStateWithLifecycle().value.orders
 
-    val dineOutOrders = orderViewModel.dineOutOrders.collectAsState().value.cartItems
-    val dineInOrders = orderViewModel.dineInOrders.collectAsState().value.cartItems
+    val dineInOrders by remember(orders) {
+        derivedStateOf {
+            orders.filter { cart ->
+                cart.cartOrder?.orderType == CartOrderType.DineIn.orderType
+            }
+        }
+    }
 
-    val isLoading: Boolean = orderViewModel.orders.value.isLoading
-    val error = orderViewModel.orders.value.error
+    val dineOutOrders by remember(orders) {
+        derivedStateOf {
+            orders.filter { cart ->
+                cart.cartOrder?.orderType == CartOrderType.DineOut.orderType
+            }
+        }
+    }
 
-    val selectedDate1 = orderViewModel.selectedDate.collectAsState().value
+    val isLoading: Boolean = orderViewModel.orders.collectAsStateWithLifecycle().value.isLoading
+    val error = orderViewModel.orders.collectAsStateWithLifecycle().value.error
+
+    val selectedDate1 = orderViewModel.selectedDate.collectAsStateWithLifecycle().value
 
     var deletableOrder by remember { mutableStateOf("") }
 

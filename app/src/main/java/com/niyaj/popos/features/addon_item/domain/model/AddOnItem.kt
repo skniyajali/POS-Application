@@ -29,3 +29,5 @@ class AddOnItem() : RealmObject {
         this.updatedAt = updatedAt
     }
 }
+
+class InvalidAddOnItemException(message: String): Exception(message)

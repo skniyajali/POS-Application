@@ -8,11 +8,14 @@ import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
 import com.niyaj.popos.features.employee_salary.domain.use_cases.SalaryUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -145,11 +148,6 @@ class SalaryViewModel @Inject constructor(
     }
 
     fun getEmployeeById(employeeId: String): Employee? {
-        var employee: Employee? = null
-
-        viewModelScope.launch {
-            employee = employeeUseCases.getEmployeeById(employeeId).data
-        }
-        return employee
+        return employeeUseCases.getEmployeeById(employeeId).data
     }
 }

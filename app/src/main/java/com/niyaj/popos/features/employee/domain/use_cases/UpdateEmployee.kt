@@ -7,7 +7,6 @@ import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
 class UpdateEmployee(
     private val employeeRepository: EmployeeRepository
 ) {
-
     suspend operator fun invoke(newEmployee: Employee, employeeId: String): Resource<Boolean> {
         return employeeRepository.updateEmployee(newEmployee, employeeId)
     }

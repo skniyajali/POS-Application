@@ -1,10 +1,18 @@
 package com.niyaj.popos.features.main_feed.presentation
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.BackdropValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.rememberBackdropScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.niyaj.popos.features.common.util.BottomSheetScreen
@@ -18,9 +26,10 @@ import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @Destination
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Composable
 fun MainFeedScreen(
     onOpenSheet: (BottomSheetScreen) -> Unit = {},
@@ -32,21 +41,28 @@ fun MainFeedScreen(
     val backdropScaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
     val scope = rememberCoroutineScope()
 
-    val categories by lazy { mainFeedViewModel.categories.value.categories }
-    val categoriesIsLoading by lazy { mainFeedViewModel.categories.value.isLoading }
-    val categoriesHasError by lazy { mainFeedViewModel.categories.value.error }
-    val filterCategory by lazy { mainFeedViewModel.categories.value.filterCategory }
-    val selectedCategory by lazy { mainFeedViewModel.selectedCategory.value}
+    val categories = mainFeedViewModel.categories.collectAsStateWithLifecycle().value.categories
+    val categoriesIsLoading = mainFeedViewModel.categories.collectAsStateWithLifecycle().value.isLoading
+    val categoriesHasError = mainFeedViewModel.categories.collectAsStateWithLifecycle().value.error
+    val filterCategory = mainFeedViewModel.categories.collectAsStateWithLifecycle().value.filterCategory
+    val selectedCategory = mainFeedViewModel.selectedCategory.value
 
-    val products = mainFeedViewModel.products.collectAsState().value.products
-    val productsIsLoading = mainFeedViewModel.products.collectAsState().value.isLoading
-    val productsHasError = mainFeedViewModel.products.collectAsState().value.error
-    val filterProduct = mainFeedViewModel.products.collectAsState().value.filterProduct
+    val products = mainFeedViewModel.products.collectAsStateWithLifecycle().value.products
+    val productsIsLoading = mainFeedViewModel.products.collectAsStateWithLifecycle().value.isLoading
+    val productsHasError = mainFeedViewModel.products.collectAsStateWithLifecycle().value.error
+    val filterProduct = mainFeedViewModel.products.collectAsStateWithLifecycle().value.filterProduct
 
-    val selectedOrderId = mainFeedViewModel.selectedCartOrder.collectAsState().value
+    val selectedOrder = mainFeedViewModel.selectedCartOrder.collectAsStateWithLifecycle().value
+    val selectedOrderId = if (selectedOrder != null) {
+        if(!selectedOrder.address?.addressName.isNullOrEmpty()){
+            selectedOrder.address?.shortName?.uppercase().plus(" -").plus(selectedOrder.orderId)
+        } else {
+            selectedOrder.orderId
+        }
+    } else null
 
-    val showSearchBar by mainFeedViewModel.toggledSearchBar.collectAsState()
-    val searchText = mainFeedViewModel.searchText.collectAsState().value
+    val showSearchBar by mainFeedViewModel.toggledSearchBar.collectAsStateWithLifecycle()
+    val searchText = mainFeedViewModel.searchText.collectAsStateWithLifecycle().value
 
     val productList = mainFeedViewModel.productsList.collectAsLazyPagingItems()
 
@@ -88,17 +104,18 @@ fun MainFeedScreen(
         }
     }
 
+    LaunchedEffect(key1 = true){
+        scope.launch {
+            mainFeedViewModel.onEvent(MainFeedEvent.GetSelectedOrder)
+        }
+    }
+
     StandardBackdropScaffold(
         navController = navController,
         backdropScaffoldState = backdropScaffoldState,
         scaffoldState = scaffoldState,
         scope = scope,
-        selectedOrderId = if(!selectedOrderId.address?.addressName.isNullOrEmpty()){
-            selectedOrderId.address?.shortName?.uppercase().plus(" -")
-                .plus(selectedOrderId.orderId)
-        } else {
-            selectedOrderId.orderId
-        },
+        selectedOrderId = selectedOrderId,
         showSearchBar = showSearchBar,
         searchText = searchText,
         showFloatingActionButton = !showSearchBar && products.isNotEmpty(),
@@ -158,13 +175,15 @@ fun MainFeedScreen(
                 products = products,
                 pagingProducts = productList,
                 onProductLeftClick = {
-                    mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.RemoveProductFromCart(selectedOrderId.cartOrderId, it))
+                    if (selectedOrder != null) {
+                        mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.RemoveProductFromCart(selectedOrder.cartOrderId, it))
+                    }
                 },
                 onProductRightClick = {
-                    if(selectedOrderId.orderId.isEmpty()){
+                    if(selectedOrder == null){
                         navController.navigate(AddEditCartOrderScreenDestination())
                     }else{
-                        mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.AddProductToCart(selectedOrderId.cartOrderId, it))
+                        mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.AddProductToCart(selectedOrder.cartOrderId, it))
                     }
                 },
                 onRefreshFrontLayer = {

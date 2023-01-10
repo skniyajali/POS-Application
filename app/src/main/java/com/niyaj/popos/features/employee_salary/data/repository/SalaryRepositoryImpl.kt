@@ -10,7 +10,6 @@ import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculableDate
 import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculation
 import com.niyaj.popos.util.Constants.NOT_PAID
 import com.niyaj.popos.util.Constants.PAID
-import com.niyaj.popos.util.compareSalaryDates
 import com.niyaj.popos.util.getSalaryDates
 import com.niyaj.popos.util.toRupee
 import io.realm.kotlin.Realm
@@ -20,15 +19,18 @@ import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
-class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
+class SalaryRepositoryImpl(
+    config: RealmConfiguration,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+) : SalaryRepository {
 
     val realm = Realm.open(config)
 
@@ -39,32 +41,38 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
 
     override fun getAllSalary(): Flow<Resource<List<EmployeeSalary>>> {
         return channelFlow {
-            try {
-                send(Resource.Loading(true))
+            withContext(ioDispatcher) {
+                try {
+                    send(Resource.Loading(true))
 
-                val items = realm.query<EmployeeSalary>().sort("salaryGivenDate", Sort.DESCENDING).find().asFlow()
+                    val salaries = realm.query<EmployeeSalary>().sort("salaryGivenDate", Sort.DESCENDING).find()
 
-                items.collect { changes: ResultsChange<EmployeeSalary> ->
-                    when (changes) {
-                        is UpdatedResults -> {
-                            send(Resource.Success(changes.list))
-                            send(Resource.Loading(false))
-                        }
-                        is InitialResults -> {
-                            send(Resource.Success(changes.list))
-                            send(Resource.Loading(false))
+                    val items = salaries.asFlow()
+
+                    items.collect { changes: ResultsChange<EmployeeSalary> ->
+                        when (changes) {
+                            is UpdatedResults -> {
+                                send(Resource.Success(changes.list))
+                                send(Resource.Loading(false))
+                            }
+                            is InitialResults -> {
+                                send(Resource.Success(changes.list))
+                                send(Resource.Loading(false))
+                            }
                         }
                     }
+                }catch (e: Exception){
+                    send(Resource.Error(e.message ?: "Unable to get salary items", emptyList()))
                 }
-            }catch (e: Exception){
-                send(Resource.Error(e.message ?: "Unable to get salary items", emptyList()))
             }
         }
     }
 
-    override fun getSalaryById(salaryId: String): Resource<EmployeeSalary?> {
+    override suspend fun getSalaryById(salaryId: String): Resource<EmployeeSalary?> {
         return try {
-            val salary = realm.query<EmployeeSalary>("salaryId == $0", salaryId).first().find()
+            val salary = withContext(ioDispatcher) {
+                realm.query<EmployeeSalary>("salaryId == $0", salaryId).first().find()
+            }
 
             Resource.Success(salary)
         } catch (e: Exception) {
@@ -78,8 +86,6 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
     ): Resource<CalculatedSalary?> {
         return try {
             val employee = realm.query<Employee>("employeeId == $0", employeeId).first().find()
-
-            Timber.d("selected date = $selectedDate")
 
             if (employee != null) {
                 val employeeSalary = employee.employeeSalary.toLong()
@@ -147,21 +153,23 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
             val employee = realm.query<Employee>("employeeId == $0", newSalary.employee?.employeeId).first().find()
 
             if (employee != null) {
-                val salary = EmployeeSalary()
-                salary.salaryId = BsonObjectId().toHexString()
-                salary.employeeSalary = newSalary.employeeSalary
-                salary.salaryType = newSalary.salaryType
-                salary.salaryGivenDate = newSalary.salaryGivenDate
-                salary.salaryPaymentType = newSalary.salaryPaymentType
-                salary.salaryNote = newSalary.salaryNote
-                salary.createdAt = System.currentTimeMillis().toString()
+                withContext(ioDispatcher){
+                    val salary = EmployeeSalary()
+                    salary.salaryId = BsonObjectId().toHexString()
+                    salary.employeeSalary = newSalary.employeeSalary
+                    salary.salaryType = newSalary.salaryType
+                    salary.salaryGivenDate = newSalary.salaryGivenDate
+                    salary.salaryPaymentType = newSalary.salaryPaymentType
+                    salary.salaryNote = newSalary.salaryNote
+                    salary.createdAt = System.currentTimeMillis().toString()
 
-                realm.write {
-                    findLatest(employee)?.also {
-                        salary.employee = it
+                    realm.write {
+                        findLatest(employee)?.also {
+                            salary.employee = it
+                        }
+
+                        this.copyToRealm(salary)
                     }
-
-                    this.copyToRealm(salary)
                 }
 
                 Resource.Success(true)
@@ -176,7 +184,7 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
 
     override suspend fun updateSalaryById(salaryId: String, newSalary: EmployeeSalary): Resource<Boolean> {
         return try {
-            CoroutineScope(Dispatchers.IO).launch {
+            withContext(ioDispatcher) {
                 realm.write {
                     val employee = this.query<Employee>("employeeId == $0", newSalary.employee?.employeeId).first().find()
 
@@ -203,12 +211,14 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
 
     override suspend fun deleteSalaryById(salaryId: String): Resource<Boolean> {
         return try {
-            realm.write {
-                val salary = this.query<EmployeeSalary>("salaryId == $0", salaryId).first().find()
-                if (salary != null) {
-                    delete(salary)
-                }else {
-                    Resource.Error("Unable to find salary.", false)
+            withContext(ioDispatcher) {
+                realm.write {
+                    val salary = this.query<EmployeeSalary>("salaryId == $0", salaryId).first().find()
+                    if (salary != null) {
+                        delete(salary)
+                    }else {
+                        Resource.Error("Unable to find salary.", false)
+                    }
                 }
             }
             Resource.Success(true)
@@ -231,7 +241,7 @@ class SalaryRepositoryImpl(config: RealmConfiguration) : SalaryRepository {
                     val dates = getSalaryDates(joinedDate)
 
                     dates.forEach { date ->
-                        if (compareSalaryDates(joinedDate, date.first)) {
+                        if (joinedDate <= date.first) {
                             val advancedPayment = mutableListOf<EmployeeSalary>()
                             var amountPaid: Long = 0
                             val employeeSalary = employee.employeeSalary.toLong()

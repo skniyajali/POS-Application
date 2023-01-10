@@ -1,25 +1,58 @@
 package com.niyaj.popos.features.order.presentation.details
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AlternateEmail
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.DeliveryDining
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MoreTime
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.Print
+import androidx.compose.material.icons.filled.RoomService
+import androidx.compose.material.icons.filled.ShoppingBag
+import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.charges.presentation.ChargesViewModel
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.components.ItemNotAvailable
-import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardExpandable
+import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.order.presentation.components.TextDivider
@@ -31,7 +64,7 @@ import com.niyaj.popos.util.toFormattedDateAndTime
 import com.niyaj.popos.util.toRupee
 import com.ramcosta.composedestinations.annotation.Destination
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun OrderDetailsScreen(
@@ -43,10 +76,8 @@ fun OrderDetailsScreen(
 ) {
 
     val scaffoldState = rememberScaffoldState()
-    val orderDetails = orderDetailsViewModel.orderDetails.collectAsState().value.orderDetails
-    val charges by lazy {
-        chargesViewModel.state.chargesItem
-    }
+    val orderDetails = orderDetailsViewModel.orderDetails.collectAsStateWithLifecycle().value.orderDetails
+    val charges = chargesViewModel.state.collectAsStateWithLifecycle().value.chargesItem
 
     var cartOrderExpended by remember {
         mutableStateOf(true)

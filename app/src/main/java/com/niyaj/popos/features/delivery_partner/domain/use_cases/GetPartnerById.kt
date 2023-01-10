@@ -7,7 +7,6 @@ import com.niyaj.popos.features.delivery_partner.domain.repository.PartnerReposi
 class GetPartnerById(
     private val partnerRepository: PartnerRepository
 ) {
-
     suspend operator fun invoke(partnerId: String): Resource<DeliveryPartner?> {
         return partnerRepository.getPartnerById(partnerId)
     }

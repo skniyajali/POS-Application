@@ -7,7 +7,6 @@ import com.niyaj.popos.features.common.util.Resource
 class CreateNewCategory(
     private val categoryRepository: CategoryRepository
 ) {
-
     suspend operator fun invoke(category: Category): Resource<Boolean> {
         return categoryRepository.createNewCategory(category)
     }

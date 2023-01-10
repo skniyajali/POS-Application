@@ -164,12 +164,20 @@ private fun DrawScope.drawBars(
         "${horizontalBarData.yValue} - ${horizontalBarData.xValue.toString().substringBefore(".").toRupee}"
     }
 
+    val intSize = Size(barWidth, barHeight).width.toInt()
+
+    val value = textMeasurer.measure(AnnotatedString(drawableText)).size.width
+
     val textColor = if(horizontalBarData.xValue.toString().substringBefore(".").toLong() <= 0) {
         Color.Black
     } else if(isProductReport) {
         Color.Black
     } else {
-        Color.White
+        if(value > intSize){
+            Color.Black
+        }else {
+            Color.White
+        }
     }
 
     drawRoundRect(

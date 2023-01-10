@@ -12,12 +12,18 @@ import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
-class PartnerRepositoryImpl(config: RealmConfiguration) : PartnerRepository {
+class PartnerRepositoryImpl(
+    config: RealmConfiguration,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+) : PartnerRepository {
 
     val realm = Realm.open(config)
 
@@ -28,35 +34,39 @@ class PartnerRepositoryImpl(config: RealmConfiguration) : PartnerRepository {
 
     override suspend fun getAllPartner(): Flow<Resource<List<DeliveryPartner>>> {
         return channelFlow {
-            try {
-                send(Resource.Loading(true))
+            withContext(ioDispatcher) {
+                try {
+                    send(Resource.Loading(true))
 
-                val items = realm.query<DeliveryPartner>().sort("partnerId", Sort.DESCENDING).find()
-                    .asFlow()
+                    val partners = realm.query<DeliveryPartner>().sort("partnerId", Sort.DESCENDING).find()
 
-                items.collect { changes: ResultsChange<DeliveryPartner> ->
-                    when (changes) {
-                        is UpdatedResults -> {
-                            send(Resource.Success(changes.list))
-                            send(Resource.Loading(false))
-                        }
+                    val items = partners.asFlow()
+                    items.collect { changes: ResultsChange<DeliveryPartner> ->
+                        when (changes) {
+                            is UpdatedResults -> {
+                                send(Resource.Success(changes.list))
+                                send(Resource.Loading(false))
+                            }
 
-                        is InitialResults -> {
-                            send(Resource.Success(changes.list))
-                            send(Resource.Loading(false))
+                            is InitialResults -> {
+                                send(Resource.Success(changes.list))
+                                send(Resource.Loading(false))
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    send(Resource.Loading(false))
+                    send(Resource.Error(e.message ?: "Unable to get delivery partners", emptyList()))
                 }
-            } catch (e: Exception) {
-                send(Resource.Loading(false))
-                send(Resource.Error(e.message ?: "Unable to get delivery partners", emptyList()))
             }
         }
     }
 
     override suspend fun getPartnerById(partnerId: String): Resource<DeliveryPartner?> {
         return try {
-            val partners = realm.query<DeliveryPartner>("partnerId == $0", partnerId).first().find()
+            val partners = withContext(ioDispatcher) {
+                realm.query<DeliveryPartner>("partnerId == $0", partnerId).first().find()
+            }
 
             Resource.Success(partners)
         } catch (e: Exception) {
@@ -76,8 +86,7 @@ class PartnerRepositoryImpl(config: RealmConfiguration) : PartnerRepository {
                 "partnerEmail == $0 AND partnerId != $1",
                 partnerEmail,
                 partnerId
-            )
-                .first().find()
+            ).first().find()
         }
 
         return if (findPartnerByEmail != null) {
@@ -113,36 +122,36 @@ class PartnerRepositoryImpl(config: RealmConfiguration) : PartnerRepository {
 
     override suspend fun createNewPartner(newPartner: DeliveryPartner): Resource<Boolean> {
         return try {
+            withContext(ioDispatcher){
+                val findPartnerByEmail =
+                    realm.query<DeliveryPartner>("partnerEmail == $0", newPartner.partnerEmail)
+                        .first().find()
+                val findPartnerByPhone =
+                    realm.query<DeliveryPartner>("partnerPhone == $0", newPartner.partnerPhone)
+                        .first().find()
 
-            val findPartnerByEmail =
-                realm.query<DeliveryPartner>("partnerEmail == $0", newPartner.partnerEmail)
-                    .first().find()
-            val findPartnerByPhone =
-                realm.query<DeliveryPartner>("partnerPhone == $0", newPartner.partnerPhone)
-                    .first().find()
+                if (findPartnerByEmail != null) {
+                    Resource.Error("Partner email already exists", false)
+                } else if (findPartnerByPhone != null) {
+                    Resource.Error("Partner phone already exists", false)
+                } else {
+                    val partner = DeliveryPartner()
+                    partner.partnerId = BsonObjectId().toHexString()
+                    partner.partnerName = newPartner.partnerName
+                    partner.partnerEmail = newPartner.partnerEmail
+                    partner.partnerPhone = newPartner.partnerPhone
+                    partner.partnerPassword = newPartner.partnerPassword
+                    partner.partnerStatus = newPartner.partnerStatus
+                    partner.partnerType = newPartner.partnerType
+                    partner.createdAt = System.currentTimeMillis().toString()
 
-            if (findPartnerByEmail != null) {
-                Resource.Error("Partner email already exists", false)
-            } else if (findPartnerByPhone != null) {
-                Resource.Error("Partner phone already exists", false)
-            } else {
-                val partner = DeliveryPartner()
-                partner.partnerId = BsonObjectId().toHexString()
-                partner.partnerName = newPartner.partnerName
-                partner.partnerEmail = newPartner.partnerEmail
-                partner.partnerPhone = newPartner.partnerPhone
-                partner.partnerPassword = newPartner.partnerPassword
-                partner.partnerStatus = newPartner.partnerStatus
-                partner.partnerType = newPartner.partnerType
-                partner.createdAt = System.currentTimeMillis().toString()
+                    val result = realm.write {
+                        this.copyToRealm(partner)
+                    }
 
-                val result = realm.write {
-                    this.copyToRealm(partner)
+                    Resource.Success(result.isValid())
                 }
-
-                Resource.Success(result.isValid())
             }
-
         } catch (e: RealmException) {
             Resource.Error(e.message ?: "Error creating Delivery Partner", true)
         }
@@ -153,35 +162,37 @@ class PartnerRepositoryImpl(config: RealmConfiguration) : PartnerRepository {
         partnerId: String,
     ): Resource<Boolean> {
         return try {
-            val findPartnerByEmail = realm.query<DeliveryPartner>(
-                "partnerEmail == $0 AND partnerId != $1",
-                newPartner.partnerEmail,
-                partnerId
-            ).first().find()
-            val findPartnerByPhone = realm.query<DeliveryPartner>(
-                "partnerPhone == $0 AND partnerId != $1",
-                newPartner.partnerPhone,
-                partnerId
-            ).first().find()
+            withContext(ioDispatcher){
+                val findPartnerByEmail = realm.query<DeliveryPartner>(
+                    "partnerEmail == $0 AND partnerId != $1",
+                    newPartner.partnerEmail,
+                    partnerId
+                ).first().find()
+                val findPartnerByPhone = realm.query<DeliveryPartner>(
+                    "partnerPhone == $0 AND partnerId != $1",
+                    newPartner.partnerPhone,
+                    partnerId
+                ).first().find()
 
-            if (findPartnerByEmail != null) {
-                Resource.Error("Partner email already exists", false)
-            } else if (findPartnerByPhone != null) {
-                Resource.Error("Partner phone already exists", false)
-            } else {
-                realm.write {
-                    val partner =
-                        this.query<DeliveryPartner>("partnerId == $0", partnerId).first().find()
-                    partner?.partnerName = newPartner.partnerName
-                    partner?.partnerEmail = newPartner.partnerEmail
-                    partner?.partnerPhone = newPartner.partnerPhone
-                    partner?.partnerPassword = newPartner.partnerPassword
-                    partner?.partnerStatus = newPartner.partnerStatus
-                    partner?.partnerType = newPartner.partnerType
-                    partner?.updatedAt = System.currentTimeMillis().toString()
+                if (findPartnerByEmail != null) {
+                    Resource.Error("Partner email already exists", false)
+                } else if (findPartnerByPhone != null) {
+                    Resource.Error("Partner phone already exists", false)
+                } else {
+                    realm.write {
+                        val partner =
+                            this.query<DeliveryPartner>("partnerId == $0", partnerId).first().find()
+                        partner?.partnerName = newPartner.partnerName
+                        partner?.partnerEmail = newPartner.partnerEmail
+                        partner?.partnerPhone = newPartner.partnerPhone
+                        partner?.partnerPassword = newPartner.partnerPassword
+                        partner?.partnerStatus = newPartner.partnerStatus
+                        partner?.partnerType = newPartner.partnerType
+                        partner?.updatedAt = System.currentTimeMillis().toString()
+                    }
+
+                    Resource.Success(true)
                 }
-
-                Resource.Success(true)
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to update delivery partner.", false)
@@ -190,15 +201,16 @@ class PartnerRepositoryImpl(config: RealmConfiguration) : PartnerRepository {
 
     override suspend fun deletePartner(partnerId: String): Resource<Boolean> {
         return try {
-            realm.write {
-                val partner: DeliveryPartner =
-                    this.query<DeliveryPartner>("partnerId == $0", partnerId).find().first()
+            withContext(ioDispatcher){
+                realm.write {
+                    val partner: DeliveryPartner =
+                        this.query<DeliveryPartner>("partnerId == $0", partnerId).find().first()
 
-                delete(partner)
+                    delete(partner)
+                }
             }
 
             Resource.Success(true)
-
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to delete delivery partner", false)
         }

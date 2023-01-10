@@ -31,7 +31,6 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -40,6 +39,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -66,6 +67,7 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import com.vanpra.composematerialdialogs.title
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun CustomerScreen(
@@ -79,9 +81,9 @@ fun CustomerScreen(
     val scope = rememberCoroutineScope()
     val deleteCustomerState = rememberMaterialDialogState()
 
-    val customers = customerViewModel.customers.collectAsState().value.customers
-    val isLoading: Boolean = customerViewModel.customers.collectAsState().value.isLoading
-    val error = customerViewModel.customers.collectAsState().value.error
+    val customers = customerViewModel.customers.collectAsStateWithLifecycle().value.customers
+    val isLoading: Boolean = customerViewModel.customers.collectAsStateWithLifecycle().value.isLoading
+    val error = customerViewModel.customers.collectAsStateWithLifecycle().value.error
 
     val selectedCustomers = customerViewModel.selectedCustomer.toList()
 
@@ -97,7 +99,7 @@ fun CustomerScreen(
         if(isContextualMode) { MaterialTheme.colors.secondary } else { MaterialTheme.colors.primary }
     }
 
-    val showSearchBar = customerViewModel.toggledSearchBar.collectAsState().value
+    val showSearchBar = customerViewModel.toggledSearchBar.collectAsStateWithLifecycle().value
 
     SideEffect {
         systemUiController.setStatusBarColor(
@@ -240,7 +242,7 @@ fun CustomerScreen(
             }
             else if(showSearchBar){
                 StandardSearchBar(
-                    searchText = customerViewModel.searchText.collectAsState().value,
+                    searchText = customerViewModel.searchText.collectAsStateWithLifecycle().value,
                     placeholderText = "Search for addresses...",
                     onSearchTextChanged = {
                         customerViewModel.onCustomerEvent(CustomerEvent.OnSearchCustomer(it))

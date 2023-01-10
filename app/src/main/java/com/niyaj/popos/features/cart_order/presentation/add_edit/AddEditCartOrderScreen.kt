@@ -10,38 +10,51 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
+import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
+import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeliveryDining
+import androidx.compose.material.icons.filled.DinnerDining
+import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
@@ -53,40 +66,62 @@ import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardOutlinedTextField
+import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
-import com.niyaj.popos.features.main_feed.presentation.utils.collectAsStateLifecycleAware
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
 @Composable
 fun AddEditCartOrderScreen(
     cartOrderId: String? = "",
     navController: NavController = rememberNavController(),
-    addEditCartOrderViewModel: AddEditCartOrderViewModel = hiltViewModel(),
+    viewModel: AddEditCartOrderViewModel = hiltViewModel(),
     resultNavigator: ResultBackNavigator<String>
 ) {
-    val addresses = addEditCartOrderViewModel.addresses.collectAsStateLifecycleAware().value.addresses
-    val addressesIsLoading = addEditCartOrderViewModel.addresses.collectAsStateLifecycleAware().value.isLoading
+    val scope = rememberCoroutineScope()
 
-    val customers = addEditCartOrderViewModel.customers.collectAsStateLifecycleAware().value.customers
-    val customerIsLoading = addEditCartOrderViewModel.customers.collectAsState().value.isLoading
+    val addresses = viewModel.addresses.collectAsStateWithLifecycle().value.addresses
+    val addressesIsLoading = viewModel.addresses.collectAsStateWithLifecycle().value.isLoading
+
+    val customerPhone = viewModel.state.customer?.customerPhone
+
+    val customers by lazy {
+        viewModel.customers.value.customers
+    }
+
+    val filteredCustomer by remember(customerPhone) {
+        derivedStateOf {
+            customers.filter {
+                if (!customerPhone.isNullOrEmpty()){
+                    it.customerPhone.contains(customerPhone, true)
+                }else{
+                    true
+                }
+            }
+        }
+    }
+
 
     var phoneDropdownToggled by remember { mutableStateOf(false) }
 
     var addressDropdownToggled by remember { mutableStateOf(false) }
 
+    var textFieldSize by remember { mutableStateOf(Size.Zero) }
+
     LaunchedEffect(key1 = cartOrderId) {
         if (cartOrderId.isNullOrEmpty()) {
-            addEditCartOrderViewModel.onAddEditCartOrderEvent(AddEditCartOrderEvent.ResetFields)
-            addEditCartOrderViewModel.onAddEditCartOrderEvent(AddEditCartOrderEvent.GetAndSetCartOrderId)
+            viewModel.onAddEditCartOrderEvent(AddEditCartOrderEvent.ResetFields)
+            viewModel.onAddEditCartOrderEvent(AddEditCartOrderEvent.GetAndSetCartOrderId)
         }
     }
 
     LaunchedEffect(key1 = true) {
-        addEditCartOrderViewModel.eventFlow.collect { event ->
+        viewModel.eventFlow.collect { event ->
             when (event) {
                 is UiEvent.IsLoading -> {}
                 is UiEvent.OnSuccess -> {
@@ -118,12 +153,16 @@ fun AddEditCartOrderScreen(
             val orderTypes = listOf(
                 CartOrderType.DineIn.orderType, CartOrderType.DineOut.orderType
             )
+            val icons = listOf(
+                Icons.Default.DinnerDining, Icons.Default.DeliveryDining
+            )
 
             MultiSelector(
                 options = orderTypes,
-                selectedOption = addEditCartOrderViewModel.addEditCartOrderState.orderType,
+                icons = icons,
+                selectedOption = viewModel.state.orderType,
                 onOptionSelect = { option ->
-                    addEditCartOrderViewModel.onAddEditCartOrderEvent(
+                    viewModel.onAddEditCartOrderEvent(
                         AddEditCartOrderEvent.OrderTypeChanged(option)
                     )
                 },
@@ -136,11 +175,11 @@ fun AddEditCartOrderScreen(
 
             StandardOutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                text = addEditCartOrderViewModel.addEditCartOrderState.orderId,
+                text = viewModel.state.orderId,
                 hint = "Order Id",
-                error = addEditCartOrderViewModel.addEditCartOrderState.orderIdError,
+                error = viewModel.state.orderIdError,
                 onValueChange = {
-                    addEditCartOrderViewModel.onAddEditCartOrderEvent(
+                    viewModel.onAddEditCartOrderEvent(
                         AddEditCartOrderEvent.OrderIdChanged(it)
                     )
                 },
@@ -148,39 +187,39 @@ fun AddEditCartOrderScreen(
             )
             
             AnimatedVisibility(
-                visible = addEditCartOrderViewModel.addEditCartOrderState.orderType != CartOrderType.DineIn.orderType,
+                visible = viewModel.state.orderType != CartOrderType.DineIn.orderType,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
-                ExposedDropdownMenuBox(
-                    expanded = phoneDropdownToggled,
-                    onExpandedChange = {
-                        phoneDropdownToggled = !phoneDropdownToggled
-                    }
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     StandardOutlinedTextField(
                         modifier = Modifier
-                            .fillMaxWidth(),
-                        text = addEditCartOrderViewModel.addEditCartOrderState.customer?.customerPhone ?: "",
+                            .fillMaxWidth()
+                            .onGloballyPositioned { coordinates ->
+                                textFieldSize = coordinates.size.toSize()
+                            },
+                        text = viewModel.state.customer?.customerPhone ?: "",
                         hint = "Customer Phone",
-                        error = addEditCartOrderViewModel.addEditCartOrderState.customerError,
+                        error = viewModel.state.customerError,
                         keyboardType = KeyboardType.Phone,
                         onValueChange = {
-                            addEditCartOrderViewModel.onAddEditCartOrderEvent(
-                                AddEditCartOrderEvent.CustomerPhoneChanged(it)
-                            )
-                        },
-                        trailingIcon = {
-                            if(customerIsLoading){
-                                CircularProgressIndicator()
+                            scope.launch(Dispatchers.IO) {
+                                viewModel.onAddEditCartOrderEvent(
+                                    AddEditCartOrderEvent.CustomerPhoneChanged(it)
+                                )
                             }
 
-                            if (!addEditCartOrderViewModel.addEditCartOrderState.customer?.customerPhone.isNullOrEmpty()) {
+                            phoneDropdownToggled = true
+                        },
+                        trailingIcon = {
+                            if (!viewModel.state.customer?.customerPhone.isNullOrEmpty()) {
                                 IconButton(
                                     onClick = {
-                                        addEditCartOrderViewModel.onAddEditCartOrderEvent(
+                                        viewModel.onAddEditCartOrderEvent(
                                             AddEditCartOrderEvent.OnClearCustomer
                                         )
                                     }
@@ -192,26 +231,35 @@ fun AddEditCartOrderScreen(
                                         modifier = Modifier.size(IconSizeMedium)
                                     )
                                 }
+                            } else {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = phoneDropdownToggled
+                                )
                             }
                         },
                     )
-
-                    if (customers.isNotEmpty()){
-                        ExposedDropdownMenu(
+                    if (filteredCustomer.isNotEmpty()){
+                        DropdownMenu(
                             expanded = phoneDropdownToggled,
                             onDismissRequest = {
                                 phoneDropdownToggled = false
                             },
+                            properties = PopupProperties(
+                                focusable = false,
+                                dismissOnBackPress = true,
+                                dismissOnClickOutside = true,
+                                excludeFromSystemGesture = true,
+                                clippingEnabled = true,
+                            ),
+                            modifier = Modifier
+                                .heightIn(max = 200.dp)
+                                .width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                         ) {
-                            if(customerIsLoading){
-                                CircularProgressIndicator()
-                            }
-
-                            customers.forEachIndexed { index, customer ->
+                            filteredCustomer.forEachIndexed { index, customer ->
                                 DropdownMenuItem(
                                     modifier = Modifier.fillMaxWidth(),
                                     onClick = {
-                                        addEditCartOrderViewModel.onAddEditCartOrderEvent(
+                                        viewModel.onAddEditCartOrderEvent(
                                             AddEditCartOrderEvent.CustomerPhoneChanged(
                                                 customerPhone = customer.customerPhone,
                                                 customerId = customer.customerId
@@ -220,7 +268,7 @@ fun AddEditCartOrderScreen(
                                         phoneDropdownToggled = false
                                     }
                                 ) {
-                                    Text(
+                                    TextWithIcon(
                                         text = buildAnnotatedString {
                                             append(customer.customerPhone)
                                             if (!customer.customerName.isNullOrEmpty()) {
@@ -230,9 +278,7 @@ fun AddEditCartOrderScreen(
                                                 }
                                             }
                                         },
-                                        style = MaterialTheme.typography.body1,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
+                                        icon = Icons.Default.PhoneAndroid
                                     )
                                 }
 
@@ -249,37 +295,41 @@ fun AddEditCartOrderScreen(
             }
 
             AnimatedVisibility(
-                visible = addEditCartOrderViewModel.addEditCartOrderState.orderType != CartOrderType.DineIn.orderType,
+                visible = viewModel.state.orderType != CartOrderType.DineIn.orderType,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
-                ExposedDropdownMenuBox(
-                    expanded = addressDropdownToggled,
-                    onExpandedChange = {
-                        addressDropdownToggled = !addressDropdownToggled
-                    }
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
                 ){
                     StandardOutlinedTextField(
                         modifier = Modifier
-                            .fillMaxWidth(),
-                        text = addEditCartOrderViewModel.addEditCartOrderState.address?.addressName ?: "",
+                            .fillMaxWidth()
+                            .onGloballyPositioned { coordinates ->
+                                textFieldSize = coordinates.size.toSize()
+                            },
+                        text = viewModel.state.address?.addressName ?: "",
                         hint = "Customer Address",
-                        error = addEditCartOrderViewModel.addEditCartOrderState.addressError,
+                        error = viewModel.state.addressError,
                         onValueChange = {
-                            addEditCartOrderViewModel.onAddEditCartOrderEvent(
+                            viewModel.onAddEditCartOrderEvent(
                                 AddEditCartOrderEvent.CustomerAddressChanged(it)
                             )
+                            addressDropdownToggled = true
                         },
                         trailingIcon = {
                             if (addressesIsLoading) {
-                                CircularProgressIndicator()
-                            }
-                            if (!addEditCartOrderViewModel.addEditCartOrderState.address?.addressName.isNullOrEmpty()) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .align(Alignment.CenterHorizontally)
+                                )
+                            }else if (!viewModel.state.address?.addressName.isNullOrEmpty()) {
                                 IconButton(
                                     onClick = {
-                                        addEditCartOrderViewModel.onAddEditCartOrderEvent(
+                                        viewModel.onAddEditCartOrderEvent(
                                             AddEditCartOrderEvent.OnClearAddress
                                         )
                                     }
@@ -289,23 +339,37 @@ fun AddEditCartOrderScreen(
                                         contentDescription = "Clear Text",
                                     )
                                 }
+                            } else {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = addressDropdownToggled
+                                )
                             }
                         },
                     )
 
                     if (addresses.isNotEmpty()){
-                        ExposedDropdownMenu(
+                        DropdownMenu(
                             expanded = addressDropdownToggled,
                             onDismissRequest = {
                                 addressDropdownToggled = false
                             },
+                            properties = PopupProperties(
+                                focusable = false,
+                                dismissOnBackPress = true,
+                                dismissOnClickOutside = true,
+                                excludeFromSystemGesture = true,
+                                clippingEnabled = true,
+                            ),
+                            modifier = Modifier
+                                .heightIn(max = 200.dp)
+                                .width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                         ) {
                             addresses.forEachIndexed { index, address ->
                                 DropdownMenuItem(
                                     modifier = Modifier
                                         .fillMaxWidth(),
                                     onClick = {
-                                        addEditCartOrderViewModel.onAddEditCartOrderEvent(
+                                        viewModel.onAddEditCartOrderEvent(
                                             AddEditCartOrderEvent.CustomerAddressChanged(
                                                 address.addressName,
                                                 address.addressId
@@ -315,9 +379,10 @@ fun AddEditCartOrderScreen(
                                         addressDropdownToggled = false
                                     }
                                 ) {
-                                    Text(
+                                    TextWithIcon(
                                         text = address.addressName,
-                                        style = MaterialTheme.typography.body1,
+                                        isTitle = true,
+                                        icon = Icons.Default.Business
                                     )
                                 }
 
@@ -340,11 +405,11 @@ fun AddEditCartOrderScreen(
             Button(
                 onClick = {
                     if (!cartOrderId.isNullOrEmpty()) {
-                        addEditCartOrderViewModel.onAddEditCartOrderEvent(
+                        viewModel.onAddEditCartOrderEvent(
                             AddEditCartOrderEvent.UpdateCartOrder(cartOrderId)
                         )
                     } else {
-                        addEditCartOrderViewModel.onAddEditCartOrderEvent(AddEditCartOrderEvent.CreateNewCartOrder)
+                        viewModel.onAddEditCartOrderEvent(AddEditCartOrderEvent.CreateNewCartOrder)
                     }
                 },
                 shape = RoundedCornerShape(4.dp),

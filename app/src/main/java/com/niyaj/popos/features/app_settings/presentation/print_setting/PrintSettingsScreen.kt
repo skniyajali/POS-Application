@@ -8,30 +8,34 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.LightColor14
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
+import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.StandardScaffold
 import com.ramcosta.composedestinations.annotation.Destination
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @RequiresApi(Build.VERSION_CODES.R)
 @Destination
 @Composable
 fun PrintSettingsScreen(
     navController: NavController,
+    scaffoldState: ScaffoldState,
     printSettingViewModel: PrintSettingViewModel = hiltViewModel(),
 ) {
-    val scaffoldState = rememberScaffoldState()
-    val bluetoothDevices = printSettingViewModel.bluetoothDevices.collectAsState().value
-
+    val bluetoothDevices = printSettingViewModel.bluetoothDevices.collectAsStateWithLifecycle().value
 
     StandardScaffold(
         navController = navController,
@@ -49,58 +53,59 @@ fun PrintSettingsScreen(
                 .fillMaxWidth()
                 .padding(SpaceSmall),
         ) {
-
-            Text(text = "Print Settings")
-
-            Spacer(modifier = Modifier.height(SpaceMedium))
-
-            LazyColumn(){
-                items(bluetoothDevices){ bluetoothDevice ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(4.dp),
-                        backgroundColor = LightColor14,
-                        elevation = 1.dp,
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(SpaceSmall),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
+            if (bluetoothDevices.isEmpty()){
+                ItemNotAvailable(
+                    text = stringResource(id = R.string.no_bluetooth_devices_available)
+                )
+            }else{
+                LazyColumn {
+                    items(bluetoothDevices){ bluetoothDevice ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(4.dp),
+                            backgroundColor = LightColor14,
+                            elevation = 1.dp,
                         ) {
-                            Column(
-                                verticalArrangement = Arrangement.SpaceBetween
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(SpaceSmall),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text(
-                                    text = bluetoothDevice.name ?: "",
-                                    style = MaterialTheme.typography.body1,
-                                    fontWeight = FontWeight.Bold,
-                                )
+                                Column(
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = bluetoothDevice.name ?: "",
+                                        style = MaterialTheme.typography.body1,
+                                        fontWeight = FontWeight.Bold,
+                                    )
 
-                                Spacer(modifier = Modifier.height(SpaceSmall))
+                                    Spacer(modifier = Modifier.height(SpaceSmall))
 
-                                Text(
-                                    text = bluetoothDevice.address ?: "",
-                                    style = MaterialTheme.typography.body2,
-                                    fontStyle = FontStyle.Italic,
-                                )
-                            }
+                                    Text(
+                                        text = bluetoothDevice.address ?: "",
+                                        style = MaterialTheme.typography.body2,
+                                        fontStyle = FontStyle.Italic,
+                                    )
+                                }
 
-                            OutlinedButton(
-                                onClick = {
-                                    bluetoothDevice.address?.let {
-                                        printSettingViewModel.connectBluetoothPrinter(it)
-                                    }
-                                },
-                                enabled = !bluetoothDevice.connected
-                            ) {
-                                Text(text = if(bluetoothDevice.connected) "Disconnect" else "Connect")
+                                OutlinedButton(
+                                    onClick = {
+                                        bluetoothDevice.address?.let {
+                                            printSettingViewModel.connectBluetoothPrinter(it)
+                                        }
+                                    },
+                                    enabled = !bluetoothDevice.connected
+                                ) {
+                                    Text(text = if(bluetoothDevice.connected) "Disconnect" else "Connect")
+                                }
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(SpaceMedium))
+                        Spacer(modifier = Modifier.height(SpaceMedium))
+                    }
                 }
             }
         }

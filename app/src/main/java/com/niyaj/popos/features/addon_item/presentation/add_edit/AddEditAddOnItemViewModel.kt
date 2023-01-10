@@ -8,9 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.domain.util.safeString
 import com.niyaj.popos.features.addon_item.domain.model.AddOnItem
+import com.niyaj.popos.features.addon_item.domain.model.InvalidAddOnItemException
 import com.niyaj.popos.features.addon_item.domain.use_cases.AddOnItemUseCases
-import com.niyaj.popos.features.addon_item.domain.use_cases.validation.ValidateItemName
-import com.niyaj.popos.features.addon_item.domain.use_cases.validation.ValidateItemPrice
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,8 +23,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditAddOnItemViewModel @Inject constructor(
-    private val validateItemName: ValidateItemName,
-    private val validateItemPrice: ValidateItemPrice,
     private val addOnItemUseCases: AddOnItemUseCases,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
@@ -63,8 +60,8 @@ class AddEditAddOnItemViewModel @Inject constructor(
     }
 
     private fun addOrEditAddOnItem(addOnItemId: String? = null){
-        val validatedItemName = validateItemName.execute(addEditState.itemName, addOnItemId)
-        val validatedItemPrice = validateItemPrice.execute(safeString(addEditState.itemPrice))
+        val validatedItemName = addOnItemUseCases.validateItemName(addEditState.itemName, addOnItemId)
+        val validatedItemPrice = addOnItemUseCases.validateItemPrice(safeString(addEditState.itemPrice))
 
         val hasError = listOf(validatedItemName, validatedItemPrice).any {
             !it.successful
@@ -85,18 +82,23 @@ class AddEditAddOnItemViewModel @Inject constructor(
 
 
                 if(addOnItemId.isNullOrEmpty()){
-                    when(val result = addOnItemUseCases.createNewAddOnItem(addOnItem)){
-                        is Resource.Loading -> {
-                            _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
+                    try {
+                        when(val result = addOnItemUseCases.createNewAddOnItem(addOnItem)){
+                            is Resource.Loading -> {
+                                _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
+                            }
+                            is Resource.Success -> {
+                                _eventFlow.emit(UiEvent.OnSuccess(result.message ?: "AddOnItem created successfully"))
+                            }
+                            is Resource.Error -> {
+                                _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create AddOnItem"))
+                            }
                         }
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess(result.message ?: "AddOnItem created successfully"))
-                        }
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create AddOnItem"))
-                        }
+                    }catch (e: InvalidAddOnItemException) {
+                        addEditState = addEditState.copy(
+                            serverError = e.message
+                        )
                     }
-
                 }else {
                     val result = addOnItemUseCases.updateAddOnItem(
                         addOnItem,
@@ -122,7 +124,7 @@ class AddEditAddOnItemViewModel @Inject constructor(
     }
 
     private fun getAllAddOnItemById(addOnItemId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             when(val result = addOnItemUseCases.getAddOnItemById(addOnItemId)) {
                 is Resource.Loading -> {}
 

@@ -1,8 +1,5 @@
 package com.niyaj.popos.features.delivery_partner.presentation
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
@@ -25,7 +22,8 @@ class PartnerViewModel @Inject constructor(
     private val partnerUseCases: PartnerUseCases
 ): ViewModel() {
 
-    var state by mutableStateOf(PartnerState())
+    private val _state = MutableStateFlow(PartnerState())
+    val state = _state.asStateFlow()
 
     private val _selectedPartner =  MutableStateFlow("")
     val selectedPartner = _selectedPartner.asStateFlow()
@@ -75,16 +73,16 @@ class PartnerViewModel @Inject constructor(
             }
 
             is PartnerEvent.OnFilterPartner -> {
-                if(state.filterPartner::class == event.filterPartner::class &&
-                    state.filterPartner.sortType == event.filterPartner.sortType
+                if(_state.value.filterPartner::class == event.filterPartner::class &&
+                    _state.value.filterPartner.sortType == event.filterPartner.sortType
                 ){
-                    state = state.copy(
+                    _state.value = _state.value.copy(
                         filterPartner = FilterPartner.ByPartnerId(SortType.Descending)
                     )
                     return
                 }
 
-                state = state.copy(
+                _state.value = _state.value.copy(
                     filterPartner = event.filterPartner
                 )
 
@@ -97,7 +95,7 @@ class PartnerViewModel @Inject constructor(
 
                     delay(500L)
                     getAllPartners(
-                        state.filterPartner,
+                        _state.value.filterPartner,
                         searchText = event.searchText
                     )
                 }
@@ -110,7 +108,7 @@ class PartnerViewModel @Inject constructor(
             }
 
             is PartnerEvent.RefreshPartner -> {
-                getAllPartners(state.filterPartner)
+                getAllPartners(_state.value.filterPartner)
             }
         }
     }
@@ -120,18 +118,18 @@ class PartnerViewModel @Inject constructor(
             partnerUseCases.getAllPartners(filterPartner, searchText).collect{ result ->
                 when(result){
                     is Resource.Loading -> {
-                        state = state.copy(isLoading = result.isLoading)
+                        _state.value = _state.value.copy(isLoading = result.isLoading)
                     }
                     is Resource.Success -> {
                         result.data?.let {
-                            state = state.copy(
+                            _state.value = _state.value.copy(
                                 partners = it,
                                 filterPartner = filterPartner
                             )
                         }
                     }
                     is Resource.Error -> {
-                        state = state.copy(error = "Unable to load resources")
+                        _state.value = _state.value.copy(error = result.message)
                         _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
                     }
                 }
@@ -152,7 +150,7 @@ class PartnerViewModel @Inject constructor(
         viewModelScope.launch {
             _searchText.emit("")
             getAllPartners(
-                state.filterPartner,
+                _state.value.filterPartner,
                 _searchText.value
             )
         }

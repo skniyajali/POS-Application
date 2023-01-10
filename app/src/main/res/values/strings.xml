@@ -19,12 +19,12 @@
     <string name="create_category">Create New Category</string>
     <string name="no_items_in_category">Categories Not Available</string>
     <string name="no_items_in_product">Products Not Available</string>
-    <string name="create_product">Create New Product</string>
+    <string name="create_product">Add New Product</string>
     <string name="edit_product">Edit Product</string>
     <string name="filter_product">Filter Product</string>
     <string name="edit_address">Update Address</string>
-    <string name="create_address">Create New Address</string>
-    <string name="create_customer">Create New Customer</string>
+    <string name="create_address">Add New Address</string>
+    <string name="create_customer">Add New Customer</string>
     <string name="no_items_in_customers">Customers Not Found</string>
     <string name="no_items_in_address">Address Not Found</string>
     <string name="edit_customer">Update Customer Details</string>
@@ -34,9 +34,9 @@
     <string name="filter_order">Filter Orders</string>
     <string name="search_item_not_found">Searched Item Not Found</string>
     <string name="print_order">Print Order</string>
+    <string name="filter_address">Filter Address</string>
     <string name="create_new_add_on">Create New AddOn</string>
     <string name="filter_add_on_item">Filter AddOn Item</string>
-    <string name="filter_address">Filter Address</string>
     <string name="edit_add_on_item">Update AddOn Item</string>
     <string name="no_items_in_addon">AddOn Items Not Found</string>
     <string name="edit_charges">Update Charges</string>
@@ -45,7 +45,7 @@
     <string name="no_items_in_charges">Charges not found</string>
     <string name="create_new_employee">Add New Employee</string>
     <string name="update_employee">Update Employee Details</string>
-    <string name="create_new_partner">Create New Partner</string>
+    <string name="create_new_partner">Add New Partner</string>
     <string name="update_partner">Update Partner Details</string>
     <string name="create_new_expenses_category">Create New Category</string>
     <string name="filter_expenses_category">Filter Expenses Category</string>
@@ -99,5 +99,9 @@
     <string name="import_customers">Import Customers</string>
     <string name="customer_settings">Customer Setting Screen</string>
     <string name="delete_all_customers">Are you sure to delete all customer including of his all orders?</string>
+    <string name="no_bluetooth_devices_available">Bluetooth printers is not available in this device.</string>
+    <string name="addon_name_field">AddOn Name</string>
+    <string name="addon_price_field">AddOn Price</string>
+    <string name="addon_add_edit_button">AddEdit AddOn Item Button</string>
 
 </resources>

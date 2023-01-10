@@ -29,12 +29,14 @@ import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 
 @Composable
 fun ItemNotAvailable(
+    modifier: Modifier = Modifier,
+    btnModifier: Modifier = Modifier,
     text: String = "",
     buttonText: String = "",
     onClick: () -> Unit = {},
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
     ) {
         Column(
@@ -55,7 +57,7 @@ fun ItemNotAvailable(
                         onClick()
                     },
                     shape= CutCornerShape(4.dp),
-                    modifier = Modifier.heightIn(ButtonSize)
+                    modifier = btnModifier.heightIn(ButtonSize)
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.add_icon) )
                     Spacer(modifier = Modifier.width(SpaceSmall))

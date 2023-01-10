@@ -49,7 +49,6 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +62,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -95,7 +96,7 @@ import com.vanpra.composematerialdialogs.title
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun CartOrderScreen(
@@ -110,13 +111,13 @@ fun CartOrderScreen(
     val showAlert = rememberMaterialDialogState()
     val systemUiController = rememberSystemUiController()
 
-    val cartOrders = cartOrderViewModel.cartOrders.collectAsState().value.cartOrders
+    val cartOrders = cartOrderViewModel.cartOrders.collectAsStateWithLifecycle().value.cartOrders
     val groupedByDate = cartOrders.groupBy { it.createdAt.toBarDate }
-    val isLoading = cartOrderViewModel.cartOrders.collectAsState().value.isLoading
-    val hasError = cartOrderViewModel.cartOrders.collectAsState().value.error
+    val isLoading = cartOrderViewModel.cartOrders.collectAsStateWithLifecycle().value.isLoading
+    val hasError = cartOrderViewModel.cartOrders.collectAsStateWithLifecycle().value.error
 
-    val selectedCartOrder = cartOrderViewModel.selectedCartOrder.collectAsState().value
-    val selectedOrder = cartOrderViewModel.selectedOrder.collectAsState().value
+    val selectedCartOrder = cartOrderViewModel.selectedCartOrder.collectAsStateWithLifecycle().value
+    val selectedOrder = cartOrderViewModel.selectedOrder.collectAsStateWithLifecycle().value
 
     val transition = updateTransition(selectedOrder.isNotEmpty(), label = "isContextual")
 
@@ -136,7 +137,7 @@ fun CartOrderScreen(
         }
     }
 
-    val showSearchBar = cartOrderViewModel.toggledSearchBar.collectAsState().value
+    val showSearchBar = cartOrderViewModel.toggledSearchBar.collectAsStateWithLifecycle().value
 
     var showMenu by remember { mutableStateOf(false) }
 
@@ -308,7 +309,7 @@ fun CartOrderScreen(
                 }
             } else if (showSearchBar) {
                 StandardSearchBar(
-                    searchText = cartOrderViewModel.searchText.collectAsState().value,
+                    searchText = cartOrderViewModel.searchText.collectAsStateWithLifecycle().value,
                     placeholderText = "Search for cart orders...",
                     onSearchTextChanged = {
                         cartOrderViewModel.onCartOrderEvent(CartOrderEvent.OnSearchCartOrder(it))

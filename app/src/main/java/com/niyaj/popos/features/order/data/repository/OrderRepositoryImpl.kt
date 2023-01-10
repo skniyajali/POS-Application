@@ -17,15 +17,16 @@ import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.RealmResults
 import io.realm.kotlin.query.Sort
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class OrderRepositoryImpl(
-    config: RealmConfiguration
+    config: RealmConfiguration,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : OrderRepository {
 
     val realm = Realm.open(config)
@@ -39,7 +40,7 @@ class OrderRepositoryImpl(
         endDate: String
     ): Flow<Resource<List<Cart>>> {
         return channelFlow {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher) {
                 try {
                     send(Resource.Loading(true))
 
@@ -55,13 +56,11 @@ class OrderRepositoryImpl(
                         when (changes) {
                             is InitialResults -> {
                                 send(Resource.Success(mapCartRealmToCartList(changes.list)))
-                                delay(50L)
                                 send(Resource.Loading(false))
                             }
 
                             is UpdatedResults -> {
                                 send(Resource.Success(mapCartRealmToCartList(changes.list)))
-                                delay(50L)
                                 send(Resource.Loading(false))
                             }
                         }
@@ -75,7 +74,7 @@ class OrderRepositoryImpl(
 
     override suspend fun getOrderDetails(cartOrderId: String): Resource<Cart?> {
         return try {
-            val carts = withContext(Dispatchers.IO) {
+            val carts = withContext(ioDispatcher) {
                 realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
             }
 
@@ -107,7 +106,7 @@ class OrderRepositoryImpl(
             }
 
             if (cartOrder != null) {
-                withContext(Dispatchers.IO){
+                withContext(ioDispatcher){
                     realm.write {
                         findLatest(cartOrder).also {
                             it?.cartOrderStatus = newOrderStatus
@@ -127,14 +126,16 @@ class OrderRepositoryImpl(
 
     override suspend fun deleteOrder(cartOrderId: String): Resource<Boolean> {
         return try {
-            realm.write {
-                val cartOrder = this.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
-                if (cartOrder != null) {
-                    val cartProducts: RealmResults<CartRealm> =
-                        this.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
+            withContext(ioDispatcher) {
+                realm.write {
+                    val cartOrder = this.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
+                    if (cartOrder != null) {
+                        val cartProducts: RealmResults<CartRealm> =
+                            this.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
 
-                    delete(cartProducts)
-                    delete(cartOrder)
+                        delete(cartProducts)
+                        delete(cartOrder)
+                    }
                 }
             }
 

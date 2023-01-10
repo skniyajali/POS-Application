@@ -4,20 +4,48 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FabPosition
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -51,7 +79,7 @@ import com.vanpra.composematerialdialogs.title
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun AttendanceScreen(
@@ -65,14 +93,14 @@ fun AttendanceScreen(
     val dialogState = rememberMaterialDialogState()
     val scope = rememberCoroutineScope()
 
-    val attendances by lazy { attendanceViewModel.attendance.attendances }
-    val isLoading = attendanceViewModel.attendance.isLoading
-    val hasError by lazy { attendanceViewModel.attendance.error }
+    val attendances = attendanceViewModel.attendance.collectAsStateWithLifecycle().value.attendances
+    val isLoading = attendanceViewModel.attendance.collectAsStateWithLifecycle().value.isLoading
+    val hasError = attendanceViewModel.attendance.collectAsStateWithLifecycle().value.error
 
     val groupedEmployeeAbsent = attendances.groupBy { it.employee }
 
-    val selectedAttendance = attendanceViewModel.selectedAttendance.collectAsState().value
-    val selectedEmployee = attendanceViewModel.selectedEmployee.collectAsState().value
+    val selectedAttendance = attendanceViewModel.selectedAttendance.collectAsStateWithLifecycle().value
+    val selectedEmployee = attendanceViewModel.selectedEmployee.collectAsStateWithLifecycle().value
 
     // Remember a SystemUiController
     val systemUiController = rememberSystemUiController()
@@ -95,7 +123,7 @@ fun AttendanceScreen(
         }
     }
 
-    val showSearchBar = attendanceViewModel.toggledSearchBar.collectAsState().value
+    val showSearchBar = attendanceViewModel.toggledSearchBar.collectAsStateWithLifecycle().value
 
     LaunchedEffect(key1 = true) {
         attendanceViewModel.eventFlow.collect { event ->
@@ -215,7 +243,7 @@ fun AttendanceScreen(
                 }
             } else if (showSearchBar) {
                 StandardSearchBar(
-                    searchText = attendanceViewModel.searchText.collectAsState().value,
+                    searchText = attendanceViewModel.searchText.collectAsStateWithLifecycle().value,
                     placeholderText = "Search for employees...",
                     onSearchTextChanged = {
                         attendanceViewModel.onEvent(AttendanceEvent.OnSearchAttendance(it))

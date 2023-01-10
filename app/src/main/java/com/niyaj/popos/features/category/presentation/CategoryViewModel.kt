@@ -17,6 +17,7 @@ import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.util.capitalizeWords
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -263,8 +264,8 @@ class CategoryViewModel @Inject constructor(
     }
 
     private fun getAllCategory(filterCategory: FilterCategory, searchText:String = ""){
-        viewModelScope.launch {
-            categoryUseCases.getAllCategories(filterCategory, searchText).collect{ result ->
+        viewModelScope.launch(Dispatchers.IO) {
+            categoryUseCases.getAllCategories(filterCategory, searchText).collect { result ->
                 when(result){
                     is Resource.Loading -> {
                         _categories.value = _categories.value.copy(

@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -48,6 +49,7 @@ fun StandardOutlinedTextField(
     trailingIcon: @Composable () -> Unit = {},
     readOnly: Boolean = false,
     message: String? = null,
+    errorTag: String = "",
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -87,7 +89,6 @@ fun StandardOutlinedTextField(
                     Icon(
                         imageVector = leadingIcon,
                         contentDescription = null,
-                        tint = MaterialTheme.colors.onBackground,
                     )
                 }
                 icon
@@ -106,7 +107,7 @@ fun StandardOutlinedTextField(
                             } else {
                                 Icons.Filled.Visibility
                             },
-                            tint = Color.Blue,
+                            tint = MaterialTheme.colors.secondaryVariant,
                             contentDescription = if (isPasswordVisible) {
                                 stringResource(id = R.string.password_visible_content_description)
                             } else {
@@ -128,6 +129,7 @@ fun StandardOutlinedTextField(
                 color = MaterialTheme.colors.error,
                 textAlign = TextAlign.Start,
                 modifier = Modifier
+                    .testTag(errorTag)
                     .fillMaxWidth()
             )
         } else if (message != null) {
@@ -137,6 +139,7 @@ fun StandardOutlinedTextField(
                 color = MaterialTheme.colors.error,
                 textAlign = TextAlign.Start,
                 modifier = Modifier
+                    .testTag(errorTag)
                     .fillMaxWidth()
             )
         }

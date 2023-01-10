@@ -1,8 +1,10 @@
 package com.niyaj.popos.features
 
+import com.niyaj.popos.applicationScope
 import com.niyaj.popos.features.addon_item.data.repository.AddOnItemRepositoryImpl
 import com.niyaj.popos.features.addon_item.domain.model.AddOnItem
 import com.niyaj.popos.features.addon_item.domain.repository.AddOnItemRepository
+import com.niyaj.popos.features.addon_item.domain.repository.ValidationRepository
 import com.niyaj.popos.features.address.data.repository.AddressRepositoryImpl
 import com.niyaj.popos.features.address.domain.model.Address
 import com.niyaj.popos.features.address.domain.repository.AddressRepository
@@ -68,7 +70,6 @@ import io.realm.kotlin.log.LogLevel
 @Module
 @InstallIn(SingletonComponent::class)
 object RealmModule {
-
     private val schema = setOf(
         Product::class,
         Category::class,
@@ -120,7 +121,7 @@ object RealmModule {
 
     @Provides
     fun provideCartOrderRepositoryImpl(settingsRepository: SettingsRepository): CartOrderRepository {
-        return CartOrderRepositoryImpl(config, settingsRepository)
+        return CartOrderRepositoryImpl(config, settingsRepository, applicationScope)
     }
 
     @Provides
@@ -140,6 +141,11 @@ object RealmModule {
 
     @Provides
     fun provideAddOnItemRepositoryImpl(): AddOnItemRepository {
+        return AddOnItemRepositoryImpl(config)
+    }
+
+    @Provides
+    fun provideValidationAddOnItemRepository(): ValidationRepository {
         return AddOnItemRepositoryImpl(config)
     }
 

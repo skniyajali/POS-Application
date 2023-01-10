@@ -41,7 +41,6 @@ import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +53,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
 import com.google.accompanist.flowlayout.FlowMainAxisAlignment
@@ -99,7 +100,7 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun ReportScreen(
@@ -111,36 +112,36 @@ fun ReportScreen(
     val dialogState = rememberMaterialDialogState()
     val scope = rememberCoroutineScope()
 
-    val reportState = reportsViewModel.reportState.collectAsState().value.report
+    val reportState = reportsViewModel.reportState.collectAsStateWithLifecycle().value.report
     val totalAmount = reportState.expensesAmount.plus(reportState.dineInSalesAmount).plus(reportState.dineOutSalesAmount).toString()
 
-    val reportBarData = reportsViewModel.reportsBarData.collectAsState().value.reportBarData
-    val reportBarIsLoading = reportsViewModel.reportsBarData.collectAsState().value.isLoading
-    val reportBarError = reportsViewModel.reportsBarData.collectAsState().value.error
+    val reportBarData = reportsViewModel.reportsBarData.collectAsStateWithLifecycle().value.reportBarData
+    val reportBarIsLoading = reportsViewModel.reportsBarData.collectAsStateWithLifecycle().value.isLoading
+    val reportBarError = reportsViewModel.reportsBarData.collectAsStateWithLifecycle().value.error
 
-    val productWiseData = reportsViewModel.productWiseData.collectAsState().value.data
-    val productDataIsLoading = reportsViewModel.productWiseData.collectAsState().value.isLoading
-    val productDataError = reportsViewModel.productWiseData.collectAsState().value.error
-    val orderType = reportsViewModel.productWiseData.collectAsState().value.orderType
+    val productWiseData = reportsViewModel.productWiseData.collectAsStateWithLifecycle().value.data
+    val productDataIsLoading = reportsViewModel.productWiseData.collectAsStateWithLifecycle().value.isLoading
+    val productDataError = reportsViewModel.productWiseData.collectAsStateWithLifecycle().value.error
+    val orderType = reportsViewModel.productWiseData.collectAsStateWithLifecycle().value.orderType
 
-    val selectedDate = reportsViewModel.selectedDate.collectAsState().value
+    val selectedDate = reportsViewModel.selectedDate.collectAsStateWithLifecycle().value
     val lastSevenStartDate = getCalculatedStartDate("-8")
 
-    val categoryWiseReport = reportsViewModel.categoryWiseData.collectAsState().value.categoryWiseReport
+    val categoryWiseReport = reportsViewModel.categoryWiseData.collectAsStateWithLifecycle().value.categoryWiseReport
     val groupedByCategoryWiseReport = categoryWiseReport.groupBy { it.product?.category?.categoryName }
-    val categoryOrderType = reportsViewModel.categoryWiseData.collectAsState().value.orderType
-    val categoryDataIsLoading = reportsViewModel.categoryWiseData.collectAsState().value.isLoading
-    val categoryDataError = reportsViewModel.categoryWiseData.collectAsState().value.hasError
+    val categoryOrderType = reportsViewModel.categoryWiseData.collectAsStateWithLifecycle().value.orderType
+    val categoryDataIsLoading = reportsViewModel.categoryWiseData.collectAsStateWithLifecycle().value.isLoading
+    val categoryDataError = reportsViewModel.categoryWiseData.collectAsStateWithLifecycle().value.hasError
 
-    val addressWiseReport = reportsViewModel.addressWiseData.collectAsState().value.reports
-    val addressRepLoading = reportsViewModel.addressWiseData.collectAsState().value.isLoading
-    val addressRepError = reportsViewModel.addressWiseData.collectAsState().value.error
+    val addressWiseReport = reportsViewModel.addressWiseData.collectAsStateWithLifecycle().value.reports
+    val addressRepLoading = reportsViewModel.addressWiseData.collectAsStateWithLifecycle().value.isLoading
+    val addressRepError = reportsViewModel.addressWiseData.collectAsStateWithLifecycle().value.error
 
-    val customerWiseReport = reportsViewModel.customerWiseData.collectAsState().value.reports
-    val customerRepLoading = reportsViewModel.customerWiseData.collectAsState().value.isLoading
-    val customerRepError = reportsViewModel.customerWiseData.collectAsState().value.error
+    val customerWiseReport = reportsViewModel.customerWiseData.collectAsStateWithLifecycle().value.reports
+    val customerRepLoading = reportsViewModel.customerWiseData.collectAsStateWithLifecycle().value.isLoading
+    val customerRepError = reportsViewModel.customerWiseData.collectAsStateWithLifecycle().value.error
 
-    val selectedCategory = reportsViewModel.selectedCategory.collectAsState().value
+    val selectedCategory = reportsViewModel.selectedCategory.collectAsStateWithLifecycle().value
 
     var categoryWiseRepExpanded by remember { mutableStateOf(false) }
 

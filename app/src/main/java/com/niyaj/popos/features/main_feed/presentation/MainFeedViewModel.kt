@@ -20,7 +20,6 @@ import com.niyaj.popos.features.main_feed.presentation.components.category.MainF
 import com.niyaj.popos.features.main_feed.presentation.components.category.MainFeedCategoryState
 import com.niyaj.popos.features.main_feed.presentation.components.product.MainFeedProductEvent
 import com.niyaj.popos.features.main_feed.presentation.components.product.MainFeedProductState
-import com.niyaj.popos.features.product.domain.use_cases.ProductUseCases
 import com.niyaj.popos.features.product.domain.util.FilterProduct
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -37,19 +36,18 @@ import javax.inject.Inject
 class MainFeedViewModel @Inject constructor(
     private val mainFeedUseCases: MainFeedUseCases,
     private val cartUseCases: CartUseCases,
-    private val productUseCases: ProductUseCases,
 ): ViewModel() {
     
     private val _selectedCategory = mutableStateOf("")
     val selectedCategory: State<String> = _selectedCategory
 
-    private val _categories = mutableStateOf(MainFeedCategoryState())
-    val categories: State<MainFeedCategoryState> = _categories
+    private val _categories = MutableStateFlow(MainFeedCategoryState())
+    val categories = _categories.asStateFlow()
 
     private val _products = MutableStateFlow(MainFeedProductState())
     val products = _products.asStateFlow()
 
-    private val _selectedCartOrder = MutableStateFlow(CartOrder())
+    private val _selectedCartOrder = MutableStateFlow<CartOrder?>(null)
     val selectedCartOrder =  _selectedCartOrder.asStateFlow()
 
     private val _searchText =  MutableStateFlow("")
@@ -138,12 +136,12 @@ class MainFeedViewModel @Inject constructor(
             }
 
             is MainFeedProductEvent.AddProductToCart -> {
-                viewModelScope.launch(Dispatchers.IO) {
+                viewModelScope.launch {
                     if (event.cartOrderId.isEmpty()) {
                         _eventFlow.emit(UiEvent.OnError("Create New Order First"))
-                    }else if(event.productId.isEmpty()){
+                    } else if(event.productId.isEmpty()){
                         _eventFlow.emit(UiEvent.OnError("Unable to get product"))
-                    }else {
+                    }  else {
                         when (val result = cartUseCases.addProductToCart(event.cartOrderId, event.productId)){
                             is Resource.Loading -> {}
                             is Resource.Success -> {
@@ -151,6 +149,7 @@ class MainFeedViewModel @Inject constructor(
                             }
                             is Resource.Error -> {
                                 _eventFlow.emit(UiEvent.OnError(result.message ?: "Error adding product to cart"))
+                                getSelectedCartOrder()
                             }
                         }
                     }
@@ -178,6 +177,10 @@ class MainFeedViewModel @Inject constructor(
             is MainFeedEvent.RefreshMainFeed -> {
                 getAllMainFeedProducts(selectedCategory = _selectedCategory.value, searchText = _searchText.value)
                 getAllCategories()
+                getSelectedCartOrder()
+            }
+
+            is MainFeedEvent.GetSelectedOrder -> {
                 getSelectedCartOrder()
             }
         }
@@ -218,7 +221,7 @@ class MainFeedViewModel @Inject constructor(
         selectedCategory: String = "",
         searchText: String = "",
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             mainFeedUseCases.getMainFeedProducts(filterProduct, selectedCategory, searchText).collectLatest { result ->
                 when (result) {
                     is Resource.Loading -> {
@@ -247,11 +250,7 @@ class MainFeedViewModel @Inject constructor(
     private fun getSelectedCartOrder(){
         viewModelScope.launch {
             mainFeedUseCases.getMainFeedSelectedOrder().collectLatest { result ->
-                if (result != null) {
-                    _selectedCartOrder.value = result
-                }else {
-                    _selectedCartOrder.value = CartOrder()
-                }
+                _selectedCartOrder.value = result
             }
         }
     }

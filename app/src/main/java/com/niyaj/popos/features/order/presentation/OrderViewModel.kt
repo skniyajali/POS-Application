@@ -1,14 +1,10 @@
 package com.niyaj.popos.features.order.presentation
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
-import com.niyaj.popos.features.cart.presentation.dine_in.DineInState
-import com.niyaj.popos.features.cart.presentation.dine_out.DineOutState
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.common.util.Resource
@@ -27,6 +23,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
@@ -41,14 +38,8 @@ class OrderViewModel @Inject constructor(
 
     private lateinit var escposPrinter: EscPosPrinter
 
-    private val _orders = mutableStateOf(OrderState())
-    val orders : State<OrderState> = _orders
-
-    private val _dineInOrders = MutableStateFlow(DineInState())
-    val dineInOrders = _dineInOrders.asStateFlow()
-
-    private val _dineOutOrders = MutableStateFlow(DineOutState())
-    val dineOutOrders = _dineOutOrders.asStateFlow()
+    private val _orders = MutableStateFlow(OrderState())
+    val orders = _orders.asStateFlow()
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -180,7 +171,7 @@ class OrderViewModel @Inject constructor(
         endDate: String = getEndTime,
     ){
         viewModelScope.launch {
-            orderUseCases.getAllOrders(filterOrder, searchText, startDate, endDate).collect { result ->
+            orderUseCases.getAllOrders(filterOrder, searchText, startDate, endDate).collectLatest { result ->
                 when(result){
                     is Resource.Loading -> {
                         _orders.value = _orders.value.copy(
@@ -192,18 +183,6 @@ class OrderViewModel @Inject constructor(
                             _orders.value = _orders.value.copy(
                                 orders = it,
                                 filterOrder = filterOrder,
-                            )
-
-                            _dineInOrders.value = _dineInOrders.value.copy(
-                                cartItems = it.filter { cart ->
-                                    cart.cartOrder?.orderType == CartOrderType.DineIn.orderType
-                                }
-                            )
-
-                            _dineOutOrders.value = _dineOutOrders.value.copy(
-                                cartItems = it.filter { cart ->
-                                    cart.cartOrder?.orderType  == CartOrderType.DineOut.orderType
-                                }
                             )
                         }
                     }
@@ -282,27 +261,30 @@ class OrderViewModel @Inject constructor(
     }
 
     private fun getPrintableOrders(): String {
-        var orders = ""
+        var order = ""
 
-        if(_dineOutOrders.value.cartItems.isNotEmpty()){
-            val dineOutOrders = _dineOutOrders.value.cartItems.asReversed()
+        val dineOutOrders = _orders.value.orders.filter { cart ->
+            cart.cartOrder?.orderType == CartOrderType.DineOut.orderType
+        }.asReversed()
 
-            orders += "[L]ID[C]Address[R]Price\n"
-            orders += "[L]-------------------------------\n"
+        if(dineOutOrders.isNotEmpty()){
+
+            order += "[L]ID[C]Address[R]Price\n"
+            order += "[L]-------------------------------\n"
 
             dineOutOrders.forEach { cart ->
                 if (cart.cartOrder != null){
-                    orders += "[L]${cart.cartOrder.orderId.takeLast(3)}[C]${cart.cartOrder.address?.shortName}[R]${cart.orderPrice.first.minus(cart.orderPrice.second)}\n"
-                    orders += "[L]-------------------------------\n"
+                    order += "[L]${cart.cartOrder.orderId.takeLast(3)}[C]${cart.cartOrder.address?.shortName}[R]${cart.orderPrice.first.minus(cart.orderPrice.second)}\n"
+                    order += "[L]-------------------------------\n"
                 }
             }
 
         }else {
-            orders += "[C]You have not place any order.\n"
+            order += "[C]You have not place any order.\n"
         }
 
-        orders += "[L]\n"
+        order += "[L]\n"
 
-        return orders
+        return order
     }
 }

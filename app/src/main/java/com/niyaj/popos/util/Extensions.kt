@@ -3,6 +3,7 @@ package com.niyaj.popos.util
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.graphics.Color
 import androidx.core.content.ContextCompat.getSystemService
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -13,6 +14,12 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.collections.List as KotlinCollectionsList
+
+
+val randomColor: Int
+    get() {
+        return Color.rgb((30..200).random(),(30..200).random(),(30..200).random())
+    }
 
 
 val String.isContainsArithmeticCharacter: Boolean

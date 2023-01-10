@@ -11,7 +11,7 @@ interface SalaryRepository {
 
     fun getAllSalary(): Flow<Resource<List<EmployeeSalary>>>
 
-    fun getSalaryById(salaryId: String): Resource<EmployeeSalary?>
+    suspend fun getSalaryById(salaryId: String): Resource<EmployeeSalary?>
 
     suspend fun getSalaryByEmployeeId(employeeId: String, selectedDate: Pair<String, String>): Resource<CalculatedSalary?>
 

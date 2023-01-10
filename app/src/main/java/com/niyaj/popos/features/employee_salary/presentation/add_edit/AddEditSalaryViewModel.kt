@@ -24,7 +24,9 @@ import com.niyaj.popos.features.employee_salary.domain.use_cases.validation.Vali
 import com.niyaj.popos.features.employee_salary.domain.use_cases.validation.ValidateSalaryType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -41,7 +43,8 @@ class AddEditSalaryViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
-    var employeeState by mutableStateOf(EmployeeState())
+    private val _employeeState = MutableStateFlow(EmployeeState())
+    val employeeState = _employeeState.asStateFlow()
 
     var addEditSalaryState by mutableStateOf(AddEditSalaryState())
 
@@ -109,7 +112,6 @@ class AddEditSalaryViewModel @Inject constructor(
     }
 
     private fun addEditSalaryEntry(salaryId: String? = null) {
-
         val validateEmployee = validateEmployee.validate(addEditSalaryState.employee.employeeId)
         val validateSalary = validateSalary.validate(addEditSalaryState.salary)
         val validateSalaryType = validateSalaryType.validate(addEditSalaryState.salaryType)
@@ -204,18 +206,18 @@ class AddEditSalaryViewModel @Inject constructor(
             employeeUseCases.getAllEmployee(filterEmployee, searchText).collect{ result ->
                 when(result){
                     is Resource.Loading -> {
-                        employeeState = employeeState.copy(isLoading = result.isLoading)
+                        _employeeState.value = _employeeState.value.copy(isLoading = result.isLoading)
                     }
                     is Resource.Success -> {
                         result.data?.let {
-                            employeeState = employeeState.copy(
+                            _employeeState.value = _employeeState.value.copy(
                                 employees = it,
                                 filterEmployee = filterEmployee
                             )
                         }
                     }
                     is Resource.Error -> {
-                        employeeState = employeeState.copy(error = "Unable to load resources")
+                        _employeeState.value = _employeeState.value.copy(error = "Unable to load resources")
                         _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
                     }
                 }
@@ -251,25 +253,27 @@ class AddEditSalaryViewModel @Inject constructor(
     }
 
     private fun getSalaryById(salaryId: String) {
-        when(val result = salaryUseCases.getSalaryById(salaryId)) {
-            is Resource.Loading -> {}
-            is Resource.Success -> {
-                result.data?.let { salary ->
-                    if (salary.employee != null){
-                        addEditSalaryState = addEditSalaryState.copy(
-                            employee = salary.employee!!,
-                            salary = salary.employeeSalary,
-                            salaryType = salary.salaryType,
-                            salaryDate = salary.salaryGivenDate,
-                            salaryPaymentType = salary.salaryPaymentType,
-                            salaryNote = salary.salaryNote
-                        )
+        viewModelScope.launch {
+            when(val result = salaryUseCases.getSalaryById(salaryId)) {
+                is Resource.Loading -> {}
+                is Resource.Success -> {
+                    result.data?.let { salary ->
+                        if (salary.employee != null){
+                            addEditSalaryState = addEditSalaryState.copy(
+                                employee = salary.employee!!,
+                                salary = salary.employeeSalary,
+                                salaryType = salary.salaryType,
+                                salaryDate = salary.salaryGivenDate,
+                                salaryPaymentType = salary.salaryPaymentType,
+                                salaryNote = salary.salaryNote
+                            )
+                        }
                     }
                 }
-            }
-            is Resource.Error -> {
-                viewModelScope.launch {
-                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get salary information"))
+                is Resource.Error -> {
+                    viewModelScope.launch {
+                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get salary information"))
+                    }
                 }
             }
         }

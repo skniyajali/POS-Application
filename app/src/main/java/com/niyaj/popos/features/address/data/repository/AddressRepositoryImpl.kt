@@ -9,6 +9,7 @@ import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -17,7 +18,8 @@ import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
 class AddressRepositoryImpl(
-    config: RealmConfiguration
+    config: RealmConfiguration,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AddressRepository {
 
     val realm = Realm.open(config)
@@ -28,7 +30,7 @@ class AddressRepositoryImpl(
 
     override suspend fun getAllAddress(): Flow<Resource<List<Address>>> {
         return channelFlow {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 try {
                     send(Resource.Loading(true))
                     val items = realm.query<Address>().sort("addressId", Sort.DESCENDING).find()
@@ -47,6 +49,7 @@ class AddressRepositoryImpl(
                             }
                         }
                     }
+
                 } catch (e: Exception){
                     send(Resource.Loading(false))
                     send(Resource.Error(e.message ?: "Unable to get addresses", emptyList()))
@@ -57,7 +60,9 @@ class AddressRepositoryImpl(
 
     override suspend fun getAddressById(addressId: String): Resource<Address?> {
         return try {
-            val address = realm.query<Address>("addressId == $0", addressId).first().find()
+            val address = withContext(ioDispatcher) {
+                realm.query<Address>("addressId == $0", addressId).first().find()
+            }
             Resource.Success(address)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to get address", null)
@@ -66,7 +71,7 @@ class AddressRepositoryImpl(
 
     override suspend fun addNewAddress(newAddress: Address): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 val address = Address()
                 address.addressId = BsonObjectId().toHexString()
                 address.shortName = newAddress.shortName
@@ -86,7 +91,7 @@ class AddressRepositoryImpl(
 
     override suspend fun updateAddress(newAddress: Address, addressId: String): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 realm.write {
                     val address = this.query<Address>("addressId == $0", addressId).first().find()
                     address?.shortName = newAddress.shortName
@@ -103,7 +108,7 @@ class AddressRepositoryImpl(
 
     override suspend fun deleteAddress(addressId: String): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 realm.write {
                     val address: Address =
                         this.query<Address>("addressId == $0", addressId).find().first()

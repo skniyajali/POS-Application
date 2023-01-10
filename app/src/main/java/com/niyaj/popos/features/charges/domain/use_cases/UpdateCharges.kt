@@ -7,7 +7,6 @@ import com.niyaj.popos.features.common.util.Resource
 class UpdateCharges(
     private val chargesRepository: ChargesRepository
 ) {
-
     suspend operator fun invoke(newCharges: Charges, chargesId: String): Resource<Boolean> {
         return chargesRepository.updateCharges(newCharges, chargesId)
     }

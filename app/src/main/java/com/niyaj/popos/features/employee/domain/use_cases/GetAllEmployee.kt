@@ -5,28 +5,29 @@ import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
 import com.niyaj.popos.features.employee.domain.util.FilterEmployee
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class GetAllEmployee(
     private val employeeRepository: EmployeeRepository
 ) {
-
     suspend operator fun invoke(
         filterEmployee: FilterEmployee = FilterEmployee.ByEmployeeId(SortType.Descending),
         searchText: String = ""
     ): Flow<Resource<List<Employee>>> {
-        return flow {
-            employeeRepository.getAllEmployee().collect { result ->
-                when(result){
-                    is Resource.Loading -> {
-                        emit(Resource.Loading(result.isLoading))
-                    }
-                    is Resource.Success -> {
-                        emit(
-                            Resource.Success(
-                            result.data?.let { data ->
+        return channelFlow {
+            withContext(Dispatchers.IO){
+                employeeRepository.getAllEmployee().collectLatest { result ->
+                    when(result){
+                        is Resource.Loading -> {
+                            send(Resource.Loading(result.isLoading))
+                        }
+                        is Resource.Success -> {
+                            val data = result.data?.let { data ->
                                 when(filterEmployee.sortType){
                                     is SortType.Ascending -> {
                                         when(filterEmployee){
@@ -52,20 +53,22 @@ class GetAllEmployee(
                                     }
                                 }.filter { employee ->
                                     employee.employeeName.contains(searchText, true) ||
-                                    employee.employeePosition.contains(searchText, true) ||
-                                    employee.employeePhone.contains(searchText, true) ||
-                                    employee.employeeSalaryType.contains(searchText, true) ||
-                                    employee.employeeSalary.contains(searchText, true) ||
-                                    employee.employeeJoinedDate.contains(searchText, true) ||
-                                    employee.createdAt.contains(searchText, true) ||
-                                    employee.updatedAt?.contains(searchText, true) == true
+                                            employee.employeePosition.contains(searchText, true) ||
+                                            employee.employeePhone.contains(searchText, true) ||
+                                            employee.employeeSalaryType.contains(searchText, true) ||
+                                            employee.employeeSalary.contains(searchText, true) ||
+                                            employee.employeeJoinedDate.contains(searchText, true) ||
+                                            employee.createdAt.contains(searchText, true) ||
+                                            employee.updatedAt?.contains(searchText, true) == true
                                 }
                             }
-                        ))
-                    }
-                    is Resource.Error -> {
-                        Timber.d("Unable to get employee data from repository")
-                        emit(Resource.Error(result.message ?: "Unable to get employee data from repository"))
+
+                            send(Resource.Success(data))
+                        }
+                        is Resource.Error -> {
+                            Timber.d("Unable to get employee data from repository")
+                            send(Resource.Error(result.message ?: "Unable to get employee data from repository"))
+                        }
                     }
                 }
             }

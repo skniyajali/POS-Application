@@ -5,7 +5,6 @@ import com.niyaj.popos.features.customer.domain.model.Contact
 import com.niyaj.popos.features.customer.domain.repository.CustomerRepository
 
 class ImportContacts(private val customerRepository: CustomerRepository) {
-
     suspend operator fun invoke(contacts: List<Contact>): Resource<Boolean>{
         return customerRepository.importContacts(contacts)
     }

@@ -6,7 +6,7 @@ import com.niyaj.popos.features.employee_salary.domain.repository.SalaryReposito
 
 class GetSalaryById(private val salaryRepository: SalaryRepository) {
 
-    operator fun invoke(salaryId: String) : Resource<EmployeeSalary?> {
+    suspend operator fun invoke(salaryId: String) : Resource<EmployeeSalary?> {
         return salaryRepository.getSalaryById(salaryId)
     }
 }

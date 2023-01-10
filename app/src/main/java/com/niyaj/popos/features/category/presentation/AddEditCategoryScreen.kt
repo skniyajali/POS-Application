@@ -5,12 +5,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -20,10 +23,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.ButtonSize
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.ramcosta.composedestinations.annotation.Destination
@@ -63,6 +66,7 @@ fun AddEditCategoryScreen(
             stringResource(id = R.string.edit_category)
         else
             stringResource(id = R.string.create_category),
+        icon = Icons.Default.Category,
         onClosePressed = {
             navController.navigateUp()
         }
@@ -75,6 +79,7 @@ fun AddEditCategoryScreen(
                 modifier = Modifier,
                 text = categoryViewModel.addEditCategoryState.categoryName,
                 hint = "Category Name",
+                leadingIcon = Icons.Default.Badge,
                 error = categoryViewModel.addEditCategoryState.categoryNameError,
                 onValueChange = {
                     categoryViewModel.onCategoryEvent(CategoryEvent.CategoryNameChanged(it))
@@ -105,27 +110,18 @@ fun AddEditCategoryScreen(
 
             Spacer(modifier = Modifier.height(SpaceMedium))
 
-            Button(
+            StandardButton(
+                text = if (!categoryId.isNullOrEmpty()) stringResource(id = R.string.edit_category)
+                    else stringResource(id = R.string.create_category),
+                icon = if (!categoryId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.AddCircleOutline,
                 onClick = {
                     if (!categoryId.isNullOrEmpty()) {
                         categoryViewModel.onCategoryEvent(CategoryEvent.UpdateCategory(categoryId))
                     } else {
                         categoryViewModel.onCategoryEvent(CategoryEvent.CreateNewCategory)
                     }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(ButtonSize),
-            ) {
-                Text(
-                    text =
-                    if (!categoryId.isNullOrEmpty())
-                        stringResource(id = R.string.edit_category).uppercase()
-                    else
-                        stringResource(id = R.string.create_category).uppercase(),
-                    style = MaterialTheme.typography.button,
-                )
-            }
+                }
+            )
         }
     }
 }

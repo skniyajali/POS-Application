@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.Sort
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -44,6 +43,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -69,6 +70,7 @@ import com.vanpra.composematerialdialogs.title
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun ExpensesCategoryScreen(
@@ -82,12 +84,12 @@ fun ExpensesCategoryScreen(
     val dialogState = rememberMaterialDialogState()
     val scope = rememberCoroutineScope()
 
-    val expensesCategories = expensesCategoryViewModel.expensesCategories.collectAsState().value.expensesCategory
-    val isLoading: Boolean = expensesCategoryViewModel.expensesCategories.collectAsState().value.isLoading
-    val hasError = expensesCategoryViewModel.expensesCategories.collectAsState().value.error
+    val expensesCategories = expensesCategoryViewModel.expensesCategories.collectAsStateWithLifecycle().value.expensesCategory
+    val isLoading: Boolean = expensesCategoryViewModel.expensesCategories.collectAsStateWithLifecycle().value.isLoading
+    val hasError = expensesCategoryViewModel.expensesCategories.collectAsStateWithLifecycle().value.error
 
-    val selectedExpensesCategoryItem = expensesCategoryViewModel.selectedExpensesCategory.collectAsState().value
-    val filterExpensesCategory = expensesCategoryViewModel.expensesCategories.collectAsState().value.filterExpensesCategory
+    val selectedExpensesCategoryItem = expensesCategoryViewModel.selectedExpensesCategory.collectAsStateWithLifecycle().value
+    val filterExpensesCategory = expensesCategoryViewModel.expensesCategories.collectAsStateWithLifecycle().value.filterExpensesCategory
 
     // Remember a SystemUiController
     val systemUiController = rememberSystemUiController()
@@ -101,7 +103,7 @@ fun ExpensesCategoryScreen(
         if(isContextualMode) { MaterialTheme.colors.secondary } else { MaterialTheme.colors.primary }
     }
 
-    val showSearchBar = expensesCategoryViewModel.toggledSearchBar.collectAsState().value
+    val showSearchBar = expensesCategoryViewModel.toggledSearchBar.collectAsStateWithLifecycle().value
 
     LaunchedEffect(key1 = true) {
         expensesCategoryViewModel.eventFlow.collect { event ->
@@ -239,7 +241,7 @@ fun ExpensesCategoryScreen(
             }
             else if(showSearchBar){
                 StandardSearchBar(
-                    searchText = expensesCategoryViewModel.searchText.collectAsState().value,
+                    searchText = expensesCategoryViewModel.searchText.collectAsStateWithLifecycle().value,
                     placeholderText = "Search for employees...",
                     onSearchTextChanged = {
                         expensesCategoryViewModel.onExpensesCategoryEvent(

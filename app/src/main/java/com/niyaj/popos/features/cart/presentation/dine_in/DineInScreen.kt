@@ -2,20 +2,33 @@ package com.niyaj.popos.features.cart.presentation.dine_in
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.BottomSheetScaffoldState
+import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -37,7 +50,7 @@ import com.niyaj.popos.features.destinations.OrderScreenDestination
 import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Composable
 fun DineInScreen(
     navController: NavController,
@@ -48,15 +61,15 @@ fun DineInScreen(
 
     val listState = rememberLazyListState()
 
-    val dineInOrders = dineInViewModel.dineInOrders.collectAsState().value.cartItems
-    val isLoading = dineInViewModel.dineInOrders.collectAsState().value.isLoading
-    val hasError = dineInViewModel.dineInOrders.collectAsState().value.error
+    val dineInOrders = dineInViewModel.dineInOrders.collectAsStateWithLifecycle().value.cartItems
+    val isLoading = dineInViewModel.dineInOrders.collectAsStateWithLifecycle().value.isLoading
+    val hasError = dineInViewModel.dineInOrders.collectAsStateWithLifecycle().value.error
 
-    val countTotalDineInItems = dineInViewModel.dineInOrders.collectAsState().value.cartItems.size
-    val selectedDineInOrder = dineInViewModel.selectedDineInOrder.collectAsState().value
+    val countTotalDineInItems = dineInViewModel.dineInOrders.collectAsStateWithLifecycle().value.cartItems.size
+    val selectedDineInOrder = dineInViewModel.selectedDineInOrder.collectAsStateWithLifecycle().value
     val countSelectedDineInItem = selectedDineInOrder.size
 
-    val addOnItems = addOnItemViewModel.state.collectAsState().value.addOnItems
+    val addOnItems = addOnItemViewModel.state.collectAsStateWithLifecycle().value.addOnItems
 
     LaunchedEffect(key1 = true){
         dineInViewModel.eventFlow.collectLatest { event ->

@@ -59,14 +59,7 @@ fun StandardDrawer(
 
             Spacer(modifier = Modifier.height(SpaceLarge))
 
-            Divider(
-                thickness = 1.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(LightColor12)
-            )
-
-
+            Divider(thickness = 1.dp, modifier = Modifier.background(LightColor12))
         }
 
         LazyColumn(

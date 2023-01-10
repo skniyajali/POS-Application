@@ -36,6 +36,7 @@ import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.ImportExport
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardExpandable
 import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.TextWithIcon
@@ -117,6 +118,7 @@ fun ImportContactScreen(
     BottomSheetWithCloseDialog(
         modifier = Modifier.fillMaxWidth(),
         text = stringResource(id = R.string.import_customers),
+        icon = Icons.Default.SaveAlt,
         onClosePressed = {
             navController.navigateUp()
         }
@@ -277,7 +279,7 @@ fun ImportContactScreen(
                     }
 
                     Spacer(modifier = Modifier.width(SpaceSmall))
-
+                    
                     Button(
                         onClick = {
                             scope.launch {
@@ -305,30 +307,16 @@ fun ImportContactScreen(
             } else {
                 Spacer(modifier = Modifier.height(SpaceMedium))
 
-                Button(
+                StandardButton(
+                    text = stringResource(id = R.string.open_file),
+                    icon = Icons.Default.UploadFile,
                     onClick = {
                         scope.launch {
                             val result = ImportExport.openFile(context)
                             importLauncher.launch(result)
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(ButtonSize),
-                    enabled = true
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.UploadFile,
-                        contentDescription = "Import Customers",
-                    )
-
-                    Spacer(modifier = Modifier.width(SpaceMini))
-
-                    Text(
-                        text = stringResource(id = R.string.open_file).uppercase(),
-                        style = MaterialTheme.typography.button,
-                    )
-                }
+                )
             }
         }
     }

@@ -1,8 +1,5 @@
 package com.niyaj.popos.features.expenses.presentation
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
@@ -26,7 +23,8 @@ class ExpensesViewModel @Inject constructor(
     private val expensesUseCases: ExpensesUseCases,
 ): ViewModel() {
 
-    var state by mutableStateOf(ExpensesState())
+    private val _state = MutableStateFlow(ExpensesState())
+    val state = _state.asStateFlow()
 
     private val _selectedExpenses =  MutableStateFlow("")
     val selectedExpenses = _selectedExpenses.asStateFlow()
@@ -46,7 +44,6 @@ class ExpensesViewModel @Inject constructor(
 
     fun onExpensesEvent(event: ExpensesEvent) {
         when (event){
-
             is ExpensesEvent.SelectExpenses -> {
                 viewModelScope.launch {
                     if(_selectedExpenses.value.isNotEmpty() && _selectedExpenses.value == event.expensesId){
@@ -75,16 +72,16 @@ class ExpensesViewModel @Inject constructor(
             }
 
             is ExpensesEvent.OnFilterExpenses -> {
-                if(state.filterExpenses::class == event.filterExpenses::class &&
-                    state.filterExpenses.sortType == event.filterExpenses.sortType
+                if(_state.value.filterExpenses::class == event.filterExpenses::class &&
+                    _state.value.filterExpenses.sortType == event.filterExpenses.sortType
                 ){
-                    state = state.copy(
+                    _state.value = _state.value.copy(
                         filterExpenses = FilterExpenses.ByExpensesId(SortType.Descending)
                     )
                     return
                 }
 
-                state = state.copy(
+                _state.value = _state.value.copy(
                     filterExpenses = event.filterExpenses
                 )
 
@@ -97,7 +94,7 @@ class ExpensesViewModel @Inject constructor(
 
                     delay(500L)
                     getAllExpenses(
-                        state.filterExpenses,
+                        _state.value.filterExpenses,
                         searchText = event.searchText
                     )
                 }
@@ -110,7 +107,7 @@ class ExpensesViewModel @Inject constructor(
             }
 
             is ExpensesEvent.RefreshExpenses -> {
-                getAllExpenses(state.filterExpenses)
+                getAllExpenses(_state.value.filterExpenses)
             }
 
             is ExpensesEvent.DeleteAllExpenses -> {
@@ -154,24 +151,24 @@ class ExpensesViewModel @Inject constructor(
         viewModelScope.launch {
             _searchText.emit("")
             getAllExpenses(
-                state.filterExpenses,
+                _state.value.filterExpenses,
                 _searchText.value
             )
         }
     }
 
     private fun getAllExpenses(filterExpenses: FilterExpenses, searchText: String = "") {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             expensesUseCases.getAllExpenses(filterExpenses, searchText).collect{ result ->
                 when(result){
                     is Resource.Loading -> {
                         withContext(Dispatchers.Main) {
-                            state = state.copy(isLoading = result.isLoading)
+                            _state.value = _state.value.copy(isLoading = result.isLoading)
                         }
                     }
                     is Resource.Success -> {
                         result.data?.let {
-                            state = state.copy(
+                            _state.value = _state.value.copy(
                                 expenses = it,
                                 filterExpenses = filterExpenses
                             )
@@ -179,7 +176,7 @@ class ExpensesViewModel @Inject constructor(
                     }
                     is Resource.Error -> {
                         withContext(Dispatchers.Main){
-                            state = state.copy(error = "Unable to load resources")
+                            _state.value = _state.value.copy(error = "Unable to load resources")
                             _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
                         }
                     }

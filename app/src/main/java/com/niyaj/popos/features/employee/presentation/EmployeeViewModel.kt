@@ -1,8 +1,5 @@
 package com.niyaj.popos.features.employee.presentation
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
@@ -23,7 +20,8 @@ class EmployeeViewModel @Inject constructor(
     private val employeeUseCases: EmployeeUseCases,
 ): ViewModel() {
 
-    var state by mutableStateOf(EmployeeState())
+    private val _state = MutableStateFlow(EmployeeState())
+    val state = _state.asStateFlow()
 
     private val _selectedEmployee =  MutableStateFlow("")
     val selectedEmployee = _selectedEmployee.asStateFlow()
@@ -72,16 +70,16 @@ class EmployeeViewModel @Inject constructor(
             }
 
             is EmployeeEvent.OnFilterEmployee -> {
-                if(state.filterEmployee::class == event.filterEmployee::class &&
-                    state.filterEmployee.sortType == event.filterEmployee.sortType
+                if(_state.value.filterEmployee::class == event.filterEmployee::class &&
+                    _state.value.filterEmployee.sortType == event.filterEmployee.sortType
                 ){
-                    state = state.copy(
+                    _state.value = _state.value.copy(
                         filterEmployee = FilterEmployee.ByEmployeeId(SortType.Descending)
                     )
                     return
                 }
 
-                state = state.copy(
+                _state.value = _state.value.copy(
                     filterEmployee = event.filterEmployee
                 )
 
@@ -93,7 +91,7 @@ class EmployeeViewModel @Inject constructor(
                     _searchText.emit(event.searchText)
 
                     getAllEmployees(
-                        state.filterEmployee,
+                        _state.value.filterEmployee,
                         searchText = event.searchText
                     )
                 }
@@ -107,7 +105,7 @@ class EmployeeViewModel @Inject constructor(
 
             is EmployeeEvent.RefreshEmployee -> {
                 getAllEmployees(
-                    state.filterEmployee
+                    _state.value.filterEmployee
                 )
             }
         }
@@ -118,18 +116,18 @@ class EmployeeViewModel @Inject constructor(
             employeeUseCases.getAllEmployee(filterEmployee, searchText).collect{ result ->
                 when(result){
                     is Resource.Loading -> {
-                        state = state.copy(isLoading = result.isLoading)
+                        _state.value = _state.value.copy(isLoading = result.isLoading)
                     }
                     is Resource.Success -> {
                         result.data?.let {
-                            state = state.copy(
+                            _state.value = _state.value.copy(
                                 employees = it,
                                 filterEmployee = filterEmployee
                             )
                         }
                     }
                     is Resource.Error -> {
-                        state = state.copy(error = "Unable to load resources")
+                        _state.value = _state.value.copy(error = result.message)
                         _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
                     }
                 }
@@ -150,7 +148,7 @@ class EmployeeViewModel @Inject constructor(
         viewModelScope.launch {
             _searchText.emit("")
             getAllEmployees(
-                state.filterEmployee,
+                _state.value.filterEmployee,
                 _searchText.value
             )
         }

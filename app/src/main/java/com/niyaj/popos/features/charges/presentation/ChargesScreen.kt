@@ -48,6 +48,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -74,6 +76,7 @@ import com.vanpra.composematerialdialogs.title
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun ChargesScreen(
@@ -87,11 +90,12 @@ fun ChargesScreen(
     val lazyListState = rememberLazyGridState()
     val deleteChargesState = rememberMaterialDialogState()
 
-    val chargesItems by lazy { chargesViewModel.state.chargesItem }
-    val isLoading by lazy { chargesViewModel.state.isLoading }
-    val hasError by lazy { chargesViewModel.state.error }
+    val chargesItems = chargesViewModel.state.collectAsStateWithLifecycle().value.chargesItem
+    val filterCharges = chargesViewModel.state.collectAsStateWithLifecycle().value.filterCharges
+    val isLoading = chargesViewModel.state.collectAsStateWithLifecycle().value.isLoading
+    val hasError = chargesViewModel.state.collectAsStateWithLifecycle().value.error
 
-    val selectedChargesItem = chargesViewModel.selectedCharges.collectAsState().value
+    val selectedChargesItem = chargesViewModel.selectedCharges.collectAsStateWithLifecycle().value
 
     // Remember a SystemUiController
     val systemUiController = rememberSystemUiController()
@@ -105,7 +109,7 @@ fun ChargesScreen(
         if(isContextualMode) { MaterialTheme.colors.secondary } else { MaterialTheme.colors.primary }
     }
 
-    val showSearchBar = chargesViewModel.toggledSearchBar.collectAsState().value
+    val showSearchBar = chargesViewModel.toggledSearchBar.collectAsStateWithLifecycle().value
 
     val showScrollToTop = remember {
         derivedStateOf {
@@ -260,7 +264,7 @@ fun ChargesScreen(
                         onClick = {
                             onOpenSheet(
                                 BottomSheetScreen.FilterChargesScreen(
-                                    filterCharges = chargesViewModel.state.filterCharges,
+                                    filterCharges = filterCharges,
                                     onFilterChanged = {
                                         chargesViewModel.onChargesEvent(
                                             ChargesEvent.OnFilterCharges(

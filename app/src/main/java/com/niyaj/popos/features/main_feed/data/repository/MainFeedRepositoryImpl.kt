@@ -19,6 +19,7 @@ import io.realm.kotlin.notifications.UpdatedObject
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.RealmResults
 import io.realm.kotlin.query.Sort
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +33,8 @@ import timber.log.Timber
 import kotlin.system.measureTimeMillis
 
 class MainFeedRepositoryImpl(
-    config: RealmConfiguration
+    config: RealmConfiguration,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : MainFeedRepository {
 
     val realm = Realm.open(config)
@@ -45,10 +47,11 @@ class MainFeedRepositoryImpl(
 
     override suspend fun getSelectedCartOrders(): Flow<CartOrder?> {
         return channelFlow {
-            withContext(Dispatchers.IO){
-                val selectedCartOrder = realm.query<SelectedCartOrder>().asFlow()
+            withContext(ioDispatcher) {
+                val selectedCartOrder = realm.query<SelectedCartOrder>().find()
+                val item = selectedCartOrder.asFlow()
 
-                selectedCartOrder.collect { changes ->
+                item.collect { changes ->
                     when (changes) {
                         is InitialResults -> {
                             if (changes.list.isNotEmpty()) {
@@ -73,12 +76,13 @@ class MainFeedRepositoryImpl(
 
     override suspend fun getAllCategories(): Flow<Resource<List<Category>>> {
         return channelFlow {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 try {
                     send(Resource.Loading(true))
 
                     val items: RealmResults<Category> =
                         realm.query<Category>().sort("categoryId", Sort.DESCENDING).find()
+
                     // create a Flow from the Item collection, then add a listener to the Flow
                     val itemsFlow = items.asFlow()
                     itemsFlow.collect { changes: ResultsChange<Category> ->
@@ -96,6 +100,7 @@ class MainFeedRepositoryImpl(
                             }
                         }
                     }
+
                 } catch (e: Exception) {
                     send(Resource.Loading(false))
                     send(Resource.Error(e.message ?: "Unable to get all categories", emptyList()))
@@ -107,7 +112,7 @@ class MainFeedRepositoryImpl(
     override suspend fun getProductsWithQuantity(): Flow<Resource<List<ProductWithQuantity>>> {
         return channelFlow {
             val time = measureTimeMillis {
-                withContext(Dispatchers.IO) {
+                withContext(ioDispatcher) {
                     try {
                         send(Resource.Loading(true))
 
@@ -227,7 +232,7 @@ class MainFeedRepositoryImpl(
     }
 
     override suspend fun getProductQuantity(cartOrderId: String, productId: String): Int {
-        val cart = withContext(Dispatchers.IO) {
+        val cart = withContext(ioDispatcher) {
             realm.query<CartRealm>(
                 "cartOrder.cartOrderId == $0 AND product.productId == $1",
                 cartOrderId,
@@ -348,7 +353,7 @@ class MainFeedRepositoryImpl(
             try {
                 send(Resource.Loading(true))
 
-                withContext(Dispatchers.IO) {
+                withContext(ioDispatcher) {
                     val products = realm.query<Product>().asFlow()
                     val selectedCartOrder = realm.query<SelectedCartOrder>().first().asFlow()
 
@@ -376,38 +381,6 @@ class MainFeedRepositoryImpl(
                         send(Resource.Success(it))
                         send(Resource.Loading(false))
                     }
-
-//                    products.collectLatest {result ->
-//                        when (result){
-//                            is InitialResults -> {
-//                                val data = result.list.map { product ->
-//                                    ProductWithFlowQuantity(
-//                                        product = product,
-//                                        quantity = selectedCartOrder.combine(getQuantity(product.productId)){ _, qty ->
-//                                            qty
-//                                        }
-//                                    )
-//                                }
-//
-//                                send(Resource.Success(data))
-//                                send(Resource.Loading(false))
-//                            }
-//
-//                            is UpdatedResults -> {
-//                                val data = result.list.map { product ->
-//                                    ProductWithFlowQuantity(
-//                                        product = product,
-//                                        quantity = selectedCartOrder.combine(getQuantity(product.productId)){ _, qty ->
-//                                            qty
-//                                        }
-//                                    )
-//                                }
-//
-//                                send(Resource.Success(data))
-//                                send(Resource.Loading(false))
-//                            }
-//                        }
-//                    }
                 }
             }catch (e: Exception) {
                 Timber.e(e)

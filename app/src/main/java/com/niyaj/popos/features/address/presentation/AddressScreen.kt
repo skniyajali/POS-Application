@@ -3,21 +3,14 @@ package com.niyaj.popos.features.address.presentation
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
@@ -26,6 +19,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -43,21 +37,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.BottomSheetScreen
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.ExtendedFabButton
+import com.niyaj.popos.features.components.FlexRowBox
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.StandardSearchBar
@@ -73,6 +65,7 @@ import com.vanpra.composematerialdialogs.title
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun AddressScreen(
@@ -86,10 +79,10 @@ fun AddressScreen(
     val scope = rememberCoroutineScope()
     val deleteAddressState = rememberMaterialDialogState()
 
-    val addresses = addressViewModel.addresses.collectAsState().value.addresses
-    val filterAddress = addressViewModel.addresses.collectAsState().value.filterAddress
-    val hasError = addressViewModel.addresses.collectAsState().value.error
-    val isLoading = addressViewModel.addresses.collectAsState().value.isLoading
+    val addresses = addressViewModel.addresses.collectAsStateWithLifecycle().value.addresses
+    val filterAddress = addressViewModel.addresses.collectAsStateWithLifecycle().value.filterAddress
+    val hasError = addressViewModel.addresses.collectAsStateWithLifecycle().value.error
+    val isLoading = addressViewModel.addresses.collectAsStateWithLifecycle().value.isLoading
 
     val selectedAddress = addressViewModel.selectedAddresses.toList()
 
@@ -105,7 +98,7 @@ fun AddressScreen(
         if(isContextualMode) { MaterialTheme.colors.secondary } else { MaterialTheme.colors.primary }
     }
 
-    val showSearchBar = addressViewModel.toggledSearchBar.collectAsState().value
+    val showSearchBar = addressViewModel.toggledSearchBar.collectAsStateWithLifecycle().value
 
     val showScrollToTop = remember {
         derivedStateOf {
@@ -367,46 +360,22 @@ fun AddressScreen(
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     state = lazyListState,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(SpaceSmall),
                 ){
                     itemsIndexed(addresses){ _, address ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(SpaceSmall)
-                                .clickable {
-                                    addressViewModel.onAddressEvent(
-                                        AddressEvent.SelectAddress(address.addressId)
-                                    )
-                                },
-                            shape = RoundedCornerShape(4.dp),
-                            border = if(selectedAddress.contains(address.addressId))
-                                BorderStroke(1.dp, MaterialTheme.colors.primary)
-                            else null,
-                            elevation = 2.dp,
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(SpaceSmall)
-                                    .fillMaxWidth(),
-                                verticalArrangement = Arrangement.SpaceBetween,
-                                horizontalAlignment = Alignment.Start
-                            ) {
-                                Text(
-                                    text = address.addressName,
-                                    style = MaterialTheme.typography.body1,
-                                    textAlign = TextAlign.Center,
-                                    fontWeight = FontWeight.SemiBold,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                                Spacer(modifier = Modifier.height(SpaceMini))
-                                Text(
-                                    text = address.shortName,
-                                    style = MaterialTheme.typography.body1,
-                                    textAlign = TextAlign.Center,
+                        FlexRowBox(
+                            title = address.addressName,
+                            secondaryText = address.shortName,
+                            icon = Icons.Default.Business,
+                            doesSelected = selectedAddress.contains(address.addressId),
+                            onClick = {
+                                addressViewModel.onAddressEvent(
+                                    AddressEvent.SelectAddress(address.addressId)
                                 )
                             }
-                        }
+                        )
                     }
                 }
             }

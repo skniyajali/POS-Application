@@ -5,12 +5,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Money
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -22,9 +26,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
 import com.niyaj.popos.domain.util.safeString
-import com.niyaj.popos.features.common.ui.theme.ButtonSize
+import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.ramcosta.composedestinations.annotation.Destination
@@ -63,6 +68,7 @@ fun AddEditChargesScreen(
             stringResource(id = R.string.edit_charges)
         else
             stringResource(id = R.string.create_new_charges),
+        icon = Icons.Default.Bolt,
         onClosePressed = {
             navController.navigateUp()
         }
@@ -75,6 +81,7 @@ fun AddEditChargesScreen(
                 modifier = Modifier,
                 text = chargesViewModel.addEditState.chargesName,
                 hint = "Charges Name",
+                leadingIcon = Icons.Default.Badge,
                 error = chargesViewModel.addEditState.chargesNameError,
                 onValueChange = {
                     chargesViewModel.onChargesEvent(ChargesEvent.ChargesNameChanged(it))
@@ -87,6 +94,7 @@ fun AddEditChargesScreen(
                 modifier = Modifier,
                 text = chargesViewModel.addEditState.chargesPrice,
                 hint = "Charges Amount",
+                leadingIcon = Icons.Default.Money,
                 keyboardType = KeyboardType.Number,
                 error = chargesViewModel.addEditState.chargesPriceError,
                 onValueChange = {
@@ -116,9 +124,12 @@ fun AddEditChargesScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(SpaceSmall))
+            Spacer(modifier = Modifier.height(SpaceMedium))
 
-            Button(
+            StandardButton(
+                text = if (!chargesId.isNullOrEmpty()) stringResource(id = R.string.edit_charges)
+                    else stringResource(id = R.string.create_new_charges),
+                icon = if (!chargesId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.Add,
                 onClick = {
                     if (!chargesId.isNullOrEmpty()) {
                         chargesViewModel.onChargesEvent(ChargesEvent.UpdateCharges(chargesId))
@@ -126,18 +137,7 @@ fun AddEditChargesScreen(
                         chargesViewModel.onChargesEvent(ChargesEvent.CreateNewCharges)
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(ButtonSize),
-            ) {
-                Text(
-                    text = if (!chargesId.isNullOrEmpty())
-                        stringResource(id = R.string.edit_charges).uppercase()
-                    else
-                        stringResource(id = R.string.create_new_charges).uppercase(),
-                    style = MaterialTheme.typography.button,
-                )
-            }
+            )
         }
     }
 }

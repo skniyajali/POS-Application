@@ -7,8 +7,10 @@ import com.niyaj.popos.features.expenses_category.domain.repository.ExpensesCate
 class UpdateExpensesCategory(
     private val expensesCategoryRepository: ExpensesCategoryRepository
 ) {
-
-    suspend operator fun invoke(expensesCategory: ExpensesCategory, categoryId: String): Resource<Boolean> {
+    suspend operator fun invoke(
+        expensesCategory: ExpensesCategory,
+        categoryId: String
+    ): Resource<Boolean> {
         return expensesCategoryRepository.updateExpensesCategory(expensesCategory, categoryId)
     }
 }

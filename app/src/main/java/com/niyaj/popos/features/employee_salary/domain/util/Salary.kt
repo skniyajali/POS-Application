@@ -20,7 +20,7 @@ data class CalculatedSalary(
     val endDate: String = "",
     val status: String = "",
     val message: String? = null,
-    val remainingAmount: String = "",
+    val remainingAmount: String = "0",
     val paymentCount: String = "",
     val absentCount: String = ""
 )

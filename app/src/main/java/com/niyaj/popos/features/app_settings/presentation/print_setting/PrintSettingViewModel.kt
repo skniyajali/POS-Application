@@ -2,20 +2,16 @@ package com.niyaj.popos.features.app_settings.presentation.print_setting
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.DeviceConnection
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnections
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
-import com.niyaj.popos.features.cart.domain.model.CartProduct
-import com.niyaj.popos.features.cart_order.domain.model.CartOrder
 import com.niyaj.popos.features.order.domain.use_cases.OrderUseCases
 import com.niyaj.popos.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -107,112 +103,5 @@ class PrintSettingViewModel @Inject constructor(
         } catch (e: Exception) {
             Timber.d(e.message ?: "Error connecting to Bluetooth")
         }
-    }
-
-
-    fun printOrder(cartOrderId: String) {
-        viewModelScope.launch {
-            val itemDetails = orderUseCases.getOrderDetails(cartOrderId).data
-            var printItems = ""
-
-            if (itemDetails != null) {
-                Timber.d("printing order details")
-
-                printItems += printRestaurantDetails()
-                printItems += printOrderDetails(itemDetails.cartOrder!!)
-                printItems += printProductDetails(itemDetails.cartProducts)
-                printItems += printCharges()
-                printItems += printAddOnItems()
-                printItems += printDiscount()
-                printItems += printTotalPrice(countTotalPrice(itemDetails.cartProducts).toString())
-                printItems += printQrCode(cartOrderId)
-                printItems += printFooterInfo()
-
-                try {
-                    escposPrinter.printFormattedText(printItems)
-                } catch (e: Exception) {
-                    Timber.d(e.message ?: "Error printing order details")
-                }
-            }
-        }
-    }
-
-    private fun printRestaurantDetails(): String {
-        return "[C]<b><font size='big'>POPOS HIGHLIGHT</font></b>\n" +
-                "[C]-- Pure And Tasty --\n\n" +
-                "[C]----------- POS BILL ----------\n\n"
-
-    }
-
-    private fun printOrderDetails(cartOrder: CartOrder): String {
-        var order = ""
-
-        order += "[L]Order Id - ${cartOrder.orderId}\n"
-
-        order += "[L]Order Type - ${cartOrder.orderType}\n"
-
-        if (!cartOrder.customer?.customerPhone.isNullOrEmpty()) {
-            order += "[L]Customer Phone - ${cartOrder.customer?.customerPhone}\n"
-        }
-
-        if (!cartOrder.address?.addressName.isNullOrEmpty()) {
-            order += "[L]Customer Address - ${cartOrder.address?.addressName}\n"
-        }
-
-        return order
-    }
-
-    private fun printProductDetails(cartProduct: List<CartProduct>): String {
-        var products = ""
-
-        products += "[L]-------------------------------\n"
-
-        products += "[L]Name[R]Qty[R]Price\n"
-
-        products += "[L]-------------------------------\n"
-
-        cartProduct.forEach {
-            products += "[L]${it.product?.productName}[R]${it.quantity}[R] Rs. ${it.product?.productPrice}\n"
-        }
-
-        products += "[L]-------------------------------\n"
-
-        return products
-    }
-
-    private fun countTotalPrice(cartProducts: List<CartProduct>): Int {
-        return cartProducts.sumOf {
-            it.quantity?.times(it.product?.productPrice!!)!!
-        }
-    }
-
-    private fun printTotalPrice(totalPrice: String): String {
-
-        return "[L]-------------------------------\n" +
-                "[L]Total[R] Rs. ${totalPrice}\n" +
-                "[L]-------------------------------\n\n"
-    }
-
-    private fun printQrCode(orderId: String): String {
-        return "[C]Pay by scanning this QR Code\n\n" +
-                "[C]<qrcode size='20'>${orderId}</qrcode>\n\n\n"
-    }
-
-    private fun printFooterInfo(): String {
-        return "[C]Thank you for ordering!\n" +
-                "[C]For order and inquiry, Call.\n" +
-                "[C]9500825077 / 9597185001\n"
-    }
-
-    private fun printAddOnItems(): String {
-        return ""
-    }
-
-    private fun printCharges(): String {
-        return ""
-    }
-
-    private fun printDiscount(): String {
-        return ""
     }
 }

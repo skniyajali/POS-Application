@@ -12,13 +12,17 @@ import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.RealmResults
 import io.realm.kotlin.query.Sort
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
 class CategoryRepositoryImpl(
-    config: RealmConfiguration
+    config: RealmConfiguration,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : CategoryRepository {
 
     val realm = Realm.open(config)
@@ -29,37 +33,42 @@ class CategoryRepositoryImpl(
 
     override suspend fun getAllCategories(): Flow<Resource<List<Category>>> {
         return channelFlow {
-            try {
-                send(Resource.Loading(true))
+            withContext(ioDispatcher) {
+                try {
+                    send(Resource.Loading(true))
 
-                val items: RealmResults<Category> =
-                    realm.query<Category>().sort("categoryId", Sort.DESCENDING).find()
-                // create a Flow from the Item collection, then add a listener to the Flow
-                val itemsFlow = items.asFlow()
-                itemsFlow.collect { changes: ResultsChange<Category> ->
-                    when (changes) {
-                        // UpdatedResults means this change represents an update/insert/delete operation
-                        is UpdatedResults -> {
-                            send(Resource.Success(changes.list))
-                            send(Resource.Loading(false))
-                        }
+                    val items: RealmResults<Category> =
+                        realm.query<Category>().sort("categoryId", Sort.DESCENDING).find()
 
-                        else -> {
-                            // types other than UpdatedResults are not changes -- ignore them
-                            send(Resource.Success(changes.list))
-                            send(Resource.Loading(false))
+                    // create a Flow from the Item collection, then add a listener to the Flow
+                    val itemsFlow = items.asFlow()
+                    itemsFlow.collect { changes: ResultsChange<Category> ->
+                        when (changes) {
+                            // UpdatedResults means this change represents an update/insert/delete operation
+                            is UpdatedResults -> {
+                                send(Resource.Success(changes.list))
+                                send(Resource.Loading(false))
+                            }
+
+                            else -> {
+                                // types other than UpdatedResults are not changes -- ignore them
+                                send(Resource.Success(changes.list))
+                                send(Resource.Loading(false))
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    send(Resource.Error(e.message ?: "Unable to get all categories", emptyList()))
                 }
-            } catch (e: Exception) {
-                send(Resource.Error(e.message ?: "Unable to get all categories", emptyList()))
             }
         }
     }
 
     override suspend fun getCategoryById(categoryId: String): Resource<Category?> {
         return try {
-            val category = realm.query<Category>("categoryId == $0", categoryId).first().find()
+            val category = withContext(ioDispatcher) {
+                realm.query<Category>("categoryId == $0", categoryId).first().find()
+            }
             Resource.Success(category)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to get category", null)
@@ -79,15 +88,18 @@ class CategoryRepositoryImpl(
 
     override suspend fun createNewCategory(newCategory: Category): Resource<Boolean> {
         return try {
-            val category = Category()
-            category.categoryId = BsonObjectId().toHexString()
-            category.categoryName = newCategory.categoryName
-            category.categoryAvailability = newCategory.categoryAvailability
-            category.createdAt = System.currentTimeMillis().toString()
+            withContext(ioDispatcher){
+                val category = Category()
+                category.categoryId = BsonObjectId().toHexString()
+                category.categoryName = newCategory.categoryName
+                category.categoryAvailability = newCategory.categoryAvailability
+                category.createdAt = System.currentTimeMillis().toString()
 
-            realm.write {
-                this.copyToRealm(category)
+                realm.write {
+                    this.copyToRealm(category)
+                }
             }
+
 
             Resource.Success(true)
         } catch (e: Exception) {
@@ -97,11 +109,13 @@ class CategoryRepositoryImpl(
 
     override suspend fun updateCategory(updatedCategory: Category, categoryId: String): Resource<Boolean> {
         return try {
-            realm.write {
-                val category = this.query<Category>("categoryId == $0", categoryId).first().find()
-                category?.categoryName = updatedCategory.categoryName
-                category?.categoryAvailability = updatedCategory.categoryAvailability
-                category?.updatedAt = System.currentTimeMillis().toString()
+            withContext(ioDispatcher){
+                realm.write {
+                    val category = this.query<Category>("categoryId == $0", categoryId).first().find()
+                    category?.categoryName = updatedCategory.categoryName
+                    category?.categoryAvailability = updatedCategory.categoryAvailability
+                    category?.updatedAt = System.currentTimeMillis().toString()
+                }
             }
 
             Resource.Success(true)
@@ -112,19 +126,21 @@ class CategoryRepositoryImpl(
 
     override suspend fun deleteCategory(categoryId: String): Resource<Boolean> {
         return try {
-            realm.write {
-                val category: Category =
-                    this.query<Category>("categoryId == $0", categoryId).find().first()
-                val products: RealmResults<Product> =
-                    this.query<Product>("category.categoryId == $0", categoryId).find()
-                val cartOrders =
-                    this.query<CartRealm>("product.category.categoryId == $0", categoryId).find()
+            withContext(ioDispatcher){
+                realm.write {
+                    val category: Category =
+                        this.query<Category>("categoryId == $0", categoryId).find().first()
+                    val products: RealmResults<Product> =
+                        this.query<Product>("category.categoryId == $0", categoryId).find()
+                    val cartOrders =
+                        this.query<CartRealm>("product.category.categoryId == $0", categoryId).find()
 
-                delete(cartOrders)
+                    delete(cartOrders)
 
-                delete(products)
+                    delete(products)
 
-                delete(category)
+                    delete(category)
+                }
             }
 
             Resource.Success(true)

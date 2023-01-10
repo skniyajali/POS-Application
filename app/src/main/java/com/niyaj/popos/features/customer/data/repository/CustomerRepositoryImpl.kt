@@ -12,6 +12,7 @@ import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -20,7 +21,8 @@ import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
 class CustomerRepositoryImpl(
-    config: RealmConfiguration
+    config: RealmConfiguration,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : CustomerRepository {
 
     val realm = Realm.open(config)
@@ -31,11 +33,12 @@ class CustomerRepositoryImpl(
 
     override suspend fun getAllCustomers(): Flow<Resource<List<Customer>>> {
         return channelFlow {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher) {
                 try {
                     send(Resource.Loading(true))
                     val items = realm.query<Customer>()
                         .sort("customerId", Sort.DESCENDING).find()
+
                     val itemsFlow = items.asFlow()
                     itemsFlow.collect { changes: ResultsChange<Customer> ->
                         when (changes) {
@@ -60,10 +63,13 @@ class CustomerRepositoryImpl(
 
     override suspend fun getCustomerById(customerId: String): Resource<Customer?> {
         return try {
-            val customer = realm.query<Customer>(
-                "customerId == $0",
-                customerId
-            ).first().find()
+            val customer = withContext(ioDispatcher) {
+                realm.query<Customer>(
+                    "customerId == $0",
+                    customerId
+                ).first().find()
+            }
+
             Resource.Success(customer)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to get customers", null)
@@ -89,7 +95,7 @@ class CustomerRepositoryImpl(
 
     override suspend fun createNewCustomer(newCustomer: Customer): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 val customer = Customer()
                 customer.customerId = BsonObjectId().toHexString()
                 customer.customerName = newCustomer.customerName
@@ -113,7 +119,7 @@ class CustomerRepositoryImpl(
         customerId: String
     ): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 realm.write {
                     val customer = this.query<Customer>(
                         "customerId == $0",
@@ -156,7 +162,7 @@ class CustomerRepositoryImpl(
 
     override suspend fun deleteAllCustomer(): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 realm.write {
                     val customers = this.query<Customer>().find()
 
@@ -188,7 +194,7 @@ class CustomerRepositoryImpl(
 
     override suspend fun importContacts(contacts: List<Contact>): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 realm.write {
                     contacts.forEach { contact ->
                         val customer = this.query<Customer>(

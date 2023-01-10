@@ -1,5 +1,7 @@
 package com.niyaj.popos.features.expenses.presentation.add_edit
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,7 +16,6 @@ import com.niyaj.popos.features.expenses_category.domain.use_cases.ExpensesCateg
 import com.niyaj.popos.features.expenses_category.domain.util.FilterExpensesCategory
 import com.niyaj.popos.features.expenses_category.presentation.ExpensesCategoryState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -31,8 +32,8 @@ class AddEditExpensesViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
-    private val _addEditState = MutableStateFlow(AddEditExpensesState())
-    val addEditState = _addEditState.asStateFlow()
+    private val _addEditState = mutableStateOf(AddEditExpensesState())
+    val addEditState: State<AddEditExpensesState> = _addEditState
 
     private val _expensesCategories = MutableStateFlow(ExpensesCategoryState())
     val expensesCategories = _expensesCategories.asStateFlow()
@@ -152,7 +153,7 @@ class AddEditExpensesViewModel @Inject constructor(
     }
 
     private fun getExpensesById(expensesId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             when(val result = expensesUseCases.getExpensesById(expensesId)) {
                 is Resource.Loading -> {}
 

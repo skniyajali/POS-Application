@@ -9,12 +9,11 @@ import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
-import org.mongodb.kbson.BsonObjectId
 
 class CartOrder(): RealmObject {
 
     @PrimaryKey
-    var cartOrderId: String = BsonObjectId().toHexString()
+    var cartOrderId: String = ""
 
     var orderId: String = ""
 
@@ -36,7 +35,7 @@ class CartOrder(): RealmObject {
 
 
     constructor(
-        cartOrderId: String = BsonObjectId().toHexString(),
+        cartOrderId: String = "",
         orderId: String = "",
         orderType: String = CartOrderType.DineIn.orderType,
         customer: Customer? = null,

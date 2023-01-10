@@ -3,6 +3,15 @@ package com.niyaj.popos.features.delivery_partner.presentation.add_edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.MergeType
+import androidx.compose.material.icons.filled.Password
+import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.WorkHistory
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -18,10 +27,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.ButtonSize
 import com.niyaj.popos.features.common.ui.theme.Primary
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.delivery_partner.domain.util.PartnerStatus
@@ -91,6 +100,7 @@ fun AddEditPartnerScreen(
                     modifier = Modifier,
                     text = addEditPartnerViewModel.addEditState.partnerName,
                     hint = "Partner Name",
+                    leadingIcon = Icons.Default.Badge,
                     error = addEditPartnerViewModel.addEditState.partnerNameError,
                     onValueChange = {
                         addEditPartnerViewModel.onAddEditPartnerEvent(
@@ -109,6 +119,7 @@ fun AddEditPartnerScreen(
                     modifier = Modifier,
                     text = addEditPartnerViewModel.addEditState.partnerPhone,
                     hint = "Partner Phone",
+                    leadingIcon = Icons.Default.PhoneAndroid,
                     keyboardType = KeyboardType.Number,
                     error = addEditPartnerViewModel.addEditState.partnerPhoneError,
                     onValueChange = {
@@ -127,6 +138,7 @@ fun AddEditPartnerScreen(
                     modifier = Modifier,
                     text = addEditPartnerViewModel.addEditState.partnerEmail,
                     hint = "Partner Email",
+                    leadingIcon = Icons.Default.Mail,
                     keyboardType = KeyboardType.Email,
                     error = addEditPartnerViewModel.addEditState.partnerEmailError,
                     onValueChange = {
@@ -146,6 +158,7 @@ fun AddEditPartnerScreen(
                     modifier = Modifier,
                     text = addEditPartnerViewModel.addEditState.partnerPassword,
                     hint = "Partner Password",
+                    leadingIcon = Icons.Default.Password,
                     error = addEditPartnerViewModel.addEditState.partnerPasswordError,
                     onValueChange = {
                         addEditPartnerViewModel.onAddEditPartnerEvent(
@@ -180,6 +193,7 @@ fun AddEditPartnerScreen(
                             },
                         text = addEditPartnerViewModel.addEditState.partnerType,
                         hint = "Partner Type",
+                        leadingIcon = Icons.Default.MergeType,
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
@@ -253,6 +267,7 @@ fun AddEditPartnerScreen(
                             },
                         text = addEditPartnerViewModel.addEditState.partnerStatus,
                         hint = "Partner Status",
+                        leadingIcon = Icons.Default.WorkHistory,
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
@@ -330,31 +345,20 @@ fun AddEditPartnerScreen(
             item(key = "partnerButton"){
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
-                Button(
+                StandardButton(
+                    text = if (partnerId.isNotEmpty()) stringResource(id = R.string.update_partner)
+                        else stringResource(id = R.string.create_new_partner),
+                    icon = if (partnerId.isNotEmpty()) Icons.Default.Edit else Icons.Default.Add,
                     onClick = {
                         if (partnerId.isNotEmpty()) {
                             addEditPartnerViewModel.onAddEditPartnerEvent(
-                                AddEditPartnerEvent.UpdatePartner(
-                                    partnerId
-                                )
+                                AddEditPartnerEvent.UpdatePartner(partnerId)
                             )
                         } else {
                             addEditPartnerViewModel.onAddEditPartnerEvent(AddEditPartnerEvent.CreateNewPartner)
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(ButtonSize),
-                ) {
-                    Text(
-                        text =
-                        if (partnerId.isNotEmpty())
-                            stringResource(id = R.string.update_partner).uppercase()
-                        else
-                            stringResource(id = R.string.create_new_partner).uppercase(),
-                        style = MaterialTheme.typography.button,
-                    )
-                }
+                )
             }
         }
     }

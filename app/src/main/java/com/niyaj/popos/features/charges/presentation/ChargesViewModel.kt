@@ -32,7 +32,8 @@ class ChargesViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
-    var state by mutableStateOf(ChargesState())
+    private val _state = MutableStateFlow(ChargesState())
+    val state = _state.asStateFlow()
 
     var addEditState by mutableStateOf(AddEditChargesState())
 
@@ -110,16 +111,16 @@ class ChargesViewModel @Inject constructor(
 
 
             is ChargesEvent.OnFilterCharges -> {
-                if(state.filterCharges::class == event.filterCharges::class &&
-                    state.filterCharges.sortType == event.filterCharges.sortType
+                if(_state.value.filterCharges::class == event.filterCharges::class &&
+                    _state.value.filterCharges.sortType == event.filterCharges.sortType
                 ){
-                    state = state.copy(
+                    _state.value = _state.value.copy(
                         filterCharges = FilterCharges.ByChargesId(SortType.Descending)
                     )
                     return
                 }
 
-                state = state.copy(
+                _state.value = _state.value.copy(
                     filterCharges = event.filterCharges
                 )
 
@@ -132,7 +133,7 @@ class ChargesViewModel @Inject constructor(
 
                     delay(500L)
                     getAllCharges(
-                        state.filterCharges,
+                        _state.value.filterCharges,
                         searchText = event.searchText
                     )
                 }
@@ -145,7 +146,7 @@ class ChargesViewModel @Inject constructor(
             }
 
             is ChargesEvent.RefreshCharges -> {
-                getAllCharges(state.filterCharges)
+                getAllCharges(_state.value.filterCharges)
             }
         }
     }
@@ -155,18 +156,18 @@ class ChargesViewModel @Inject constructor(
             chargesUseCases.getAllCharges(filterCharges, searchText).collect{ result ->
                 when(result){
                     is Resource.Loading -> {
-                        state = state.copy(isLoading = result.isLoading)
+                        _state.value = _state.value.copy(isLoading = result.isLoading)
                     }
                     is Resource.Success -> {
                         result.data?.let {
-                            state = state.copy(
+                            _state.value = _state.value.copy(
                                 chargesItem = it,
                                 filterCharges = filterCharges
                             )
                         }
                     }
                     is Resource.Error -> {
-                        state = state.copy(error = "Unable to load resources")
+                        _state.value = _state.value.copy(error = result.message)
                         _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
                     }
                 }
@@ -191,10 +192,12 @@ class ChargesViewModel @Inject constructor(
             return
         }else {
             viewModelScope.launch {
-                val charges = Charges()
-                charges.chargesName = addEditState.chargesName
-                charges.chargesPrice = safeString(addEditState.chargesPrice)
-                charges.isApplicable = addEditState.chargesApplicable
+                val charges = Charges(
+                    chargesName = addEditState.chargesName,
+                    chargesPrice = safeString(addEditState.chargesPrice),
+                    isApplicable = addEditState.chargesApplicable
+                )
+
 
                 if(chargesId.isNullOrEmpty()){
                     when(val result = chargesUseCases.createNewCharges(charges)){
@@ -210,14 +213,9 @@ class ChargesViewModel @Inject constructor(
                     }
 
                 }else {
-
-                    val result = chargesUseCases.updateCharges(
-                        charges,
-                        chargesId
-                    )
-                    when(result){
+                    when(val result = chargesUseCases.updateCharges(charges, chargesId)){
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError( "Unable to Update Charges Item"))
+                            _eventFlow.emit(UiEvent.OnError( result.message ?: "Unable to Update Charges Item"))
                         }
                         is Resource.Loading -> {
 
@@ -266,7 +264,7 @@ class ChargesViewModel @Inject constructor(
         viewModelScope.launch {
             _searchText.emit("")
             getAllCharges(
-                state.filterCharges,
+                _state.value.filterCharges,
                 _searchText.value
             )
         }

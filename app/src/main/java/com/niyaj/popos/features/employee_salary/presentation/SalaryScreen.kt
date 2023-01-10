@@ -4,14 +4,49 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
+import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FabPosition
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EventBusy
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -19,6 +54,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -54,7 +91,7 @@ import com.vanpra.composematerialdialogs.title
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun SalaryScreen(
@@ -68,9 +105,9 @@ fun SalaryScreen(
     val scope = rememberCoroutineScope()
     val dialogState = rememberMaterialDialogState()
 
-    val salaries = salaryViewModel.salaries.collectAsState().value.salary
-    val isLoading = salaryViewModel.salaries.collectAsState().value.isLoading
-    val hasError = salaryViewModel.salaries.collectAsState().value.hasError
+    val salaries = salaryViewModel.salaries.collectAsStateWithLifecycle().value.salary
+    val isLoading = salaryViewModel.salaries.collectAsStateWithLifecycle().value.isLoading
+    val hasError = salaryViewModel.salaries.collectAsStateWithLifecycle().value.hasError
 
     val groupedByEmployeeSalaries = salaries.groupBy { it.employee?.employeeId }
 
@@ -78,9 +115,9 @@ fun SalaryScreen(
     val employeeCount = groupedByEmployeeSalaries.keys.size.toString()
     val paymentsCount = salaries.size.toString()
 
-    val selectedSalary = salaryViewModel.selectedSalary.collectAsState().value
+    val selectedSalary = salaryViewModel.selectedSalary.collectAsStateWithLifecycle().value
 
-    val selectedEmployee = salaryViewModel.selectedEmployee.collectAsState().value
+    val selectedEmployee = salaryViewModel.selectedEmployee.collectAsStateWithLifecycle().value
 
     // Remember a SystemUiController
     val systemUiController = rememberSystemUiController()
@@ -103,7 +140,7 @@ fun SalaryScreen(
         }
     }
 
-    val showSearchBar = salaryViewModel.toggledSearchBar.collectAsState().value
+    val showSearchBar = salaryViewModel.toggledSearchBar.collectAsStateWithLifecycle().value
 
     val showScrollToTop = remember {
         derivedStateOf {
@@ -199,7 +236,7 @@ fun SalaryScreen(
         navActions = {
             if (showSearchBar) {
                 StandardSearchBar(
-                    searchText = salaryViewModel.searchText.collectAsState().value,
+                    searchText = salaryViewModel.searchText.collectAsStateWithLifecycle().value,
                     placeholderText = "Search for salaries...",
                     onSearchTextChanged = {
                         salaryViewModel.onEvent(SalaryEvent.OnSearchSalary(it))
@@ -428,6 +465,7 @@ fun SalaryScreen(
                             groupedByEmployeeSalaries.forEach { (employeeId, employeeSalaries) ->
                                 if (employeeId != null) {
                                     val employee = salaryViewModel.getEmployeeById(employeeId)
+                                    
                                     if (employee != null) {
                                         Card(
                                             onClick = {
@@ -560,6 +598,8 @@ fun SalaryScreen(
                                         }
 
                                         Spacer(modifier = Modifier.height(SpaceMedium))
+                                    } else {
+                                        Text(text = "Employee Not Found")
                                     }
                                 }
                             }

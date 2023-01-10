@@ -5,7 +5,7 @@ import com.niyaj.popos.features.addon_item.domain.repository.AddOnItemRepository
 class FindAddOnItemByName(
     private val addOnItemRepository: AddOnItemRepository
 ) {
-    operator fun invoke(addOnItemName: String, addOnItemId: String?): Boolean {
+    operator fun invoke(addOnItemName: String, addOnItemId: String? = null): Boolean {
         return addOnItemRepository.findAddOnItemByName(addOnItemName, addOnItemId)
     }
 }

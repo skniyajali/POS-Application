@@ -13,6 +13,7 @@ import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -20,20 +21,26 @@ import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
-class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
+class EmployeeRepositoryImpl(
+    config: RealmConfiguration,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+) : EmployeeRepository {
 
     val realm = Realm.open(config)
 
     init {
         Timber.d("Employee Session")
     }
+
     override suspend fun getAllEmployee(): Flow<Resource<List<Employee>>> {
         return channelFlow {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher) {
                 try {
                     send(Resource.Loading(true))
 
-                    val items = realm.query<Employee>().sort("employeeId", Sort.DESCENDING).find().asFlow()
+                    val employees = realm.query<Employee>().sort("employeeId", Sort.DESCENDING).find()
+
+                    val items = employees.asFlow()
 
                     items.collect { changes: ResultsChange<Employee> ->
                         when (changes) {
@@ -41,13 +48,14 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
                                 send(Resource.Success(changes.list))
                                 send(Resource.Loading(false))
                             }
+
                             is InitialResults -> {
                                 send(Resource.Success(changes.list))
                                 send(Resource.Loading(false))
                             }
                         }
                     }
-                }catch (e: Exception){
+                } catch (e: Exception) {
                     send(Resource.Loading(false))
                     send(Resource.Error(e.message ?: "Unable to get employee items", emptyList()))
                 }
@@ -55,9 +63,10 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
         }
     }
 
-    override suspend fun getEmployeeById(employeeId: String): Resource<Employee?> {
+    override fun getEmployeeById(employeeId: String): Resource<Employee?> {
         return try {
             val employee = realm.query<Employee>("employeeId == $0", employeeId).first().find()
+
 
             Resource.Success(employee)
         } catch (e: Exception) {
@@ -66,20 +75,28 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
     }
 
     override fun findEmployeeByName(employeeName: String, employeeId: String?): Boolean {
-        val employee = if(employeeId == null) {
+        val employee = if (employeeId == null) {
             realm.query<Employee>("employeeName == $0", employeeName).first().find()
         } else {
-            realm.query<Employee>("employeeId != $0 && employeeName == $1", employeeId, employeeName).first().find()
+            realm.query<Employee>(
+                "employeeId != $0 && employeeName == $1",
+                employeeId,
+                employeeName
+            ).first().find()
         }
 
         return employee != null
     }
 
     override fun findEmployeeByPhone(employeePhone: String, employeeId: String?): Boolean {
-        val employee = if(employeeId == null) {
+        val employee = if (employeeId == null) {
             realm.query<Employee>("employeePhone == $0", employeePhone).first().find()
         } else {
-            realm.query<Employee>("employeeId != $0 && employeePhone == $1", employeeId, employeePhone).first().find()
+            realm.query<Employee>(
+                "employeeId != $0 && employeePhone == $1",
+                employeeId,
+                employeePhone
+            ).first().find()
         }
 
         return employee != null
@@ -87,7 +104,7 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
 
     override suspend fun createNewEmployee(newEmployee: Employee): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher) {
                 val employee = Employee()
                 employee.employeeId = BsonObjectId().toHexString()
                 employee.employeeName = newEmployee.employeeName
@@ -106,7 +123,7 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
 
 
             Resource.Success(true)
-        }catch (e: RealmException){
+        } catch (e: RealmException) {
             Resource.Error(e.message ?: "Error creating Employee Item", false)
         }
     }
@@ -116,9 +133,10 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
         employeeId: String,
     ): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher) {
                 realm.write {
-                    val employee = this.query<Employee>("employeeId == $0", employeeId).first().find()
+                    val employee =
+                        this.query<Employee>("employeeId == $0", employeeId).first().find()
                     employee?.employeeName = newEmployee.employeeName
                     employee?.employeePhone = newEmployee.employeePhone
                     employee?.employeeType = newEmployee.employeeType
@@ -138,21 +156,25 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
 
     override suspend fun deleteEmployee(employeeId: String): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher) {
                 realm.write {
-                    val employee = this.query<Employee>("employeeId == $0", employeeId).first().find()
-                    val salary = this.query<EmployeeSalary>("employee.employeeId == $0", employeeId).find()
-                    val attendance = this.query<EmployeeAttendance>("employee.employeeId == $0", employeeId).find()
+                    val employee =
+                        this.query<Employee>("employeeId == $0", employeeId).first().find()
+                    val salary =
+                        this.query<EmployeeSalary>("employee.employeeId == $0", employeeId).find()
+                    val attendance =
+                        this.query<EmployeeAttendance>("employee.employeeId == $0", employeeId)
+                            .find()
 
-                    if(salary.isNotEmpty()){
+                    if (salary.isNotEmpty()) {
                         delete(salary)
                     }
 
-                    if (attendance.isNotEmpty()){
+                    if (attendance.isNotEmpty()) {
                         delete(attendance)
                     }
 
-                    if (employee != null){
+                    if (employee != null) {
                         delete(employee)
                     }
                 }
@@ -160,7 +182,7 @@ class EmployeeRepositoryImpl(config: RealmConfiguration) : EmployeeRepository {
 
             Resource.Success(true)
 
-        } catch (e: Exception){
+        } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to delete employee", false)
         }
     }
