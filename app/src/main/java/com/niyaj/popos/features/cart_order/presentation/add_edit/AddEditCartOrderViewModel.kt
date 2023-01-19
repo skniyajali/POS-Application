@@ -12,9 +12,6 @@ import com.niyaj.popos.features.address.domain.use_cases.AddressUseCases
 import com.niyaj.popos.features.address.presentation.AddressState
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
 import com.niyaj.popos.features.cart_order.domain.use_cases.CartOrderUseCases
-import com.niyaj.popos.features.cart_order.domain.use_cases.cart_order_validation.ValidateCustomerAddress
-import com.niyaj.popos.features.cart_order.domain.use_cases.cart_order_validation.ValidateCustomerPhone
-import com.niyaj.popos.features.cart_order.domain.use_cases.cart_order_validation.ValidateOrderId
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
@@ -36,9 +33,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditCartOrderViewModel @Inject constructor(
-    private val validateOrderId: ValidateOrderId,
-    private val validateCustomerPhone: ValidateCustomerPhone,
-    private val validateCustomerAddress: ValidateCustomerAddress,
     private val cartOrderUseCases: CartOrderUseCases,
     private val customerUseCases: CustomerUseCases,
     private val addressUseCases: AddressUseCases,
@@ -154,13 +148,13 @@ class AddEditCartOrderViewModel @Inject constructor(
 
     private fun createOrUpdateCartOrder(cartOrderId: String? = null) {
 
-        val orderIdResult = validateOrderId.execute(state.orderId)
+        val orderIdResult = cartOrderUseCases.validateOrderId(state.orderId)
 
-        val customerPhoneResult = validateCustomerPhone.execute(
+        val customerPhoneResult = cartOrderUseCases.validateCustomerPhone(
             orderType = state.orderType,
             customerPhone = state.customer?.customerPhone ?: ""
         )
-        val customerAddressResult = validateCustomerAddress.execute(
+        val customerAddressResult = cartOrderUseCases.validateCustomerAddress(
             orderType = state.orderType,
             customerAddress = state.address?.addressName ?: "",
         )

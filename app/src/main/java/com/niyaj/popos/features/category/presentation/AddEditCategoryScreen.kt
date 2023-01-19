@@ -18,11 +18,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
+import com.niyaj.popos.features.category.domain.util.CategoryTestTags.ADD_EDIT_CATEGORY_BTN
+import com.niyaj.popos.features.category.domain.util.CategoryTestTags.CATEGORY_NAME_ERROR
+import com.niyaj.popos.features.category.domain.util.CategoryTestTags.CATEGORY_NAME_FIELD
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
@@ -76,11 +80,12 @@ fun AddEditCategoryScreen(
                 .fillMaxWidth()
         ) {
             StandardOutlinedTextField(
-                modifier = Modifier,
+                modifier = Modifier.testTag(CATEGORY_NAME_FIELD),
                 text = categoryViewModel.addEditCategoryState.categoryName,
                 hint = "Category Name",
                 leadingIcon = Icons.Default.Badge,
                 error = categoryViewModel.addEditCategoryState.categoryNameError,
+                errorTag = CATEGORY_NAME_ERROR,
                 onValueChange = {
                     categoryViewModel.onCategoryEvent(CategoryEvent.CategoryNameChanged(it))
                 },
@@ -111,6 +116,7 @@ fun AddEditCategoryScreen(
             Spacer(modifier = Modifier.height(SpaceMedium))
 
             StandardButton(
+                modifier = Modifier.testTag(ADD_EDIT_CATEGORY_BTN),
                 text = if (!categoryId.isNullOrEmpty()) stringResource(id = R.string.edit_category)
                     else stringResource(id = R.string.create_category),
                 icon = if (!categoryId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.AddCircleOutline,

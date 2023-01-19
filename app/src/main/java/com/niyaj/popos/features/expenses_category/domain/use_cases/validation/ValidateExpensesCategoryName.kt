@@ -1,18 +1,14 @@
 package com.niyaj.popos.features.expenses_category.domain.use_cases.validation
 
 import com.niyaj.popos.features.common.util.ValidationResult
+import com.niyaj.popos.features.expenses_category.domain.repository.ExpCategoryValidationRepository
 import javax.inject.Inject
 
-class ValidateExpensesCategoryName @Inject constructor() {
+class ValidateExpensesCategoryName @Inject constructor(
+    private val expCategoryValidationRepository: ExpCategoryValidationRepository
+) {
 
-    fun execute(categoryName: String): ValidationResult {
-
-        if(categoryName.isEmpty()) return ValidationResult(false, "Category name is empty")
-
-        if (categoryName.length < 3) return ValidationResult(false, "Invalid category name")
-
-        if (categoryName.any { it.isDigit() }) return ValidationResult(false, "Category name must not contain any digit")
-
-        return ValidationResult(true)
+    operator fun invoke(categoryName: String): ValidationResult {
+        return expCategoryValidationRepository.validateExpensesCategoryName(categoryName)
     }
 }

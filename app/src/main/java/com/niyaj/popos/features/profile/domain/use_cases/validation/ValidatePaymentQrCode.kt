@@ -1,19 +1,14 @@
 package com.niyaj.popos.features.profile.domain.use_cases.validation
 
 import com.niyaj.popos.features.common.util.ValidationResult
+import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
 import javax.inject.Inject
 
-class ValidatePaymentQrCode @Inject constructor() {
+class ValidatePaymentQrCode @Inject constructor(
+    private val restaurantInfoValidationRepository: RestaurantInfoValidationRepository
+) {
 
-    fun validate(paymentQrCode: String): ValidationResult {
-
-        if (paymentQrCode.isEmpty()){
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Restaurant payment QR code must not be empty"
-            )
-        }
-
-        return ValidationResult(true)
+    operator fun invoke(paymentQrCode: String): ValidationResult {
+        return restaurantInfoValidationRepository.validatePaymentQrCode(paymentQrCode)
     }
 }

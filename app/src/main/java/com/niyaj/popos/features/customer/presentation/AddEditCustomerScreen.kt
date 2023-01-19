@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,6 +27,13 @@ import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
+import com.niyaj.popos.features.customer.domain.util.CustomerTestTags.ADD_EDIT_CUSTOMER_BUTTON
+import com.niyaj.popos.features.customer.domain.util.CustomerTestTags.CUSTOMER_EMAIL_ERROR
+import com.niyaj.popos.features.customer.domain.util.CustomerTestTags.CUSTOMER_EMAIL_FIELD
+import com.niyaj.popos.features.customer.domain.util.CustomerTestTags.CUSTOMER_NAME_ERROR
+import com.niyaj.popos.features.customer.domain.util.CustomerTestTags.CUSTOMER_NAME_FIELD
+import com.niyaj.popos.features.customer.domain.util.CustomerTestTags.CUSTOMER_PHONE_ERROR
+import com.niyaj.popos.features.customer.domain.util.CustomerTestTags.CUSTOMER_PHONE_FIELD
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
@@ -71,11 +79,12 @@ fun AddEditCustomerScreen(
                 .fillMaxWidth()
         ) {
             StandardOutlinedTextField(
-                modifier = Modifier,
+                modifier = Modifier.testTag(CUSTOMER_PHONE_FIELD),
                 text = customerViewModel.addEditCustomerState.customerPhone,
                 hint = "Customer Phone",
                 leadingIcon = Icons.Default.PhoneAndroid,
                 error = customerViewModel.addEditCustomerState.customerPhoneError,
+                errorTag = CUSTOMER_PHONE_ERROR,
                 keyboardType = KeyboardType.Number,
                 onValueChange = {
                     customerViewModel.onCustomerEvent(CustomerEvent.CustomerPhoneChanged(it))
@@ -85,11 +94,12 @@ fun AddEditCustomerScreen(
             Spacer(modifier = Modifier.height(SpaceSmall))
 
             StandardOutlinedTextField(
-                modifier = Modifier,
+                modifier = Modifier.testTag(CUSTOMER_NAME_FIELD),
                 text = customerViewModel.addEditCustomerState.customerName ?: "",
                 hint = "Customer Name",
                 leadingIcon = Icons.Default.Badge,
                 error = customerViewModel.addEditCustomerState.customerNameError,
+                errorTag = CUSTOMER_NAME_ERROR,
                 onValueChange = {
                     customerViewModel.onCustomerEvent(CustomerEvent.CustomerNameChanged(it))
                 },
@@ -98,11 +108,12 @@ fun AddEditCustomerScreen(
             Spacer(modifier = Modifier.height(SpaceSmall))
 
             StandardOutlinedTextField(
-                modifier = Modifier,
+                modifier = Modifier.testTag(CUSTOMER_EMAIL_FIELD),
                 text = customerViewModel.addEditCustomerState.customerEmail ?: "",
                 hint = "Customer Email",
                 leadingIcon = Icons.Default.Mail,
                 error = customerViewModel.addEditCustomerState.customerEmailError,
+                errorTag = CUSTOMER_EMAIL_ERROR,
                 onValueChange = {
                     customerViewModel.onCustomerEvent(CustomerEvent.CustomerEmailChanged(it))
                 },
@@ -111,6 +122,7 @@ fun AddEditCustomerScreen(
             Spacer(modifier = Modifier.height(SpaceMedium))
 
             StandardButton(
+                modifier = Modifier.testTag(ADD_EDIT_CUSTOMER_BUTTON),
                 text = if (!customerId.isNullOrEmpty()) stringResource(id = R.string.edit_customer)
                 else stringResource(id = R.string.create_customer),
                 icon = if (!customerId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.Add,

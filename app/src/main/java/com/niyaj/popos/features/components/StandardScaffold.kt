@@ -15,10 +15,12 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.niyaj.popos.R
+import com.niyaj.popos.util.Constants.STANDARD_BACK_BUTTON
 
 @Composable
 fun StandardScaffold(
@@ -46,9 +48,12 @@ fun StandardScaffold(
                 modifier = modifier,
                 navigationIcon = if(showBackArrow) {
                     {
-                        IconButton(onClick = {
-                            onBackButtonClick()
-                        }) {
+                        IconButton(
+                            onClick = {
+                                onBackButtonClick()
+                            },
+                            modifier = Modifier.testTag(STANDARD_BACK_BUTTON)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
                                 contentDescription = stringResource(id = R.string.back),

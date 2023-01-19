@@ -78,17 +78,21 @@ object Constants {
     const val RESTAURANT_PRIMARY_PHONE: String = "9500825077"
     const val RESTAURANT_ADDRESS = "Chinna Seeragapadi, Salem, TamilNadu, India 636308, Opp. of VIMS Hospital"
 
-
-    //AddOn Screen Test Tags
-    const val ADDON_SCREEN = "AddOn Screen"
-    const val ADDON_NOT_AVAIlABLE = "AddOn Not Available"
-    const val CREATE_NEW_ADDON_SCREEN = "Create New Addon Screen"
-    const val CREATE_NEW_ADDON_BTN = "Create New Addon"
-
-
     //Common Constants
     const val SEARCH_ITEM_NOT_FOUND = "Searched Item Not Found"
 
+    //Dialog positive button test tag
+    const val POSITIVE_BUTTON = "positive"
+    const val NEGATIVE_BUTTON = "negative"
 
+    const val STANDARD_SEARCH_BAR = "Standard Search Bar"
+    const val STANDARD_BACK_BUTTON = "Standard Back Button"
+    const val SEARCH_BAR_CLEAR_BUTTON = "SearchBar Close Button"
+
+    const val STANDARD_BOTTOM_SHEET = "BottomSheet"
+    const val STANDARD_BOTTOM_SHEET_CLOSE_BTN = "Standard Bottom Close Button"
+
+    const val SORT_ASCENDING = "Sort Ascending"
+    const val SORT_DESCENDING = "Sort Descending"
 
 }

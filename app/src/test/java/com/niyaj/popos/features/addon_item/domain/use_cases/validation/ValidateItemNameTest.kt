@@ -34,7 +34,7 @@ class ValidateItemNameTest {
 
         fakeAddOnItemRepository = FakeAddOnItemRepository()
         validateItemName = ValidateItemName(fakeAddOnItemRepository)
-        createNewAddOnItem = CreateNewAddOnItem(fakeAddOnItemRepository, fakeAddOnItemRepository)
+        createNewAddOnItem = CreateNewAddOnItem(fakeAddOnItemRepository)
     }
 
 

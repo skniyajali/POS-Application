@@ -8,7 +8,6 @@ data class AddOnItemUseCases(
     val validateItemPrice: ValidateItemPrice,
     val getAllAddOnItems: GetAllAddOnItems,
     val getAddOnItemById: GetAddOnItemById,
-    val findAddOnItemByName: FindAddOnItemByName,
     val createNewAddOnItem: CreateNewAddOnItem,
     val updateAddOnItem: UpdateAddOnItem,
     val deleteAddOnItem: DeleteAddOnItem,

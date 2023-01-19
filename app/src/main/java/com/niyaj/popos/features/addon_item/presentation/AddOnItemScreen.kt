@@ -3,18 +3,13 @@ package com.niyaj.popos.features.addon_item.presentation
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FabPosition
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
@@ -26,9 +21,6 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Rule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sort
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -37,19 +29,31 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.niyaj.popos.R
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_DELETE_BUTTON
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_DESELECT_ALL_BUTTON
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_EDIT_BUTTON
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_FILTER_BUTTON
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_ITEM_REFRESH
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_ITEM_TAG
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_NOT_AVAIlABLE
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_SCREEN
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_SCREEN_TITLE
-import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.CREATE_NEW_ADD_ON
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_SEARCH_BAR
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_SEARCH_BUTTON
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_SEARCH_PLACEHOLDER
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_SELECT_ALL_BUTTON
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.DELETE_ADD_ON_ITEM_MESSAGE
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.NO_ITEMS_IN_ADDON
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.BottomSheetScreen
@@ -57,12 +61,10 @@ import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.ExtendedFabButton
 import com.niyaj.popos.features.components.FlexRowBox
 import com.niyaj.popos.features.components.ItemNotAvailable
+import com.niyaj.popos.features.components.StandardIconButton
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.StandardSearchBar
 import com.niyaj.popos.features.destinations.AddEditAddOnItemScreenDestination
-import com.niyaj.popos.util.Constants.ADDON_NOT_AVAIlABLE
-import com.niyaj.popos.util.Constants.ADDON_SCREEN
-import com.niyaj.popos.util.Constants.CREATE_NEW_ADDON_BTN
 import com.niyaj.popos.util.Constants.SEARCH_ITEM_NOT_FOUND
 import com.niyaj.popos.util.toRupee
 import com.ramcosta.composedestinations.annotation.Destination
@@ -76,7 +78,7 @@ import com.vanpra.composematerialdialogs.title
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun AddOnItemScreen(
@@ -110,8 +112,6 @@ fun AddOnItemScreen(
     }
 
     val showSearchBar = addOnItemViewModel.toggledSearchBar.collectAsStateWithLifecycle().value
-
-    val pullRefreshState = rememberPullRefreshState(isLoading, { addOnItemViewModel.onAddOnItemsEvent(AddOnItemEvent.RefreshAddOnItem) })
 
 
     val showScrollToTop = remember {
@@ -204,9 +204,9 @@ fun AddOnItemScreen(
         isFloatingActionButtonDocked = addOnItems.isNotEmpty(),
         floatingActionButton = {
             ExtendedFabButton(
-                text = stringResource(id = R.string.create_new_add_on).uppercase(),
+                text = AddOnConstants.CREATE_NEW_ADD_ON.uppercase(),
                 showScrollToTop = showScrollToTop.value,
-                visible = addOnItems.isNotEmpty() && selectedAddOnItems.isEmpty(),
+                visible = addOnItems.isNotEmpty() && selectedAddOnItems.isEmpty() && !showSearchBar,
                 onScrollToTopClick = {
                     scope.launch {
                         lazyGridState.animateScrollToItem(index = 0)
@@ -215,55 +215,51 @@ fun AddOnItemScreen(
                 onClick = {
                     navController.navigate(AddEditAddOnItemScreenDestination())
                 },
+                modifier = Modifier.testTag(AddOnConstants.CREATE_NEW_ADD_ON),
             )
         },
         floatingActionButtonPosition = if(showScrollToTop.value) FabPosition.End else FabPosition.Center,
         navActions = {
             if(selectedAddOnItems.isNotEmpty()) {
                 if(selectedAddOnItems.size == 1){
-                    IconButton(
+                    StandardIconButton(
+                        modifier = Modifier.testTag(ADDON_EDIT_BUTTON),
                         onClick = {
                             navController.navigate(AddEditAddOnItemScreenDestination(addOnItemId = selectedAddOnItems.first()))
                         },
-                    ){
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit AddOn Item",
-                            tint = MaterialTheme.colors.onPrimary,
-                        )
-                    }
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = ADDON_EDIT_BUTTON,
+                        tint = MaterialTheme.colors.onPrimary,
+                    )
                 }
 
-                IconButton(
+                StandardIconButton(
+                    modifier = Modifier.testTag(ADDON_DELETE_BUTTON),
                     onClick = {
                         deleteAddOnItemState.show()
                     },
-                    enabled = selectedAddOnItems.isNotEmpty()
-                ){
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete AddOn Item",
-                        tint = MaterialTheme.colors.onPrimary,
-                    )
-                }
+                    enabled = selectedAddOnItems.isNotEmpty(),
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = ADDON_DELETE_BUTTON,
+                    tint = MaterialTheme.colors.onPrimary,
+                )
 
-                IconButton(
+                StandardIconButton(
+                    modifier = Modifier.testTag(ADDON_SELECT_ALL_BUTTON),
                     onClick = {
                         addOnItemViewModel.onAddOnItemsEvent(AddOnItemEvent.SelectAllAddOnItem)
                     },
-                    enabled = selectedAddOnItems.isNotEmpty()
-                ){
-                    Icon(
-                        imageVector = Icons.Default.Rule,
-                        contentDescription = "Select All AddOn Item",
-                        tint = MaterialTheme.colors.onPrimary,
-                    )
-                }
+                    enabled = selectedAddOnItems.isNotEmpty(),
+                    imageVector = Icons.Default.Rule,
+                    contentDescription = ADDON_SELECT_ALL_BUTTON,
+                    tint = MaterialTheme.colors.onPrimary,
+                )
             }
             else if(showSearchBar){
                 StandardSearchBar(
+                    modifier = Modifier.testTag(ADDON_SEARCH_BAR),
                     searchText = addOnItemViewModel.searchText.collectAsState().value,
-                    placeholderText = "Search for AddOn Items...",
+                    placeholderText = ADDON_SEARCH_PLACEHOLDER,
                     onSearchTextChanged = {
                         addOnItemViewModel.onAddOnItemsEvent(AddOnItemEvent.OnSearchAddOnItem(it))
                     },
@@ -274,18 +270,18 @@ fun AddOnItemScreen(
             }
             else {
                 if (addOnItems.isNotEmpty()){
-                    IconButton(
+                    StandardIconButton(
+                        modifier = Modifier.testTag(ADDON_SEARCH_BUTTON),
                         onClick = {
                             addOnItemViewModel.onAddOnItemsEvent(AddOnItemEvent.ToggleSearchBar)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = stringResource(id = R.string.search_icon),
-                            tint = MaterialTheme.colors.onPrimary,
-                        )
-                    }
-                    IconButton(
+                        },
+                        imageVector = Icons.Default.Search,
+                        contentDescription = ADDON_SEARCH_BUTTON,
+                        tint = MaterialTheme.colors.onPrimary,
+                    )
+
+                    StandardIconButton(
+                        modifier = Modifier.testTag(ADDON_FILTER_BUTTON),
                         onClick = {
                             onOpenSheet(
                                 BottomSheetScreen.FilterAddOnItemScreen(
@@ -299,30 +295,25 @@ fun AddOnItemScreen(
                                     },
                                 )
                             )
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Sort,
-                            contentDescription = stringResource(id = R.string.filter_add_on_item),
-                            tint = MaterialTheme.colors.onPrimary,
-                        )
-                    }
+                        },
+                        imageVector = Icons.Default.Sort,
+                        contentDescription = ADDON_FILTER_BUTTON,
+                        tint = MaterialTheme.colors.onPrimary,
+                    )
                 }
             }
         },
         navigationIcon = {
             if(selectedAddOnItems.isNotEmpty()) {
-                IconButton(
+                StandardIconButton(
+                    modifier = Modifier.testTag(ADDON_DESELECT_ALL_BUTTON),
                     onClick = {
                         addOnItemViewModel.onAddOnItemsEvent(AddOnItemEvent.DeselectAddOnItem)
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = stringResource(id = R.string.filter_product),
-                        tint = MaterialTheme.colors.onPrimary,
-                    )
-                }
+                    },
+                    imageVector = Icons.Default.Close,
+                    contentDescription = ADDON_DESELECT_ALL_BUTTON,
+                    tint = MaterialTheme.colors.onPrimary,
+                )
             }
         },
         topAppBarBackgroundColor = backgroundColor,
@@ -345,25 +336,28 @@ fun AddOnItemScreen(
                     text = "Cancel",
                     onClick = {
                         deleteAddOnItemState.hide()
+                        addOnItemViewModel.onAddOnItemsEvent(AddOnItemEvent.DeselectAddOnItem)
                     },
                 )
             }
         ) {
             title(text = "Delete ${selectedAddOnItems.size} AddOn Item?")
-            message(res = R.string.delete_add_on_item_message)
+            message(DELETE_ADD_ON_ITEM_MESSAGE)
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .pullRefresh(pullRefreshState)
+        SwipeRefresh(
+            state = rememberSwipeRefreshState(isRefreshing = isLoading),
+            onRefresh = {
+                addOnItemViewModel.onAddOnItemsEvent(AddOnItemEvent.RefreshAddOnItem)
+            },
+            modifier = Modifier.testTag(ADDON_ITEM_REFRESH)
         ) {
             if (addOnItems.isEmpty() || hasError != null) {
                 ItemNotAvailable(
                     modifier = Modifier.testTag(ADDON_NOT_AVAIlABLE),
-                    btnModifier = Modifier.testTag(CREATE_NEW_ADDON_BTN),
+                    btnModifier = Modifier.testTag(AddOnConstants.CREATE_NEW_ADD_ON),
                     text = hasError ?: if(showSearchBar) SEARCH_ITEM_NOT_FOUND else NO_ITEMS_IN_ADDON,
-                    buttonText = CREATE_NEW_ADD_ON.uppercase(),
+                    buttonText = AddOnConstants.CREATE_NEW_ADD_ON.uppercase(),
                     onClick = {
                         navController.navigate(AddEditAddOnItemScreenDestination())
                     }
@@ -378,7 +372,7 @@ fun AddOnItemScreen(
                 ){
                     itemsIndexed(addOnItems){ _, addOnItem ->
                         FlexRowBox(
-                            modifier = Modifier.testTag(addOnItem.itemName),
+                            modifier = Modifier.testTag(ADDON_ITEM_TAG.plus(addOnItem.itemName).plus(addOnItem.itemPrice.toString())),
                             title = addOnItem.itemName,
                             secondaryText = addOnItem.itemPrice.toString().toRupee,
                             icon = Icons.Default.Link ,
@@ -392,14 +386,6 @@ fun AddOnItemScreen(
                     }
                 }
             }
-            
-            PullRefreshIndicator(
-                refreshing = isLoading,
-                state = pullRefreshState,
-                modifier = Modifier.align(
-                    Alignment.TopCenter
-                )
-            )
         }
     }
 }

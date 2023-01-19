@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkInfo
@@ -33,6 +32,7 @@ import com.niyaj.popos.features.common.util.Navigation
 import com.niyaj.popos.features.common.util.hasBluetoothPermission
 import com.niyaj.popos.features.common.util.hasStoragePermission
 import com.niyaj.popos.features.components.util.SheetLayout
+import com.niyaj.popos.features.destinations.SplashScreenDestination
 import com.niyaj.popos.util.Constants.DELETE_DATA_INTERVAL_HOUR
 import com.niyaj.popos.util.Constants.DELETE_DATA_NOTIFICATION_CHANNEL_ID
 import com.niyaj.popos.util.Constants.GENERATE_REPORT_CHANNEL_ID
@@ -283,7 +283,8 @@ class MainActivity : ComponentActivity() {
                             scaffoldState = scaffoldState,
                             bottomSheetScaffoldState = bottomSheetScaffoldState,
                             navController = navController,
-                            bottomSheetNavigator = bottomSheetNavigator
+                            bottomSheetNavigator = bottomSheetNavigator,
+                            startRoute = SplashScreenDestination,
                         )
                     }
                 }

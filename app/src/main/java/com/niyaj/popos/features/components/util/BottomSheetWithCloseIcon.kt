@@ -22,15 +22,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.features.common.ui.theme.BackgroundColor1
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
+import com.niyaj.popos.util.Constants.STANDARD_BOTTOM_SHEET
+import com.niyaj.popos.util.Constants.STANDARD_BOTTOM_SHEET_CLOSE_BTN
 
 @Composable
 fun BottomSheetWithCloseDialog(
     modifier: Modifier = Modifier,
+    closeBtnModifier: Modifier = Modifier,
     text: String,
     icon: ImageVector? = null,
     color: Color = MaterialTheme.colors.onSurface,
@@ -40,6 +44,8 @@ fun BottomSheetWithCloseDialog(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .testTag(text)
+            .testTag(STANDARD_BOTTOM_SHEET)
             .background(MaterialTheme.colors.surface)
     ) {
         Row(
@@ -71,7 +77,9 @@ fun BottomSheetWithCloseDialog(
 
             IconButton(
                 onClick = onClosePressed,
-                modifier = Modifier.size(29.dp)
+                modifier = closeBtnModifier
+                    .testTag(STANDARD_BOTTOM_SHEET_CLOSE_BTN)
+                    .size(29.dp)
             ) {
                 Icon(
                     Icons.Filled.Close,

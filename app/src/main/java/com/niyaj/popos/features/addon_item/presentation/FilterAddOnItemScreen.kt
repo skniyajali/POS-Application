@@ -13,13 +13,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.niyaj.popos.features.common.util.SortType
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_FILTER_BY_DATE
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_FILTER_BY_ID
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_FILTER_BY_NAME
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_FILTER_BY_PRICE
 import com.niyaj.popos.features.addon_item.domain.util.FilterAddOnItem
-import com.niyaj.popos.features.components.FilterItem
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.ui.theme.Teal200
+import com.niyaj.popos.features.common.util.SortType
+import com.niyaj.popos.features.components.FilterItem
+import com.niyaj.popos.util.Constants.SORT_ASCENDING
+import com.niyaj.popos.util.Constants.SORT_DESCENDING
 
 @Composable
 fun FilterAddOnItemScreen(
@@ -46,6 +53,7 @@ fun FilterAddOnItemScreen(
         ) {
             FilterItem(
                 modifier = Modifier
+                    .testTag(SORT_ASCENDING)
                     .weight(1.2f)
                     .height(40.dp),
                 filterName = "Ascending",
@@ -59,6 +67,7 @@ fun FilterAddOnItemScreen(
             Spacer(modifier = Modifier.width(SpaceSmall))
             FilterItem(
                 modifier = Modifier
+                    .testTag(SORT_DESCENDING)
                     .weight(1.2f)
                     .height(40.dp),
                 filterName = "Descending",
@@ -75,6 +84,7 @@ fun FilterAddOnItemScreen(
 
         FilterItem(
             modifier = Modifier
+                .testTag(ADDON_FILTER_BY_ID)
                 .fillMaxWidth()
                 .height(40.dp),
             filterName = "Sort By ID",
@@ -88,6 +98,7 @@ fun FilterAddOnItemScreen(
         Spacer(modifier = Modifier.height(SpaceSmall))
         FilterItem(
             modifier = Modifier
+                .testTag(ADDON_FILTER_BY_NAME)
                 .fillMaxWidth()
                 .height(40.dp),
             filterName = "Sort By Name",
@@ -101,6 +112,7 @@ fun FilterAddOnItemScreen(
         Spacer(modifier = Modifier.height(SpaceSmall))
         FilterItem(
             modifier = Modifier
+                .testTag(ADDON_FILTER_BY_PRICE)
                 .fillMaxWidth()
                 .height(40.dp),
             filterName = "Sort By Price",
@@ -114,6 +126,7 @@ fun FilterAddOnItemScreen(
         Spacer(modifier = Modifier.height(SpaceSmall))
         FilterItem(
             modifier = Modifier
+                .testTag(ADDON_FILTER_BY_DATE)
                 .fillMaxWidth()
                 .height(40.dp),
             filterName = "Sort By Date",

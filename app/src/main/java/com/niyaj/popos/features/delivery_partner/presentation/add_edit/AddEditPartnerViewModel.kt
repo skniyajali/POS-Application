@@ -11,10 +11,6 @@ import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.delivery_partner.domain.model.DeliveryPartner
 import com.niyaj.popos.features.delivery_partner.domain.use_cases.PartnerUseCases
-import com.niyaj.popos.features.delivery_partner.domain.use_cases.validation.ValidatePartnerEmail
-import com.niyaj.popos.features.delivery_partner.domain.use_cases.validation.ValidatePartnerName
-import com.niyaj.popos.features.delivery_partner.domain.use_cases.validation.ValidatePartnerPassword
-import com.niyaj.popos.features.delivery_partner.domain.use_cases.validation.ValidatePartnerPhone
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -23,10 +19,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditPartnerViewModel @Inject constructor(
-    private val validatePartnerName: ValidatePartnerName,
-    private val validatePartnerEmail: ValidatePartnerEmail,
-    private val validatePartnerPhone: ValidatePartnerPhone,
-    private val validatePartnerPassword: ValidatePartnerPassword,
     private val partnerUseCases: PartnerUseCases,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -85,10 +77,10 @@ class AddEditPartnerViewModel @Inject constructor(
 
     private fun addOrEditPartner(partnerId: String? = null){
         viewModelScope.launch {
-            val validatedPartnerName = validatePartnerName.execute(addEditState.partnerName)
-            val validatedPartnerPhone = validatePartnerPhone.execute(addEditState.partnerPhone, partnerId)
-            val validatedPartnerEmail = validatePartnerEmail.execute(addEditState.partnerEmail, partnerId)
-            val validatedPartnerPassword = validatePartnerPassword.execute(addEditState.partnerPassword)
+            val validatedPartnerName = partnerUseCases.validatePartnerName(addEditState.partnerName)
+            val validatedPartnerPhone = partnerUseCases.validatePartnerPhone(addEditState.partnerPhone, partnerId)
+            val validatedPartnerEmail = partnerUseCases.validatePartnerEmail(addEditState.partnerEmail, partnerId)
+            val validatedPartnerPassword = partnerUseCases.validatePartnerPassword(addEditState.partnerPassword)
 
             val hasError = listOf(validatedPartnerName, validatedPartnerPhone, validatedPartnerEmail, validatedPartnerPassword).any {
                 !it.successful
@@ -128,10 +120,7 @@ class AddEditPartnerViewModel @Inject constructor(
                         }
 
                     }else {
-                        val result = partnerUseCases.updatePartner(
-                            partner,
-                            partnerId
-                        )
+                        val result = partnerUseCases.updatePartner(partner, partnerId)
                         when(result){
                             is Resource.Error -> {
                                 _eventFlow.emit(UiEvent.OnError( "Unable to Update Partner"))

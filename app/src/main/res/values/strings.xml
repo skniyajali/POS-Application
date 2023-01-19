@@ -103,5 +103,7 @@
     <string name="addon_name_field">AddOn Name</string>
     <string name="addon_price_field">AddOn Price</string>
     <string name="addon_add_edit_button">AddEdit AddOn Item Button</string>
+    <string name="filter_category">Filter Category</string>
+    <string name="filter_customer">Filter Customer</string>
 
 </resources>

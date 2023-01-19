@@ -10,6 +10,8 @@ import androidx.work.Configuration
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
 import dagger.hilt.android.testing.HiltTestApplication
+import io.realm.kotlin.internal.interop.BuildConfig
+import timber.log.Timber
 import javax.inject.Inject
 
 class HiltTestRunner: AndroidJUnitRunner(), Configuration.Provider {
@@ -28,6 +30,10 @@ class HiltTestRunner: AndroidJUnitRunner(), Configuration.Provider {
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
 
         val config = Configuration.Builder()
             .setMinimumLoggingLevel(Log.DEBUG)

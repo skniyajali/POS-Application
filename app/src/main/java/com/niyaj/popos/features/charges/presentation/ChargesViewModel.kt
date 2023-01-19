@@ -9,8 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.domain.util.safeString
 import com.niyaj.popos.features.charges.domain.model.Charges
 import com.niyaj.popos.features.charges.domain.use_cases.ChargesUseCases
-import com.niyaj.popos.features.charges.domain.use_cases.validation.ValidateChargesName
-import com.niyaj.popos.features.charges.domain.use_cases.validation.ValidateChargesPrice
 import com.niyaj.popos.features.charges.domain.util.FilterCharges
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.SortType
@@ -21,13 +19,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ChargesViewModel @Inject constructor(
-    private val validateChargesName: ValidateChargesName,
-    private val validateChargesPrice: ValidateChargesPrice,
     private val chargesUseCases: ChargesUseCases,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
@@ -153,7 +150,7 @@ class ChargesViewModel @Inject constructor(
 
     private fun getAllCharges(filterCharges: FilterCharges, searchText: String = "") {
         viewModelScope.launch {
-            chargesUseCases.getAllCharges(filterCharges, searchText).collect{ result ->
+            chargesUseCases.getAllCharges(filterCharges, searchText).collectLatest{ result ->
                 when(result){
                     is Resource.Loading -> {
                         _state.value = _state.value.copy(isLoading = result.isLoading)
@@ -176,8 +173,8 @@ class ChargesViewModel @Inject constructor(
     }
 
     private fun addOrEditCharges(chargesId: String? = null){
-        val validatedChargesName = validateChargesName.execute(addEditState.chargesName, chargesId)
-        val validatedChargesPrice = validateChargesPrice.execute(addEditState.chargesApplicable, safeString(addEditState.chargesPrice))
+        val validatedChargesName = chargesUseCases.validateChargesName(addEditState.chargesName, chargesId)
+        val validatedChargesPrice = chargesUseCases.validateChargesPrice(addEditState.chargesApplicable, safeString(addEditState.chargesPrice))
 
         val hasError = listOf(validatedChargesName, validatedChargesPrice).any {
             !it.successful

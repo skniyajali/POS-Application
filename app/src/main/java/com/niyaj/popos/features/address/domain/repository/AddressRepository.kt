@@ -10,6 +10,8 @@ interface AddressRepository {
 
     suspend fun getAddressById(addressId: String): Resource<Address?>
 
+    fun findAddressByName(addressName: String, addressId: String? = null): Boolean
+
     suspend fun addNewAddress(newAddress: Address): Resource<Boolean>
 
     suspend fun updateAddress(newAddress: Address, addressId: String): Resource<Boolean>

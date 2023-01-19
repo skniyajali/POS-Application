@@ -7,7 +7,6 @@ import com.niyaj.popos.features.common.util.Resource
 class CreateNewAddress(
     private val addressRepository: AddressRepository
 ) {
-
     suspend operator fun invoke(address: Address): Resource<Boolean> {
         return addressRepository.addNewAddress(address)
     }

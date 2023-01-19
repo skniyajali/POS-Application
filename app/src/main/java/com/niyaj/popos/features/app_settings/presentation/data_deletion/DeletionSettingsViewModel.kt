@@ -7,10 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.app_settings.domain.model.Settings
 import com.niyaj.popos.features.app_settings.domain.use_cases.SettingsUseCases
-import com.niyaj.popos.features.app_settings.domain.use_cases.validation.ValidateCartInterval
-import com.niyaj.popos.features.app_settings.domain.use_cases.validation.ValidateCartOrderInterval
-import com.niyaj.popos.features.app_settings.domain.use_cases.validation.ValidateExpensesInterval
-import com.niyaj.popos.features.app_settings.domain.use_cases.validation.ValidateReportsInterval
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,10 +17,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DeletionSettingsViewModel @Inject constructor(
-    private val validateExpensesInterval: ValidateExpensesInterval,
-    private val validateReportsInterval: ValidateReportsInterval,
-    private val validateCartInterval: ValidateCartInterval,
-    private val validateCartOrderInterval: ValidateCartOrderInterval,
     private val settingsUseCases: SettingsUseCases
 ): ViewModel() {
     
@@ -66,10 +58,10 @@ class DeletionSettingsViewModel @Inject constructor(
     }
 
     private fun updateSetting() {
-        val validatedExpenses = validateExpensesInterval.validate(state.expensesInterval)
-        val validatedReports = validateReportsInterval.validate(state.reportsInterval)
-        val validatedCart = validateCartInterval.validate(state.cartInterval)
-        val validatedCartOrder = validateCartOrderInterval.validate(state.cartOrderInterval)
+        val validatedExpenses = settingsUseCases.validateExpensesInterval(state.expensesInterval)
+        val validatedReports = settingsUseCases.validateReportsInterval(state.reportsInterval)
+        val validatedCart = settingsUseCases.validateCartInterval(state.cartInterval)
+        val validatedCartOrder = settingsUseCases.validateCartOrderInterval(state.cartOrderInterval)
 
         val hasError = listOf(validatedExpenses, validatedReports, validatedCart, validatedCartOrder).any {
             !it.successful

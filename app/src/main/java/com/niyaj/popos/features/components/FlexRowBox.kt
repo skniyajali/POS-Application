@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
+import com.niyaj.popos.features.common.ui.theme.TextGray
 import com.niyaj.popos.util.randomColor
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -40,6 +41,7 @@ fun FlexRowBox(
     icon: ImageVector? = null,
     iconColor: Color = Color(randomColor),
     doesSelected: Boolean = false,
+    doesAvailable: Boolean = true,
     enabled: Boolean = true,
     onClick: () -> Unit = {}
 ) {
@@ -52,8 +54,8 @@ fun FlexRowBox(
             .padding(SpaceMini),
         elevation = 2.dp,
         enabled = enabled,
-        border = if(doesSelected)
-            BorderStroke(1.dp, MaterialTheme.colors.primary)
+        border = if(doesSelected) BorderStroke(1.dp, MaterialTheme.colors.primary)
+        else if (!doesAvailable) BorderStroke(1.dp, TextGray)
         else null
     ) {
         Row(

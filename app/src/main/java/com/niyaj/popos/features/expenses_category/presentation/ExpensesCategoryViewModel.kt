@@ -11,7 +11,6 @@ import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.expenses_category.domain.model.ExpensesCategory
 import com.niyaj.popos.features.expenses_category.domain.use_cases.ExpensesCategoryUseCases
-import com.niyaj.popos.features.expenses_category.domain.use_cases.validation.ValidateExpensesCategoryName
 import com.niyaj.popos.features.expenses_category.domain.util.FilterExpensesCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -24,7 +23,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExpensesCategoryViewModel @Inject constructor(
-    private val validateExpensesCategoryName: ValidateExpensesCategoryName,
     private val expensesCategoryUseCases: ExpensesCategoryUseCases,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
@@ -165,7 +163,7 @@ class ExpensesCategoryViewModel @Inject constructor(
     }
 
     private fun addOrEditExpensesCategory(expensesCategoryId: String? = null){
-        val validatedExpensesCategoryName = validateExpensesCategoryName.execute(addEditState.expensesCategoryName)
+        val validatedExpensesCategoryName = expensesCategoryUseCases.validateExpensesCategoryName(addEditState.expensesCategoryName)
 
         val hasError = listOf(validatedExpensesCategoryName).any {
             !it.successful

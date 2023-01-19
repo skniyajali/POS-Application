@@ -10,9 +10,9 @@ interface PartnerRepository {
 
     suspend fun getPartnerById(partnerId: String): Resource<DeliveryPartner?>
 
-    suspend fun getPartnerByEmail(partnerEmail: String, partnerId: String? = null): Resource<Boolean>
+    fun getPartnerByEmail(partnerEmail: String, partnerId: String? = null): Boolean
 
-    suspend fun getPartnerByPhone(partnerPhone: String, partnerId: String? = null): Resource<Boolean>
+    fun getPartnerByPhone(partnerPhone: String, partnerId: String? = null): Boolean
 
     suspend fun createNewPartner(newPartner: DeliveryPartner): Resource<Boolean>
 

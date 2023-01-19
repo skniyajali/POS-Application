@@ -1,27 +1,14 @@
 package com.niyaj.popos.features.product.domain.use_cases.validation
 
 import com.niyaj.popos.features.common.util.ValidationResult
+import com.niyaj.popos.features.product.domain.repository.ProductValidationRepository
 import javax.inject.Inject
 
-class ValidateProductPrice @Inject constructor() {
+class ValidateProductPrice @Inject constructor(
+    private val productValidationRepository: ProductValidationRepository
+) {
 
-    fun execute(productPrice: Int, type: String? = null): ValidationResult {
-        if(productPrice == 0) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Product price required.",
-            )
-        }
-
-        if(type.isNullOrEmpty() && productPrice < 10) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Product price must be at least 10 rupees."
-            )
-        }
-
-        return ValidationResult(
-            successful = true
-        )
+    operator fun invoke(productPrice: Int, type: String? = null): ValidationResult {
+        return productValidationRepository.validateProductPrice(productPrice, type)
     }
 }

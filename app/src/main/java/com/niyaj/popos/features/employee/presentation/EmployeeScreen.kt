@@ -400,6 +400,7 @@ fun EmployeeScreen(
                                         EmployeeDetailsScreenDestination(employeeId = employee.employeeId)
                                     )
                                 },
+                                closeOnContentClick = true,
                                 closeOnBackgroundClick = true,
                                 maxRevealDp = 150.dp,
                                 hiddenContentStart = {

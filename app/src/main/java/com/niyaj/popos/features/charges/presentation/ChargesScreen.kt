@@ -43,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -64,6 +65,7 @@ import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.StandardSearchBar
 import com.niyaj.popos.features.destinations.AddEditChargesScreenDestination
+import com.niyaj.popos.util.Constants.STANDARD_SEARCH_BAR
 import com.niyaj.popos.util.toRupee
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
@@ -237,6 +239,7 @@ fun ChargesScreen(
             }
             else if(showSearchBar){
                 StandardSearchBar(
+                    modifier = Modifier.testTag(STANDARD_SEARCH_BAR),
                     searchText = chargesViewModel.searchText.collectAsState().value,
                     placeholderText = "Search for charges items...",
                     onSearchTextChanged = {
@@ -324,6 +327,7 @@ fun ChargesScreen(
                     text = "Cancel",
                     onClick = {
                         deleteChargesState.hide()
+                        chargesViewModel.onChargesEvent(ChargesEvent.SelectCharges(selectedChargesItem))
                     },
                 )
             }
@@ -367,6 +371,7 @@ fun ChargesScreen(
                         itemsIndexed(chargesItems){ _, chargesItem ->
                             Card(
                                 modifier = Modifier
+                                    .testTag(chargesItem.chargesName)
                                     .fillMaxWidth()
                                     .padding(SpaceSmall)
                                     .clickable {

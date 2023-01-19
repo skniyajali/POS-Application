@@ -23,7 +23,7 @@ class GetAllAddOnItemsTest {
     @Before
     fun setUp() {
         fakeAddOnItemRepository = FakeAddOnItemRepository()
-        createNewAddOnItem = CreateNewAddOnItem(fakeAddOnItemRepository, fakeAddOnItemRepository)
+        createNewAddOnItem = CreateNewAddOnItem(fakeAddOnItemRepository)
         getAllAddOnItems = GetAllAddOnItems(fakeAddOnItemRepository)
 
         val addOnItems = mutableListOf<AddOnItem>()

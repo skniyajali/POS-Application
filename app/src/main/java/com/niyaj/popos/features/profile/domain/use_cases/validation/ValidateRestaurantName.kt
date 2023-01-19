@@ -1,19 +1,14 @@
 package com.niyaj.popos.features.profile.domain.use_cases.validation
 
 import com.niyaj.popos.features.common.util.ValidationResult
+import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
 import javax.inject.Inject
 
-class ValidateRestaurantName @Inject constructor() {
+class ValidateRestaurantName @Inject constructor(
+    private val restaurantInfoValidationRepository: RestaurantInfoValidationRepository
+) {
 
-    fun validate(name: String): ValidationResult {
-
-        if (name.isEmpty()){
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Restaurant name must not be empty"
-            )
-        }
-
-        return ValidationResult(true)
+   operator fun invoke(name: String): ValidationResult {
+        return restaurantInfoValidationRepository.validateRestaurantName(name)
     }
 }

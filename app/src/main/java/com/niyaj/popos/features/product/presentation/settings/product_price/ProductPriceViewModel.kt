@@ -122,7 +122,7 @@ class ProductPriceViewModel @Inject constructor(
 
             is ProductPriceEvent.IncreaseProductPrice -> {
 
-                val validationResult = validateProductPrice.execute(safeString(_productPrice.value.productPrice), type = "increase")
+                val validationResult = validateProductPrice(safeString(_productPrice.value.productPrice), type = "increase")
 
                 if (!validationResult.successful) {
                     _productPrice.value = _productPrice.value.copy(
@@ -153,7 +153,7 @@ class ProductPriceViewModel @Inject constructor(
 
             is ProductPriceEvent.DecreaseProductPrice -> {
 
-                val validationResult = validateProductPrice.execute(safeString(_productPrice.value.productPrice), type = "decrease")
+                val validationResult = validateProductPrice(safeString(_productPrice.value.productPrice), type = "decrease")
 
                 if (!validationResult.successful) {
                     _productPrice.value = _productPrice.value.copy(

@@ -207,7 +207,9 @@ fun OrderScreen(
                 )
             }
             else {
-                if (selectedDate1.isNotEmpty() && selectedDate1 != LocalDate.now().toString()) {
+                val showIcon = if(pagerState.currentPage == 0) dineInOrders.isNotEmpty() else dineOutOrders.isNotEmpty()
+
+                if (showIcon && selectedDate1.isNotEmpty() && selectedDate1 != LocalDate.now().toString()) {
                     RoundedBox(
                         text = selectedDate1.toFormattedDate,
                         onClick = {
@@ -223,7 +225,7 @@ fun OrderScreen(
                     }
                 }
 
-                if (orders.isNotEmpty()){
+                if (showIcon){
                     IconButton(
                         onClick = {
                             orderViewModel.onOrderEvent(OrderEvent.ToggleSearchBar)
@@ -291,7 +293,6 @@ fun OrderScreen(
                         }
                     }
                 }
-
             }
         }
     ){

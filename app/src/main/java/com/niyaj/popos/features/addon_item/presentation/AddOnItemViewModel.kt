@@ -63,17 +63,22 @@ class AddOnItemViewModel @Inject constructor(
                 val addOnItems = _state.value.addOnItems
 
                 if (addOnItems.isNotEmpty()){
-                    addOnItems.forEach { addOnItem ->
-                        if (count % 2 != 0){
-                            val selectedProduct = _selectedAddOnItems.find { it == addOnItem.addOnItemId }
+                    if (addOnItems.size == _selectedAddOnItems.size){
+                        _selectedAddOnItems.clear()
+                    }else{
+                        addOnItems.forEach { addOnItem ->
+                            if (count % 2 != 0){
+                                val selectedProduct = _selectedAddOnItems.find { it == addOnItem.addOnItemId }
 
-                            if (selectedProduct == null){
-                                _selectedAddOnItems.add(addOnItem.addOnItemId)
+                                if (selectedProduct == null){
+                                    _selectedAddOnItems.add(addOnItem.addOnItemId)
+                                }
+                            }else {
+                                _selectedAddOnItems.remove(addOnItem.addOnItemId)
                             }
-                        }else {
-                            _selectedAddOnItems.remove(addOnItem.addOnItemId)
                         }
                     }
+
                 }
             }
 

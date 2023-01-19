@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Money
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -23,6 +23,8 @@ import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_NAME
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_NAME_FIELD
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_PRICE_ERROR_TAG
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_PRICE_FIELD
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADD_EDIT_ADDON_SCREEN
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADD_EDIT_SCREEN_CLOSE_BUTTON
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.CREATE_NEW_ADD_ON
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.EDIT_ADD_ON_ITEM
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
@@ -31,7 +33,6 @@ import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
-import com.niyaj.popos.util.Constants.CREATE_NEW_ADDON_SCREEN
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
@@ -63,8 +64,9 @@ fun AddEditAddOnItemScreen(
 
     BottomSheetWithCloseDialog(
         modifier = Modifier
-            .testTag(CREATE_NEW_ADDON_SCREEN)
+            .testTag(ADD_EDIT_ADDON_SCREEN)
             .fillMaxWidth(),
+        closeBtnModifier = Modifier.testTag(ADD_EDIT_SCREEN_CLOSE_BUTTON),
         text = if (!addOnItemId.isNullOrEmpty()) EDIT_ADD_ON_ITEM else CREATE_NEW_ADD_ON,
         icon = Icons.Default.Link,
         onClosePressed = {
@@ -94,7 +96,7 @@ fun AddEditAddOnItemScreen(
                 text = addEditAddOnItemViewModel.addEditState.itemPrice,
                 hint = ADDON_PRICE_FIELD,
                 errorTag = ADDON_PRICE_ERROR_TAG,
-                leadingIcon = Icons.Default.Money,
+                leadingIcon = Icons.Default.CurrencyRupee,
                 keyboardType = KeyboardType.Number,
                 error = addEditAddOnItemViewModel.addEditState.itemPriceError,
                 onValueChange = {

@@ -1,21 +1,14 @@
 package com.niyaj.popos.features.employee_attendance.domain.use_cases.validation
 
 import com.niyaj.popos.features.common.util.ValidationResult
+import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceValidationRepository
 import javax.inject.Inject
 
-class ValidateAbsentEmployee @Inject constructor() {
+class ValidateAbsentEmployee @Inject constructor(
+    private val attendanceValidationRepository: AttendanceValidationRepository
+) {
 
-    fun validate(employeeId: String): ValidationResult {
-
-        if (employeeId.isEmpty()) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Employee name must not be empty",
-            )
-        }
-
-        return ValidationResult(
-            successful = true,
-        )
+    operator fun invoke(employeeId: String): ValidationResult {
+        return attendanceValidationRepository.validateAbsentEmployee(employeeId)
     }
 }

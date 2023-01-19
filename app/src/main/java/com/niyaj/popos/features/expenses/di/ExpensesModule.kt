@@ -1,6 +1,7 @@
 package com.niyaj.popos.features.expenses.di
 
 import com.niyaj.popos.features.expenses.domain.repository.ExpensesRepository
+import com.niyaj.popos.features.expenses.domain.repository.ExpensesValidationRepository
 import com.niyaj.popos.features.expenses.domain.use_cases.CreateNewExpenses
 import com.niyaj.popos.features.expenses.domain.use_cases.DeleteExpenses
 import com.niyaj.popos.features.expenses.domain.use_cases.DeletePastExpenses
@@ -8,6 +9,8 @@ import com.niyaj.popos.features.expenses.domain.use_cases.ExpensesUseCases
 import com.niyaj.popos.features.expenses.domain.use_cases.GetAllExpenses
 import com.niyaj.popos.features.expenses.domain.use_cases.GetExpensesById
 import com.niyaj.popos.features.expenses.domain.use_cases.UpdateExpenses
+import com.niyaj.popos.features.expenses.domain.use_cases.validation.ValidateExpensesCategory
+import com.niyaj.popos.features.expenses.domain.use_cases.validation.ValidateExpensesPrice
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,7 +23,7 @@ object ExpensesModule {
 
     @Provides
     @Singleton
-    fun provideExpensesUseCases(expensesRepository: ExpensesRepository): ExpensesUseCases {
+    fun provideExpensesUseCases(expensesRepository: ExpensesRepository, expensesValidationRepository: ExpensesValidationRepository): ExpensesUseCases {
         return ExpensesUseCases(
             getAllExpenses = GetAllExpenses(expensesRepository),
             getExpensesById = GetExpensesById(expensesRepository),
@@ -28,6 +31,8 @@ object ExpensesModule {
             updateExpenses = UpdateExpenses(expensesRepository),
             deleteExpenses = DeleteExpenses(expensesRepository),
             deletePastExpenses = DeletePastExpenses(expensesRepository),
+            validateExpensesCategory = ValidateExpensesCategory(expensesValidationRepository),
+            validateExpensesPrice = ValidateExpensesPrice(expensesValidationRepository),
         )
     }
 }

@@ -49,6 +49,7 @@ import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
 import com.ramcosta.composedestinations.navigation.dependency
 import com.ramcosta.composedestinations.scope.resultRecipient
+import com.ramcosta.composedestinations.spec.Route
 
 @OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -58,7 +59,8 @@ fun Navigation(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     scaffoldState: ScaffoldState,
     navController: NavHostController,
-    bottomSheetNavigator: BottomSheetNavigator
+    bottomSheetNavigator: BottomSheetNavigator,
+    startRoute: Route,
 ) {
     navController.navigatorProvider += bottomSheetNavigator
 
@@ -82,6 +84,7 @@ fun Navigation(
             navGraph = NavGraphs.root,
             navController = navController,
             engine = navHostEngine,
+            startRoute = startRoute,
             dependenciesContainerBuilder = {
                 dependency(bottomSheetScaffoldState)
                 dependency(scaffoldState)

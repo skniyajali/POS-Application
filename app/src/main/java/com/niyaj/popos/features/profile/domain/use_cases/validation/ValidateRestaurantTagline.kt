@@ -1,19 +1,14 @@
 package com.niyaj.popos.features.profile.domain.use_cases.validation
 
 import com.niyaj.popos.features.common.util.ValidationResult
+import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
 import javax.inject.Inject
 
-class ValidateRestaurantTagline @Inject constructor() {
+class ValidateRestaurantTagline @Inject constructor(
+    private val restaurantInfoValidationRepository: RestaurantInfoValidationRepository
+) {
 
-    fun validate(tagline: String): ValidationResult {
-
-        if (tagline.isEmpty()){
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Restaurant tagline must not be empty"
-            )
-        }
-
-        return ValidationResult(true)
+    operator fun invoke(tagline: String): ValidationResult {
+        return restaurantInfoValidationRepository.validateRestaurantTagline(tagline)
     }
 }

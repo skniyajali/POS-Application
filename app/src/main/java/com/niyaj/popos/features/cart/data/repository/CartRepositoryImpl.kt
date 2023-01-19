@@ -233,22 +233,19 @@ class CartRepositoryImpl(
         }
     }
 
-    override suspend fun removeProductFromCart(
-        cartOrderId: String,
-        productId: String
-    ): Resource<Boolean> {
+    override suspend fun removeProductFromCart(cartOrderId: String, productId: String): Resource<Boolean> {
         return try {
             withContext(ioDispatcher){
-                val doesCartAndProductAlreadyExists = realm.query<CartRealm>(
-                    "cartOrder.cartOrderId == $0 AND product.productId == $1",
-                    cartOrderId,
-                    productId
-                ).first().find()
-
                 val cartOrder = realm.query<CartOrder>("cartOrderId = $0", cartOrderId).first().find()
                 val product = realm.query<Product>("productId == $0", productId).first().find()
 
                 if (cartOrder != null && product != null) {
+                    val doesCartAndProductAlreadyExists = realm.query<CartRealm>(
+                        "cartOrder.cartOrderId == $0 AND product.productId == $1",
+                        cartOrderId,
+                        productId
+                    ).first().find()
+
                     if (doesCartAndProductAlreadyExists != null) {
                         realm.write {
                             val cartProducts = realm.query<CartRealm>(
@@ -285,14 +282,20 @@ class CartRepositoryImpl(
     override suspend fun deleteCartById(cartId: String): Resource<Boolean> {
         return try {
             withContext(ioDispatcher){
-                realm.write {
-                    val cartProducts = realm.query<CartRealm>("cartId == $0", cartId).find().first()
+                val cartProducts = realm.query<CartRealm>("cartId == $0", cartId).first().find()
 
-                    delete(cartProducts)
+                if (cartProducts != null) {
+                    realm.write {
+                        findLatest(cartProducts)?.let {
+                            delete(it)
+                        }
+                    }
+
+                    Resource.Success(true)
+                }else {
+                    Resource.Error("Unable to find cart", false)
                 }
             }
-
-            Resource.Success(true)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to remove product from cart", false)
         }
@@ -302,22 +305,24 @@ class CartRepositoryImpl(
         return try {
             withContext(ioDispatcher){
                 realm.write {
-                    val cartProducts: RealmResults<CartRealm> =
-                        realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
+                    val cartProducts = this.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
 
                     delete(cartProducts)
                 }
+                Resource.Success(true)
             }
-
-            Resource.Success(true)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to delete cart products by order id", false)
         }
     }
 
     override fun getMainFeedProductQuantity(cartOrderId: String, productId: String): Int {
-        return realm.query<CartRealm>("cartOrder.cartOrderId == $0 && product.productId == $1", cartOrderId, productId)
-            .first().find()?.quantity ?: 0
+        return try {
+            realm.query<CartRealm>("cartOrder.cartOrderId == $0 && product.productId == $1", cartOrderId, productId)
+                .first().find()?.quantity ?: 0
+        } catch (e: Exception){
+            0
+        }
     }
 
     override fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
@@ -367,7 +372,7 @@ class CartRepositoryImpl(
                 val startDate = getCalculatedStartDate("-$cartInterval")
 
                 realm.write {
-                    val carts = realm.query<CartRealm>("updated_at <= $0", startDate).find()
+                    val carts = this.query<CartRealm>("updated_at < $0", startDate).find()
 
                     delete(carts)
                 }

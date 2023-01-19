@@ -27,6 +27,7 @@ import io.realm.kotlin.ext.query
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -34,6 +35,7 @@ import timber.log.Timber
 class DataDeletionRepositoryImpl(
     config: RealmConfiguration,
     private val settingsRepository: SettingsRepository,
+    private val coroutineScope: CoroutineScope,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : DataDeletionRepository {
 
@@ -60,21 +62,20 @@ class DataDeletionRepositoryImpl(
                 val cartOrderDate = getCalculatedStartDate(days = "-${settings.cartOrderDataDeletionInterval}")
                 val reportDate = getCalculatedStartDate(days = "-${settings.reportDataDeletionInterval}")
 
+                coroutineScope.launch {
+                    realm.write {
+                        val expenses = this.query<Expenses>("createdAt < $0", reportDate).find()
+                        val carts = this.query<CartRealm>("createdAt < $0", cartDate).find()
+                        val cartOrder = this.query<CartOrder>("updatedAt < $0", cartOrderDate).find()
+                        val reports = this.query<Reports>("createdAt < $0", expensesDate).find()
 
-                realm.write {
-                    val expenses = this.query<Expenses>("createdAt < $0", reportDate).find()
-                    val carts = this.query<CartRealm>("createdAt < $0", cartDate).find()
-                    val cartOrder = this.query<CartOrder>("updatedAt < $0", cartOrderDate).find()
-                    val reports = this.query<Reports>("createdAt < $0", expensesDate).find()
-
-                    delete(carts).also {
-                        delete(cartOrder).also {
-                            delete(reports).also {
-                                delete(expenses)
-                            }
-                        }
+                        delete(carts)
+                        delete(cartOrder)
+                        delete(reports)
+                        delete(expenses)
                     }
-                }
+                }.join()
+
             }
 
             Resource.Success(true)
@@ -85,30 +86,33 @@ class DataDeletionRepositoryImpl(
 
     override suspend fun deleteAllRecords(): Resource<Boolean> {
         return try {
-            CoroutineScope(Dispatchers.IO).launch {
-                realm.write {
-                    delete(Category::class)
-                    delete(Product::class)
-                    delete(Address::class)
-                    delete(Customer::class)
-                    delete(CartOrder::class)
-                    delete(CartRealm::class)
-                    delete(AddOnItem::class)
-                    delete(Charges::class)
-                    delete(DeliveryPartner::class)
-                    delete(Employee::class)
-                    delete(ExpensesCategory::class)
-                    delete(Expenses::class)
-                    delete(SelectedCartOrder::class)
-                    delete(EmployeeSalary::class)
-                    delete(EmployeeAttendance::class)
-                    delete(Reports::class)
-                    delete(Settings::class)
-                }
+            withContext(ioDispatcher) {
+                coroutineScope.launch {
+                    realm.write {
+                        delete(Category::class)
+                        delete(Product::class)
+                        delete(Address::class)
+                        delete(Customer::class)
+                        delete(CartOrder::class)
+                        delete(CartRealm::class)
+                        delete(AddOnItem::class)
+                        delete(Charges::class)
+                        delete(DeliveryPartner::class)
+                        delete(Employee::class)
+                        delete(ExpensesCategory::class)
+                        delete(Expenses::class)
+                        delete(SelectedCartOrder::class)
+                        delete(EmployeeSalary::class)
+                        delete(EmployeeAttendance::class)
+                        delete(Reports::class)
+                        delete(Settings::class)
+                    }
+                }.join()
+
             }
 
             Resource.Success(true)
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to delete all Records", false)
         }
     }

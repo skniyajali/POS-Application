@@ -1,19 +1,14 @@
 package com.niyaj.popos.features.employee_salary.domain.use_cases.validation
 
 import com.niyaj.popos.features.common.util.ValidationResult
+import com.niyaj.popos.features.employee_salary.domain.repository.SalaryValidationRepository
 import javax.inject.Inject
 
-class ValidatePaymentType @Inject constructor() {
+class ValidatePaymentType @Inject constructor(
+    private val salaryValidationRepository: SalaryValidationRepository
+) {
 
-    fun validate(paymentType: String) : ValidationResult {
-
-        if (paymentType.isEmpty()) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Payment type must not be empty."
-            )
-        }
-
-        return ValidationResult(true)
+    operator fun invoke(paymentType: String) : ValidationResult {
+        return salaryValidationRepository.validatePaymentType(paymentType)
     }
 }

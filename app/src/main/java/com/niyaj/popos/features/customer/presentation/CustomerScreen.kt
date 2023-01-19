@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
@@ -283,7 +284,7 @@ fun CustomerScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Sort,
-                            contentDescription = stringResource(id = R.string.filter_product),
+                            contentDescription = stringResource(id = R.string.filter_customer),
                             tint = MaterialTheme.colors.onPrimary,
                         )
                     }
@@ -311,7 +312,7 @@ fun CustomerScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = stringResource(id = R.string.filter_product),
+                        contentDescription = stringResource(id = R.string.close_icon),
                         tint = MaterialTheme.colors.onPrimary,
                     )
                 }
@@ -337,6 +338,7 @@ fun CustomerScreen(
                     text = "Cancel",
                     onClick = {
                         deleteCustomerState.hide()
+                        customerViewModel.onCustomerEvent(CustomerEvent.DeselectAllCustomer)
                     },
                 )
             }
@@ -384,6 +386,7 @@ fun CustomerScreen(
                                     .padding(SpaceMini),
                             ) {
                                 ContactCard(
+                                    modifier = Modifier.testTag(customer.customerPhone),
                                     phoneNo = customer.customerPhone,
                                     contactName = customer.customerName,
                                     contactEmail = customer.customerEmail,

@@ -1,10 +1,12 @@
 package com.niyaj.popos.features.employee_salary.data.repository
 
 import com.niyaj.popos.features.common.util.Resource
+import com.niyaj.popos.features.common.util.ValidationResult
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
 import com.niyaj.popos.features.employee_salary.domain.repository.SalaryRepository
+import com.niyaj.popos.features.employee_salary.domain.repository.SalaryValidationRepository
 import com.niyaj.popos.features.employee_salary.domain.util.CalculatedSalary
 import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculableDate
 import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculation
@@ -30,7 +32,7 @@ import timber.log.Timber
 class SalaryRepositoryImpl(
     config: RealmConfiguration,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
-) : SalaryRepository {
+) : SalaryRepository, SalaryValidationRepository {
 
     val realm = Realm.open(config)
 
@@ -150,33 +152,52 @@ class SalaryRepositoryImpl(
 
     override suspend fun addNewSalary(newSalary: EmployeeSalary): Resource<Boolean> {
         return try {
-            val employee = realm.query<Employee>("employeeId == $0", newSalary.employee?.employeeId).first().find()
+            val validateEmployee = validateEmployee(newSalary.employee?.employeeId ?: "")
+            val validateGivenDate = validateGivenDate(newSalary.salaryGivenDate)
+            val validatePaymentType = validatePaymentType(newSalary.salaryPaymentType)
+            val validateSalary = validateSalary(newSalary.employeeSalary)
+            val validateSalaryNote = validateSalaryNote(newSalary.salaryNote)
+            val validateSalaryType = validateSalaryType(newSalary.salaryType)
 
-            if (employee != null) {
-                withContext(ioDispatcher){
-                    val salary = EmployeeSalary()
-                    salary.salaryId = BsonObjectId().toHexString()
-                    salary.employeeSalary = newSalary.employeeSalary
-                    salary.salaryType = newSalary.salaryType
-                    salary.salaryGivenDate = newSalary.salaryGivenDate
-                    salary.salaryPaymentType = newSalary.salaryPaymentType
-                    salary.salaryNote = newSalary.salaryNote
-                    salary.createdAt = System.currentTimeMillis().toString()
+            val hasError = listOf(
+                validateEmployee,
+                validateSalary,
+                validateSalaryNote,
+                validateSalaryType,
+                validatePaymentType,
+                validateGivenDate
+            ).any { !it.successful }
 
-                    realm.write {
-                        findLatest(employee)?.also {
-                            salary.employee = it
+            if (!hasError) {
+                withContext(ioDispatcher) {
+                    val employee = realm.query<Employee>("employeeId == $0", newSalary.employee?.employeeId).first().find()
+
+                    if (employee != null) {
+                        val salary = EmployeeSalary()
+                        salary.salaryId = newSalary.salaryId.ifEmpty { BsonObjectId().toHexString() }
+                        salary.employeeSalary = newSalary.employeeSalary
+                        salary.salaryType = newSalary.salaryType
+                        salary.salaryGivenDate = newSalary.salaryGivenDate
+                        salary.salaryPaymentType = newSalary.salaryPaymentType
+                        salary.salaryNote = newSalary.salaryNote
+                        salary.createdAt = newSalary.createdAt.ifEmpty { System.currentTimeMillis().toString() }
+
+                        realm.write {
+                            findLatest(employee)?.also {
+                                salary.employee = it
+                            }
+
+                            this.copyToRealm(salary)
                         }
 
-                        this.copyToRealm(salary)
+                        Resource.Success(true)
+                    }else {
+                        Resource.Error("Unable to find employee", false)
                     }
                 }
-
-                Resource.Success(true)
             }else {
-                Resource.Error("Unable to find employee", false)
+                Resource.Error("Unable to validate employee salary", false)
             }
-
         }catch (e: Exception){
             Resource.Error(e.message ?: "Error creating Salary Item", false)
         }
@@ -184,26 +205,56 @@ class SalaryRepositoryImpl(
 
     override suspend fun updateSalaryById(salaryId: String, newSalary: EmployeeSalary): Resource<Boolean> {
         return try {
-            withContext(ioDispatcher) {
-                realm.write {
-                    val employee = this.query<Employee>("employeeId == $0", newSalary.employee?.employeeId).first().find()
+            val validateEmployee = validateEmployee(newSalary.employee?.employeeId ?: "")
+            val validateGivenDate = validateGivenDate(newSalary.salaryGivenDate)
+            val validatePaymentType = validatePaymentType(newSalary.salaryPaymentType)
+            val validateSalary = validateSalary(newSalary.employeeSalary)
+            val validateSalaryNote = validateSalaryNote(newSalary.salaryNote)
+            val validateSalaryType = validateSalaryType(newSalary.salaryType)
+
+            val hasError = listOf(
+                validateEmployee,
+                validateSalary,
+                validateSalaryNote,
+                validateSalaryType,
+                validatePaymentType,
+                validateGivenDate
+            ).any { !it.successful }
+
+            if (!hasError) {
+                withContext(ioDispatcher) {
+                    val employee = realm.query<Employee>("employeeId == $0", newSalary.employee?.employeeId).first().find()
 
                     if (employee != null) {
-                        val salary = this.query<EmployeeSalary>("salaryId == $0", salaryId).first().find()
-                        salary?.employeeSalary = newSalary.employeeSalary
-                        salary?.salaryType = newSalary.salaryType
-                        salary?.salaryGivenDate = newSalary.salaryGivenDate
-                        salary?.salaryPaymentType = newSalary.salaryPaymentType
-                        salary?.salaryNote = newSalary.salaryNote
-                        salary?.employee = employee
-                        salary?.updatedAt = System.currentTimeMillis().toString()
+                        val salary = realm.query<EmployeeSalary>("salaryId == $0", salaryId).first().find()
+
+                        if (salary != null) {
+                            realm.write {
+                                findLatest(salary)?.apply {
+                                    this.employeeSalary = newSalary.employeeSalary
+                                    this.salaryType = newSalary.salaryType
+                                    this.salaryGivenDate = newSalary.salaryGivenDate
+                                    this.salaryPaymentType = newSalary.salaryPaymentType
+                                    this.salaryNote = newSalary.salaryNote
+                                    this.updatedAt = System.currentTimeMillis().toString()
+
+                                    findLatest(employee)?.also {
+                                        this.employee = it
+                                    }
+                                }
+                            }
+                            Resource.Success(true)
+                        }else {
+                            Resource.Error("Salary not found", false)
+                        }
                     } else {
                         Resource.Error("Unable to find employee", false)
                     }
                 }
+            }else {
+                Resource.Error("Unable to validate employee salary", false)
             }
 
-            Resource.Success(true)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to update employee.", false)
         }
@@ -212,17 +263,22 @@ class SalaryRepositoryImpl(
     override suspend fun deleteSalaryById(salaryId: String): Resource<Boolean> {
         return try {
             withContext(ioDispatcher) {
-                realm.write {
-                    val salary = this.query<EmployeeSalary>("salaryId == $0", salaryId).first().find()
-                    if (salary != null) {
-                        delete(salary)
-                    }else {
-                        Resource.Error("Unable to find salary.", false)
+                val salary = realm.query<EmployeeSalary>("salaryId == $0", salaryId).first().find()
+
+                if (salary != null) {
+                    realm.write {
+                        findLatest(salary)?.let {
+                            delete(it)
+                        }
                     }
+
+                    Resource.Success(true)
+
+                }else {
+                    Resource.Error("Unable to find salary.", false)
                 }
             }
-            Resource.Success(true)
-        }catch (e:Exception) {
+        } catch (e:Exception) {
             Resource.Error(e.message ?: "Unable to delete salary.", false)
         }
     }
@@ -317,5 +373,94 @@ class SalaryRepositoryImpl(
         }catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to get Salary Calculable Date", emptyList())
         }
+    }
+
+    override fun validateEmployee(employeeId: String): ValidationResult {
+        if (employeeId.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Employee name must not be empty",
+            )
+        }
+
+        return ValidationResult(
+            successful = true,
+        )
+    }
+
+    override fun validateGivenDate(givenDate: String): ValidationResult {
+        if (givenDate.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Given date must not be empty",
+            )
+        }
+
+
+        return ValidationResult(
+            successful = true,
+        )
+    }
+
+    override fun validatePaymentType(paymentType: String): ValidationResult {
+        if (paymentType.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Payment type must not be empty."
+            )
+        }
+
+        return ValidationResult(true)
+    }
+
+    override fun validateSalary(salary: String): ValidationResult {
+        if (salary.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Salary must not be empty",
+            )
+        }
+
+        if (salary.length < 2) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Salary must greater than two digits",
+            )
+        }
+
+        if (salary.any { it.isLetter() }) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Salary must not contain any characters",
+            )
+        }
+
+        return ValidationResult(
+            successful = true,
+        )
+    }
+
+    override fun validateSalaryNote(salaryNote: String, isRequired: Boolean): ValidationResult {
+        if (isRequired) {
+            if (salaryNote.isEmpty()){
+                return ValidationResult(
+                    successful = false,
+                    errorMessage = "Salary note required."
+                )
+            }
+        }
+
+        return ValidationResult(true)
+    }
+
+    override fun validateSalaryType(salaryType: String): ValidationResult {
+        if (salaryType.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Salary type must not be empty",
+            )
+        }
+
+        return ValidationResult(true)
     }
 }

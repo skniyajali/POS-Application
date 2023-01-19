@@ -10,10 +10,6 @@ import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
-import com.niyaj.popos.features.employee.domain.use_cases.validation.ValidateEmployeeName
-import com.niyaj.popos.features.employee.domain.use_cases.validation.ValidateEmployeePhone
-import com.niyaj.popos.features.employee.domain.use_cases.validation.ValidateEmployeePosition
-import com.niyaj.popos.features.employee.domain.use_cases.validation.ValidateEmployeeSalary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -22,10 +18,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditEmployeeViewModel @Inject constructor(
-    private val validateEmployeeName: ValidateEmployeeName,
-    private val validateEmployeePhone: ValidateEmployeePhone,
-    private val validateEmployeeSalary: ValidateEmployeeSalary,
-    private val validateEmployeePosition: ValidateEmployeePosition,
     private val employeeUseCases: EmployeeUseCases,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
@@ -85,10 +77,10 @@ class AddEditEmployeeViewModel @Inject constructor(
     }
 
     private fun addOrEditEmployee(employeeId: String? = null){
-        val validatedEmployeeName = validateEmployeeName.execute(addEditState.employeeName, employeeId)
-        val validatedEmployeePhone = validateEmployeePhone.execute(addEditState.employeePhone, employeeId)
-        val validatedEmployeeSalary = validateEmployeeSalary.execute(addEditState.employeeSalary)
-        val validatedEmployeePosition = validateEmployeePosition.execute(addEditState.employeePosition)
+        val validatedEmployeeName = employeeUseCases.validateEmployeeName(addEditState.employeeName, employeeId)
+        val validatedEmployeePhone = employeeUseCases.validateEmployeePhone(addEditState.employeePhone, employeeId)
+        val validatedEmployeeSalary = employeeUseCases.validateEmployeeSalary(addEditState.employeeSalary)
+        val validatedEmployeePosition = employeeUseCases.validateEmployeePosition(addEditState.employeePosition)
 
         val hasError = listOf(validatedEmployeeName, validatedEmployeePhone, validatedEmployeeSalary, validatedEmployeePosition).any {
             !it.successful

@@ -14,7 +14,6 @@ import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.ValidationResult
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
-import io.realm.kotlin.exceptions.RealmException
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
@@ -70,9 +69,7 @@ class AddOnItemRepositoryImpl(
 
     override suspend fun getAddOnItemById(addOnItemId: String): Resource<AddOnItem?> {
         return try {
-            val addOnItem = withContext(ioDispatcher) {
-                realm.query<AddOnItem>("addOnItemId == $0", addOnItemId).first().find()
-            }
+            val addOnItem = realm.query<AddOnItem>("addOnItemId == $0", addOnItemId).first().find()
 
             Resource.Success(addOnItem)
         } catch (e: Exception) {
@@ -81,7 +78,7 @@ class AddOnItemRepositoryImpl(
     }
 
     override fun findAddOnItemByName(addOnItemName: String, addOnItemId: String?): Boolean {
-        val addOnItem = if(addOnItemId == null) {
+        val addOnItem = if(addOnItemId.isNullOrEmpty()) {
             realm.query<AddOnItem>("itemName == $0", addOnItemName).first().find()
         }else {
             realm.query<AddOnItem>("addOnItemId != $0 && itemName == $1", addOnItemId, addOnItemName).first().find()
@@ -92,20 +89,29 @@ class AddOnItemRepositoryImpl(
 
     override suspend fun createNewAddOnItem(newAddOnItem: AddOnItem): Resource<Boolean> {
         return try {
-            withContext(ioDispatcher){
-                val addOnItem = AddOnItem()
-                addOnItem.addOnItemId = BsonObjectId().toHexString()
-                addOnItem.itemName = newAddOnItem.itemName
-                addOnItem.itemPrice = newAddOnItem.itemPrice
-                addOnItem.createdAt = System.currentTimeMillis().toString()
+            val validateName = validateItemName(newAddOnItem.itemName, null)
+            val validatePrice = validateItemPrice(newAddOnItem.itemPrice)
 
-                realm.write {
-                    this.copyToRealm(addOnItem)
+            val hasError = listOf(validateName, validatePrice).any { !it.successful }
+
+            if (!hasError) {
+                withContext(ioDispatcher) {
+                    val addOnItem = AddOnItem()
+                    addOnItem.addOnItemId = newAddOnItem.addOnItemId.ifEmpty { BsonObjectId().toHexString() }
+                    addOnItem.itemName = newAddOnItem.itemName
+                    addOnItem.itemPrice = newAddOnItem.itemPrice
+                    addOnItem.createdAt = newAddOnItem.createdAt.ifEmpty { System.currentTimeMillis().toString() }
+
+                    realm.write {
+                        this.copyToRealm(addOnItem)
+                    }
                 }
-            }
 
-            Resource.Success(true)
-        }catch (e: RealmException){
+                Resource.Success(true)
+            }else {
+                Resource.Error( "Unable to create new addon item", false)
+            }
+        }catch (e: Exception){
             Timber.e(e)
             Resource.Error(e.message ?: "Error creating AddOn Item", false)
         }
@@ -113,16 +119,32 @@ class AddOnItemRepositoryImpl(
 
     override suspend fun updateAddOnItem(newAddOnItem: AddOnItem, addOnItemId: String): Resource<Boolean> {
         return try {
-            withContext(ioDispatcher){
-                realm.write {
-                    val addOnItem = this.query<AddOnItem>("addOnItemId == $0", addOnItemId).first().find()
-                    addOnItem?.itemName = newAddOnItem.itemName
-                    addOnItem?.itemPrice = newAddOnItem.itemPrice
-                    addOnItem?.updatedAt = System.currentTimeMillis().toString()
-                }
-            }
+            val validateName = validateItemName(newAddOnItem.itemName, addOnItemId)
+            val validatePrice = validateItemPrice(newAddOnItem.itemPrice)
 
-            Resource.Success(true)
+            val hasError = listOf(validateName, validatePrice).any { !it.successful }
+
+            if (!hasError){
+                val addOnItem = realm.query<AddOnItem>("addOnItemId == $0", addOnItemId).first().find()
+
+                if (addOnItem != null) {
+                    withContext(ioDispatcher){
+                        realm.write {
+                            findLatest(addOnItem)?.apply {
+                                this.itemName = newAddOnItem.itemName
+                                this.itemPrice = newAddOnItem.itemPrice
+                                this.updatedAt = System.currentTimeMillis().toString()
+                            }
+                        }
+                    }
+
+                    Resource.Success(true)
+                }else {
+                    Resource.Error("Unable to find add on item", false)
+                }
+            }else {
+                Resource.Error( "Unable to update item", false)
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to update item", false)
         }
@@ -130,16 +152,21 @@ class AddOnItemRepositoryImpl(
 
     override suspend fun deleteAddOnItem(addOnItemId: String): Resource<Boolean> {
         return try {
-            withContext(ioDispatcher){
-                realm.write {
-                    val addOnItem: AddOnItem = this.query<AddOnItem>("addOnItemId == $0", addOnItemId).find().first()
+            val addOnItem = realm.query<AddOnItem>("addOnItemId == $0", addOnItemId).first().find()
 
-                    delete(addOnItem)
+            if (addOnItem != null){
+                withContext(ioDispatcher) {
+                    realm.write {
+                        findLatest(addOnItem)?.let {
+                            delete(it)
+                        }
+                    }
                 }
+
+                Resource.Success(true)
+            }else{
+                Resource.Error("Unable to find add on item", false)
             }
-
-            Resource.Success(true)
-
         } catch (e: Exception){
             Resource.Error(e.message ?: "Failed to delete AddOnItem", false)
         }

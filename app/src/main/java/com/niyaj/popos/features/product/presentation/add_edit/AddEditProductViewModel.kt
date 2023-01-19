@@ -13,9 +13,6 @@ import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.product.domain.use_cases.ProductUseCases
-import com.niyaj.popos.features.product.domain.use_cases.validation.ValidateCategoryName
-import com.niyaj.popos.features.product.domain.use_cases.validation.ValidateProductName
-import com.niyaj.popos.features.product.domain.use_cases.validation.ValidateProductPrice
 import com.niyaj.popos.util.capitalizeWords
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -27,9 +24,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditProductViewModel @Inject constructor(
-    private val validateProductName: ValidateProductName,
-    private val validateProductPrice: ValidateProductPrice,
-    private val validateCategoryName: ValidateCategoryName,
     private val productUseCases: ProductUseCases,
     private val categoryUseCases: CategoryUseCases,
     savedStateHandle: SavedStateHandle
@@ -90,9 +84,9 @@ class AddEditProductViewModel @Inject constructor(
     }
 
     private fun createNewProduct(productId: String? = null){
-        val validatedProductName = validateProductName.execute(addEditProductState.productName, productId)
-        val validatedProductPrice = validateProductPrice.execute(safeString(addEditProductState.productPrice))
-        val validatedCategoryName = validateCategoryName.execute(addEditProductState.category.categoryName)
+        val validatedProductName = productUseCases.validateProductName(addEditProductState.productName, productId)
+        val validatedProductPrice = productUseCases.validateProductPrice(safeString(addEditProductState.productPrice))
+        val validatedCategoryName = productUseCases.validateCategoryName(addEditProductState.category.categoryName)
 
         val hasError = listOf(validatedProductName, validatedProductPrice, validatedCategoryName).any {
             !it.successful

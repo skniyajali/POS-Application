@@ -27,7 +27,7 @@ class CreateNewAddOnItemTest {
     @Before
     fun setUp() {
         fakeAddOnItemRepository = FakeAddOnItemRepository()
-        createNewAddOnItem = CreateNewAddOnItem(fakeAddOnItemRepository, fakeAddOnItemRepository)
+        createNewAddOnItem = CreateNewAddOnItem(fakeAddOnItemRepository)
         getAddOnItemById = GetAddOnItemById(fakeAddOnItemRepository)
     }
 

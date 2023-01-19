@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
@@ -45,6 +46,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
+import com.niyaj.popos.features.address.domain.util.AddressTestTags.ADDRESS_SEARCH_BAR
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.BottomSheetScreen
 import com.niyaj.popos.features.common.util.UiEvent
@@ -248,6 +250,7 @@ fun AddressScreen(
             }
             else if(showSearchBar){
                 StandardSearchBar(
+                    modifier = Modifier.testTag(ADDRESS_SEARCH_BAR),
                     searchText = addressViewModel.searchText.collectAsState().value,
                     placeholderText = "Search for addresses...",
                     onSearchTextChanged = {
@@ -289,7 +292,7 @@ fun AddressScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Sort,
-                            contentDescription = stringResource(id = R.string.filter_product),
+                            contentDescription = stringResource(id = R.string.filter_address),
                             tint = MaterialTheme.colors.onPrimary,
                         )
                     }
@@ -305,7 +308,7 @@ fun AddressScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = stringResource(id = R.string.filter_address),
+                        contentDescription = "Deselect address",
                         tint = MaterialTheme.colors.onPrimary,
                     )
                 }
@@ -326,6 +329,7 @@ fun AddressScreen(
                     text = "Cancel",
                     onClick = {
                         deleteAddressState.hide()
+                        addressViewModel.onAddressEvent(AddressEvent.DeselectAddress)
                     },
                 )
             }
@@ -366,6 +370,7 @@ fun AddressScreen(
                 ){
                     itemsIndexed(addresses){ _, address ->
                         FlexRowBox(
+                            modifier = Modifier.testTag(address.addressName),
                             title = address.addressName,
                             secondaryText = address.shortName,
                             icon = Icons.Default.Business,

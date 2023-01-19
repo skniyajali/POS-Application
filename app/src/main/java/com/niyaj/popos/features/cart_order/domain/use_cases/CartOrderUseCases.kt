@@ -1,5 +1,9 @@
 package com.niyaj.popos.features.cart_order.domain.use_cases
 
+import com.niyaj.popos.features.cart_order.domain.use_cases.cart_order_validation.ValidateCustomerAddress
+import com.niyaj.popos.features.cart_order.domain.use_cases.cart_order_validation.ValidateCustomerPhone
+import com.niyaj.popos.features.cart_order.domain.use_cases.cart_order_validation.ValidateOrderId
+
 data class CartOrderUseCases(
     val getLastCreatedOrderId: GetLastCreatedOrderId,
     val getAllCartOrders: GetAllCartOrders,
@@ -12,5 +16,8 @@ data class CartOrderUseCases(
     val deleteCartOrder: DeleteCartOrder,
     val placeOrder: PlaceOrder,
     val placeAllOrder: PlaceAllOrder,
-    val deleteCartOrders: DeleteCartOrders
+    val deleteCartOrders: DeleteCartOrders,
+    val validateCustomerAddress: ValidateCustomerAddress,
+    val validateCustomerPhone: ValidateCustomerPhone,
+    val validateOrderId: ValidateOrderId,
 )

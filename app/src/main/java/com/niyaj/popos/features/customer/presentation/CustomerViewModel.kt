@@ -13,9 +13,6 @@ import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.customer.domain.model.Customer
 import com.niyaj.popos.features.customer.domain.use_cases.CustomerUseCases
-import com.niyaj.popos.features.customer.domain.use_cases.validation.ValidateCustomerEmail
-import com.niyaj.popos.features.customer.domain.use_cases.validation.ValidateCustomerName
-import com.niyaj.popos.features.customer.domain.use_cases.validation.ValidateCustomerPhone
 import com.niyaj.popos.features.customer.domain.util.FilterCustomer
 import com.niyaj.popos.util.capitalizeWords
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,9 +27,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CustomerViewModel @Inject constructor(
-    private val validateCustomerPhone: ValidateCustomerPhone,
-    private val validateCustomerName: ValidateCustomerName,
-    private val validateCustomerEmail: ValidateCustomerEmail,
     private val customerUseCases: CustomerUseCases,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
@@ -230,9 +224,9 @@ class CustomerViewModel @Inject constructor(
     }
 
     private fun addOrEditCustomer(customerId: String? =null){
-        val customerNameResult = validateCustomerName.execute(addEditCustomerState.customerName)
-        val customerPhoneResult = validateCustomerPhone.execute(addEditCustomerState.customerPhone, customerId)
-        val customerEmailResult = validateCustomerEmail.execute(addEditCustomerState.customerEmail)
+        val customerNameResult = customerUseCases.validateCustomerName(addEditCustomerState.customerName)
+        val customerPhoneResult = customerUseCases.validateCustomerPhone(addEditCustomerState.customerPhone, customerId)
+        val customerEmailResult = customerUseCases.validateCustomerEmail(addEditCustomerState.customerEmail)
 
         val hasError = listOf(customerNameResult,customerPhoneResult,customerEmailResult).any{
             !it.successful

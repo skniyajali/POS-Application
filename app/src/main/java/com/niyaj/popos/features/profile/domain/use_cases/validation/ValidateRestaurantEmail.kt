@@ -1,27 +1,14 @@
 package com.niyaj.popos.features.profile.domain.use_cases.validation
 
-import android.util.Patterns
 import com.niyaj.popos.features.common.util.ValidationResult
+import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
 import javax.inject.Inject
 
-class ValidateRestaurantEmail @Inject constructor() {
+class ValidateRestaurantEmail @Inject constructor(
+    private val restaurantInfoValidationRepository: RestaurantInfoValidationRepository
+) {
 
-    fun validate(email: String): ValidationResult {
-
-        if (email.isEmpty()){
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Restaurant email must not be empty"
-            )
-        }
-
-        if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Restaurant email is not a valid email address.",
-            )
-        }
-
-        return ValidationResult(true)
+    operator fun invoke(email: String): ValidationResult {
+        return restaurantInfoValidationRepository.validateRestaurantEmail(email)
     }
 }

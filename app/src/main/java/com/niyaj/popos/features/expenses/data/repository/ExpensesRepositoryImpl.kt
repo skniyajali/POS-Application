@@ -2,8 +2,10 @@ package com.niyaj.popos.features.expenses.data.repository
 
 import com.niyaj.popos.features.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.features.common.util.Resource
+import com.niyaj.popos.features.common.util.ValidationResult
 import com.niyaj.popos.features.expenses.domain.model.Expenses
 import com.niyaj.popos.features.expenses.domain.repository.ExpensesRepository
+import com.niyaj.popos.features.expenses.domain.repository.ExpensesValidationRepository
 import com.niyaj.popos.features.expenses_category.domain.model.ExpensesCategory
 import com.niyaj.popos.util.getCalculatedStartDate
 import io.realm.kotlin.Realm
@@ -25,7 +27,7 @@ class ExpensesRepositoryImpl(
     config: RealmConfiguration,
     private val settingsRepository: SettingsRepository,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
-) : ExpensesRepository {
+) : ExpensesRepository, ExpensesValidationRepository {
 
     val realm = Realm.open(config)
 
@@ -85,56 +87,73 @@ class ExpensesRepositoryImpl(
     override suspend fun createNewExpenses(newExpenses: Expenses): Resource<Boolean> {
         return try {
             withContext(ioDispatcher) {
-                val expansesItem = Expenses()
-                expansesItem.expensesId = BsonObjectId().toHexString()
-                expansesItem.expensesPrice = newExpenses.expensesPrice
-                expansesItem.expensesRemarks = newExpenses.expensesRemarks
-                expansesItem.createdAt = System.currentTimeMillis().toString()
+                val validateExpensesCategory = validateExpensesCategory(newExpenses.expensesCategory?.expensesCategoryId ?: "")
+                val validateExpensesPrice = validateExpensesPrice(newExpenses.expensesPrice)
 
-                realm.write {
-                    val expansesCategory = this.query<ExpensesCategory>(
-                        "expensesCategoryId == $0",
-                        newExpenses.expensesCategory?.expensesCategoryId
-                    ).first().find()
+                val hasError = listOf(validateExpensesCategory, validateExpensesPrice).any { !it.successful}
 
-                    if (expansesCategory != null) {
+                if (!hasError) {
+                    val expansesItem = Expenses()
+                    expansesItem.expensesId = newExpenses.expensesId.ifEmpty { BsonObjectId().toHexString() }
+                    expansesItem.expensesPrice = newExpenses.expensesPrice
+                    expansesItem.expensesRemarks = newExpenses.expensesRemarks
+                    expansesItem.createdAt = newExpenses.createdAt.ifEmpty { System.currentTimeMillis().toString() }
+
+                    realm.write {
+                        val expansesCategory = this.query<ExpensesCategory>(
+                            "expensesCategoryId == $0",
+                            newExpenses.expensesCategory?.expensesCategoryId
+                        ).first().find()
+
                         expansesItem.expensesCategory = expansesCategory
 
                         this.copyToRealm(expansesItem)
                     }
+
+                    Resource.Success(true)
+                }else {
+                    Resource.Error("Unable to validate expenses", false)
                 }
             }
-
-            Resource.Success(true)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Error creating Expanses Item", false)
         }
     }
 
-    override suspend fun updateExpenses(
-        newExpenses: Expenses,
-        expensesId: String,
-    ): Resource<Boolean> {
+    override suspend fun updateExpenses(newExpenses: Expenses, expensesId: String): Resource<Boolean> {
         return try {
             withContext(ioDispatcher) {
-                realm.write {
-                    val expansesCategory = this.query<ExpensesCategory>(
-                        "expensesCategoryId == $0",
-                        newExpenses.expensesCategory?.expensesCategoryId
-                    ).find().first()
+                val validateExpensesCategory = validateExpensesCategory(newExpenses.expensesCategory?.expensesCategoryId ?: "")
+                val validateExpensesPrice = validateExpensesPrice(newExpenses.expensesPrice)
 
-                    val expansesItem = this.query<Expenses>("expensesId == $0", expensesId).first().find()
-                    expansesItem?.expensesPrice = newExpenses.expensesPrice
-                    expansesItem?.expensesRemarks = newExpenses.expensesRemarks
-                    expansesItem?.updatedAt = System.currentTimeMillis().toString()
+                val hasError = listOf(validateExpensesCategory, validateExpensesPrice).any { !it.successful}
 
-                    findLatest(expansesCategory)?.also {
-                        expansesItem?.expensesCategory = it
+                if (!hasError) {
+                    val expansesItem = realm.query<Expenses>("expensesId == $0", expensesId).first().find()
+
+                    if(expansesItem != null) {
+                        realm.write {
+                            val expansesCategory = this.query<ExpensesCategory>(
+                                "expensesCategoryId == $0",
+                                newExpenses.expensesCategory?.expensesCategoryId
+                            ).first().find()
+
+                            findLatest(expansesItem)?.apply {
+                                this.expensesPrice = newExpenses.expensesPrice
+                                this.expensesRemarks = newExpenses.expensesRemarks
+                                this.updatedAt = System.currentTimeMillis().toString()
+                                this.expensesCategory = expansesCategory
+                            }
+                        }
+
+                        Resource.Success(true)
+                    }else {
+                        Resource.Error("Unable to find expenses", false)
                     }
+                }else {
+                    Resource.Error("Unable to validate expenses", false)
                 }
             }
-
-            Resource.Success(true)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to update expanses.", false)
         }
@@ -143,16 +162,21 @@ class ExpensesRepositoryImpl(
     override suspend fun deleteExpenses(expensesId: String): Resource<Boolean> {
         return try {
             withContext(ioDispatcher) {
-                realm.write {
-                    val expansesItem: Expenses =
-                        this.query<Expenses>("expensesId == $0", expensesId).find().first()
+                val expansesItem = realm.query<Expenses>("expensesId == $0", expensesId).first().find()
 
-                    delete(expansesItem)
+                if (expansesItem != null) {
+                    realm.write {
+                        findLatest(expansesItem)?.let {
+                            delete(it)
+                        }
+                    }
+
+                    Resource.Success(true)
+                }else {
+                    Resource.Error("Unable to find expense item", false)
                 }
+
             }
-
-            Resource.Success(true)
-
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to delete expanses.", false)
         }
@@ -182,5 +206,51 @@ class ExpensesRepositoryImpl(
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to delete expanses", false)
         }
+    }
+
+    override fun validateExpensesCategory(categoryId: String): ValidationResult {
+        if (categoryId.isEmpty()){
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Category is required",
+            )
+        }
+
+        val expensesCategory = realm.query<ExpensesCategory>("expensesCategoryId == $0", categoryId).first().find()
+
+        if (expensesCategory == null) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Unable to find expenses category",
+            )
+        }
+
+        return ValidationResult(true)
+    }
+
+    override fun validateExpensesPrice(expansesPrice: String): ValidationResult {
+        if (expansesPrice.isEmpty()){
+            return ValidationResult(
+                false,
+                "Expanses price must not be empty"
+            )
+        }
+
+        if (expansesPrice.any { it.isLetter() }){
+            return ValidationResult(
+                false,
+                "Expanses price must not contain a letter"
+            )
+        }
+
+        if (expansesPrice.length > 6){
+            return ValidationResult(
+                false,
+                "Invalid expanses price."
+            )
+        }
+
+
+        return ValidationResult(true)
     }
 }

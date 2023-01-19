@@ -1,5 +1,6 @@
 package com.niyaj.popos.features.common.util
 
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.FILTER_ADD_ON_ITEM
 import com.niyaj.popos.features.addon_item.domain.util.FilterAddOnItem
 import com.niyaj.popos.features.addon_item.presentation.AddOnItemViewModel
 import com.niyaj.popos.features.address.domain.util.FilterAddress
@@ -93,7 +94,7 @@ sealed class BottomSheetScreen(val type: String, val route: String){
     data class FilterAddOnItemScreen(
         val filterAddOnItem: FilterAddOnItem,
         val onFilterChanged: (FilterAddOnItem) -> Unit
-    ): BottomSheetScreen(type = "Filter AddOn Item", route = "filter_add_on_item_screen")
+    ): BottomSheetScreen(type = FILTER_ADD_ON_ITEM, route = "filter_add_on_item_screen")
 
     data class FilterChargesScreen(
         val filterCharges: FilterCharges,

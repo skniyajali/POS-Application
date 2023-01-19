@@ -18,12 +18,17 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_SEARCH_PLACEHOLDER
+import com.niyaj.popos.util.Constants.SEARCH_BAR_CLEAR_BUTTON
+import com.niyaj.popos.util.Constants.STANDARD_SEARCH_BAR
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun StandardSearchBar(
+    modifier: Modifier = Modifier,
     searchText: String,
     placeholderText: String = "",
     onSearchTextChanged: (String) -> Unit = {},
@@ -39,7 +44,8 @@ fun StandardSearchBar(
     }
 
     OutlinedTextField(
-        modifier = Modifier
+        modifier = modifier
+            .testTag(STANDARD_SEARCH_BAR)
             .fillMaxWidth()
             .padding(vertical = 2.dp)
             .onFocusChanged { focusState ->
@@ -51,7 +57,8 @@ fun StandardSearchBar(
         placeholder = {
             Text(
                 text = placeholderText,
-                color = Color.LightGray
+                color = Color.LightGray,
+                modifier = Modifier.testTag(ADDON_SEARCH_PLACEHOLDER)
             )
         },
         colors = TextFieldDefaults.textFieldColors(
@@ -67,7 +74,10 @@ fun StandardSearchBar(
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    IconButton(onClick = { onClearClick() }) {
+                    IconButton(
+                        onClick = { onClearClick() },
+                        modifier = Modifier.testTag(SEARCH_BAR_CLEAR_BUTTON)
+                    ) {
                         Icon(
                             imageVector = Icons.Filled.Close,
                             contentDescription = null,

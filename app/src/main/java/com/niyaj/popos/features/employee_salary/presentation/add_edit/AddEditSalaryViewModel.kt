@@ -16,12 +16,6 @@ import com.niyaj.popos.features.employee.domain.util.PaymentType
 import com.niyaj.popos.features.employee.presentation.EmployeeState
 import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
 import com.niyaj.popos.features.employee_salary.domain.use_cases.SalaryUseCases
-import com.niyaj.popos.features.employee_salary.domain.use_cases.validation.ValidateEmployee
-import com.niyaj.popos.features.employee_salary.domain.use_cases.validation.ValidateGiveDate
-import com.niyaj.popos.features.employee_salary.domain.use_cases.validation.ValidatePaymentType
-import com.niyaj.popos.features.employee_salary.domain.use_cases.validation.ValidateSalary
-import com.niyaj.popos.features.employee_salary.domain.use_cases.validation.ValidateSalaryNote
-import com.niyaj.popos.features.employee_salary.domain.use_cases.validation.ValidateSalaryType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,12 +26,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditSalaryViewModel @Inject constructor(
-    private val validateEmployee: ValidateEmployee,
-    private val validateGiveDate: ValidateGiveDate,
-    private val validateSalary: ValidateSalary,
-    private val validateSalaryType: ValidateSalaryType,
-    private val validatePaymentType: ValidatePaymentType,
-    private val validateSalaryNote: ValidateSalaryNote,
     private val salaryUseCases: SalaryUseCases,
     private val employeeUseCases: EmployeeUseCases,
     savedStateHandle: SavedStateHandle
@@ -112,12 +100,12 @@ class AddEditSalaryViewModel @Inject constructor(
     }
 
     private fun addEditSalaryEntry(salaryId: String? = null) {
-        val validateEmployee = validateEmployee.validate(addEditSalaryState.employee.employeeId)
-        val validateSalary = validateSalary.validate(addEditSalaryState.salary)
-        val validateSalaryType = validateSalaryType.validate(addEditSalaryState.salaryType)
-        val validateGiveDate = validateGiveDate.validate(addEditSalaryState.salaryDate)
-        val validatePaymentType = validatePaymentType.validate(addEditSalaryState.salaryPaymentType)
-        val validateSalaryNote = validateSalaryNote.validate(
+        val validateEmployee = salaryUseCases.validateEmployee(addEditSalaryState.employee.employeeId)
+        val validateSalary = salaryUseCases.validateSalary(addEditSalaryState.salary)
+        val validateSalaryType = salaryUseCases.validateSalaryType(addEditSalaryState.salaryType)
+        val validateGiveDate = salaryUseCases.validateGiveDate(addEditSalaryState.salaryDate)
+        val validatePaymentType = salaryUseCases.validatePaymentType(addEditSalaryState.salaryPaymentType)
+        val validateSalaryNote = salaryUseCases.validateSalaryNote(
             salaryNote = addEditSalaryState.salaryNote,
             isRequired = addEditSalaryState.salaryPaymentType == PaymentType.Both.paymentType
         )

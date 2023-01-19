@@ -15,9 +15,6 @@ import com.niyaj.popos.features.employee.domain.util.FilterEmployee
 import com.niyaj.popos.features.employee.presentation.EmployeeState
 import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.features.employee_attendance.domain.use_cases.AttendanceUseCases
-import com.niyaj.popos.features.employee_attendance.domain.use_cases.validation.ValidateAbsentDate
-import com.niyaj.popos.features.employee_attendance.domain.use_cases.validation.ValidateAbsentEmployee
-import com.niyaj.popos.features.employee_attendance.domain.use_cases.validation.ValidateIsAbsent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,9 +26,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AbsentViewModel @Inject constructor(
-    private val validateAbsentEmployee: ValidateAbsentEmployee,
-    private val validateIsAbsent: ValidateIsAbsent,
-    private val validateAbsentDate: ValidateAbsentDate,
     private val employeeUseCases: EmployeeUseCases,
     private val attendanceUseCases: AttendanceUseCases,
     savedStateHandle: SavedStateHandle,
@@ -94,9 +88,9 @@ class AbsentViewModel @Inject constructor(
 
     private fun addUpdateAbsentEntry(attendanceId: String = "") {
 
-        val validatedEmployee = validateAbsentEmployee.validate(absentState.employee.employeeId)
-        val validateIsAbsent = validateIsAbsent.validate(absentState.isAbsent)
-        val validateAbsentDate = validateAbsentDate.validate(
+        val validatedEmployee = attendanceUseCases.validateAbsentEmployee(absentState.employee.employeeId)
+        val validateIsAbsent = attendanceUseCases.validateIsAbsent(absentState.isAbsent)
+        val validateAbsentDate = attendanceUseCases.validateAbsentDate(
             absentState.absentDate,
             absentState.employee.employeeId,
             attendanceId

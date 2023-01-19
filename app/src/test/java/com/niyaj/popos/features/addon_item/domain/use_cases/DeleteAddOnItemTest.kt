@@ -26,7 +26,7 @@ class DeleteAddOnItemTest {
     @Before
     fun setUp() {
         fakeAddOnItemRepository = FakeAddOnItemRepository()
-        createNewAddOnItem = CreateNewAddOnItem(fakeAddOnItemRepository, fakeAddOnItemRepository)
+        createNewAddOnItem = CreateNewAddOnItem(fakeAddOnItemRepository)
         deleteAddOnItem = DeleteAddOnItem(fakeAddOnItemRepository)
     }
 

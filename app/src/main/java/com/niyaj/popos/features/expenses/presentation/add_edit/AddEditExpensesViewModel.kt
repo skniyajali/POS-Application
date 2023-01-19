@@ -10,8 +10,6 @@ import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.expenses.domain.model.Expenses
 import com.niyaj.popos.features.expenses.domain.use_cases.ExpensesUseCases
-import com.niyaj.popos.features.expenses.domain.use_cases.validation.ValidateExpansesCategory
-import com.niyaj.popos.features.expenses.domain.use_cases.validation.ValidateExpansesPrice
 import com.niyaj.popos.features.expenses_category.domain.use_cases.ExpensesCategoryUseCases
 import com.niyaj.popos.features.expenses_category.domain.util.FilterExpensesCategory
 import com.niyaj.popos.features.expenses_category.presentation.ExpensesCategoryState
@@ -25,8 +23,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditExpensesViewModel @Inject constructor(
-    private val validateExpensesCategory: ValidateExpansesCategory,
-    private val validateExpensesPrice: ValidateExpansesPrice,
     private val expensesUseCases: ExpensesUseCases,
     private val expensesCategoryUseCases: ExpensesCategoryUseCases,
     savedStateHandle: SavedStateHandle
@@ -89,9 +85,9 @@ class AddEditExpensesViewModel @Inject constructor(
     }
 
     private fun addOrEditExpenses(expensesId: String? = null){
-        val validatedExpensesCategory = validateExpensesCategory.execute(_addEditState.value.expensesCategory.expensesCategoryId)
+        val validatedExpensesCategory = expensesUseCases.validateExpensesCategory(_addEditState.value.expensesCategory.expensesCategoryId)
 
-        val validatedExpensesPrice = validateExpensesPrice.execute(_addEditState.value.expensesPrice)
+        val validatedExpensesPrice = expensesUseCases.validateExpensesPrice(_addEditState.value.expensesPrice)
 
         val hasError = listOf(validatedExpensesCategory, validatedExpensesPrice).any {
             !it.successful

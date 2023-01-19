@@ -2,7 +2,9 @@ package com.niyaj.popos.features.address.data.repository
 
 import com.niyaj.popos.features.address.domain.model.Address
 import com.niyaj.popos.features.address.domain.repository.AddressRepository
+import com.niyaj.popos.features.address.domain.repository.AddressValidationRepository
 import com.niyaj.popos.features.common.util.Resource
+import com.niyaj.popos.features.common.util.ValidationResult
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -20,7 +22,7 @@ import timber.log.Timber
 class AddressRepositoryImpl(
     config: RealmConfiguration,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : AddressRepository {
+) : AddressRepository, AddressValidationRepository {
 
     val realm = Realm.open(config)
 
@@ -69,21 +71,40 @@ class AddressRepositoryImpl(
         }
     }
 
+    override fun findAddressByName(addressName: String, addressId: String?): Boolean {
+        val address = if(addressId.isNullOrEmpty()) {
+            realm.query<Address>("addressName == $0", addressName).first().find()
+        }else {
+            realm.query<Address>("addressId != $0 && addressName == $1", addressId, addressName).first().find()
+        }
+
+        return address != null
+    }
+
     override suspend fun addNewAddress(newAddress: Address): Resource<Boolean> {
         return try {
             withContext(ioDispatcher){
-                val address = Address()
-                address.addressId = BsonObjectId().toHexString()
-                address.shortName = newAddress.shortName
-                address.addressName = newAddress.addressName
-                address.createdAt = System.currentTimeMillis().toString()
+                val validateAddressName = validateAddressName(newAddress.addressName, null)
+                val validateAddressShortName = validateAddressShortName(newAddress.shortName)
 
-                realm.write {
-                    this.copyToRealm(address)
+                val hasError = listOf(validateAddressName, validateAddressShortName).any { !it.successful}
+
+                if (!hasError) {
+                    val address = Address()
+                    address.addressId = newAddress.addressId.ifEmpty { BsonObjectId().toHexString() }
+                    address.shortName = newAddress.shortName
+                    address.addressName = newAddress.addressName
+                    address.createdAt = newAddress.createdAt.ifEmpty { System.currentTimeMillis().toString() }
+
+                    realm.write {
+                        this.copyToRealm(address)
+                    }
+
+                    Resource.Success(true)
+                }else {
+                    Resource.Error("Unable to create address", false)
                 }
             }
-
-            Resource.Success(true)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to new address", false)
         }
@@ -92,15 +113,29 @@ class AddressRepositoryImpl(
     override suspend fun updateAddress(newAddress: Address, addressId: String): Resource<Boolean> {
         return try {
             withContext(ioDispatcher){
-                realm.write {
-                    val address = this.query<Address>("addressId == $0", addressId).first().find()
-                    address?.shortName = newAddress.shortName
-                    address?.addressName = newAddress.addressName
-                    address?.updatedAt = System.currentTimeMillis().toString()
+                val validateAddressName = validateAddressName(newAddress.addressName, addressId)
+                val validateAddressShortName = validateAddressShortName(newAddress.shortName)
+
+                val hasError = listOf(validateAddressName, validateAddressShortName).any { !it.successful}
+
+                if (!hasError) {
+                    val address = realm.query<Address>("addressId == $0", addressId).first().find()
+                    if (address != null) {
+                        realm.write {
+                            findLatest(address)?.apply {
+                                this.shortName = newAddress.shortName
+                                this.addressName = newAddress.addressName
+                                this.updatedAt = System.currentTimeMillis().toString()
+                            }
+                        }
+                        Resource.Success(true)
+                    } else {
+                        Resource.Error("Unable to find address", false)
+                    }
+                }else {
+                    Resource.Error("Unable to update address", false)
                 }
             }
-
-            Resource.Success(true)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to update address", false)
         }
@@ -108,19 +143,72 @@ class AddressRepositoryImpl(
 
     override suspend fun deleteAddress(addressId: String): Resource<Boolean> {
         return try {
-            withContext(ioDispatcher){
-                realm.write {
-                    val address: Address =
-                        this.query<Address>("addressId == $0", addressId).find().first()
+            val address = realm.query<Address>("addressId == $0", addressId).first().find()
 
-                    delete(address)
+            if (address != null) {
+                withContext(ioDispatcher) {
+                    realm.write {
+                        findLatest(address)?.let {
+                            delete(it)
+                        }
+                    }
                 }
-            }
 
-            Resource.Success(true)
+                Resource.Success(true)
+            } else {
+                Resource.Error("Unable to delete address", false)
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to delete address", false)
         }
     }
 
+    override fun validateAddressName(addressName: String, addressId: String?): ValidationResult {
+        if(addressName.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Address name must not be empty",
+            )
+        }
+
+        if(addressName.length < 2) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "The address name must be more than 2 characters long"
+            )
+        }
+
+        val serverResult = this.findAddressByName(addressName, addressId)
+
+        if (serverResult) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Address name already exists."
+            )
+        }
+
+        return ValidationResult(
+            successful = true
+        )
+    }
+
+    override fun validateAddressShortName(addressShortName: String): ValidationResult {
+        if(addressShortName.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Address short name cannot be empty"
+            )
+        }
+
+        if(addressShortName.length < 2) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "The short name must be more than 2 characters long"
+            )
+        }
+
+        return ValidationResult(
+            successful = true
+        )
+    }
 }

@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.category.domain.model.Category
 import com.niyaj.popos.features.category.domain.use_cases.CategoryUseCases
-import com.niyaj.popos.features.category.domain.use_cases.validation.ValidateCategoryName
 import com.niyaj.popos.features.category.domain.util.FilterCategory
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.SortType
@@ -27,7 +26,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CategoryViewModel @Inject constructor(
-    private val validateCategoryName: ValidateCategoryName,
     private val categoryUseCases: CategoryUseCases,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -214,7 +212,7 @@ class CategoryViewModel @Inject constructor(
     }
 
     private fun createOrUpdateCategory(categoryId: String? = null){
-        val categoryNameResult = validateCategoryName.execute(addEditCategoryState.categoryName, categoryId)
+        val categoryNameResult = categoryUseCases.validateCategoryName(addEditCategoryState.categoryName, categoryId)
 
         if (!categoryNameResult.successful){
             addEditCategoryState = addEditCategoryState.copy(categoryNameError = categoryNameResult.errorMessage)

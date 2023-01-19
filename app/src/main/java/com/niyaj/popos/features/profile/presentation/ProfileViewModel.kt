@@ -9,13 +9,6 @@ import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
 import com.niyaj.popos.features.profile.domain.use_cases.RestaurantInfoUseCases
-import com.niyaj.popos.features.profile.domain.use_cases.validation.ValidatePaymentQrCode
-import com.niyaj.popos.features.profile.domain.use_cases.validation.ValidatePrimaryPhone
-import com.niyaj.popos.features.profile.domain.use_cases.validation.ValidateRestaurantAddress
-import com.niyaj.popos.features.profile.domain.use_cases.validation.ValidateRestaurantEmail
-import com.niyaj.popos.features.profile.domain.use_cases.validation.ValidateRestaurantName
-import com.niyaj.popos.features.profile.domain.use_cases.validation.ValidateRestaurantTagline
-import com.niyaj.popos.features.profile.domain.use_cases.validation.ValidateSecondaryPhone
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,13 +19,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val validateRestaurantName: ValidateRestaurantName,
-    private val validateRestaurantEmail: ValidateRestaurantEmail,
-    private val validateRestaurantTagline: ValidateRestaurantTagline,
-    private val validateRestaurantAddress: ValidateRestaurantAddress,
-    private val validatePrimaryPhone: ValidatePrimaryPhone,
-    private val validateSecondaryPhone: ValidateSecondaryPhone,
-    private val validatePaymentQrCode: ValidatePaymentQrCode,
     private val restaurantInfoUseCases: RestaurantInfoUseCases
 ) : ViewModel() {
 
@@ -121,13 +107,13 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun updateProfile() {
-        val validatedName = validateRestaurantName.validate(updateState.name)
-        val validatedTagLine = validateRestaurantTagline.validate(updateState.tagline)
-        val validatedEmail = validateRestaurantEmail.validate(updateState.email)
-        val validatedPrimaryPhone = validatePrimaryPhone.validate(updateState.primaryPhone)
-        val validatedSecondaryPhone = validateSecondaryPhone.validate(updateState.secondaryPhone)
-        val validatedAddress = validateRestaurantAddress.validate(updateState.address)
-        val validatedPaymentQrCode = validatePaymentQrCode.validate(updateState.paymentQrCode)
+        val validatedName = restaurantInfoUseCases.validateRestaurantName(updateState.name)
+        val validatedTagLine = restaurantInfoUseCases.validateRestaurantTagline(updateState.tagline)
+        val validatedEmail = restaurantInfoUseCases.validateRestaurantEmail(updateState.email)
+        val validatedPrimaryPhone = restaurantInfoUseCases.validatePrimaryPhone(updateState.primaryPhone)
+        val validatedSecondaryPhone = restaurantInfoUseCases.validateSecondaryPhone(updateState.secondaryPhone)
+        val validatedAddress = restaurantInfoUseCases.validateRestaurantAddress(updateState.address)
+        val validatedPaymentQrCode = restaurantInfoUseCases.validatePaymentQrCode(updateState.paymentQrCode)
 
 
         val hasError = listOf(

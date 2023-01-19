@@ -1,23 +1,14 @@
 package com.niyaj.popos.features.customer.domain.use_cases.validation
 
 import com.niyaj.popos.features.common.util.ValidationResult
+import com.niyaj.popos.features.customer.domain.repository.CustomerValidationRepository
 import javax.inject.Inject
 
-class ValidateCustomerName @Inject constructor() {
+class ValidateCustomerName @Inject constructor(
+    private val customerValidationRepository: CustomerValidationRepository
+) {
 
-    fun execute(customerName: String?): ValidationResult {
-
-        if(!customerName.isNullOrEmpty()) {
-            if(customerName.length < 3) {
-                return ValidationResult(
-                    successful = false,
-                    errorMessage = "Customer name must be 3 characters long",
-                )
-            }
-        }
-
-        return ValidationResult(
-            successful = true
-        )
+    operator fun invoke(customerName: String?): ValidationResult {
+        return customerValidationRepository.validateCustomerName(customerName)
     }
 }

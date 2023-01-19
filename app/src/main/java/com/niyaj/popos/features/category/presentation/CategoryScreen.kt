@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
@@ -284,7 +285,7 @@ fun CategoryScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Sort,
-                            contentDescription = stringResource(id = R.string.filter_product),
+                            contentDescription = stringResource(id = R.string.filter_category),
                             tint = MaterialTheme.colors.onPrimary,
                         )
                     }
@@ -325,6 +326,7 @@ fun CategoryScreen(
                     text = "Cancel",
                     onClick = {
                         deleteCategoryState.hide()
+                        categoryViewModel.onCategoryEvent(CategoryEvent.DeselectCategories)
                     },
                 )
             }
@@ -367,9 +369,11 @@ fun CategoryScreen(
                     ){
                         items(categories) { category ->
                             FlexRowBox(
+                                modifier = Modifier.testTag(category.categoryName),
                                 title = category.categoryName,
                                 icon = Icons.Default.Category,
                                 doesSelected = selectedCategories.contains(category.categoryId),
+                                doesAvailable = category.categoryAvailability,
                                 onClick = {
                                     categoryViewModel.onCategoryEvent(
                                         CategoryEvent.SelectCategory(
