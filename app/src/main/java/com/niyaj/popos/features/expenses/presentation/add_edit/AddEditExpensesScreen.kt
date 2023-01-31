@@ -71,7 +71,6 @@ fun AddEditExpensesScreen(
     addEditExpensesViewModel: AddEditExpensesViewModel = hiltViewModel(),
     resultBackNavigator: ResultBackNavigator<String>,
 ) {
-
     val expensesCategories = addEditExpensesViewModel.expensesCategories.collectAsStateWithLifecycle().value.expensesCategory
     val expensesCategoryName = addEditExpensesViewModel.addEditState.value.expensesCategory.expensesCategoryName
     val expensesCategoryError = addEditExpensesViewModel.addEditState.value.expensesCategoryError
@@ -119,6 +118,7 @@ fun AddEditExpensesScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ){
                 ExposedDropdownMenuBox(
+                    modifier = Modifier.weight(2.5f),
                     expanded = expensesCategories.isNotEmpty() && categoryDropdownToggled,
                     onExpandedChange = {
                         categoryDropdownToggled = !categoryDropdownToggled
@@ -194,8 +194,6 @@ fun AddEditExpensesScreen(
                     )
                 }
             }
-
-
 
             Spacer(modifier = Modifier.height(SpaceSmall))
 
