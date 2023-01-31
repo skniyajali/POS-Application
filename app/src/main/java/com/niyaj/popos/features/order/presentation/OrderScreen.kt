@@ -1,6 +1,13 @@
 package com.niyaj.popos.features.order.presentation
 
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Intent
+import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -52,6 +59,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
@@ -61,6 +69,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.R
@@ -89,6 +99,8 @@ import com.niyaj.popos.util.toFormattedDate
 import com.niyaj.popos.util.toFormattedTime
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
+import com.ramcosta.composedestinations.result.NavResult
+import com.ramcosta.composedestinations.result.ResultRecipient
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.message
@@ -96,10 +108,11 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import com.vanpra.composematerialdialogs.title
 import de.charlex.compose.RevealSwipe
 import kotlinx.coroutines.flow.collectLatest
+import timber.log.Timber
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalPagerApi::class,
-    ExperimentalLifecycleComposeApi::class
+    ExperimentalLifecycleComposeApi::class, ExperimentalPermissionsApi::class
 )
 @Destination
 @Composable
@@ -110,7 +123,82 @@ fun OrderScreen(
     scaffoldState: ScaffoldState,
     orderViewModel: OrderViewModel = hiltViewModel(),
     printViewModel: PrintViewModel = hiltViewModel(),
+    resultRecipient: ResultRecipient<AddEditCartOrderScreenDestination, String>
 ) {
+    val context = LocalContext.current
+
+    val bluetoothPermissions =
+        // Checks if the device has Android 12 or above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            rememberMultiplePermissionsState(
+                permissions = listOf(
+                    android.Manifest.permission.BLUETOOTH,
+                    android.Manifest.permission.BLUETOOTH_ADMIN,
+                    android.Manifest.permission.BLUETOOTH_CONNECT,
+                    android.Manifest.permission.BLUETOOTH_SCAN,
+                )
+            )
+        } else {
+            rememberMultiplePermissionsState(
+                permissions = listOf(
+                    android.Manifest.permission.BLUETOOTH,
+                    android.Manifest.permission.BLUETOOTH_ADMIN,
+                )
+            )
+        }
+
+    val enableBluetoothContract = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (it.resultCode == Activity.RESULT_OK) {
+            Timber.d("bluetoothLauncher", "Success")
+        } else {
+            Timber.w("bluetoothLauncher", "Failed")
+        }
+    }
+
+    // This intent will open the enable bluetooth dialog
+    val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+
+    val bluetoothManager = remember {
+        context.getSystemService(BluetoothManager::class.java)
+    }
+
+    val bluetoothAdapter: BluetoothAdapter? = remember {
+        bluetoothManager.adapter
+    }
+
+    val printDeliveryReport: () -> Unit = {
+        if (bluetoothPermissions.allPermissionsGranted) {
+            if (bluetoothAdapter?.isEnabled == true) {
+                // Bluetooth is on print the receipt
+                orderViewModel.onOrderEvent(OrderEvent.PrintDeliveryReport)
+            } else {
+                // Bluetooth is off, ask user to turn it on
+                enableBluetoothContract.launch(enableBluetoothIntent)
+                orderViewModel.onOrderEvent(OrderEvent.PrintDeliveryReport)
+            }
+        } else {
+            bluetoothPermissions.launchMultiplePermissionRequest()
+        }
+    }
+
+    val printOrder: (String) -> Unit = {
+        if (bluetoothPermissions.allPermissionsGranted) {
+            if (bluetoothAdapter?.isEnabled == true) {
+                // Bluetooth is on print the receipt
+                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+            } else {
+                // Bluetooth is off, ask user to turn it on
+                enableBluetoothContract.launch(enableBluetoothIntent)
+                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+            }
+        } else {
+            bluetoothPermissions.launchMultiplePermissionRequest()
+        }
+    }
+
+
     val pagerState = rememberPagerState()
     val dialogState = rememberMaterialDialogState()
     val deleteOrderState = rememberMaterialDialogState()
@@ -175,6 +263,15 @@ fun OrderScreen(
             orderViewModel.onSearchBarCloseAndClearClick()
         } else{
             navController.navigateUp()
+        }
+    }
+
+    resultRecipient.onNavResult { result ->
+        when(result) {
+            is NavResult.Canceled -> {}
+            is NavResult.Value -> {
+                orderViewModel.onOrderEvent(OrderEvent.RefreshOrder)
+            }
         }
     }
 
@@ -271,7 +368,7 @@ fun OrderScreen(
                         ) {
                             DropdownMenuItem(
                                 onClick = {
-                                    orderViewModel.onOrderEvent(OrderEvent.PrintDeliveryReport)
+                                    printDeliveryReport()
                                     showMenu = false
                                 }
                             ) {
@@ -423,6 +520,8 @@ fun OrderScreen(
                                         backgroundCardStartColor = MaterialTheme.colors.primary,
                                         backgroundCardEndColor = MaterialTheme.colors.error,
                                         shape = RoundedCornerShape(6.dp),
+                                        backgroundStartActionLabel = "Start",
+                                        backgroundEndActionLabel = "End",
                                     ) {
                                         Card(
                                             modifier = Modifier
@@ -507,8 +606,7 @@ fun OrderScreen(
 
                                                         IconButton(
                                                             onClick = {
-                                                                printViewModel.onPrintEvent(
-                                                                    PrintEvent.PrintOrder(order.cartOrder.cartOrderId))
+                                                                printOrder(order.cartOrder.cartOrderId)
                                                             }
                                                         ) {
                                                             Icon(
@@ -619,6 +717,8 @@ fun OrderScreen(
                                         backgroundCardContentColor = LightColor12,
                                         backgroundCardStartColor = MaterialTheme.colors.primary,
                                         backgroundCardEndColor = MaterialTheme.colors.error,
+                                        backgroundStartActionLabel = "Start",
+                                        backgroundEndActionLabel = "End",
                                         shape = RoundedCornerShape(6.dp),
                                     ) {
                                         Card(
@@ -704,8 +804,7 @@ fun OrderScreen(
 
                                                         IconButton(
                                                             onClick = {
-                                                                printViewModel.onPrintEvent(
-                                                                    PrintEvent.PrintOrder(order.cartOrder.cartOrderId))
+                                                                printOrder(order.cartOrder.cartOrderId)
                                                             }
                                                         ) {
                                                             Icon(
@@ -744,4 +843,5 @@ fun OrderScreen(
             }
         }
     }
+
 }

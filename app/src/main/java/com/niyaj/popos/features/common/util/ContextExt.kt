@@ -46,3 +46,5 @@ fun Context.hasStoragePermission(): Boolean {
                 Manifest.permission.MANAGE_EXTERNAL_STORAGE
             ) == PackageManager.PERMISSION_GRANTED
 }
+
+

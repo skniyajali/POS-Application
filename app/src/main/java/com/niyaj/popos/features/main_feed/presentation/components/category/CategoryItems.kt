@@ -21,6 +21,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.niyaj.popos.features.category.domain.model.Category
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 
@@ -31,6 +34,7 @@ fun CategoryItems(
     selectedCategory: String = "",
     selectedColor: Color = MaterialTheme.colors.primary,
     unselectedColor: Color = MaterialTheme.colors.onPrimary,
+    isLoading: Boolean = false,
     onClick: (String) -> Unit = {},
 ) {
     LazyRow(
@@ -44,13 +48,16 @@ fun CategoryItems(
                 modifier = Modifier
                     .width(120.dp)
                     .height(40.dp)
+                    .placeholder(
+                        visible = isLoading,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
                     .clip(CutCornerShape(4.dp))
                     .border(borderStroke, CutCornerShape(4.dp))
                     .clickable {
                         onClick(category.categoryId)
                     }
-                    .background(backgroundColor)
-                ,
+                    .background(backgroundColor),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

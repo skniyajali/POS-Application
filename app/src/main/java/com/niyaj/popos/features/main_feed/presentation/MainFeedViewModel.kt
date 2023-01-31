@@ -4,17 +4,12 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import com.niyaj.popos.features.cart.domain.use_cases.CartUseCases
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
 import com.niyaj.popos.features.category.domain.util.FilterCategory
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.main_feed.domain.model.ProductWithQuantity
 import com.niyaj.popos.features.main_feed.domain.use_cases.MainFeedUseCases
 import com.niyaj.popos.features.main_feed.presentation.components.category.MainFeedCategoryEvent
 import com.niyaj.popos.features.main_feed.presentation.components.category.MainFeedCategoryState
@@ -23,7 +18,6 @@ import com.niyaj.popos.features.main_feed.presentation.components.product.MainFe
 import com.niyaj.popos.features.product.domain.util.FilterProduct
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -58,12 +52,6 @@ class MainFeedViewModel @Inject constructor(
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
-
-    val productsList: Flow<PagingData<ProductWithQuantity>> = Pager(
-        pagingSourceFactory = { mainFeedUseCases.getProductsPager },
-        config = PagingConfig(pageSize = 5)
-    ).flow.cachedIn(viewModelScope)
-
 
     init {
         getAllMainFeedProducts()

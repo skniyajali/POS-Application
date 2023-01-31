@@ -35,14 +35,10 @@ import com.niyaj.popos.features.customer.domain.repository.CustomerRepository
 import com.niyaj.popos.features.customer.domain.repository.CustomerValidationRepository
 import com.niyaj.popos.features.data_deletion.data.repository.DataDeletionRepositoryImpl
 import com.niyaj.popos.features.data_deletion.domain.repository.DataDeletionRepository
-import com.niyaj.popos.features.delivery_partner.data.repository.PartnerRepositoryImpl
-import com.niyaj.popos.features.delivery_partner.domain.model.DeliveryPartner
-import com.niyaj.popos.features.delivery_partner.domain.repository.PartnerRepository
-import com.niyaj.popos.features.delivery_partner.domain.repository.PartnerValidationRepository
 import com.niyaj.popos.features.employee.data.repository.EmployeeRepositoryImpl
-import com.niyaj.popos.features.employee.data.repository.EmployeeValidationRepository
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.features.employee.domain.repository.EmployeeValidationRepository
 import com.niyaj.popos.features.employee_attendance.data.repository.AttendanceRepositoryImpl
 import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceRepository
@@ -71,6 +67,9 @@ import com.niyaj.popos.features.profile.data.repository.RestaurantInfoRepository
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoRepository
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
+import com.niyaj.popos.features.reminder.data.repository.ReminderRepositoryImpl
+import com.niyaj.popos.features.reminder.domain.model.Reminder
+import com.niyaj.popos.features.reminder.domain.repository.ReminderRepository
 import com.niyaj.popos.features.reports.data.repository.ReportsRepositoryImpl
 import com.niyaj.popos.features.reports.domain.model.Reports
 import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
@@ -84,6 +83,7 @@ import io.realm.kotlin.log.LogLevel
 @Module
 @InstallIn(SingletonComponent::class)
 object RealmModule {
+
     private val schema = setOf(
         Product::class,
         Category::class,
@@ -94,7 +94,6 @@ object RealmModule {
         CartRealm::class,
         Charges::class,
         AddOnItem::class,
-        DeliveryPartner::class,
         ExpensesCategory::class,
         Expenses::class,
         Employee::class,
@@ -103,6 +102,7 @@ object RealmModule {
         Reports::class,
         Settings::class,
         RestaurantInfo::class,
+        Reminder::class,
     )
 
     private val config = RealmConfiguration
@@ -194,16 +194,6 @@ object RealmModule {
     }
 
     @Provides
-    fun providePartnerRepositoryImpl(): PartnerRepository {
-        return PartnerRepositoryImpl(config)
-    }
-
-    @Provides
-    fun providePartnerValidationRepositoryImpl(): PartnerValidationRepository {
-        return PartnerRepositoryImpl(config)
-    }
-
-    @Provides
     fun provideEmployeeRepositoryImpl(): EmployeeRepository {
         return EmployeeRepositoryImpl(config)
     }
@@ -286,5 +276,10 @@ object RealmModule {
     @Provides
     fun provideRestaurantInfoValidationRepositoryImpl(): RestaurantInfoValidationRepository {
         return RestaurantInfoRepositoryImpl(config)
+    }
+
+    @Provides
+    fun provideReminderRepositoryImpl(): ReminderRepository {
+        return ReminderRepositoryImpl(config)
     }
 }

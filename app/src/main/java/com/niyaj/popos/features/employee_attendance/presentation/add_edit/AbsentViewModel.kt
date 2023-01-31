@@ -91,9 +91,9 @@ class AbsentViewModel @Inject constructor(
         val validatedEmployee = attendanceUseCases.validateAbsentEmployee(absentState.employee.employeeId)
         val validateIsAbsent = attendanceUseCases.validateIsAbsent(absentState.isAbsent)
         val validateAbsentDate = attendanceUseCases.validateAbsentDate(
-            absentState.absentDate,
-            absentState.employee.employeeId,
-            attendanceId
+            absentDate = absentState.absentDate,
+            employeeId = absentState.employee.employeeId,
+            attendanceId = attendanceId
         )
 
         val hasError = listOf(validatedEmployee, validateIsAbsent, validateAbsentDate).any {
@@ -101,7 +101,6 @@ class AbsentViewModel @Inject constructor(
         }
 
         if (hasError) {
-
             absentState = absentState.copy(
                 employeeError = validatedEmployee.errorMessage,
                 isAbsentError = validateIsAbsent.errorMessage,
@@ -111,18 +110,15 @@ class AbsentViewModel @Inject constructor(
             return
         } else {
             viewModelScope.launch {
+                val employeeAttendance = EmployeeAttendance(
+                    employee = absentState.employee,
+                    isAbsent = absentState.isAbsent,
+                    absentReason = absentState.absentReason,
+                    absentDate = absentState.absentDate,
+                )
+
                 if (attendanceId.isEmpty()) {
-
-                    val result = attendanceUseCases.addAbsentEntry(
-                        EmployeeAttendance(
-                            employee = absentState.employee,
-                            isAbsent = absentState.isAbsent,
-                            absentReason = absentState.absentReason,
-                            absentDate = absentState.absentDate,
-                        )
-                    )
-
-                    when (result) {
+                    when (val result = attendanceUseCases.addAbsentEntry(employeeAttendance)) {
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -131,23 +127,13 @@ class AbsentViewModel @Inject constructor(
                         }
                         is Resource.Error -> {
                             _eventFlow.emit(
-                                UiEvent.OnError(result.message
-                                ?: "Unable to add absent entry."))
+                                UiEvent.OnError(result.message?: "Unable to add absent entry.")
+                            )
                         }
                     }
 
                 } else {
-                    val result = attendanceUseCases.updateAbsentEntry(
-                        attendanceId,
-                        EmployeeAttendance(
-                            employee = absentState.employee,
-                            isAbsent = absentState.isAbsent,
-                            absentReason = absentState.absentReason,
-                            absentDate = absentState.absentDate,
-                        )
-                    )
-
-                    when (result) {
+                    when (val result = attendanceUseCases.updateAbsentEntry(attendanceId, employeeAttendance)) {
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -155,9 +141,9 @@ class AbsentViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.OnSuccess("Employee absent entry has been updated."))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(
-                                UiEvent.OnError(result.message
-                                ?: "Unable to update absent entry."))
+                            _eventFlow.emit(UiEvent.OnError(
+                                result.message ?: "Unable to update absent entry.")
+                            )
                         }
                     }
                 }
@@ -212,26 +198,36 @@ class AbsentViewModel @Inject constructor(
                             )
                         }
                     }
-                    is Resource.Error -> {}
+                    is Resource.Error -> {
+                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to find employee"))
+                    }
                 }
             }
         }
     }
 
     private fun getAttendanceById(attendanceId: String) {
-        viewModelScope.launch {
-            val result = attendanceUseCases.getAttendanceById(attendanceId)
-
-            result.data?.let { attendance ->
-                if (attendance.employee != null){
-                    absentState = absentState.copy(
-                        employee = attendance.employee!!,
-                        isAbsent = attendance.isAbsent,
-                        absentDate = attendance.absentDate,
-                        absentReason = attendance.absentReason
-                    )
+        if(attendanceId.isNotEmpty()) {
+            viewModelScope.launch {
+                when(val result = attendanceUseCases.getAttendanceById(attendanceId)) {
+                    is Resource.Success -> {
+                        result.data?.let { attendance ->
+                            if (attendance.employee != null){
+                                absentState = absentState.copy(
+                                    employee = attendance.employee!!,
+                                    isAbsent = attendance.isAbsent,
+                                    absentDate = attendance.absentDate,
+                                    absentReason = attendance.absentReason
+                                )
+                            }
+                        }
+                    }
+                    is Resource.Error -> {
+                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to find absent report"))
+                    }
+                    is Resource.Loading -> {}
                 }
-            } ?: _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to find absent report"))
+            }
         }
     }
 }

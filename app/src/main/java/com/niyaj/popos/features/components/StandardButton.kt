@@ -26,6 +26,7 @@ fun StandardButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier
+            .pressClickEffect()
             .fillMaxWidth()
             .heightIn(ButtonSize),
     ) {

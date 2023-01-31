@@ -310,7 +310,7 @@ fun StandardDrawer(
                         partnersExpanded.value = it
                     },
                     title = {
-                        Text(text = "Employee, Delivery Partners")
+                        Text(text = "Employee, Salary, Advance")
                     },
                     leading = {
                         Icon(
@@ -363,18 +363,6 @@ fun StandardDrawer(
                                 iconColor = MaterialTheme.colors.secondary,
                                 onClick = {
                                     navController.navigate(SalaryScreenDestination())
-                                }
-                            )
-
-                            Spacer(modifier = Modifier.height(SpaceSmall))
-
-                            DrawerItem(
-                                text = "Delivery Partners",
-                                icon = Icons.Default.AssignmentInd,
-                                selected = currentRoute == PartnerScreenDestination.route,
-                                iconColor = MaterialTheme.colors.secondary,
-                                onClick = {
-                                    navController.navigate(PartnerScreenDestination())
                                 }
                             )
                         }
@@ -480,7 +468,7 @@ fun StandardDrawer(
                         settingsExpanded.value = it
                     },
                     title = {
-                        Text(text = "App Settings")
+                        Text(text = "App Settings, Reminders")
                     },
                     leading = {
                         Icon(imageVector = Icons.Default.Settings,
@@ -500,6 +488,16 @@ fun StandardDrawer(
                         Column(
                             modifier = Modifier.padding(SpaceSmall),
                         ) {
+                            DrawerItem(
+                                text = "Reminders",
+                                icon = Icons.Default.Event,
+                                selected = currentRoute == ReminderScreenDestination.route,
+                                iconColor = MaterialTheme.colors.secondary,
+                                onClick = {
+                                    navController.navigate(ReminderScreenDestination())
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(SpaceSmall))
                             DrawerItem(
                                 text = "App Settings",
                                 icon = Icons.Default.Settings,

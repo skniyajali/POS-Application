@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.employee.domain.model.Employee
+import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
 import com.niyaj.popos.features.employee_attendance.domain.use_cases.AttendanceUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -15,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AttendanceViewModel @Inject constructor(
-    private val attendanceUseCases: AttendanceUseCases
+    private val attendanceUseCases: AttendanceUseCases,
+    private val employeeUseCases : EmployeeUseCases,
 ): ViewModel() {
 
     private val _attendance = MutableStateFlow(AttendanceState())
@@ -144,6 +147,10 @@ class AttendanceViewModel @Inject constructor(
             _searchText.emit("")
             getAllAttendance()
         }
+    }
+
+    fun getEmployeeById(employeeId: String): Employee? {
+        return employeeUseCases.getEmployeeById(employeeId).data
     }
 
 }

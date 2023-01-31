@@ -14,6 +14,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-serialization:1.7.21"
         classpath 'com.google.dagger:hilt-android-gradle-plugin:2.44'
         classpath("io.realm.kotlin:gradle-plugin:1.5.0")
+        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.22.0"
     }
 }
 
@@ -24,9 +25,10 @@ plugins {
     id 'io.realm.kotlin' version '1.5.0' apply false
     id("com.google.dagger.hilt.android") version "2.44" apply false
     id 'com.android.test' version '7.3.1' apply false
+    id "io.gitlab.arturbosch.detekt" version "1.22.0"
 }
 
 
-task clean(type: Delete) {
+tasks.register('clean') {
     delete rootProject.buildDir
 }

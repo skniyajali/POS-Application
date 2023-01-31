@@ -20,6 +20,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,18 @@ import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.employee.domain.util.EmployeeSalaryType
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.ADD_EDIT_EMPLOYEE_BUTTON
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_JOINED_DATE_FIELD
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_MONTHLY_SALARY_ERROR
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_MONTHLY_SALARY_FIELD
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_NAME_ERROR
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_NAME_FIELD
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_PHONE_ERROR
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_PHONE_FIELD
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_POSITION_ERROR
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_POSITION_FIELD
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_SALARY_TYPE_FIELD
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_TYPE_FIELD
 import com.niyaj.popos.features.employee.domain.util.EmployeeType
 import com.niyaj.popos.util.toMilliSecond
 import com.niyaj.popos.util.toSalaryDate
@@ -134,9 +147,10 @@ fun AddEditEmployeeScreen(
         ){
             item {
                 StandardOutlinedTextField(
-                    modifier = Modifier,
+                    modifier = Modifier.testTag(EMPLOYEE_NAME_FIELD),
                     text = addEditEmployeeViewModel.addEditState.employeeName,
                     hint = "Employee Name",
+                    errorTag = EMPLOYEE_NAME_ERROR,
                     leadingIcon = Icons.Default.Person4,
                     error = addEditEmployeeViewModel.addEditState.employeeNameError,
                     onValueChange = {
@@ -153,12 +167,13 @@ fun AddEditEmployeeScreen(
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
                 StandardOutlinedTextField(
-                    modifier = Modifier,
+                    modifier = Modifier.testTag(EMPLOYEE_PHONE_FIELD),
                     text = addEditEmployeeViewModel.addEditState.employeePhone,
                     hint = "Employee Phone",
                     leadingIcon = Icons.Default.PhoneAndroid,
                     keyboardType = KeyboardType.Number,
                     error = addEditEmployeeViewModel.addEditState.employeePhoneError,
+                    errorTag = EMPLOYEE_PHONE_ERROR,
                     onValueChange = {
                         addEditEmployeeViewModel.onAddEditEmployeeEvent(
                             AddEditEmployeeEvent.EmployeePhoneChanged(
@@ -172,12 +187,13 @@ fun AddEditEmployeeScreen(
             item {
                 Spacer(modifier = Modifier.height(SpaceSmall))
                 StandardOutlinedTextField(
-                    modifier = Modifier,
+                    modifier = Modifier.testTag(EMPLOYEE_MONTHLY_SALARY_FIELD),
                     text = addEditEmployeeViewModel.addEditState.employeeSalary,
                     hint = "Employee Monthly Salary",
                     leadingIcon = Icons.Default.Money,
                     keyboardType = KeyboardType.Number,
                     error = addEditEmployeeViewModel.addEditState.employeeSalaryError,
+                    errorTag = EMPLOYEE_MONTHLY_SALARY_ERROR,
                     onValueChange = {
                         addEditEmployeeViewModel.onAddEditEmployeeEvent(
                             AddEditEmployeeEvent.EmployeeSalaryChanged(
@@ -195,7 +211,8 @@ fun AddEditEmployeeScreen(
                     expanded = salaryTypeToggled,
                     onExpandedChange = {
                         salaryTypeToggled = !salaryTypeToggled
-                    }
+                    },
+                    modifier = Modifier.testTag(EMPLOYEE_SALARY_TYPE_FIELD),
                 ) {
                     StandardOutlinedTextField(
                         modifier = Modifier
@@ -225,7 +242,8 @@ fun AddEditEmployeeScreen(
                             .width(with(LocalDensity.current){textFieldSize.width.toDp()}),
                     ) {
                         DropdownMenuItem(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth(),
                             onClick = {
                                 addEditEmployeeViewModel.onAddEditEmployeeEvent(
                                     AddEditEmployeeEvent.EmployeeSalaryTypeChanged(
@@ -289,7 +307,8 @@ fun AddEditEmployeeScreen(
                     expanded = addEditEmployeeViewModel.expanded,
                     onExpandedChange = {
                         addEditEmployeeViewModel.expanded = !addEditEmployeeViewModel.expanded
-                    }
+                    },
+                    modifier = Modifier.testTag(EMPLOYEE_TYPE_FIELD),
                 ) {
                     StandardOutlinedTextField(
                         modifier = Modifier
@@ -359,8 +378,12 @@ fun AddEditEmployeeScreen(
             item {
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
+                ExposedDropdownMenuBox(
+                    expanded = positionDropdownToggled,
+                    onExpandedChange = {
+                        positionDropdownToggled = !positionDropdownToggled
+                    },
+                    modifier = Modifier.testTag(EMPLOYEE_POSITION_FIELD),
                 ) {
                     StandardOutlinedTextField(
                         modifier = Modifier
@@ -371,8 +394,10 @@ fun AddEditEmployeeScreen(
                             },
                         text = addEditEmployeeViewModel.addEditState.employeePosition,
                         hint = "Employee Position",
+                        readOnly = true,
                         leadingIcon = Icons.Default.Star,
                         error = addEditEmployeeViewModel.addEditState.employeePositionError,
+                        errorTag = EMPLOYEE_POSITION_ERROR,
                         onValueChange = {
                             addEditEmployeeViewModel.onAddEditEmployeeEvent(
                                 AddEditEmployeeEvent.EmployeePositionChanged(
@@ -435,8 +460,11 @@ fun AddEditEmployeeScreen(
                     error = null,
                     onValueChange = {},
                     trailingIcon = {
-                        IconButton(onClick = { dialogState.show() }) {
-                            Icon(imageVector = Icons.Default.CalendarToday, contentDescription = null)
+                        IconButton(
+                            onClick = { dialogState.show() },
+                            modifier = Modifier.testTag(EMPLOYEE_JOINED_DATE_FIELD)
+                        ) {
+                            Icon(imageVector = Icons.Default.CalendarToday, contentDescription = "Choose Date")
                         }
                     }
                 )
@@ -446,6 +474,7 @@ fun AddEditEmployeeScreen(
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
                 StandardButton(
+                    modifier = Modifier.testTag(ADD_EDIT_EMPLOYEE_BUTTON),
                     text = if (employeeId.isNotEmpty()) stringResource(id = R.string.update_employee)
                         else stringResource(id = R.string.create_new_employee),
                     icon = if (employeeId.isNotEmpty()) Icons.Default.Edit else Icons.Default.Add,

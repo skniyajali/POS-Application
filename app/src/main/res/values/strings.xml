@@ -94,6 +94,7 @@
     <string name="data_deletion_settings">Data Deletion Settings</string>
     <string name="update_deletion_settings">Update Deletion Settings</string>
     <string name="delete_all_records">Are you sure to delete all records including today?</string>
+    <string name="delete_past_records">Are you sure to delete all past records excluding today?</string>
     <string name="select_cart_order">Select Cart Order</string>
     <string name="update_restaurant_info">Update Restaurant Info</string>
     <string name="import_customers">Import Customers</string>
@@ -105,5 +106,6 @@
     <string name="addon_add_edit_button">AddEdit AddOn Item Button</string>
     <string name="filter_category">Filter Category</string>
     <string name="filter_customer">Filter Customer</string>
+    <string name="employee_details">View Employee Details</string>
 
 </resources>

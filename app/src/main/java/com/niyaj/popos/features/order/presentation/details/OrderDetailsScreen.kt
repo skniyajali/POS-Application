@@ -1,5 +1,13 @@
 package com.niyaj.popos.features.order.presentation.details
 
+import android.Manifest
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Intent
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,12 +49,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.charges.presentation.ChargesViewModel
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
@@ -63,8 +74,11 @@ import com.niyaj.popos.features.order.presentation.print_order.PrintViewModel
 import com.niyaj.popos.util.toFormattedDateAndTime
 import com.niyaj.popos.util.toRupee
 import com.ramcosta.composedestinations.annotation.Destination
+import timber.log.Timber
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class,
+    ExperimentalPermissionsApi::class
+)
 @Destination
 @Composable
 fun OrderDetailsScreen(
@@ -74,6 +88,63 @@ fun OrderDetailsScreen(
     chargesViewModel: ChargesViewModel = hiltViewModel(),
     printViewModel: PrintViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+
+    val bluetoothPermissions =
+        // Checks if the device has Android 12 or above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            rememberMultiplePermissionsState(
+                permissions = listOf(
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN,
+                )
+            )
+        } else {
+            rememberMultiplePermissionsState(
+                permissions = listOf(
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                )
+            )
+        }
+
+    val enableBluetoothContract = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (it.resultCode == Activity.RESULT_OK) {
+            Timber.d("bluetoothLauncher", "Success")
+        } else {
+            Timber.w("bluetoothLauncher", "Failed")
+        }
+    }
+
+    // This intent will open the enable bluetooth dialog
+    val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+
+    val bluetoothManager = remember {
+        context.getSystemService(BluetoothManager::class.java)
+    }
+
+    val bluetoothAdapter: BluetoothAdapter? = remember {
+        bluetoothManager.adapter
+    }
+
+    val printOrder: (String) -> Unit = {
+        if (bluetoothPermissions.allPermissionsGranted) {
+            if (bluetoothAdapter?.isEnabled == true) {
+                // Bluetooth is on print the receipt
+                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+            } else {
+                // Bluetooth is off, ask user to turn it on
+                enableBluetoothContract.launch(enableBluetoothIntent)
+                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+            }
+        } else {
+            bluetoothPermissions.launchMultiplePermissionRequest()
+        }
+    }
 
     val scaffoldState = rememberScaffoldState()
     val orderDetails = orderDetailsViewModel.orderDetails.collectAsStateWithLifecycle().value.orderDetails
@@ -107,7 +178,7 @@ fun OrderDetailsScreen(
             IconButton(
                 onClick = {
                     if(orderDetails?.cartOrder?.cartOrderId != null) {
-                        printViewModel.onPrintEvent(PrintEvent.PrintOrder(orderDetails.cartOrder.cartOrderId))
+                        printOrder(orderDetails.cartOrder.cartOrderId)
                     }
                 },
                 enabled = orderDetails != null,

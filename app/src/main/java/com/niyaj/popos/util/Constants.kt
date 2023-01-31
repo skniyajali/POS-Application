@@ -19,6 +19,8 @@ object Constants {
 
     const val PAYMENT_QR_DATA = "upi://pay?pa=paytmqr281005050101zry6uqipmngr@paytm&pn=Paytm%20Merchant&paytmqr=281005050101ZRY6UQIPMNGR"
 
+    const val PRODUCT_NAME_LENGTH = 18
+
     const val REALM_DATABASE_NAME = "popos_highlight"
 
     const val REALM_PARTITION_NAME = "realm_partition"
@@ -95,4 +97,5 @@ object Constants {
     const val SORT_ASCENDING = "Sort Ascending"
     const val SORT_DESCENDING = "Sort Descending"
 
+    const val ABSENT_REMINDER_NOTE = "Selected employees will be mark as absent."
 }

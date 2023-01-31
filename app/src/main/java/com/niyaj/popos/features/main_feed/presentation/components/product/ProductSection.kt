@@ -3,27 +3,28 @@ package com.niyaj.popos.features.main_feed.presentation.components.product
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Dns
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.paging.compose.LazyPagingItems
 import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.ui.theme.TextGray
 import com.niyaj.popos.features.main_feed.data.repository.ProductWithFlowQuantity
-import com.niyaj.popos.features.main_feed.domain.model.ProductWithQuantity
 import com.niyaj.popos.features.main_feed.presentation.components.components.TitleWithIcon
 
 @Composable
 fun ProductSection(
     onProductFilterClick: () -> Unit = {},
     products: List<ProductWithFlowQuantity> = emptyList(),
-    pagingProducts: LazyPagingItems<ProductWithQuantity>,
     onProductLeftClick: (String) -> Unit = {},
     onProductRightClick: (String) -> Unit = {},
+    isLoading: Boolean = false,
 ) {
     TitleWithIcon(
         text = "Products",
+        icon = Icons.Default.Dns,
         onClick = {
             onProductFilterClick()
         }
@@ -39,7 +40,8 @@ fun ProductSection(
             },
             onRightClick = { product ->
                 onProductRightClick(product)
-            }
+            },
+            isLoading = isLoading,
         )
     }else {
         Text(
@@ -47,12 +49,4 @@ fun ProductSection(
             color = TextGray
         )
     }
-
-
-//
-//    Spacer(modifier = Modifier.height(SpaceSmall))
-//
-//    ProductList(pagingProducts)
-//
-//    Spacer(modifier = Modifier.height(SpaceSmall))
 }

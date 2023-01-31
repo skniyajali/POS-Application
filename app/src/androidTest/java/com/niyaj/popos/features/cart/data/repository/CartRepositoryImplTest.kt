@@ -26,7 +26,6 @@ import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
-import timber.log.Timber
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -477,15 +476,10 @@ class CartRepositoryImplTest {
     ): Product? {
         var product: Product? = null
         val newCategory = getOrCreateCategory()
-        Thread.sleep(5000)
 
         runTest {
-            delay(5000)
             try {
                 val getProduct = productRepository.getProductById(productId)
-
-                Timber.d("result ${getProduct.data}")
-                Timber.d("result ${getProduct.message}")
 
                 assertThat(getProduct.data).isNotNull()
                 assertThat(getProduct.message).isNull()
@@ -493,8 +487,6 @@ class CartRepositoryImplTest {
                 product = getProduct.data
 
             }catch (e: AssertionError) {
-                Timber.d("category ${category?.categoryId}")
-
                 val newProduct = Product(
                     productId = productId,
                     category = newCategory,
@@ -504,8 +496,6 @@ class CartRepositoryImplTest {
                 )
 
                 val result = productRepository.createNewProduct(newProduct)
-                Timber.d("created ${result.data}")
-                Timber.d("created ${result.message}")
                 assertThat(result.data).isTrue()
 
                 val getProduct = productRepository.getProductById(productId)

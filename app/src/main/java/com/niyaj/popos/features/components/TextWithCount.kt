@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.niyaj.popos.features.common.ui.theme.Cream
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 
 @Composable
@@ -58,6 +59,7 @@ fun TextWithCount(
 fun CountBox(
     modifier: Modifier = Modifier,
     count: String,
+    textColor: Color = MaterialTheme.colors.onSecondary,
     backGroundColor: Color =  MaterialTheme.colors.secondaryVariant
 ) {
     Column(
@@ -70,7 +72,38 @@ fun CountBox(
         Text(
             text = count,
             style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.onSecondary,
+            color = textColor,
+            modifier = Modifier
+        )
+    }
+}
+
+@Composable
+fun TextWithBorderCount(
+    modifier: Modifier = Modifier,
+    text: String,
+    leadingIcon: ImageVector? = null,
+    count: Int,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Cream)
+            .padding(SpaceSmall),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TextWithIcon(
+            text = text,
+            icon = leadingIcon,
+            fontWeight = FontWeight.SemiBold,
+            tintColor = MaterialTheme.colors.secondaryVariant,
+        )
+
+        Text(
+            text = count.toString(),
+            style = MaterialTheme.typography.body1,
+            fontWeight = FontWeight.SemiBold,
             modifier = Modifier
         )
     }

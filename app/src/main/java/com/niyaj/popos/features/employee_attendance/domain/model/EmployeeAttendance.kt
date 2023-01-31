@@ -11,7 +11,7 @@ class EmployeeAttendance(): RealmObject {
 
     var employee: Employee? = null
 
-    var isAbsent: Boolean = false
+    var isAbsent: Boolean = true
 
     var absentReason: String = ""
 

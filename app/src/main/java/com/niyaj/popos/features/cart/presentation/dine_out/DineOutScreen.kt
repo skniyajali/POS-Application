@@ -1,5 +1,13 @@
 package com.niyaj.popos.features.cart.presentation.dine_out
 
+import android.Manifest
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Intent
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,14 +30,18 @@ import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.R
@@ -51,8 +63,11 @@ import com.niyaj.popos.features.order.presentation.print_order.PrintEvent
 import com.niyaj.popos.features.order.presentation.print_order.PrintViewModel
 import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.flow.collectLatest
+import timber.log.Timber
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class,
+    ExperimentalPermissionsApi::class
+)
 @Composable
 fun DineOutScreen(
     navController: NavController,
@@ -61,6 +76,80 @@ fun DineOutScreen(
     addOnItemViewModel: AddOnItemViewModel = hiltViewModel(),
     printViewModel: PrintViewModel = hiltViewModel(),
 ) {
+
+    val context = LocalContext.current
+
+    val bluetoothPermissions =
+        // Checks if the device has Android 12 or above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            rememberMultiplePermissionsState(
+                permissions = listOf(
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN,
+                )
+            )
+        } else {
+            rememberMultiplePermissionsState(
+                permissions = listOf(
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                )
+            )
+        }
+
+    val enableBluetoothContract = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (it.resultCode == Activity.RESULT_OK) {
+            Timber.d("bluetoothLauncher", "Success")
+        } else {
+            Timber.w("bluetoothLauncher", "Failed")
+        }
+    }
+
+    // This intent will open the enable bluetooth dialog
+    val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+
+    val bluetoothManager = remember {
+        context.getSystemService(BluetoothManager::class.java)
+    }
+
+    val bluetoothAdapter: BluetoothAdapter? = remember {
+        bluetoothManager.adapter
+    }
+
+    val printOrder: (String) -> Unit = {
+        if (bluetoothPermissions.allPermissionsGranted) {
+            if (bluetoothAdapter?.isEnabled == true) {
+                // Bluetooth is on print the receipt
+                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+            } else {
+                // Bluetooth is off, ask user to turn it on
+                enableBluetoothContract.launch(enableBluetoothIntent)
+                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+            }
+        } else {
+            bluetoothPermissions.launchMultiplePermissionRequest()
+        }
+    }
+
+    val printAllOrder: (List<String>) -> Unit = {
+        if (bluetoothPermissions.allPermissionsGranted) {
+            if (bluetoothAdapter?.isEnabled == true) {
+                // Bluetooth is on print the receipt
+                printViewModel.onPrintEvent(PrintEvent.PrintOrders(it))
+            } else {
+                // Bluetooth is off, ask user to turn it on
+                enableBluetoothContract.launch(enableBluetoothIntent)
+                printViewModel.onPrintEvent(PrintEvent.PrintOrders(it))
+            }
+        } else {
+            bluetoothPermissions.launchMultiplePermissionRequest()
+        }
+    }
+
     val listState = rememberLazyListState()
 
     val dineOutOrders = dineOutViewModel.dineOutOrders.collectAsStateWithLifecycle().value.cartItems
@@ -251,7 +340,7 @@ fun DineOutScreen(
                                                     cartItem.cartOrder.cartOrderId
                                                 )
                                             )
-                                            printViewModel.onPrintEvent(PrintEvent.PrintOrder(cartItem.cartOrder.cartOrderId))
+                                            printOrder(cartItem.cartOrder.cartOrderId)
                                         }
                                     )
                                 }
@@ -274,7 +363,7 @@ fun DineOutScreen(
                     },
                     onClickPrintOrder = {
                         dineOutViewModel.onDineOutEvent(DineOutEvent.PlaceAllDineOutOrder)
-                        printViewModel.onPrintEvent(PrintEvent.PrintOrders(selectedDineOutOrder))
+                        printAllOrder(selectedDineOutOrder)
                     }
                 )
             }

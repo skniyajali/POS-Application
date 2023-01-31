@@ -1,5 +1,13 @@
 package com.niyaj.popos.features.reports.presentation
 
+import android.Manifest
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Intent
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,6 +57,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -60,6 +69,8 @@ import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
 import com.google.accompanist.flowlayout.FlowMainAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.flowlayout.SizeMode
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.features.common.ui.theme.ButtonSize
@@ -98,9 +109,12 @@ import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class,
+    ExperimentalPermissionsApi::class
+)
 @Destination
 @Composable
 fun ReportScreen(
@@ -108,6 +122,65 @@ fun ReportScreen(
     scaffoldState: ScaffoldState,
     reportsViewModel: ReportsViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+
+    val bluetoothPermissions =
+        // Checks if the device has Android 12 or above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            rememberMultiplePermissionsState(
+                permissions = listOf(
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN,
+                )
+            )
+        } else {
+            rememberMultiplePermissionsState(
+                permissions = listOf(
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                )
+            )
+        }
+
+    val enableBluetoothContract = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (it.resultCode == Activity.RESULT_OK) {
+            Timber.d("bluetoothLauncher", "Success")
+        } else {
+            Timber.w("bluetoothLauncher", "Failed")
+        }
+    }
+
+    // This intent will open the enable bluetooth dialog
+    val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+
+    val bluetoothManager = remember {
+        context.getSystemService(BluetoothManager::class.java)
+    }
+
+    val bluetoothAdapter: BluetoothAdapter? = remember {
+        bluetoothManager.adapter
+    }
+
+    val printReport: () -> Unit = {
+        if (bluetoothPermissions.allPermissionsGranted) {
+            if (bluetoothAdapter?.isEnabled == true) {
+                // Bluetooth is on print the receipt
+                reportsViewModel.onReportEvent(ReportsEvent.PrintReport)
+            } else {
+                // Bluetooth is off, ask user to turn it on
+                enableBluetoothContract.launch(enableBluetoothIntent)
+                reportsViewModel.onReportEvent(ReportsEvent.PrintReport)
+            }
+        } else {
+            bluetoothPermissions.launchMultiplePermissionRequest()
+        }
+    }
+
+
     val lazyListState = rememberLazyListState()
     val dialogState = rememberMaterialDialogState()
     val scope = rememberCoroutineScope()
@@ -190,7 +263,7 @@ fun ReportScreen(
             }
 
             IconButton(
-                onClick = { reportsViewModel.onReportEvent(ReportsEvent.PrintReport) }
+                onClick = printReport,
             ) {
                 Icon(imageVector = Icons.Default.Print, contentDescription = "Print Reports")
             }
@@ -222,7 +295,7 @@ fun ReportScreen(
         ) {
             datepicker(
                 allowedDateValidator = { date ->
-                    date.toMilliSecond >= lastSevenStartDate && date <= LocalDate.now()
+                    (date.toMilliSecond >= lastSevenStartDate) && (date <= LocalDate.now())
                 }
             ) { date ->
                 reportsViewModel.onReportEvent(ReportsEvent.SelectDate(date.toString()))

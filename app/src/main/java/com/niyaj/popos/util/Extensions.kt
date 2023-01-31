@@ -5,9 +5,12 @@ import android.app.NotificationManager
 import android.content.Context
 import android.graphics.Color
 import androidx.core.content.ContextCompat.getSystemService
+import com.niyaj.popos.util.Constants.PRODUCT_NAME_LENGTH
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.Year
 import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Calendar
@@ -82,6 +85,28 @@ val String.toYearAndMonth
         Locale.getDefault()
     ).format(this.toLong()).toString()
 
+val String.toFullMonth
+    get() = SimpleDateFormat("MMMM", Locale.getDefault()).format(this.toLong()).toString()
+
+val String.toShortMonth
+    get() = SimpleDateFormat("MMM", Locale.getDefault()).format(this.toLong()).toString()
+
+val String.toFullYear
+    get() = SimpleDateFormat("yyyy", Locale.getDefault()).format(this.toLong()).toString()
+
+val String.toShortYear
+    get() = SimpleDateFormat("yy", Locale.getDefault()).format(this.toLong()).toString()
+
+val String.toMonthYear
+    get() = SimpleDateFormat("MMMM yy", Locale.getDefault()).format(this.toLong()).toString()
+
+val String.toDate
+    get() = SimpleDateFormat("dd", Locale.getDefault()).format(this.toLong()).toString()
+
+val String.toTime
+    get() = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(this.toLong()).toString()
+
+
 val zoneId: ZoneId = ZoneId.of("Asia/Kolkata")
 
 val LocalDate.toMilliSecond: String
@@ -89,6 +114,13 @@ val LocalDate.toMilliSecond: String
         .toLocalDateTime()
         .atZone(zoneId)
         .toInstant().toEpochMilli()
+        .toString()
+
+val LocalDate.toCurrentMilliSecond: String
+    get() = this.atTime(LocalTime.now().hour, LocalTime.now().minute)
+        .atZone(zoneId)
+        .toInstant()
+        .toEpochMilli()
         .toString()
 
 val String.toSalaryDate
@@ -102,6 +134,7 @@ fun startTime(): Calendar {
     startTime[Calendar.HOUR_OF_DAY] = 0
     startTime[Calendar.MINUTE] = 0
     startTime[Calendar.SECOND] = 0
+    startTime[Calendar.MILLISECOND] = 0
 
     return startTime
 }
@@ -111,6 +144,7 @@ fun endTime(): Calendar {
     endTime[Calendar.HOUR_OF_DAY] = 23
     endTime[Calendar.MINUTE] = 59
     endTime[Calendar.SECOND] = 59
+    endTime[Calendar.MILLISECOND] = 0
 
     return endTime
 }
@@ -154,6 +188,7 @@ fun getCalculatedStartDate(days: String = "", date: String = ""): String {
     calendar[Calendar.HOUR_OF_DAY] = 0
     calendar[Calendar.MINUTE] = 0
     calendar[Calendar.SECOND] = 0
+    calendar[Calendar.MILLISECOND] = 0
 
     return calendar.timeInMillis.toString()
 }
@@ -178,11 +213,12 @@ fun getCalculatedEndDate(days: String = "", date: String = ""): String {
     calendar[Calendar.HOUR_OF_DAY] = 23
     calendar[Calendar.MINUTE] = 59
     calendar[Calendar.SECOND] = 59
+    calendar[Calendar.MILLISECOND] = 0
 
     return calendar.timeInMillis.toString()
 }
 
-fun getLastWeekDays(date: String = ""): KotlinCollectionsList<Pair<String, String>> {
+private fun getLastWeekDays(date: String = ""): KotlinCollectionsList<Pair<String, String>> {
     val daysList = mutableListOf<Pair<String, String>>()
 
     for (i in 0 until 7) {
@@ -195,14 +231,14 @@ fun getLastWeekDays(date: String = ""): KotlinCollectionsList<Pair<String, Strin
     return daysList.toList()
 }
 
-fun getLastSevenDaysStartAndEndDate(): Pair<String, String> {
+private fun getLastSevenDaysStartAndEndDate(): Pair<String, String> {
     val startDate = getCalculatedStartDate("-7")
     val endDate = getCalculatedEndDate()
 
     return Pair(startDate, endDate)
 }
 
-fun getNextMonthStartAndEndDate(date: String): Pair<String, String> {
+private fun getNextMonthStartAndEndDate(date: String): Pair<String, String> {
     val getOnlyDate = SimpleDateFormat("dd", Locale.getDefault())
     val newDate = getOnlyDate.format(date.toLong()).toInt()
 
@@ -223,7 +259,7 @@ fun getNextMonthStartAndEndDate(date: String): Pair<String, String> {
     return Pair(endCalendar.timeInMillis.toString(), calendar.timeInMillis.toString())
 }
 
-fun getSalaryCalculableDate(joinedDate: String): Pair<String, String> {
+private fun getSalaryCalculableDate(joinedDate: String): Pair<String, String> {
     val getOnlyDate = SimpleDateFormat("dd", Locale.getDefault())
     val newDate = getOnlyDate.format(joinedDate.toLong()).toInt()
 
@@ -295,6 +331,7 @@ private fun getStartAndEndDate(
     startCalender[Calendar.HOUR_OF_DAY] = 0
     startCalender[Calendar.MINUTE] = 0
     startCalender[Calendar.SECOND] = 0
+    startCalender[Calendar.MILLISECOND] = 0
 
 
     val endCalender = Calendar.getInstance()
@@ -333,11 +370,12 @@ fun formattedDateToStartMillis(formattedDate: String): String {
     calendar[Calendar.HOUR_OF_DAY] = 0
     calendar[Calendar.MINUTE] = 0
     calendar[Calendar.SECOND] = 0
+    calendar[Calendar.MILLISECOND] = 0
 
     return calendar.timeInMillis.toString()
 }
 
-fun localDateToCurrentMillis(date: LocalDate): String {
+private fun localDateToCurrentMillis(date: LocalDate): String {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
     val calendar = Calendar.getInstance()
@@ -346,7 +384,7 @@ fun localDateToCurrentMillis(date: LocalDate): String {
     return calendar.timeInMillis.toString()
 }
 
-fun compareSalaryDates(joinedDate: String, comparableDate: String): Boolean {
+private fun compareSalaryDates(joinedDate: String, comparableDate: String): Boolean {
     val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
     val firstDate = sdf.parse(joinedDate.toSalaryDate) as Date
@@ -359,4 +397,76 @@ fun compareSalaryDates(joinedDate: String, comparableDate: String): Boolean {
         cmp > 0 -> false
         else -> true
     }
+}
+
+fun toMonthAndYear(date: String): String {
+    val currentYear = Year.now().value.toString()
+    val format = SimpleDateFormat("yyyy", Locale.getDefault()).format(date.toLong()).toString()
+
+    return if (currentYear == format) {
+        SimpleDateFormat("MMMM", Locale.getDefault()).format(date.toLong()).toString()
+    }else {
+        SimpleDateFormat("MMMM yy", Locale.getDefault()).format(date.toLong()).toString()
+    }
+}
+
+private fun setTodayStartTime(time: Int = 11): Calendar {
+    val startTime = Calendar.getInstance()
+    startTime[Calendar.HOUR_OF_DAY] = time
+    startTime[Calendar.MINUTE] = 0
+    startTime[Calendar.SECOND] = 0
+    startTime[Calendar.MILLISECOND] = 0
+
+    return startTime
+}
+
+private fun setTodayEndTime(time: Int = 23): Calendar {
+    val endTime = Calendar.getInstance()
+    endTime[Calendar.HOUR_OF_DAY] = time
+    endTime[Calendar.MINUTE] = 0
+    endTime[Calendar.SECOND] = 0
+    endTime[Calendar.MILLISECOND] = 0
+
+
+    return endTime
+}
+
+val openingTime: String = setTodayStartTime().timeInMillis.toString()
+val closingTime: String = setTodayEndTime().timeInMillis.toString()
+
+
+fun createDottedString(name: String): String {
+    if (name.length > PRODUCT_NAME_LENGTH) {
+        var wordLength = 0
+        var firstWordLength = 0
+        val splitName = name.split(' ')
+
+        splitName.forEachIndexed { index, word ->
+            if (index != 0) {
+                wordLength += word.length.plus(1)
+            }else {
+                firstWordLength = word.length
+            }
+        }
+
+        val remainingLength = PRODUCT_NAME_LENGTH.minus(firstWordLength)
+
+        val whiteSpace = splitName.size - 1
+
+        val remLength = wordLength.plus(whiteSpace).minus(remainingLength).div(splitName.size.minus(1))
+
+        var newName = ""
+
+        splitName.forEachIndexed { index, name1 ->
+            if (index != 0) {
+                val wordLen = name1.length.minus(remLength.plus(1))
+                val dottedName = if (wordLen <= 0) name1.substring(0, 1) else name1.substring(0, wordLen).plus(".")
+                newName += " $dottedName"
+            }else {
+                newName = name1
+            }
+        }
+
+        return newName
+    } else return name
 }

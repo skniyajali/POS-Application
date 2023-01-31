@@ -16,9 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyGridItemScope
-import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -81,6 +78,7 @@ import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.StandardSearchBar
 import com.niyaj.popos.features.components.TextWithCount
 import com.niyaj.popos.features.components.TextWithIcon
+import com.niyaj.popos.features.components.header
 import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.features.destinations.CartOrderSettingScreenDestination
 import com.niyaj.popos.features.destinations.OrderDetailsScreenDestination
@@ -557,11 +555,4 @@ fun CartOrderScreen(
             }
         }
     }
-}
-
-
-fun LazyGridScope.header(
-    content: @Composable LazyGridItemScope.() -> Unit
-) {
-    item(span = { GridItemSpan(this.maxLineSpan) }, content = content)
 }

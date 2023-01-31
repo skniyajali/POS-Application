@@ -6,37 +6,41 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
+import com.niyaj.popos.features.components.TextWithIcon
 
 @Composable
 fun TitleWithIcon(
+    modifier : Modifier = Modifier,
+    textModifier : Modifier = Modifier,
+    iconModifier : Modifier = Modifier,
     text: String,
-    icon: ImageVector = Icons.Default.Sort,
+    icon: ImageVector? = null,
     onClick: () -> Unit = {},
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
+        TextWithIcon(
+            modifier = textModifier,
             text = text,
-            style = MaterialTheme.typography.subtitle1,
-            fontWeight = FontWeight.Bold
+            icon = icon,
+            isTitle = true,
         )
 
         IconButton(
-            onClick = { onClick() }
+            onClick = { onClick() },
+            modifier = iconModifier
         ) {
             Icon(
-                imageVector = icon,
+                imageVector = Icons.Default.Sort,
                 contentDescription = text,
                 tint = MaterialTheme.colors.primary,
             )

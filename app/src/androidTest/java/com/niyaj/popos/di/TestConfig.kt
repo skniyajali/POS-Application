@@ -11,7 +11,6 @@ import com.niyaj.popos.features.cart_order.domain.model.SelectedCartOrder
 import com.niyaj.popos.features.category.domain.model.Category
 import com.niyaj.popos.features.charges.domain.model.Charges
 import com.niyaj.popos.features.customer.domain.model.Customer
-import com.niyaj.popos.features.delivery_partner.domain.model.DeliveryPartner
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
@@ -45,7 +44,6 @@ class TestConfig {
             CartRealm::class,
             Charges::class,
             AddOnItem::class,
-            DeliveryPartner::class,
             ExpensesCategory::class,
             Expenses::class,
             Employee::class,

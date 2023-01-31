@@ -26,11 +26,8 @@ import com.niyaj.popos.features.customer.domain.repository.CustomerRepository
 import com.niyaj.popos.features.customer.domain.repository.CustomerValidationRepository
 import com.niyaj.popos.features.data_deletion.data.repository.DataDeletionRepositoryImpl
 import com.niyaj.popos.features.data_deletion.domain.repository.DataDeletionRepository
-import com.niyaj.popos.features.delivery_partner.data.repository.PartnerRepositoryImpl
-import com.niyaj.popos.features.delivery_partner.domain.repository.PartnerRepository
-import com.niyaj.popos.features.delivery_partner.domain.repository.PartnerValidationRepository
 import com.niyaj.popos.features.employee.data.repository.EmployeeRepositoryImpl
-import com.niyaj.popos.features.employee.data.repository.EmployeeValidationRepository
+import com.niyaj.popos.features.employee.domain.repository.EmployeeValidationRepository
 import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
 import com.niyaj.popos.features.employee_attendance.data.repository.AttendanceRepositoryImpl
 import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceRepository
@@ -151,16 +148,6 @@ object TestRealmModule {
     @Provides
     fun provideValidationAddOnItemRepository(): ValidationRepository {
         return AddOnItemRepositoryImpl(config)
-    }
-
-    @Provides
-    fun providePartnerValidationRepositoryImpl(): PartnerValidationRepository {
-        return PartnerRepositoryImpl(config)
-    }
-
-    @Provides
-    fun providePartnerRepositoryImpl(): PartnerRepository {
-        return PartnerRepositoryImpl(config)
     }
 
     @Provides

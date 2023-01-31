@@ -12,7 +12,6 @@ import com.niyaj.popos.features.charges.domain.model.Charges
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.customer.domain.model.Customer
 import com.niyaj.popos.features.data_deletion.domain.repository.DataDeletionRepository
-import com.niyaj.popos.features.delivery_partner.domain.model.DeliveryPartner
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
@@ -27,7 +26,6 @@ import io.realm.kotlin.ext.query
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -75,7 +73,6 @@ class DataDeletionRepositoryImpl(
                         delete(expenses)
                     }
                 }.join()
-
             }
 
             Resource.Success(true)
@@ -97,7 +94,6 @@ class DataDeletionRepositoryImpl(
                         delete(CartRealm::class)
                         delete(AddOnItem::class)
                         delete(Charges::class)
-                        delete(DeliveryPartner::class)
                         delete(Employee::class)
                         delete(ExpensesCategory::class)
                         delete(Expenses::class)

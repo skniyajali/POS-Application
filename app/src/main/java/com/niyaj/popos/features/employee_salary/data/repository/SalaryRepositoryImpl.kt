@@ -445,7 +445,7 @@ class SalaryRepositoryImpl(
             if (salaryNote.isEmpty()){
                 return ValidationResult(
                     successful = false,
-                    errorMessage = "Salary note required."
+                    errorMessage = "Salary note required because you paid using Cash and Online."
                 )
             }
         }

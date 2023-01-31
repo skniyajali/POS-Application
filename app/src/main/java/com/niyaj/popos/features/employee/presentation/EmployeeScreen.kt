@@ -42,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -318,22 +319,22 @@ fun EmployeeScreen(
                             tint = MaterialTheme.colors.onPrimary,
                         )
                     }
-                }
 
-                IconButton(
-                    onClick = {
-                        navController.navigate(SalaryScreenDestination)
+                    IconButton(
+                        onClick = {
+                            navController.navigate(SalaryScreenDestination)
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Default.Money, contentDescription = "Goto Salary Screen")
                     }
-                ) {
-                    Icon(imageVector = Icons.Default.Money, contentDescription = "Open Salary Screen")
-                }
 
-                IconButton(
-                    onClick = {
-                        navController.navigate(AttendanceScreenDestination())
+                    IconButton(
+                        onClick = {
+                            navController.navigate(AttendanceScreenDestination())
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Default.EventBusy, contentDescription = "Goto Attendance Screen")
                     }
-                ) {
-                    Icon(imageVector = Icons.Default.EventBusy, contentDescription = "Add Absent Entry")
                 }
             }
         },
@@ -357,6 +358,7 @@ fun EmployeeScreen(
                     text = "Cancel",
                     onClick = {
                         dialogState.hide()
+                        employeeViewModel.onEmployeeEvent(EmployeeEvent.SelectEmployee(selectedEmployeeItem))
                     },
                 )
             }
@@ -390,10 +392,10 @@ fun EmployeeScreen(
                     LazyColumn(
                         state = lazyListState,
                     ) {
-
                         itemsIndexed(employees) { index, employee ->
                             RevealSwipe(
                                 modifier = Modifier
+                                    .testTag(employee.employeeName.plus("Tag"))
                                     .fillMaxWidth(),
                                 onContentClick = {
                                     navController.navigate(
@@ -406,13 +408,15 @@ fun EmployeeScreen(
                                 hiddenContentStart = {
                                     IconButton(
                                         onClick = {
-                                            navController.navigate(AddEditSalaryScreenDestination(
-                                                employeeId = employee.employeeId))
-                                        }
+                                            navController.navigate(
+                                                AddEditSalaryScreenDestination(employeeId = employee.employeeId)
+                                            )
+                                        },
+                                        modifier = Modifier.testTag(employee.employeeName.plus("Payment")),
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Add,
-                                            contentDescription = null,
+                                            contentDescription = "Add Payment Entry",
                                             modifier = Modifier.padding(horizontal = 25.dp),
                                         )
                                     }
@@ -420,11 +424,12 @@ fun EmployeeScreen(
                                         onClick = {
                                             navController.navigate(AddEditEmployeeScreenDestination(
                                                 employeeId = employee.employeeId))
-                                        }
+                                        },
+                                        modifier = Modifier.testTag(employee.employeeName.plus("Edit")),
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Edit,
-                                            contentDescription = null,
+                                            contentDescription = "Edit Employee",
                                             modifier = Modifier.padding(horizontal = 25.dp),
                                         )
                                     }
@@ -433,7 +438,8 @@ fun EmployeeScreen(
                                     IconButton(
                                         onClick = {
                                             navController.navigate(AddEditAbsentScreenDestination(employeeId = employee.employeeId))
-                                        }
+                                        },
+                                        modifier = Modifier.testTag(employee.employeeName.plus("Absent")),
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.EventBusy,
@@ -442,13 +448,16 @@ fun EmployeeScreen(
                                         )
                                     }
 
-                                    IconButton(onClick = {
-                                        dialogState.show()
-                                        employeeViewModel.onEmployeeEvent(EmployeeEvent.SelectEmployee(employee.employeeId))
-                                    }) {
+                                    IconButton(
+                                        onClick = {
+                                            dialogState.show()
+                                            employeeViewModel.onEmployeeEvent(EmployeeEvent.SelectEmployee(employee.employeeId))
+                                        },
+                                        modifier = Modifier.testTag(employee.employeeName.plus("Delete"))
+                                    ) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
-                                            contentDescription = "Delete order",
+                                            contentDescription = "Delete Employee",
                                             modifier = Modifier.padding(horizontal = 25.dp),
                                         )
                                     }
@@ -458,6 +467,8 @@ fun EmployeeScreen(
                                 backgroundCardStartColor = MaterialTheme.colors.primary,
                                 backgroundCardEndColor = MaterialTheme.colors.error,
                                 shape = RoundedCornerShape(4.dp),
+                                backgroundStartActionLabel = "Start",
+                                backgroundEndActionLabel = "End",
                             ) {
                                 Card(
                                     modifier = Modifier
@@ -503,7 +514,7 @@ fun EmployeeScreen(
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.OpenInNew,
-                                                    contentDescription = stringResource(id = R.string.order_details),
+                                                    contentDescription = stringResource(id = R.string.employee_details),
                                                     tint = MaterialTheme.colors.primary,
                                                 )
                                             }

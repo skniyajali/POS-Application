@@ -28,14 +28,11 @@ import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeliveryDining
 import androidx.compose.material.icons.filled.DinnerDining
-import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,11 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
@@ -71,8 +64,6 @@ import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
@@ -83,31 +74,29 @@ fun AddEditCartOrderScreen(
     viewModel: AddEditCartOrderViewModel = hiltViewModel(),
     resultNavigator: ResultBackNavigator<String>
 ) {
-    val scope = rememberCoroutineScope()
+//    val scope = rememberCoroutineScope()
 
     val addresses = viewModel.addresses.collectAsStateWithLifecycle().value.addresses
     val addressesIsLoading = viewModel.addresses.collectAsStateWithLifecycle().value.isLoading
 
-    val customerPhone = viewModel.state.customer?.customerPhone
+//    val customerPhone = viewModel.state.customer?.customerPhone
 
-    val customers by lazy {
-        viewModel.customers.value.customers
-    }
+//    val customers = viewModel.customers.collectAsStateWithLifecycle().value.customers
 
-    val filteredCustomer by remember(customerPhone) {
-        derivedStateOf {
-            customers.filter {
-                if (!customerPhone.isNullOrEmpty()){
-                    it.customerPhone.contains(customerPhone, true)
-                }else{
-                    true
-                }
-            }
-        }
-    }
+//    val filteredCustomer by remember(customers) {
+//        derivedStateOf {
+//            customers.filter {
+//                if (!customerPhone.isNullOrEmpty()){
+//                    it.customerPhone.contains(customerPhone, true)
+//                }else{
+//                    true
+//                }
+//            }
+//        }
+//    }
 
 
-    var phoneDropdownToggled by remember { mutableStateOf(false) }
+//    var phoneDropdownToggled by remember { mutableStateOf(false) }
 
     var addressDropdownToggled by remember { mutableStateOf(false) }
 
@@ -193,105 +182,40 @@ fun AddEditCartOrderScreen(
             ) {
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    StandardOutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onGloballyPositioned { coordinates ->
-                                textFieldSize = coordinates.size.toSize()
-                            },
-                        text = viewModel.state.customer?.customerPhone ?: "",
-                        hint = "Customer Phone",
-                        error = viewModel.state.customerError,
-                        keyboardType = KeyboardType.Phone,
-                        onValueChange = {
-                            scope.launch(Dispatchers.IO) {
-                                viewModel.onAddEditCartOrderEvent(
-                                    AddEditCartOrderEvent.CustomerPhoneChanged(it)
-                                )
-                            }
-
-                            phoneDropdownToggled = true
+                StandardOutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onGloballyPositioned { coordinates ->
+                            textFieldSize = coordinates.size.toSize()
                         },
-                        trailingIcon = {
-                            if (!viewModel.state.customer?.customerPhone.isNullOrEmpty()) {
-                                IconButton(
-                                    onClick = {
-                                        viewModel.onAddEditCartOrderEvent(
-                                            AddEditCartOrderEvent.OnClearCustomer
-                                        )
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Clear Text",
-                                        tint = Color.Blue,
-                                        modifier = Modifier.size(IconSizeMedium)
+                    text = viewModel.state.customer?.customerPhone ?: "",
+                    hint = "Customer Phone",
+                    error = viewModel.state.customerError,
+                    keyboardType = KeyboardType.Phone,
+                    onValueChange = {
+                        viewModel.onAddEditCartOrderEvent(
+                            AddEditCartOrderEvent.CustomerPhoneChanged(it)
+                        )
+                    },
+                    trailingIcon = {
+                        if (!viewModel.state.customer?.customerPhone.isNullOrEmpty()) {
+                            IconButton(
+                                onClick = {
+                                    viewModel.onAddEditCartOrderEvent(
+                                        AddEditCartOrderEvent.OnClearCustomer
                                     )
                                 }
-                            } else {
-                                ExposedDropdownMenuDefaults.TrailingIcon(
-                                    expanded = phoneDropdownToggled
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Clear Text",
+                                    tint = Color.Blue,
+                                    modifier = Modifier.size(IconSizeMedium)
                                 )
-                            }
-                        },
-                    )
-                    if (filteredCustomer.isNotEmpty()){
-                        DropdownMenu(
-                            expanded = phoneDropdownToggled,
-                            onDismissRequest = {
-                                phoneDropdownToggled = false
-                            },
-                            properties = PopupProperties(
-                                focusable = false,
-                                dismissOnBackPress = true,
-                                dismissOnClickOutside = true,
-                                excludeFromSystemGesture = true,
-                                clippingEnabled = true,
-                            ),
-                            modifier = Modifier
-                                .heightIn(max = 200.dp)
-                                .width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
-                        ) {
-                            filteredCustomer.forEachIndexed { index, customer ->
-                                DropdownMenuItem(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    onClick = {
-                                        viewModel.onAddEditCartOrderEvent(
-                                            AddEditCartOrderEvent.CustomerPhoneChanged(
-                                                customerPhone = customer.customerPhone,
-                                                customerId = customer.customerId
-                                            )
-                                        )
-                                        phoneDropdownToggled = false
-                                    }
-                                ) {
-                                    TextWithIcon(
-                                        text = buildAnnotatedString {
-                                            append(customer.customerPhone)
-                                            if (!customer.customerName.isNullOrEmpty()) {
-                                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                                    append(" | ")
-                                                    append(customer.customerName)
-                                                }
-                                            }
-                                        },
-                                        icon = Icons.Default.PhoneAndroid
-                                    )
-                                }
-
-                                if (index != customers.size - 1) {
-                                    Divider(modifier = Modifier.fillMaxWidth(),
-                                        color = Color.Gray,
-                                        thickness = 0.8.dp)
-                                }
                             }
                         }
-                    }
-
-                }
+                    },
+                )
             }
 
             AnimatedVisibility(
@@ -398,7 +322,6 @@ fun AddEditCartOrderScreen(
                     }
                 }
             }
-
 
             Spacer(modifier = Modifier.height(SpaceMedium))
 

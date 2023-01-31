@@ -8,6 +8,7 @@ import com.niyaj.popos.features.employee_attendance.domain.repository.Attendance
 import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceValidationRepository
 import com.niyaj.popos.features.employee_attendance.domain.util.AbsentReport
 import com.niyaj.popos.util.getSalaryDates
+import com.niyaj.popos.util.getStartTime
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -161,7 +162,11 @@ class AttendanceRepositoryImpl(
         return try {
             val validateAbsentEmployee = validateAbsentEmployee(attendance.employee?.employeeId ?: "")
             val validateIsAbsent = validateIsAbsent(attendance.isAbsent)
-            val validateAbsentDate = validateAbsentDate(attendance.absentDate,attendance.employee?.employeeId ?: "", attendance.attendeeId )
+            val validateAbsentDate = validateAbsentDate(
+                absentDate = attendance.absentDate,
+                employeeId = attendance.employee?.employeeId ?: "",
+                attendanceId = attendance.attendeeId
+            )
 
             val hasError = listOf(validateAbsentEmployee, validateIsAbsent, validateAbsentDate).any { !it.successful }
 
@@ -174,7 +179,7 @@ class AttendanceRepositoryImpl(
                     newAttendance.isAbsent = attendance.isAbsent
                     newAttendance.absentDate = attendance.absentDate
                     newAttendance.absentReason = attendance.absentReason
-                    newAttendance.createdAt = attendance.createdAt.ifEmpty { System.currentTimeMillis().toString() }
+                    newAttendance.createdAt = attendance.createdAt.ifEmpty { getStartTime }
 
                     withContext(ioDispatcher) {
                         realm.write {
@@ -219,14 +224,14 @@ class AttendanceRepositoryImpl(
                         if (newAttendance != null) {
                             realm.write {
                                 findLatest(newAttendance)?.apply {
+                                    findLatest(employee).also {
+                                        this.employee = it
+                                    }
+
                                     this.isAbsent = attendance.isAbsent
                                     this.absentDate = attendance.absentDate
                                     this.absentReason = attendance.absentReason
                                     this.updatedAt = System.currentTimeMillis().toString()
-                                }
-
-                                findLatest(employee).also {
-                                    newAttendance.employee = it
                                 }
                             }
 

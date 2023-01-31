@@ -3,6 +3,8 @@ package com.niyaj.popos.features.main_feed.presentation.components.category
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,9 +20,11 @@ fun CategorySection(
     categories: List<Category> = emptyList(),
     onCategoryClick: (String) -> Unit = {},
     selectedCategory: String = "",
+    isLoading: Boolean = false,
 ) {
     TitleWithIcon(
         text = "Categories",
+        icon = Icons.Default.Category,
         onClick = {
             onCategoryFilterClick()
         }
@@ -32,6 +36,7 @@ fun CategorySection(
         CategoryItems(
             categories = categories,
             selectedCategory = selectedCategory,
+            isLoading = isLoading,
             onClick = {
                 onCategoryClick(it)
             },

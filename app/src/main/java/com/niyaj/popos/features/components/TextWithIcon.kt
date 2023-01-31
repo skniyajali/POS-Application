@@ -9,6 +9,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -22,6 +23,8 @@ fun TextWithIcon(
     iconModifier: Modifier = Modifier,
     text: String = "",
     icon: ImageVector? = null,
+    textColor : Color = MaterialTheme.colors.onSurface,
+    tintColor: Color = MaterialTheme.colors.primary,
     isTitle: Boolean = false,
     fontWeight: FontWeight = FontWeight.Normal,
 ) {
@@ -34,11 +37,12 @@ fun TextWithIcon(
                 Icon(
                     imageVector = icon,
                     contentDescription = text,
-                    tint = MaterialTheme.colors.primary,
+                    tint = tintColor,
                     modifier = iconModifier,
                 )
                 Spacer(modifier = Modifier.width(SpaceMini))
             }
+
             Text(
                 text = text,
                 fontFamily = if(text.startsWith("Email") || text.startsWith("Password")) FontFamily.Monospace else null,
@@ -46,6 +50,7 @@ fun TextWithIcon(
                 fontWeight = if(isTitle) FontWeight.SemiBold else fontWeight,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                color = textColor,
             )
         }
     }
@@ -94,31 +99,33 @@ fun TextWithTitle(
     iconModifier: Modifier = Modifier,
     text: String = "",
     icon: ImageVector? = null,
-    isTitle: Boolean = false,
-    fontWeight: FontWeight = FontWeight.Normal,
+    fontWeight: FontWeight = FontWeight.SemiBold,
+    textColor : Color = MaterialTheme.colors.onSurface,
+    tintColor: Color = MaterialTheme.colors.secondaryVariant,
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if(text.isNotEmpty()) {
-            if (icon != null) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.body1,
+                fontWeight = fontWeight,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = textColor,
+            )
+            icon?.let {
+                Spacer(modifier = Modifier.width(SpaceMini))
+
                 Icon(
                     imageVector = icon,
                     contentDescription = text,
-                    tint = MaterialTheme.colors.onPrimary,
+                    tint = tintColor,
                     modifier = iconModifier,
                 )
-                Spacer(modifier = Modifier.width(SpaceMini))
             }
-            Text(
-                text = text,
-                style = MaterialTheme.typography.h6,
-                fontWeight = if(isTitle) FontWeight.SemiBold else fontWeight,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colors.onPrimary,
-            )
         }
     }
 }

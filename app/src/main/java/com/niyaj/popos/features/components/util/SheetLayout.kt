@@ -10,7 +10,6 @@ import com.niyaj.popos.features.category.presentation.FilterCategoryScreen
 import com.niyaj.popos.features.charges.presentation.FilterChargesScreen
 import com.niyaj.popos.features.common.util.BottomSheetScreen
 import com.niyaj.popos.features.customer.presentation.FilterCustomerScreen
-import com.niyaj.popos.features.delivery_partner.presentation.FilterPartnerScreen
 import com.niyaj.popos.features.employee.presentation.FilterEmployeeScreen
 import com.niyaj.popos.features.expenses.presentation.FilterExpensesScreen
 import com.niyaj.popos.features.expenses_category.presentation.FilterExpensesCategoryScreen
@@ -91,13 +90,6 @@ fun SheetLayout(
                     onFilterChanged = currentScreen.onFilterChanged
                 )
             }
-            is BottomSheetScreen.FilterPartnerScreen -> {
-                FilterPartnerScreen(
-                    onClosePressed = onCloseBottomSheet,
-                    filterPartner = currentScreen.filterPartner,
-                    onFilterChanged = currentScreen.onFilterChanged
-                )
-            }
 
             is BottomSheetScreen.FilterEmployeeScreen -> {
                 FilterEmployeeScreen(
@@ -121,6 +113,10 @@ fun SheetLayout(
                     filterExpenses = currentScreen.filterExpenses,
                     onFilterChanged = currentScreen.onFilterChanged
                 )
+            }
+
+            is BottomSheetScreen.AttendanceReminderScreen -> {
+//                AbsentReminderScreen()
             }
 
             else -> {}

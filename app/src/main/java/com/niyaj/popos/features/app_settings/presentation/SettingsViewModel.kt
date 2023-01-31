@@ -25,6 +25,12 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.DeleteAllRecords -> {
                 deleteAllRecords()
             }
+
+            is SettingsEvent.DeletePastRecords -> {
+                viewModelScope.launch {
+                    deletePastData()
+                }
+            }
         }
     }
 
@@ -39,6 +45,22 @@ class SettingsViewModel @Inject constructor(
                 }
                 is Resource.Error -> {
                     _eventFlow.emit(UiEvent.OnError("Unable to delete all records"))
+                }
+            }
+        }
+    }
+
+    private fun deletePastData() {
+        viewModelScope.launch {
+            when(val result = dataDeletionUseCases.deleteData()) {
+                is Resource.Loading -> {
+                    _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
+                }
+                is Resource.Success -> {
+                    _eventFlow.emit(UiEvent.OnSuccess("Past records were successfully deleted"))
+                }
+                is Resource.Error -> {
+                    _eventFlow.emit(UiEvent.OnError("Unable to delete past records"))
                 }
             }
         }

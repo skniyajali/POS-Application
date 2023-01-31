@@ -1,7 +1,7 @@
 package com.niyaj.popos.features.employee.domain.use_cases.validation
 
 import com.niyaj.popos.features.common.util.ValidationResult
-import com.niyaj.popos.features.employee.data.repository.EmployeeValidationRepository
+import com.niyaj.popos.features.employee.domain.repository.EmployeeValidationRepository
 import javax.inject.Inject
 
 class ValidateEmployeePosition @Inject constructor(

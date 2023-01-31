@@ -1,6 +1,5 @@
 package com.niyaj.popos.features.cart_order.presentation.add_edit
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -45,13 +44,14 @@ class AddEditCartOrderViewModel @Inject constructor(
     private val _addresses = MutableStateFlow(AddressState())
     val addresses = _addresses.asStateFlow()
 
-    private val _customers = mutableStateOf(CustomerState())
-    val customers: State<CustomerState> = _customers
+    private val _customers = MutableStateFlow(CustomerState())
+    val customers = _customers.asStateFlow()
 
     var expanded by mutableStateOf(false)
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
+
 
     init {
         savedStateHandle.get<String>("cartOrderId")?.let { cartOrderId ->
@@ -74,26 +74,22 @@ class AddEditCartOrderViewModel @Inject constructor(
             }
 
             is AddEditCartOrderEvent.CustomerPhoneChanged -> {
-                viewModelScope.launch {
-                    state = state.copy(
-                        customer =  Customer(
-                            customerId = event.customerId,
-                            customerPhone = event.customerPhone
-                        )
+                state = state.copy(
+                    customer =  Customer(
+                        customerId = event.customerId,
+                        customerPhone = event.customerPhone
                     )
-                }
+                )
             }
 
             is AddEditCartOrderEvent.CustomerAddressChanged -> {
-                viewModelScope.launch {
-                    state = state.copy(
-                        address = Address(
-                            addressId = event.addressId,
-                            shortName = getAllCapitalizedLetters(event.customerAddress),
-                            addressName = event.customerAddress.capitalizeWords
-                        ),
-                    )
-                }
+                state = state.copy(
+                    address = Address(
+                        addressId = event.addressId,
+                        shortName = getAllCapitalizedLetters(event.customerAddress),
+                        addressName = event.customerAddress.capitalizeWords
+                    ),
+                )
             }
 
             is AddEditCartOrderEvent.CreateNewCartOrder -> {

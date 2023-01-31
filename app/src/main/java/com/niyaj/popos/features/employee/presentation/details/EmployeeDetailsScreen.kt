@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Login
+import androidx.compose.material.icons.filled.Merge
 import androidx.compose.material.icons.filled.MergeType
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Payments
@@ -52,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -82,9 +84,12 @@ import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.destinations.AddEditAbsentScreenDestination
 import com.niyaj.popos.features.destinations.AddEditEmployeeScreenDestination
 import com.niyaj.popos.features.destinations.AddEditSalaryScreenDestination
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_DETAILS_SCREEN
+import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.REMAINING_AMOUNT_TEXT
 import com.niyaj.popos.features.employee.domain.util.PaymentType
 import com.niyaj.popos.features.reports.presentation.components.SalaryDateDropdown
 import com.niyaj.popos.util.Constants.PAID
+import com.niyaj.popos.util.toDate
 import com.niyaj.popos.util.toFormattedDate
 import com.niyaj.popos.util.toFormattedDateAndTime
 import com.niyaj.popos.util.toRupee
@@ -195,7 +200,10 @@ fun EmployeeDetailsScreen(
             navController.navigateUp()
         },
         title = {
-            Text(text = "Employee Details")
+            Text(
+                text = "Employee Details",
+                modifier = Modifier.testTag(EMPLOYEE_DETAILS_SCREEN)
+            )
         },
         isFloatingActionButtonDocked = false,
         floatingActionButton = {
@@ -248,6 +256,7 @@ fun EmployeeDetailsScreen(
                 item(key = "CalculateSalary") {
                     Card(
                         modifier = Modifier
+                            .testTag("CalculateSalary")
                             .fillMaxWidth(),
                         shape = RoundedCornerShape(4.dp),
                         elevation = SpaceMini
@@ -298,6 +307,7 @@ fun EmployeeDetailsScreen(
                                         text = paymentDetail.remainingAmount.toRupee,
                                         style = MaterialTheme.typography.h5,
                                         fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.testTag(REMAINING_AMOUNT_TEXT)
                                     )
 
                                     Column(
@@ -337,6 +347,7 @@ fun EmployeeDetailsScreen(
                                             }
                                         },
                                         backgroundColor = LightColor6,
+                                        modifier = Modifier.testTag("AdvancePayment")
                                     ) {
                                         Text(
                                             text = "${paymentDetail.paymentCount} Advance Payment",
@@ -352,6 +363,7 @@ fun EmployeeDetailsScreen(
                                             }
                                         },
                                         backgroundColor = LightColor6,
+                                        modifier = Modifier.testTag("DaysAbsent")
                                     ) {
                                         Text(
                                             text = "${paymentDetail.absentCount} Days Absent",
@@ -379,7 +391,7 @@ fun EmployeeDetailsScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.EventBusy,
-                                        contentDescription = "Add Absent Entry",
+                                        contentDescription = "Add Absent Entry Button",
                                         tint = MaterialTheme.colors.error
                                     )
                                     Spacer(modifier = Modifier.width(SpaceMini))
@@ -403,7 +415,7 @@ fun EmployeeDetailsScreen(
                                         backgroundColor = MaterialTheme.colors.secondaryVariant,
                                     )
                                 ) {
-                                    Icon(imageVector = Icons.Default.Money, contentDescription = "Add Payment Entry" )
+                                    Icon(imageVector = Icons.Default.Money, contentDescription = "Add Payment Entry Button" )
                                     Spacer(modifier = Modifier.width(SpaceMini))
                                     Text(
                                         text = "Add Payment Entry".uppercase(),
@@ -428,6 +440,7 @@ fun EmployeeDetailsScreen(
                 item(key = "EmployeeDetails") {
                     Card(
                         modifier = Modifier
+                            .testTag("EmployeeDetails")
                             .fillMaxWidth()
                             .clickable {
                                 employeeDetailsExpanded = !employeeDetailsExpanded
@@ -493,31 +506,43 @@ fun EmployeeDetailsScreen(
                                         )
                                     } else {
                                         TextWithIcon(
+                                            modifier = Modifier.testTag(employee.employeeName),
                                             text = "Name - ${employee.employeeName}",
                                             icon = Icons.Default.Person
                                         )
                                         Spacer(modifier = Modifier.height(SpaceSmall))
                                         TextWithIcon(
+                                            modifier = Modifier.testTag(employee.employeePhone),
                                             text = "Phone - ${employee.employeePhone}",
                                             icon = Icons.Default.PhoneAndroid
                                         )
                                         Spacer(modifier = Modifier.height(SpaceSmall))
                                         TextWithIcon(
+                                            modifier = Modifier.testTag(employee.employeeSalary.toRupee),
                                             text = "Salary - ${employee.employeeSalary.toRupee}",
                                             icon = ImageVector.vectorResource(id = R.drawable.round_currency_rupee_24)
                                         )
                                         Spacer(modifier = Modifier.height(SpaceSmall))
                                         TextWithIcon(
+                                            modifier = Modifier.testTag(employee.employeeSalaryType),
+                                            text = "Salary Type - ${employee.employeeSalaryType}",
+                                            icon = Icons.Default.Merge
+                                        )
+                                        Spacer(modifier = Modifier.height(SpaceSmall))
+                                        TextWithIcon(
+                                            modifier = Modifier.testTag(employee.employeePosition),
                                             text = "Position - ${employee.employeePosition}",
                                             icon = Icons.Default.Approval
                                         )
                                         Spacer(modifier = Modifier.height(SpaceSmall))
                                         TextWithIcon(
+                                            modifier = Modifier.testTag(employee.employeeType),
                                             text = "Type - ${employee.employeeType}",
                                             icon = Icons.Default.MergeType
                                         )
                                         Spacer(modifier = Modifier.height(SpaceSmall))
                                         TextWithIcon(
+                                            modifier = Modifier.testTag(employee.employeeJoinedDate.toDate),
                                             text = "Joined Date : ${employee.employeeJoinedDate.toSalaryDate}",
                                             icon = Icons.Default.CalendarToday
                                         )
@@ -548,7 +573,8 @@ fun EmployeeDetailsScreen(
                             .fillMaxWidth()
                             .clickable {
                                 paymentDetailsExpanded = !paymentDetailsExpanded
-                            },
+                            }
+                            .testTag("PaymentDetails"),
                         shape = RoundedCornerShape(4.dp),
                         elevation = SpaceMini
                     ) {
@@ -661,7 +687,9 @@ fun EmployeeDetailsScreen(
 
                                                 salary.payments.forEachIndexed { index, payment ->
                                                     Row(
-                                                        modifier = Modifier.fillMaxWidth(),
+                                                        modifier = Modifier
+                                                            .testTag(payment.employee?.employeeName.plus(payment.employeeSalary))
+                                                            .fillMaxWidth(),
                                                         horizontalArrangement = Arrangement.SpaceBetween,
                                                         verticalAlignment = Alignment.CenterVertically,
                                                     ) {
@@ -670,7 +698,8 @@ fun EmployeeDetailsScreen(
                                                             style = MaterialTheme.typography.body1,
                                                             textAlign = TextAlign.Start,
                                                             fontWeight = FontWeight.SemiBold,
-                                                            modifier = Modifier.weight(0.8F),
+                                                            modifier = Modifier
+                                                                .weight(0.8F),
                                                         )
 
                                                         Text(
@@ -735,7 +764,8 @@ fun EmployeeDetailsScreen(
                             .fillMaxWidth()
                             .clickable {
                                 absentReportsExpanded = !absentReportsExpanded
-                            },
+                            }
+                            .testTag("AbsentDetails"),
                         shape = RoundedCornerShape(4.dp),
                         elevation = SpaceMini
                     ) {
@@ -775,7 +805,7 @@ fun EmployeeDetailsScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.KeyboardArrowDown,
-                                        contentDescription = "Expand More",
+                                        contentDescription = "Expand Absent Details",
                                         tint = MaterialTheme.colors.secondary
                                     )
                                 }
@@ -785,8 +815,7 @@ fun EmployeeDetailsScreen(
                                     CircularProgressIndicator()
                                 } else if (absentReports.isEmpty() || absentReportsHasError != null) {
                                     ItemNotAvailable(
-                                        text = absentReportsHasError
-                                            ?: "Unable to get absent reports"
+                                        text = absentReportsHasError ?: "Employee absent reports not available"
                                     )
                                 } else {
                                     Spacer(modifier = Modifier.height(SpaceSmall))
@@ -826,16 +855,17 @@ fun EmployeeDetailsScreen(
                                                 ) {
                                                     absentReport.absent.forEach{  attendance ->
                                                         Card(
-                                                            backgroundColor = LightColor6
+                                                            backgroundColor = LightColor6,
+                                                            modifier = Modifier
+                                                                .testTag(attendance.employee?.employeeName.plus(attendance.absentDate.toDate))
                                                         ) {
                                                             Text(
                                                                 text = attendance.absentDate.toFormattedDate,
                                                                 style = MaterialTheme.typography.body1,
                                                                 textAlign = TextAlign.Start,
                                                                 fontWeight = FontWeight.SemiBold,
-                                                                modifier = Modifier.padding(
-                                                                    SpaceSmall
-                                                                )
+                                                                modifier = Modifier
+                                                                    .padding(SpaceSmall)
                                                             )
                                                         }
                                                         Spacer(modifier = Modifier.width(SpaceSmall))

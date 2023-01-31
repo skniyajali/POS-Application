@@ -10,6 +10,7 @@ import androidx.compose.material.FabPosition
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.runtime.Composable
@@ -50,6 +51,7 @@ fun SettingsScreen(
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val dialogState = rememberMaterialDialogState()
+    val deletePastState = rememberMaterialDialogState()
 
     val showScrollToTop = remember {
         derivedStateOf {
@@ -133,6 +135,27 @@ fun SettingsScreen(
             message(res = R.string.delete_all_records)
         }
 
+        MaterialDialog(
+            dialogState = deletePastState,
+            buttons = {
+                positiveButton(
+                    text = "Delete",
+                    onClick = {
+                        settingsViewModel.onEvent(SettingsEvent.DeletePastRecords)
+                    }
+                )
+                negativeButton(
+                    text = "Cancel",
+                    onClick = {
+                        deletePastState.hide()
+                    },
+                )
+            }
+        ) {
+            title(text = "Delete Past Records?")
+            message(res = R.string.delete_past_records)
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -146,6 +169,17 @@ fun SettingsScreen(
                     icon = Icons.Default.RemoveCircleOutline,
                     onClick = {
                         navController.navigate(DeletionSettingsDestination())
+                    },
+                )
+                Spacer(modifier = Modifier.height(SpaceMedium))
+            }
+
+            item {
+                SettingsCard(
+                    text = "Delete Past Records",
+                    icon = Icons.Default.Delete,
+                    onClick = {
+                        deletePastState.show()
                     },
                 )
                 Spacer(modifier = Modifier.height(SpaceMedium))

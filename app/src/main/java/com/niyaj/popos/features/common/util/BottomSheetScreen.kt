@@ -11,7 +11,6 @@ import com.niyaj.popos.features.charges.domain.util.FilterCharges
 import com.niyaj.popos.features.charges.presentation.ChargesViewModel
 import com.niyaj.popos.features.customer.domain.util.FilterCustomer
 import com.niyaj.popos.features.customer.presentation.CustomerViewModel
-import com.niyaj.popos.features.delivery_partner.domain.util.FilterPartner
 import com.niyaj.popos.features.employee.domain.util.FilterEmployee
 import com.niyaj.popos.features.expenses.domain.util.FilterExpenses
 import com.niyaj.popos.features.expenses.presentation.ExpensesViewModel
@@ -65,6 +64,7 @@ sealed class BottomSheetScreen(val type: String, val route: String){
 
     data class EditExpensesScreen(val expensesId: String? = null, val expensesViewModel: ExpensesViewModel): BottomSheetScreen(type = "Update Expenses", route = "update_expenses_screen")
 
+    object AttendanceReminderScreen : BottomSheetScreen(type = "Mark Employee Attendance", route = "employee_attendance_screen")
 
     data class FilterCategoryScreen(
         val filterCategory: FilterCategory = FilterCategory.ByCategoryId(SortType.Ascending),
@@ -105,11 +105,6 @@ sealed class BottomSheetScreen(val type: String, val route: String){
         val filterEmployee: FilterEmployee = FilterEmployee.ByEmployeeId(SortType.Descending),
         val onFilterChanged: (FilterEmployee) -> Unit
     ): BottomSheetScreen(type = "Filter Employee", route = "filter_employee_screen")
-
-    data class FilterPartnerScreen(
-        val filterPartner: FilterPartner = FilterPartner.ByPartnerId(SortType.Descending),
-        val onFilterChanged: (FilterPartner) -> Unit
-    ): BottomSheetScreen(type = "Filter Delivery Partner", route = "filter_delivery_partner_screen")
 
     data class FilterExpensesCategoryScreen(
         val filterExpensesCategory: FilterExpensesCategory = FilterExpensesCategory.ByExpensesCategoryId(

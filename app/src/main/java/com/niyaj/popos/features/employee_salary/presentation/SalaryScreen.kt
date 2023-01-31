@@ -49,6 +49,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -208,7 +209,7 @@ fun SalaryScreen(
                 Text(text = "Payment Details")
             }
         },
-        showBackArrow = true,
+        showBackArrow = selectedSalary.isEmpty(),
         onBackButtonClick = {
             if (showSearchBar) {
                 salaryViewModel.onSearchBarCloseAndClearClick()
@@ -316,6 +317,7 @@ fun SalaryScreen(
                     text = "Cancel",
                     onClick = {
                         dialogState.hide()
+                        salaryViewModel.onEvent(SalaryEvent.SelectSalary(selectedSalary))
                     },
                 )
             }
@@ -381,15 +383,17 @@ fun SalaryScreen(
                                         Card(
                                             onClick = {
                                                 scope.launch {
-                                                    lazyListState.animateScrollToItem(4)
+                                                    lazyListState.animateScrollToItem(1)
                                                 }
                                             },
                                             backgroundColor = LightColor6,
+                                            modifier = Modifier.testTag("TotalPayments")
                                         ) {
                                             Text(
                                                 text = "$paymentsCount Payments",
                                                 style = MaterialTheme.typography.body2,
-                                                modifier = Modifier.padding(SpaceSmall)
+                                                modifier = Modifier
+                                                    .padding(SpaceSmall)
                                             )
                                         }
                                     }
@@ -408,20 +412,24 @@ fun SalaryScreen(
                                             text = totalAmount.toRupee,
                                             style = MaterialTheme.typography.h5,
                                             fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.testTag("TotalAmount")
                                         )
 
                                         Card(
                                             onClick = {
                                                 scope.launch {
-                                                    lazyListState.animateScrollToItem(4)
+                                                    lazyListState.animateScrollToItem(1)
                                                 }
                                             },
                                             backgroundColor = LightColor6,
+                                            modifier = Modifier
+                                                .testTag("TotalEmployees")
                                         ) {
                                             Text(
                                                 text = "$employeeCount Employees",
                                                 style = MaterialTheme.typography.body2,
-                                                modifier = Modifier.padding(SpaceSmall)
+                                                modifier = Modifier
+                                                    .padding(SpaceSmall)
                                             )
                                         }
                                     }
@@ -474,6 +482,7 @@ fun SalaryScreen(
                                                 )
                                             },
                                             modifier = Modifier
+                                                .testTag(employee.employeeName.plus("Tag"))
                                                 .fillMaxWidth(),
                                             shape = RoundedCornerShape(4.dp),
                                             elevation = SpaceMini
@@ -532,6 +541,7 @@ fun SalaryScreen(
                                                                 )
                                                             },
                                                             modifier = Modifier
+                                                                .testTag(employee.employeeName.plus(salary.employeeSalary))
                                                                 .fillMaxWidth(),
                                                             elevation = if (selectedSalary == salary.salaryId) 2.dp else 0.dp,
                                                             backgroundColor = if (selectedSalary == salary.salaryId) LightColor6 else MaterialTheme.colors.surface,

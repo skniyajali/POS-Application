@@ -71,7 +71,6 @@ class ProductsViewModel @Inject constructor(
                         _selectedProducts.add(event.productId)
                     }
                 }
-
             }
 
             is ProductEvent.SelectProducts -> {

@@ -331,7 +331,6 @@ fun ProductScreen(
         },
         topAppBarBackgroundColor = backgroundColor,
     ) {
-
         MaterialDialog(
             dialogState = deleteProductState,
             buttons = {

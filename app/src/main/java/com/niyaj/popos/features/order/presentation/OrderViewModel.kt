@@ -1,5 +1,6 @@
 package com.niyaj.popos.features.order.presentation
 
+import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,7 +19,9 @@ import com.niyaj.popos.util.getCalculatedStartDate
 import com.niyaj.popos.util.getEndTime
 import com.niyaj.popos.util.getStartTime
 import com.niyaj.popos.util.toFormattedDate
+import com.niyaj.popos.util.toTime
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -29,11 +32,11 @@ import timber.log.Timber
 import java.time.LocalDate
 import javax.inject.Inject
 
-
 @HiltViewModel
 class OrderViewModel @Inject constructor(
     private val orderUseCases: OrderUseCases,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    application: Application,
 ): ViewModel() {
 
     private lateinit var escposPrinter: EscPosPrinter
@@ -170,7 +173,7 @@ class OrderViewModel @Inject constructor(
         startDate: String = getStartTime,
         endDate: String = getEndTime,
     ){
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             orderUseCases.getAllOrders(filterOrder, searchText, startDate, endDate).collectLatest { result ->
                 when(result){
                     is Resource.Loading -> {
@@ -233,12 +236,12 @@ class OrderViewModel @Inject constructor(
 
     private fun printDeliveryReport(){
         try {
+            connectPrinter()
+
             var printItems = ""
 
             printItems += getPrintableHeader()
             printItems += getPrintableOrders()
-
-            connectPrinter()
 
             escposPrinter.printFormattedText(printItems, 50)
         }catch (e: Exception){
@@ -268,17 +271,15 @@ class OrderViewModel @Inject constructor(
         }.asReversed()
 
         if(dineOutOrders.isNotEmpty()){
-
-            order += "[L]ID[C]Address[R]Price\n"
+            order += "[L]ID[C]Address[R]Time[R]Price\n"
             order += "[L]-------------------------------\n"
 
             dineOutOrders.forEach { cart ->
                 if (cart.cartOrder != null){
-                    order += "[L]${cart.cartOrder.orderId.takeLast(3)}[C]${cart.cartOrder.address?.shortName}[R]${cart.orderPrice.first.minus(cart.orderPrice.second)}\n"
+                    order += "[L]${cart.cartOrder.orderId.takeLast(3)}[C]${cart.cartOrder.address?.shortName}[R]${cart.cartOrder.updatedAt?.toTime}[R]${cart.orderPrice.first.minus(cart.orderPrice.second)}\n"
                     order += "[L]-------------------------------\n"
                 }
             }
-
         }else {
             order += "[C]You have not place any order.\n"
         }
@@ -287,4 +288,5 @@ class OrderViewModel @Inject constructor(
 
         return order
     }
+
 }

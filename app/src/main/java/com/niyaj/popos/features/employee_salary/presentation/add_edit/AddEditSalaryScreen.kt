@@ -36,6 +36,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -54,6 +55,19 @@ import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.employee.domain.util.PaymentType
 import com.niyaj.popos.features.employee.domain.util.SalaryType
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.ADD_EDIT_PAYMENT_ENTRY_BUTTON
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.GIVEN_AMOUNT_ERROR
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.GIVEN_AMOUNT_FIELD
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.GIVEN_DATE_FIELD
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.PAYMENT_TYPE_ERROR
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.PAYMENT_TYPE_FIELD
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.SALARY_EMPLOYEE_NAME_ERROR
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.SALARY_EMPLOYEE_NAME_FIELD
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.SALARY_NOTE_ERROR
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.SALARY_NOTE_FIELD
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.SALARY_TYPE_ERROR
+import com.niyaj.popos.features.employee_salary.domain.util.SalaryScreenTags.SALARY_TYPE_FIELD
+import com.niyaj.popos.util.toCurrentMilliSecond
 import com.niyaj.popos.util.toMilliSecond
 import com.niyaj.popos.util.toSalaryDate
 import com.ramcosta.composedestinations.annotation.Destination
@@ -107,7 +121,9 @@ fun AddEditSalaryScreen(
     }
 
     BottomSheetWithCloseDialog(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .testTag("AddEdit PaymentEntry Screen")
+            .fillMaxWidth(),
         text = if (salaryId.isNotEmpty())
             stringResource(id = R.string.update_salary_entry)
         else
@@ -126,13 +142,13 @@ fun AddEditSalaryScreen(
         ) {
             datepicker(
                 allowedDateValidator = { date ->
-                    date <= LocalDate.now() && if (addEditSalaryViewModel.addEditSalaryState.employee.employeeId.isNotEmpty()) {
-                        date.toMilliSecond >= addEditSalaryViewModel.addEditSalaryState.employee.employeeJoinedDate
-                    } else true
+                    if (addEditSalaryViewModel.addEditSalaryState.employee.employeeId.isNotEmpty()) {
+                        (date.toMilliSecond >= addEditSalaryViewModel.addEditSalaryState.employee.employeeJoinedDate) && (date <= LocalDate.now())
+                    } else date == LocalDate.now()
                 }
             ) {date ->
                 addEditSalaryViewModel.onEvent(
-                    AddEditSalaryEvent.SalaryDateChanged(date.toMilliSecond)
+                    AddEditSalaryEvent.SalaryDateChanged(date.toCurrentMilliSecond)
                 )
             }
         }
@@ -148,7 +164,8 @@ fun AddEditSalaryScreen(
                     expanded = employees.isNotEmpty() && employeeToggled,
                     onExpandedChange = {
                         employeeToggled = !employeeToggled
-                    }
+                    },
+                    modifier = Modifier.testTag(SALARY_EMPLOYEE_NAME_FIELD)
                 ) {
                     StandardOutlinedTextField(
                         modifier = Modifier
@@ -161,6 +178,7 @@ fun AddEditSalaryScreen(
                         hint = "Employee Name",
                         leadingIcon = Icons.Default.Person4,
                         error = addEditSalaryViewModel.addEditSalaryState.employeeError,
+                        errorTag = SALARY_EMPLOYEE_NAME_ERROR,
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
@@ -180,7 +198,9 @@ fun AddEditSalaryScreen(
                     ) {
                         employees.forEachIndexed{ index, employee ->
                             DropdownMenuItem(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .testTag(employee.employeeName)
+                                    .fillMaxWidth(),
                                 onClick = {
                                     addEditSalaryViewModel.onEvent(
                                         AddEditSalaryEvent.EmployeeChanged(
@@ -211,7 +231,8 @@ fun AddEditSalaryScreen(
                     expanded = salaryTypeExpanded,
                     onExpandedChange = {
                         salaryTypeExpanded = !salaryTypeExpanded
-                    }
+                    },
+                    modifier = Modifier.testTag(SALARY_TYPE_FIELD)
                 ) {
                     StandardOutlinedTextField(
                         modifier = Modifier
@@ -222,6 +243,7 @@ fun AddEditSalaryScreen(
                             },
                         text = addEditSalaryViewModel.addEditSalaryState.salaryType,
                         error = addEditSalaryViewModel.addEditSalaryState.salaryTypeError,
+                        errorTag = SALARY_TYPE_ERROR,
                         hint = "Salary Type",
                         leadingIcon = Icons.Default.MergeType,
                         onValueChange = {},
@@ -241,7 +263,9 @@ fun AddEditSalaryScreen(
                             .width(with(LocalDensity.current){textFieldSize.width.toDp()}),
                     ) {
                         DropdownMenuItem(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .testTag(SalaryType.Salary.salaryType)
+                                .fillMaxWidth(),
                             onClick = {
                                 addEditSalaryViewModel.onEvent(
                                     AddEditSalaryEvent.SalaryTypeChanged(
@@ -260,7 +284,9 @@ fun AddEditSalaryScreen(
                         Divider(modifier = Modifier.fillMaxWidth(), color = Color.Gray, thickness = 0.8.dp)
 
                         DropdownMenuItem(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .testTag(SalaryType.Advanced.salaryType)
+                                .fillMaxWidth(),
                             onClick = {
                                 addEditSalaryViewModel.onEvent(
                                     AddEditSalaryEvent.SalaryTypeChanged(
@@ -283,6 +309,7 @@ fun AddEditSalaryScreen(
 
             item {
                 StandardOutlinedTextField(
+                    modifier = Modifier,
                     text = addEditSalaryViewModel.addEditSalaryState.salaryDate.toSalaryDate,
                     hint = "Given Date",
                     leadingIcon = Icons.Default.CalendarToday,
@@ -290,7 +317,10 @@ fun AddEditSalaryScreen(
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
-                        IconButton(onClick = { dialogState.show() }) {
+                        IconButton(
+                            onClick = { dialogState.show() },
+                            modifier = Modifier.testTag(GIVEN_DATE_FIELD)
+                        ) {
                             Icon(imageVector = Icons.Default.CalendarToday, contentDescription = null)
                         }
                     }
@@ -304,7 +334,8 @@ fun AddEditSalaryScreen(
                     expanded = paymentTypeExpanded,
                     onExpandedChange = {
                         paymentTypeExpanded = !paymentTypeExpanded
-                    }
+                    },
+                    modifier = Modifier.testTag(PAYMENT_TYPE_FIELD)
                 ) {
                     StandardOutlinedTextField(
                         modifier = Modifier
@@ -315,6 +346,7 @@ fun AddEditSalaryScreen(
                             },
                         text = addEditSalaryViewModel.addEditSalaryState.salaryPaymentType,
                         error = addEditSalaryViewModel.addEditSalaryState.salaryPaymentTypeError,
+                        errorTag = PAYMENT_TYPE_ERROR,
                         hint = "Payment Type",
                         leadingIcon = Icons.Default.Payments,
                         onValueChange = {},
@@ -334,7 +366,9 @@ fun AddEditSalaryScreen(
                             .width(with(LocalDensity.current){textFieldSize.width.toDp()}),
                     ) {
                         DropdownMenuItem(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .testTag(PaymentType.Cash.paymentType)
+                                .fillMaxWidth(),
                             onClick = {
                                 addEditSalaryViewModel.onEvent(
                                     AddEditSalaryEvent.PaymentTypeChanged(PaymentType.Cash.paymentType)
@@ -351,7 +385,9 @@ fun AddEditSalaryScreen(
                         Divider(modifier = Modifier.fillMaxWidth(), color = Color.Gray, thickness = 0.8.dp)
 
                         DropdownMenuItem(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .testTag(PaymentType.Online.paymentType)
+                                .fillMaxWidth(),
                             onClick = {
                                 addEditSalaryViewModel.onEvent(
                                     AddEditSalaryEvent.PaymentTypeChanged(PaymentType.Online.paymentType)
@@ -368,7 +404,9 @@ fun AddEditSalaryScreen(
                         Divider(modifier = Modifier.fillMaxWidth(), color = Color.Gray, thickness = 0.8.dp)
 
                         DropdownMenuItem(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .testTag(PaymentType.Both.paymentType)
+                                .fillMaxWidth(),
                             onClick = {
                                 addEditSalaryViewModel.onEvent(
                                     AddEditSalaryEvent.PaymentTypeChanged(PaymentType.Both.paymentType)
@@ -389,10 +427,12 @@ fun AddEditSalaryScreen(
 
             item {
                 StandardOutlinedTextField(
+                    modifier = Modifier.testTag(GIVEN_AMOUNT_FIELD),
                     text = addEditSalaryViewModel.addEditSalaryState.salary,
                     hint = "Given Amount",
                     leadingIcon = Icons.Default.Money,
                     error = addEditSalaryViewModel.addEditSalaryState.salaryError,
+                    errorTag = GIVEN_AMOUNT_ERROR,
                     keyboardType = KeyboardType.Number,
                     onValueChange = {
                         addEditSalaryViewModel.onEvent(AddEditSalaryEvent.SalaryChanged(it))
@@ -404,10 +444,12 @@ fun AddEditSalaryScreen(
 
             item {
                 StandardOutlinedTextField(
+                    modifier = Modifier.testTag(SALARY_NOTE_FIELD),
                     text = addEditSalaryViewModel.addEditSalaryState.salaryNote,
                     hint = "Salary Note",
                     leadingIcon = Icons.Default.Description,
                     error = addEditSalaryViewModel.addEditSalaryState.salaryNoteError,
+                    errorTag = SALARY_NOTE_ERROR,
                     onValueChange = {
                         addEditSalaryViewModel.onEvent(AddEditSalaryEvent.SalaryNoteChanged(it))
                     },
@@ -418,6 +460,7 @@ fun AddEditSalaryScreen(
 
             item {
                 StandardButton(
+                    modifier = Modifier.testTag(ADD_EDIT_PAYMENT_ENTRY_BUTTON),
                     text = if (salaryId.isNotEmpty()) stringResource(id = R.string.update_salary_entry)
                     else stringResource(id = R.string.create_salary_entry),
                     icon = if (salaryId.isNotEmpty()) Icons.Default.Edit else Icons.Default.Add,

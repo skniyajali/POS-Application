@@ -34,6 +34,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -49,7 +50,11 @@ import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
-import com.niyaj.popos.util.localDateToCurrentMillis
+import com.niyaj.popos.features.employee_attendance.domain.util.AbsentScreenTestTags.ABSENT_DATE_FIELD
+import com.niyaj.popos.features.employee_attendance.domain.util.AbsentScreenTestTags.ABSENT_EMPLOYEE_NAME_ERROR
+import com.niyaj.popos.features.employee_attendance.domain.util.AbsentScreenTestTags.ABSENT_EMPLOYEE_NAME_FIELD
+import com.niyaj.popos.features.employee_attendance.domain.util.AbsentScreenTestTags.ABSENT_REASON_FIELD
+import com.niyaj.popos.features.employee_attendance.domain.util.AbsentScreenTestTags.ADD_EDIT_ABSENT_ENTRY_BTN
 import com.niyaj.popos.util.toMilliSecond
 import com.niyaj.popos.util.toSalaryDate
 import com.ramcosta.composedestinations.annotation.Destination
@@ -119,13 +124,13 @@ fun AddEditAbsentScreen(
         ) {
             datepicker(
                 allowedDateValidator = { date ->
-                    date <= LocalDate.now() && if (absentViewModel.absentState.employee.employeeId.isNotEmpty()) {
-                        date.toMilliSecond >= absentViewModel.absentState.employee.employeeJoinedDate
-                    } else true
+                    if (absentViewModel.absentState.employee.employeeId.isNotEmpty()) {
+                        (date.toMilliSecond >= absentViewModel.absentState.employee.employeeJoinedDate) && (date <= LocalDate.now())
+                    } else date == LocalDate.now()
                 }
             ) {date ->
                 absentViewModel.onEvent(
-                    AbsentEvent.AbsentDateChanged(localDateToCurrentMillis(date))
+                    AbsentEvent.AbsentDateChanged(date.toMilliSecond)
                 )
             }
         }
@@ -139,7 +144,8 @@ fun AddEditAbsentScreen(
                 expanded = employees.isNotEmpty() && employeeToggled,
                 onExpandedChange = {
                     employeeToggled = !employeeToggled
-                }
+                },
+                modifier = Modifier.testTag(ABSENT_EMPLOYEE_NAME_FIELD)
             ) {
                 StandardOutlinedTextField(
                     modifier = Modifier
@@ -152,6 +158,7 @@ fun AddEditAbsentScreen(
                     hint = "Employee Name",
                     leadingIcon = Icons.Default.Person4,
                     error = absentViewModel.absentState.employeeError,
+                    errorTag = ABSENT_EMPLOYEE_NAME_ERROR,
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
@@ -171,7 +178,9 @@ fun AddEditAbsentScreen(
                 ) {
                     employees.forEachIndexed{ index, employee ->
                         DropdownMenuItem(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .testTag(employee.employeeName)
+                                .fillMaxWidth(),
                             onClick = {
                                 absentViewModel.onEvent(
                                     AbsentEvent.EmployeeChanged(employee.employeeId)
@@ -202,7 +211,10 @@ fun AddEditAbsentScreen(
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = {
-                    IconButton(onClick = { dialogState.show() }) {
+                    IconButton(
+                        onClick = { dialogState.show() },
+                        modifier = Modifier.testTag(ABSENT_DATE_FIELD)
+                    ) {
                         Icon(imageVector = Icons.Default.CalendarToday, contentDescription = null)
                     }
                 }
@@ -211,6 +223,7 @@ fun AddEditAbsentScreen(
             Spacer(modifier = Modifier.height(SpaceSmall))
 
             StandardOutlinedTextField(
+                modifier = Modifier.testTag(ABSENT_REASON_FIELD),
                 text = absentViewModel.absentState.absentReason,
                 hint = "Absent Reason",
                 leadingIcon = Icons.Default.EventNote,
@@ -222,6 +235,7 @@ fun AddEditAbsentScreen(
             Spacer(modifier = Modifier.height(SpaceMedium))
 
             StandardButton(
+                modifier = Modifier.testTag(ADD_EDIT_ABSENT_ENTRY_BTN),
                 text = if (attendanceId.isNotEmpty()) stringResource(id = R.string.update_absent_entry)
                     else stringResource(id = R.string.create_absent_entry),
                 icon = if (attendanceId.isNotEmpty()) Icons.Default.Edit else Icons.Default.Add,
@@ -236,6 +250,5 @@ fun AddEditAbsentScreen(
                 },
             )
         }
-
     }
 }

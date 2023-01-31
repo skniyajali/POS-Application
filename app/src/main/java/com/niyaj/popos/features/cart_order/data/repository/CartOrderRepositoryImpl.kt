@@ -214,11 +214,11 @@ class CartOrderRepositoryImpl(
                     addSelectedCartOrder(cartOrder.cartOrderId)
 
                     Resource.Success(true)
-                }else {
+                } else {
                     Resource.Error("Unable to validate cart order", false)
                 }
             }
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to create order", false)
         }
     }

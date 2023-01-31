@@ -1,6 +1,6 @@
 package com.niyaj.popos.features.employee.di
 
-import com.niyaj.popos.features.employee.data.repository.EmployeeValidationRepository
+import com.niyaj.popos.features.employee.domain.repository.EmployeeValidationRepository
 import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
 import com.niyaj.popos.features.employee.domain.use_cases.CreateNewEmployee
 import com.niyaj.popos.features.employee.domain.use_cases.DeleteEmployee

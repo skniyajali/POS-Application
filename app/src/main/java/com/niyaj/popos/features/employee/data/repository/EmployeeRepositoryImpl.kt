@@ -4,6 +4,7 @@ import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.ValidationResult
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.features.employee.domain.repository.EmployeeValidationRepository
 import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
 import io.realm.kotlin.Realm
@@ -105,15 +106,15 @@ class EmployeeRepositoryImpl(
 
     override suspend fun createNewEmployee(newEmployee: Employee): Resource<Boolean> {
         return try {
-            val validateEmployeeName = validateEmployeeName(newEmployee.employeeName)
-            val validateEmployeePhone = validateEmployeePhone(newEmployee.employeePhone)
-            val validateEmployeePosition = validateEmployeePosition(newEmployee.employeePosition)
-            val validateEmployeeSalary = validateEmployeeSalary(newEmployee.employeeSalary)
+            withContext(ioDispatcher) {
+                val validateEmployeeName = validateEmployeeName(newEmployee.employeeName)
+                val validateEmployeePhone = validateEmployeePhone(newEmployee.employeePhone)
+                val validateEmployeePosition = validateEmployeePosition(newEmployee.employeePosition)
+                val validateEmployeeSalary = validateEmployeeSalary(newEmployee.employeeSalary)
 
-            val hasError = listOf(validateEmployeeName, validateEmployeePhone, validateEmployeePosition, validateEmployeeSalary).any { !it.successful }
+                val hasError = listOf(validateEmployeeName, validateEmployeePhone, validateEmployeePosition, validateEmployeeSalary).any { !it.successful }
 
-            if (!hasError) {
-                withContext(ioDispatcher) {
+                if (!hasError) {
                     val employee = Employee()
                     employee.employeeId = newEmployee.employeeId.ifEmpty { BsonObjectId().toHexString() }
                     employee.employeeName = newEmployee.employeeName
@@ -128,11 +129,11 @@ class EmployeeRepositoryImpl(
                     realm.write {
                         this.copyToRealm(employee)
                     }
-                }
 
-                Resource.Success(true)
-            }else {
-                Resource.Error("Unable to validate employee", false)
+                    Resource.Success(true)
+                }else {
+                    Resource.Error("Unable to validate employee", false)
+                }
             }
         } catch (e: RealmException) {
             Resource.Error(e.message ?: "Error creating Employee Item", false)
@@ -141,15 +142,15 @@ class EmployeeRepositoryImpl(
 
     override suspend fun updateEmployee(newEmployee: Employee, employeeId: String): Resource<Boolean> {
         return try {
-            val validateEmployeeName = validateEmployeeName(newEmployee.employeeName)
-            val validateEmployeePhone = validateEmployeePhone(newEmployee.employeePhone)
-            val validateEmployeePosition = validateEmployeePosition(newEmployee.employeePosition)
-            val validateEmployeeSalary = validateEmployeeSalary(newEmployee.employeeSalary)
+            withContext(ioDispatcher) {
+                val validateEmployeeName = validateEmployeeName(newEmployee.employeeName, employeeId)
+                val validateEmployeePhone = validateEmployeePhone(newEmployee.employeePhone, employeeId)
+                val validateEmployeePosition = validateEmployeePosition(newEmployee.employeePosition)
+                val validateEmployeeSalary = validateEmployeeSalary(newEmployee.employeeSalary)
 
-            val hasError = listOf(validateEmployeeName, validateEmployeePhone, validateEmployeePosition, validateEmployeeSalary).any { !it.successful }
+                val hasError = listOf(validateEmployeeName, validateEmployeePhone, validateEmployeePosition, validateEmployeeSalary).any { !it.successful }
 
-            if (!hasError) {
-                withContext(ioDispatcher) {
+                if (!hasError) {
                     val employee = realm.query<Employee>("employeeId == $0", employeeId).first().find()
                     if (employee != null) {
                         realm.write {
@@ -169,9 +170,9 @@ class EmployeeRepositoryImpl(
                     }else {
                         Resource.Error("Unable to find employee", false)
                     }
+                }else {
+                    Resource.Error("Unable to validate employee", false)
                 }
-            }else {
-                Resource.Error("Unable to validate employee", false)
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to update employee.", false)
@@ -219,13 +220,6 @@ class EmployeeRepositoryImpl(
             )
         }
 
-        if(name.any { it.isDigit() }){
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Employee name must not contain any digit",
-            )
-        }
-
         if(name.length < 4){
             return ValidationResult(
                 successful = false,
@@ -233,7 +227,14 @@ class EmployeeRepositoryImpl(
             )
         }
 
-        if(findEmployeeByName(name, employeeId)){
+        if(name.any { it.isDigit() }){
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Employee name must not contain any digit",
+            )
+        }
+
+        if(this.findEmployeeByName(name, employeeId)){
             return ValidationResult(
                 successful = false,
                 errorMessage = "Employee name already exists.",
@@ -267,7 +268,7 @@ class EmployeeRepositoryImpl(
             )
         }
 
-        if(findEmployeeByPhone(phone, employeeId)){
+        if(this.findEmployeeByPhone(phone, employeeId)){
             return ValidationResult(
                 successful = false,
                 errorMessage = "Phone no already exists",
@@ -295,7 +296,7 @@ class EmployeeRepositoryImpl(
             )
         }
 
-        if(salary.length > 5){
+        if(salary.length != 5){
             return ValidationResult(
                 successful = false,
                 errorMessage = "Salary is in invalid",

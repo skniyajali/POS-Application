@@ -52,6 +52,7 @@ class OrderRepositoryImpl(
                     ).sort("cartId", Sort.DESCENDING).find()
 
                     val itemFlow = items.asFlow()
+
                     itemFlow.collect { changes: ResultsChange<CartRealm> ->
                         when (changes) {
                             is InitialResults -> {

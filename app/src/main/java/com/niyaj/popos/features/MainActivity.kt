@@ -33,6 +33,7 @@ import com.niyaj.popos.features.common.util.hasBluetoothPermission
 import com.niyaj.popos.features.common.util.hasStoragePermission
 import com.niyaj.popos.features.components.util.SheetLayout
 import com.niyaj.popos.features.destinations.SplashScreenDestination
+import com.niyaj.popos.features.reminder.domain.use_cases.ReminderUseCases
 import com.niyaj.popos.util.Constants.DELETE_DATA_INTERVAL_HOUR
 import com.niyaj.popos.util.Constants.DELETE_DATA_NOTIFICATION_CHANNEL_ID
 import com.niyaj.popos.util.Constants.GENERATE_REPORT_CHANNEL_ID
@@ -43,10 +44,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
-
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var reminderUseCases : ReminderUseCases
 
     private var currentBottomSheet = mutableStateOf<BottomSheetScreen?>(null)
 
@@ -56,13 +60,13 @@ class MainActivity : ComponentActivity() {
         ExperimentalMaterialNavigationApi::class,
         ExperimentalMaterialApi::class
     )
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState : Bundle?) {
         super.onCreate(savedInstanceState)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-//        window.setDecorFitsSystemWindows(false)
 
         val hasBluetoothPermission = applicationContext.hasBluetoothPermission()
         val hasStoragePermission = applicationContext.hasStoragePermission()
+        val workManager = WorkManager.getInstance(applicationContext)
 
         if (!hasBluetoothPermission) {
             ActivityCompat.requestPermissions(
@@ -71,9 +75,8 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.BLUETOOTH,
                     Manifest.permission.BLUETOOTH_CONNECT,
                     Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_ADMIN,
-
-                    ),
+                    Manifest.permission.BLUETOOTH_ADMIN
+                ),
                 /* requestCode = */ 0
             )
         }
@@ -85,31 +88,31 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.MANAGE_EXTERNAL_STORAGE,
-                    ),
+                ),
                 /* requestCode = */ 0
             )
         }
 
         val periodicDeletionWorker =
             PeriodicWorkRequestBuilder<DataDeletionWorker>(
-                24, TimeUnit.HOURS, DELETE_DATA_INTERVAL_HOUR, TimeUnit.HOURS
+                DELETE_DATA_INTERVAL_HOUR,
+                TimeUnit.HOURS
             ).addTag(DELETE_DATA_NOTIFICATION_CHANNEL_ID).build()
 
         val generateReportWorker = PeriodicWorkRequestBuilder<GenerateReportWorker>(
-            GENERATE_REPORT_INTERVAL_HOUR, TimeUnit.HOURS
+            GENERATE_REPORT_INTERVAL_HOUR,
+            TimeUnit.HOURS
         ).addTag(GENERATE_REPORT_CHANNEL_ID).build()
-
-        val workManager = WorkManager.getInstance(applicationContext)
 
         workManager.enqueueUniquePeriodicWork(
             DELETE_DATA_NOTIFICATION_CHANNEL_ID,
-            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+            ExistingPeriodicWorkPolicy.KEEP,
             periodicDeletionWorker
         )
 
         workManager.enqueueUniquePeriodicWork(
             GENERATE_REPORT_CHANNEL_ID,
-            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+            ExistingPeriodicWorkPolicy.KEEP,
             generateReportWorker
         )
 
@@ -119,10 +122,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colors.background,
                     modifier = Modifier
-                        .fillMaxSize()
-//                        .statusBarsPadding()
-//                        .navigationBarsPadding()
-//                        .imePadding(),
+                        .fillMaxSize(),
                 ) {
                     val scaffoldState = rememberScaffoldState()
                     val navController = rememberAnimatedNavController()
@@ -134,7 +134,7 @@ class MainActivity : ComponentActivity() {
                     workManager
                         .getWorkInfoByIdLiveData(periodicDeletionWorker.id)
                         .observe(this) { workInfo ->
-                            if (workInfo != null){
+                            if (workInfo != null) {
                                 when (workInfo.state) {
                                     WorkInfo.State.SUCCEEDED -> {
                                         Timber.d("Data Deletion Successfully")
@@ -176,7 +176,7 @@ class MainActivity : ComponentActivity() {
                     workManager
                         .getWorkInfoByIdLiveData(generateReportWorker.id)
                         .observe(this) { workInfo ->
-                            if (workInfo!= null) {
+                            if (workInfo != null) {
                                 when (workInfo.state) {
                                     WorkInfo.State.SUCCEEDED -> {
                                         Timber.d("Report Generated Successfully")
@@ -241,7 +241,7 @@ class MainActivity : ComponentActivity() {
                         currentBottomSheet.value = null
                     }
 
-                    val closeSheet: () -> Unit = {
+                    val closeSheet : () -> Unit = {
                         scope.launch {
                             if (bottomSheetScaffoldState.bottomSheetState.isExpanded) {
                                 bottomSheetScaffoldState.bottomSheetState.collapse()
@@ -254,7 +254,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    val openSheet: (BottomSheetScreen) -> Unit = {
+                    val openSheet : (BottomSheetScreen) -> Unit = {
                         scope.launch {
                             currentBottomSheet.value = it
                             bottomSheetScaffoldState.bottomSheetState.expand()
@@ -292,5 +292,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-// 168, 5, 8, 55,

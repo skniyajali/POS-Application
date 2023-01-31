@@ -23,7 +23,6 @@ import com.niyaj.popos.features.address.presentation.AddressScreen
 import com.niyaj.popos.features.category.presentation.CategoryScreen
 import com.niyaj.popos.features.charges.presentation.ChargesScreen
 import com.niyaj.popos.features.customer.presentation.CustomerScreen
-import com.niyaj.popos.features.delivery_partner.presentation.PartnerScreen
 import com.niyaj.popos.features.destinations.AddOnItemScreenDestination
 import com.niyaj.popos.features.destinations.AddressScreenDestination
 import com.niyaj.popos.features.destinations.CategoryScreenDestination
@@ -34,7 +33,6 @@ import com.niyaj.popos.features.destinations.ExpensesCategoryScreenDestination
 import com.niyaj.popos.features.destinations.ExpensesScreenDestination
 import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import com.niyaj.popos.features.destinations.OrderScreenDestination
-import com.niyaj.popos.features.destinations.PartnerScreenDestination
 import com.niyaj.popos.features.destinations.ProductScreenDestination
 import com.niyaj.popos.features.employee.presentation.EmployeeScreen
 import com.niyaj.popos.features.expenses.presentation.ExpensesScreen
@@ -96,7 +94,8 @@ fun Navigation(
                     onOpenSheet = onOpenSheet,
                     scaffoldState = scaffoldState,
                     navController = navController,
-                    resultRecipient = resultRecipient()
+                    resultRecipient = resultRecipient(),
+                    absentReminderRecipient = resultRecipient(),
                 )
             }
 
@@ -138,15 +137,6 @@ fun Navigation(
 
             composable(CustomerScreenDestination){
                 CustomerScreen(
-                    onOpenSheet = onOpenSheet,
-                    scaffoldState = scaffoldState,
-                    resultRecipient = resultRecipient(),
-                    navController = navController
-                )
-            }
-
-            composable(PartnerScreenDestination){
-                PartnerScreen(
                     onOpenSheet = onOpenSheet,
                     scaffoldState = scaffoldState,
                     resultRecipient = resultRecipient(),
@@ -197,7 +187,8 @@ fun Navigation(
                 OrderScreen(
                     onOpenSheet = onOpenSheet,
                     scaffoldState = scaffoldState,
-                    navController = navController
+                    navController = navController,
+                    resultRecipient = resultRecipient(),
                 )
             }
         }
