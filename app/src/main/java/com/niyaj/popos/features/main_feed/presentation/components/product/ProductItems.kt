@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -52,8 +53,12 @@ fun ProductItems(
     onLeftClick: (String) -> Unit = {},
     onRightClick: (String) -> Unit = {},
     isLoading: Boolean = false,
+    lazyListState : LazyListState,
+    backgroundColor: Color = MaterialTheme.colors.surface,
 ){
-    LazyColumn{
+    LazyColumn(
+        state = lazyListState,
+    ) {
         itemsIndexed(cartProducts){ index, productWithQuantity ->
             val quantity = productWithQuantity.quantity.collectAsState(0).value
 
@@ -62,7 +67,7 @@ fun ProductItems(
                     .fillMaxWidth(),
                 elevation = 1.dp,
                 shape =  RoundedCornerShape(4.dp),
-                backgroundColor = MaterialTheme.colors.surface,
+                backgroundColor = backgroundColor,
             ) {
                 Row(
                     modifier = Modifier

@@ -5,7 +5,6 @@ import com.niyaj.popos.features.main_feed.domain.use_cases.GetMainFeedCategories
 import com.niyaj.popos.features.main_feed.domain.use_cases.GetMainFeedProducts
 import com.niyaj.popos.features.main_feed.domain.use_cases.GetMainFeedSelectedOrder
 import com.niyaj.popos.features.main_feed.domain.use_cases.GetProductQuantity
-import com.niyaj.popos.features.main_feed.domain.use_cases.GetProductsPager
 import com.niyaj.popos.features.main_feed.domain.use_cases.MainFeedUseCases
 import dagger.Module
 import dagger.Provides
@@ -24,7 +23,6 @@ object MainFeedModule {
             getMainFeedProducts = GetMainFeedProducts(mainFeedRepository),
             getMainFeedSelectedOrder = GetMainFeedSelectedOrder(mainFeedRepository),
             getMainFeedCategories = GetMainFeedCategories(mainFeedRepository),
-            getProductsPager = GetProductsPager(mainFeedRepository),
             getProductQuantity = GetProductQuantity(mainFeedRepository),
         )
     }

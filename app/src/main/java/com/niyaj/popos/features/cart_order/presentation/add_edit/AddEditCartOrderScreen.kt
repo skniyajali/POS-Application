@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.DeliveryDining
 import androidx.compose.material.icons.filled.DinnerDining
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,7 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -65,7 +65,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
 @Composable
 fun AddEditCartOrderScreen(
@@ -79,21 +79,21 @@ fun AddEditCartOrderScreen(
     val addresses = viewModel.addresses.collectAsStateWithLifecycle().value.addresses
     val addressesIsLoading = viewModel.addresses.collectAsStateWithLifecycle().value.isLoading
 
-//    val customerPhone = viewModel.state.customer?.customerPhone
+    val customerAddress = viewModel.state.address?.addressName
 
 //    val customers = viewModel.customers.collectAsStateWithLifecycle().value.customers
 
-//    val filteredCustomer by remember(customers) {
-//        derivedStateOf {
-//            customers.filter {
-//                if (!customerPhone.isNullOrEmpty()){
-//                    it.customerPhone.contains(customerPhone, true)
-//                }else{
-//                    true
-//                }
-//            }
-//        }
-//    }
+    val filteredAddress by remember(customerAddress) {
+        derivedStateOf {
+            addresses.filter {
+                if (!customerAddress.isNullOrEmpty()){
+                    it.addressName.contains(customerAddress, true)
+                }else{
+                    true
+                }
+            }
+        }
+    }
 
 
 //    var phoneDropdownToggled by remember { mutableStateOf(false) }
@@ -271,7 +271,7 @@ fun AddEditCartOrderScreen(
                         },
                     )
 
-                    if (addresses.isNotEmpty()){
+                    if (filteredAddress.isNotEmpty()){
                         DropdownMenu(
                             expanded = addressDropdownToggled,
                             onDismissRequest = {
@@ -288,7 +288,7 @@ fun AddEditCartOrderScreen(
                                 .heightIn(max = 200.dp)
                                 .width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                         ) {
-                            addresses.forEachIndexed { index, address ->
+                            filteredAddress.forEachIndexed { index, address ->
                                 DropdownMenuItem(
                                     modifier = Modifier
                                         .fillMaxWidth(),

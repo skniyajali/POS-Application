@@ -94,19 +94,19 @@ class ExpensesRepositoryImpl(
 
                 if (!hasError) {
                     val expansesItem = Expenses()
+
+                    val expansesCategory = realm.query<ExpensesCategory>(
+                        "expensesCategoryId == $0",
+                        newExpenses.expensesCategory?.expensesCategoryId
+                    ).first().find() ?: return@withContext Resource.Error("Unable to find expenses category", false)
+
                     expansesItem.expensesId = newExpenses.expensesId.ifEmpty { BsonObjectId().toHexString() }
+                    expansesItem.expensesCategory = expansesCategory
                     expansesItem.expensesPrice = newExpenses.expensesPrice
                     expansesItem.expensesRemarks = newExpenses.expensesRemarks
                     expansesItem.createdAt = newExpenses.createdAt.ifEmpty { System.currentTimeMillis().toString() }
 
                     realm.write {
-                        val expansesCategory = this.query<ExpensesCategory>(
-                            "expensesCategoryId == $0",
-                            newExpenses.expensesCategory?.expensesCategoryId
-                        ).first().find()
-
-                        expansesItem.expensesCategory = expansesCategory
-
                         this.copyToRealm(expansesItem)
                     }
 
@@ -213,15 +213,6 @@ class ExpensesRepositoryImpl(
             return ValidationResult(
                 successful = false,
                 errorMessage = "Category is required",
-            )
-        }
-
-        val expensesCategory = realm.query<ExpensesCategory>("expensesCategoryId == $0", categoryId).first().find()
-
-        if (expensesCategory == null) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Unable to find expenses category",
             )
         }
 

@@ -64,7 +64,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -111,8 +110,7 @@ import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalPagerApi::class,
-    ExperimentalLifecycleComposeApi::class, ExperimentalPermissionsApi::class
+@OptIn(ExperimentalMaterialApi::class, ExperimentalPagerApi::class, ExperimentalPermissionsApi::class
 )
 @Destination
 @Composable
@@ -197,7 +195,6 @@ fun OrderScreen(
             bluetoothPermissions.launchMultiplePermissionRequest()
         }
     }
-
 
     val pagerState = rememberPagerState()
     val dialogState = rememberMaterialDialogState()
@@ -304,7 +301,7 @@ fun OrderScreen(
                 )
             }
             else {
-                val showIcon = if(pagerState.currentPage == 0) dineInOrders.isNotEmpty() else dineOutOrders.isNotEmpty()
+                val showIcon = if(pagerState.currentPage == 1) dineInOrders.isNotEmpty() else dineOutOrders.isNotEmpty()
 
                 if (showIcon && selectedDate1.isNotEmpty() && selectedDate1 != LocalDate.now().toString()) {
                     RoundedBox(
@@ -353,7 +350,7 @@ fun OrderScreen(
                         )
                     }
 
-                    if(pagerState.currentPage == 1){
+                    if(pagerState.currentPage == 0){
                         IconButton(
                             onClick = {
                                 showMenu = !showMenu
@@ -429,6 +426,203 @@ fun OrderScreen(
         }
 
         val tabs = listOf(
+            CartTabItem.DineOutItem {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    if(dineOutOrders.isEmpty() || error != null){
+                        ItemNotAvailable(
+                            text = error ?: if(showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(id = R.string.no_items_in_order),
+                            buttonText = stringResource(id = R.string.add_items_to_cart_button),
+                            onClick = {
+                                navController.navigate(MainFeedScreenDestination())
+                            }
+                        )
+                    } else if(isLoading){
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ){
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(SpaceSmall)
+                        ){
+                            items(dineOutOrders){ order ->
+                                if(order.cartOrder != null && order.cartProducts.isNotEmpty()) {
+                                    RevealSwipe(
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        onContentClick = {},
+                                        maxRevealDp = 150.dp,
+                                        hiddenContentStart = {
+                                            IconButton(onClick = {
+                                                orderViewModel.onOrderEvent(
+                                                    OrderEvent.MarkedAsProcessing(
+                                                        order.cartOrder.cartOrderId
+                                                    )
+                                                )
+                                            }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Add,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.padding(horizontal = 25.dp),
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.width(SpaceSmall))
+
+                                            IconButton(
+                                                onClick = {
+                                                    navController.navigate(AddEditCartOrderScreenDestination(cartOrderId= order.cartOrder.cartOrderId))
+                                                }
+                                            ) {
+                                                Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+                                            }
+                                        },
+                                        hiddenContentEnd = {
+                                            IconButton(onClick = {
+                                                orderViewModel.onOrderEvent(
+                                                    OrderEvent.MarkedAsDelivered(
+                                                        order.cartOrder.cartOrderId
+                                                    )
+                                                )
+                                            }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Outbox,
+                                                    contentDescription = "Mark as Delivered",
+                                                    modifier = Modifier.padding(horizontal = 25.dp),
+                                                )
+                                            }
+
+                                            IconButton(onClick = {
+                                                deleteOrderState.show()
+                                                deletableOrder = order.cartOrder.cartOrderId
+                                            }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Delete,
+                                                    contentDescription = "Delete order",
+                                                    modifier = Modifier.padding(horizontal = 25.dp),
+                                                )
+                                            }
+                                        },
+                                        contentColor = MaterialTheme.colors.primary,
+                                        backgroundCardContentColor = LightColor12,
+                                        backgroundCardStartColor = MaterialTheme.colors.primary,
+                                        backgroundCardEndColor = MaterialTheme.colors.error,
+                                        backgroundStartActionLabel = "Start",
+                                        backgroundEndActionLabel = "End",
+                                        shape = RoundedCornerShape(6.dp),
+                                    ) {
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
+                                            shape = it,
+                                        ) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(SpaceSmall),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically,
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                ) {
+                                                    Column(
+                                                        verticalArrangement = Arrangement.SpaceBetween,
+                                                    ) {
+                                                        TextWithIcon(
+                                                            text = order.cartOrder.orderId,
+                                                            icon = Icons.Default.Tag
+                                                        )
+
+                                                        if(order.cartOrder.customer?.customerPhone != null) {
+                                                            Spacer(modifier = Modifier.height(
+                                                                SpaceSmall
+                                                            ))
+
+                                                            TextWithIcon(
+                                                                text = order.cartOrder.customer!!.customerPhone,
+                                                                icon = Icons.Default.PhoneAndroid
+                                                            )
+                                                        }
+                                                        Spacer(modifier = Modifier.height(SpaceSmall))
+
+                                                        order.cartOrder.updatedAt?.toFormattedTime?.let { it1 ->
+                                                            TextWithIcon(
+                                                                text = it1,
+                                                                icon = Icons.Default.AccessTime
+                                                            )
+                                                        }
+                                                    }
+
+                                                    Column(
+                                                        verticalArrangement = Arrangement.SpaceBetween,
+                                                    ) {
+                                                        if (order.cartOrder.address?.shortName != null) {
+                                                            TextWithIcon(
+                                                                text = order.cartOrder.address!!.shortName,
+                                                                icon = Icons.Default.Place
+                                                            )
+                                                            Spacer(modifier = Modifier.height(
+                                                                SpaceSmall
+                                                            ))
+                                                        }
+
+                                                        TextWithIcon(
+                                                            text = (order.orderPrice.first.minus(order.orderPrice.second)).toString(),
+                                                            icon = ImageVector.vectorResource(id = R.drawable.round_currency_rupee_20)
+                                                        )
+                                                    }
+
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ){
+                                                        IconButton(
+                                                            onClick = {
+                                                                navController.navigate(OrderDetailsScreenDestination(cartOrderId = order.cartOrder.cartOrderId))
+                                                            }
+                                                        ) {
+                                                        Icon(
+                                                                imageVector = Icons.Default.Visibility,
+                                                                contentDescription = stringResource(id = R.string.order_details),
+                                                                tint = MaterialTheme.colors.primary,
+                                                            )
+                                                        }
+
+                                                        Spacer(modifier = Modifier.width(SpaceMini))
+
+                                                        IconButton(
+                                                            onClick = {
+                                                                printOrder(order.cartOrder.cartOrderId)
+                                                            }
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Print,
+                                                                contentDescription = stringResource(id = R.string.print_order),
+                                                                tint = MaterialTheme.colors.primary,
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(SpaceMedium))
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             CartTabItem.DineInItem {
                 Column(
                     modifier = Modifier
@@ -596,204 +790,6 @@ fun OrderScreen(
                                                             }
                                                         ) {
                                                             Icon(
-                                                                imageVector = Icons.Default.Visibility,
-                                                                contentDescription = stringResource(id = R.string.order_details),
-                                                                tint = MaterialTheme.colors.primary,
-                                                            )
-                                                        }
-
-                                                        Spacer(modifier = Modifier.width(SpaceMini))
-
-                                                        IconButton(
-                                                            onClick = {
-                                                                printOrder(order.cartOrder.cartOrderId)
-                                                            }
-                                                        ) {
-                                                            Icon(
-                                                                imageVector = Icons.Default.Print,
-                                                                contentDescription = stringResource(id = R.string.print_order),
-                                                                tint = MaterialTheme.colors.primary,
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height(SpaceMedium))
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-
-            CartTabItem.DineOutItem {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
-                    if(dineOutOrders.isEmpty() || error != null){
-                        ItemNotAvailable(
-                            text = error ?: if(showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(id = R.string.no_items_in_order),
-                            buttonText = stringResource(id = R.string.add_items_to_cart_button),
-                            onClick = {
-                                navController.navigate(MainFeedScreenDestination())
-                            }
-                        )
-                    } else if(isLoading){
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ){
-                            CircularProgressIndicator()
-                        }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(SpaceSmall)
-                        ){
-                            items(dineOutOrders){ order ->
-                                if(order.cartOrder != null && order.cartProducts.isNotEmpty()) {
-                                    RevealSwipe(
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        onContentClick = {},
-                                        maxRevealDp = 150.dp,
-                                        hiddenContentStart = {
-                                            IconButton(onClick = {
-                                                orderViewModel.onOrderEvent(
-                                                    OrderEvent.MarkedAsProcessing(
-                                                        order.cartOrder.cartOrderId
-                                                    )
-                                                )
-                                            }) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Add,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.padding(horizontal = 25.dp),
-                                                )
-                                            }
-                                            Spacer(modifier = Modifier.width(SpaceSmall))
-
-                                            IconButton(
-                                                onClick = {
-                                                    navController.navigate(AddEditCartOrderScreenDestination(cartOrderId= order.cartOrder.cartOrderId))
-                                                }
-                                            ) {
-                                                Icon(imageVector = Icons.Default.Edit, contentDescription = null)
-                                            }
-                                        },
-                                        hiddenContentEnd = {
-                                            IconButton(onClick = {
-                                                orderViewModel.onOrderEvent(
-                                                    OrderEvent.MarkedAsDelivered(
-                                                        order.cartOrder.cartOrderId
-                                                    )
-                                                )
-                                            }) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Outbox,
-                                                    contentDescription = "Mark as Delivered",
-                                                    modifier = Modifier.padding(horizontal = 25.dp),
-                                                )
-                                            }
-
-                                            IconButton(onClick = {
-                                                deleteOrderState.show()
-                                                deletableOrder = order.cartOrder.cartOrderId
-                                            }) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Delete,
-                                                    contentDescription = "Delete order",
-                                                    modifier = Modifier.padding(horizontal = 25.dp),
-                                                )
-                                            }
-                                        },
-                                        contentColor = MaterialTheme.colors.primary,
-                                        backgroundCardContentColor = LightColor12,
-                                        backgroundCardStartColor = MaterialTheme.colors.primary,
-                                        backgroundCardEndColor = MaterialTheme.colors.error,
-                                        backgroundStartActionLabel = "Start",
-                                        backgroundEndActionLabel = "End",
-                                        shape = RoundedCornerShape(6.dp),
-                                    ) {
-                                        Card(
-                                            modifier = Modifier
-                                                .fillMaxWidth(),
-                                            shape = it,
-                                        ) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(SpaceSmall),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically,
-                                            ) {
-                                                Row(
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                ) {
-                                                    Column(
-                                                        verticalArrangement = Arrangement.SpaceBetween,
-                                                    ) {
-                                                        TextWithIcon(
-                                                            text = order.cartOrder.orderId,
-                                                            icon = Icons.Default.Tag
-                                                        )
-
-                                                        if(order.cartOrder.customer?.customerPhone != null) {
-                                                            Spacer(modifier = Modifier.height(
-                                                                SpaceSmall
-                                                            ))
-
-                                                            TextWithIcon(
-                                                                text = order.cartOrder.customer!!.customerPhone,
-                                                                icon = Icons.Default.PhoneAndroid
-                                                            )
-                                                        }
-                                                        Spacer(modifier = Modifier.height(SpaceSmall))
-
-                                                        order.cartOrder.updatedAt?.toFormattedTime?.let { it1 ->
-                                                            TextWithIcon(
-                                                                text = it1,
-                                                                icon = Icons.Default.AccessTime
-                                                            )
-                                                        }
-                                                    }
-
-                                                    Column(
-                                                        verticalArrangement = Arrangement.SpaceBetween,
-                                                    ) {
-                                                        if (order.cartOrder.address?.shortName != null) {
-                                                            TextWithIcon(
-                                                                text = order.cartOrder.address!!.shortName,
-                                                                icon = Icons.Default.Place
-                                                            )
-                                                            Spacer(modifier = Modifier.height(
-                                                                SpaceSmall
-                                                            ))
-                                                        }
-
-                                                        TextWithIcon(
-                                                            text = (order.orderPrice.first.minus(order.orderPrice.second)).toString(),
-                                                            icon = ImageVector.vectorResource(id = R.drawable.round_currency_rupee_20)
-                                                        )
-                                                    }
-
-                                                    Row(
-                                                        verticalAlignment = Alignment.CenterVertically
-                                                    ){
-                                                        IconButton(
-                                                            onClick = {
-                                                                navController.navigate(OrderDetailsScreenDestination(cartOrderId = order.cartOrder.cartOrderId))
-                                                            }
-                                                        ) {
-                                                        Icon(
                                                                 imageVector = Icons.Default.Visibility,
                                                                 contentDescription = stringResource(id = R.string.order_details),
                                                                 tint = MaterialTheme.colors.primary,

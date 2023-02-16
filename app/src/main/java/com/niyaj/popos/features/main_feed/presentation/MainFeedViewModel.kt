@@ -163,7 +163,9 @@ class MainFeedViewModel @Inject constructor(
     fun onEvent(event: MainFeedEvent){
         when(event){
             is MainFeedEvent.RefreshMainFeed -> {
-                getAllMainFeedProducts(selectedCategory = _selectedCategory.value, searchText = _searchText.value)
+                _selectedCategory.value = ""
+                onSearchBarCloseAndClearClick()
+                getAllMainFeedProducts()
                 getAllCategories()
                 getSelectedCartOrder()
             }

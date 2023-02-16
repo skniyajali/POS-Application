@@ -48,7 +48,6 @@ import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefreshState
-import com.niyaj.popos.features.common.ui.theme.GreenAccent
 
 
 enum class ButtonState { Pressed, Idle }
@@ -364,7 +363,7 @@ fun Modifier.dashedBorder(width: Dp, brush: Brush, shape: Shape, on: Dp, off: Dp
 fun GlowIndicator(
     swipeRefreshState: SwipeRefreshState,
     refreshTriggerDistance: Dp,
-    progressBarColor: Color = GreenAccent,
+    progressBarColor: Color = MaterialTheme.colors.secondaryVariant,
     shapeColor : Color = MaterialTheme.colors.secondary,
 ) {
     Box(

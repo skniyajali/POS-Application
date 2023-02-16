@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.niyaj.popos.R
@@ -26,7 +25,6 @@ import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.StandardScaffold
 import com.ramcosta.composedestinations.annotation.Destination
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @RequiresApi(Build.VERSION_CODES.R)
 @Destination
 @Composable

@@ -9,13 +9,13 @@ class Settings(): RealmObject {
     @PrimaryKey
     var settingsId: String = SETTINGS_ID
 
-    var expensesDataDeletionInterval: Int = 0
+    var expensesDataDeletionInterval: Int = 30
 
-    var reportDataDeletionInterval: Int = 7
+    var reportDataDeletionInterval: Int = 30
 
-    var cartDataDeletionInterval: Int = 0
+    var cartDataDeletionInterval: Int = 30
 
-    var cartOrderDataDeletionInterval: Int = 0
+    var cartOrderDataDeletionInterval: Int = 30
 
     var createdAt: String = ""
 
@@ -24,10 +24,10 @@ class Settings(): RealmObject {
 
     constructor(
         settingsId: String = "",
-        expensesDataDeletionInterval: Int = 0,
-        reportDataDeletionInterval: Int = 7,
-        cartDataDeletionInterval: Int = 0,
-        cartOrderDataDeletionInterval: Int = 0,
+        expensesDataDeletionInterval: Int = 30,
+        reportDataDeletionInterval: Int = 30,
+        cartDataDeletionInterval: Int = 30,
+        cartOrderDataDeletionInterval: Int = 30,
         createdAt: String = System.currentTimeMillis().toString(),
         updatedAt: String? = null
     ): this() {

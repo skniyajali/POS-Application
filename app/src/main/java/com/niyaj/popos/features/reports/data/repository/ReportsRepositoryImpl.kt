@@ -27,8 +27,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
@@ -161,14 +161,6 @@ class ReportsRepositoryImpl(
 
     override suspend fun getTotalSales(startDate: String, endDate: String): Number {
         try {
-            val totalExpensesItem = realm.query<Expenses>(
-                "createdAt >= $0 AND createdAt <= $1",
-                startDate,
-                endDate
-            ).find().sumOf {
-                it.expensesPrice.toInt()
-            }
-
             val totalDineInItems = realm.query<CartOrder>(
                 "cartOrderStatus != $0 AND updatedAt >= $1 AND updatedAt <= $2 AND orderType == $3",
                 OrderStatus.Processing.orderStatus,
@@ -193,8 +185,7 @@ class ReportsRepositoryImpl(
                 price.first.minus(price.second)
             }
 
-
-            return (totalExpensesItem + totalDineInItems + totalDineOutItems)
+            return (totalDineInItems + totalDineOutItems)
         } catch (e: Exception) {
             Timber.d(e)
             return 0
@@ -286,9 +277,7 @@ class ReportsRepositoryImpl(
                         CartOrderType.DineOut.orderType
                     ).find().asFlow()
 
-                    cartOrders.catch {
-                        send(Resource.Error(it.message ?: "Unable to get cartOrders", data = emptyList()))
-                    }.collect {changes ->
+                    cartOrders.collectLatest {changes ->
                         when(changes){
                             is UpdatedResults -> {
                                 send(Resource.Success(changes.list))
@@ -300,8 +289,6 @@ class ReportsRepositoryImpl(
                             }
                         }
                     }
-
-
                 }catch (e: Exception) {
                     send(Resource.Error(e.message ?: "Unable to get orders", data = emptyList()))
                 }

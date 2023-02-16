@@ -32,7 +32,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -78,7 +77,6 @@ import com.vanpra.composematerialdialogs.title
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Destination
 @Composable
 fun AddOnItemScreen(

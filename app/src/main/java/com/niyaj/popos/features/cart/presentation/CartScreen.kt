@@ -22,9 +22,11 @@ import com.niyaj.popos.features.cart.presentation.dine_out.DineOutScreen
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.util.Tabs
 import com.niyaj.popos.features.components.util.TabsContent
+import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.features.destinations.OrderScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
+import com.ramcosta.composedestinations.result.ResultRecipient
 
 @Destination
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
@@ -33,6 +35,7 @@ fun CartScreen(
     navController: NavController,
     scaffoldState: ScaffoldState,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
+    resultRecipient: ResultRecipient<AddEditCartOrderScreenDestination, String>
 ) {
     val pagerState = rememberPagerState()
 
@@ -59,18 +62,20 @@ fun CartScreen(
         },
     ){
         val tabs = listOf(
-            CartTabItem.DineInItem {
-                DineInScreen(
-                    navController = navController,
-                    bottomSheetScaffoldState = bottomSheetScaffoldState
-                )
-            },
             CartTabItem.DineOutItem {
                 DineOutScreen(
                     navController = navController,
-                    bottomSheetScaffoldState = bottomSheetScaffoldState
+                    bottomSheetScaffoldState = bottomSheetScaffoldState,
+                    resultRecipient = resultRecipient
                 )
-            }
+            },
+            CartTabItem.DineInItem {
+                DineInScreen(
+                    navController = navController,
+                    bottomSheetScaffoldState = bottomSheetScaffoldState,
+                    resultRecipient = resultRecipient
+                )
+            },
         )
 
         Column(

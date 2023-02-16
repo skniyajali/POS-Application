@@ -58,5 +58,4 @@ class DataDeletionWorker @AssistedInject constructor(
             )
         )
     }
-
 }

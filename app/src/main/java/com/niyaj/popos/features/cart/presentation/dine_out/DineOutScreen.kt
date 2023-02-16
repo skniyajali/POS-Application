@@ -37,7 +37,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -62,12 +61,12 @@ import com.niyaj.popos.features.destinations.OrderScreenDestination
 import com.niyaj.popos.features.order.presentation.print_order.PrintEvent
 import com.niyaj.popos.features.order.presentation.print_order.PrintViewModel
 import com.ramcosta.composedestinations.navigation.navigate
+import com.ramcosta.composedestinations.result.NavResult
+import com.ramcosta.composedestinations.result.ResultRecipient
 import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class,
-    ExperimentalPermissionsApi::class
-)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun DineOutScreen(
     navController: NavController,
@@ -75,6 +74,7 @@ fun DineOutScreen(
     dineOutViewModel: DineOutViewModel = hiltViewModel(),
     addOnItemViewModel: AddOnItemViewModel = hiltViewModel(),
     printViewModel: PrintViewModel = hiltViewModel(),
+    resultRecipient : ResultRecipient<AddEditCartOrderScreenDestination, String>
 ) {
 
     val context = LocalContext.current
@@ -188,6 +188,15 @@ fun DineOutScreen(
         }
     }
 
+    resultRecipient.onNavResult { result ->
+        when(result) {
+            is NavResult.Canceled -> {}
+            is NavResult.Value -> {
+                dineOutViewModel.onDineOutEvent(DineOutEvent.RefreshDineOutOrder)
+            }
+        }
+    }
+
     SwipeRefresh(
         state = rememberSwipeRefreshState(isLoading),
         onRefresh = {
@@ -239,8 +248,10 @@ fun DineOutScreen(
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(MaterialTheme.colors.surface,
-                                        RoundedCornerShape(6.dp))
+                                    .background(
+                                        MaterialTheme.colors.surface,
+                                        RoundedCornerShape(6.dp)
+                                    )
                                     .clickable {
                                         dineOutViewModel.onDineOutEvent(
                                             DineOutEvent.SelectDineOutOrder(

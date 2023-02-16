@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -48,15 +47,18 @@ import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import com.niyaj.popos.features.destinations.OrderDetailsScreenDestination
 import com.niyaj.popos.features.destinations.OrderScreenDestination
 import com.ramcosta.composedestinations.navigation.navigate
+import com.ramcosta.composedestinations.result.NavResult
+import com.ramcosta.composedestinations.result.ResultRecipient
 import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun DineInScreen(
     navController: NavController,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     dineInViewModel: DineInViewModel = hiltViewModel(),
     addOnItemViewModel: AddOnItemViewModel = hiltViewModel(),
+    resultRecipient : ResultRecipient<AddEditCartOrderScreenDestination, String>
 ) {
 
     val listState = rememberLazyListState()
@@ -93,6 +95,15 @@ fun DineInScreen(
                 }
 
                 is UiEvent.IsLoading -> {}
+            }
+        }
+    }
+
+    resultRecipient.onNavResult { result ->
+        when(result) {
+            is NavResult.Canceled -> {}
+            is NavResult.Value -> {
+                dineInViewModel.onDineInEvent(DineInEvent.RefreshDineInOrder)
             }
         }
     }

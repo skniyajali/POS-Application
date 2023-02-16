@@ -53,7 +53,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -76,9 +75,7 @@ import com.niyaj.popos.util.toRupee
 import com.ramcosta.composedestinations.annotation.Destination
 import timber.log.Timber
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class,
-    ExperimentalPermissionsApi::class
-)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class)
 @Destination
 @Composable
 fun OrderDetailsScreen(

@@ -1,4 +1,4 @@
-package com.niyaj.popos.util.worker
+package com.niyaj.popos.di
 
 import android.content.Context
 import androidx.startup.Initializer

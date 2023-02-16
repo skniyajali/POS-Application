@@ -42,6 +42,7 @@ fun ExtendedFabButton(
         ) {
             ScrollToTop(onScrollToTopClick)
         }
+
         AnimatedVisibility(
             visible = visible,
             enter = slideInVertically {
@@ -59,7 +60,6 @@ fun ExtendedFabButton(
                     onClick()
                 },
                 modifier = modifier
-                    .pressClickEffect()
                     .widthIn(min = 64.dp)
                     .height(64.dp)
                     .padding(SpaceSmall)

@@ -107,5 +107,8 @@
     <string name="filter_category">Filter Category</string>
     <string name="filter_customer">Filter Customer</string>
     <string name="employee_details">View Employee Details</string>
+    <string name="mail_subject">Popos Crash Report</string>
+    <string name="mail_body">Send when application crashes</string>
+    <string name="toast_text">Application Crashed Sending Report To Mail</string>
 
 </resources>
