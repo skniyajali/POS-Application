@@ -84,6 +84,15 @@ android {
             includeAndroidResources = true
         }
     }
+
+    appsweep {
+        apiKey "gs_appsweep_83ofXxg_qCVtI5igS4M0wofGmACUaMSdESX1c5m6"
+        configurations {
+            release {
+                tags "Public"
+            }
+        }
+    }
 }
 
 
