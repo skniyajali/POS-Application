@@ -51,7 +51,7 @@
     <string name="filter_expenses_category">Filter Expenses Category</string>
     <string name="filter_employee">Filter Employee</string>
     <string name="update_expenses_category">Update Expenses Category</string>
-    <string name="add_new_expense">Add Expense Entry</string>
+    <string name="add_new_expense">Add New Expense</string>
     <string name="update_expense">Update Expense Entry</string>
     <string name="no_items_in_employee">Employee Not Found</string>
     <string name="no_items_in_expenses_category">Expenses Category Not Found</string>
@@ -108,7 +108,13 @@
     <string name="filter_customer">Filter Customer</string>
     <string name="employee_details">View Employee Details</string>
     <string name="mail_subject">Popos Crash Report</string>
-    <string name="mail_body">Send when application crashes</string>
-    <string name="toast_text">Application Crashed Sending Report To Mail</string>
+    <string name="mail_body">Check out why your application has been crashes.</string>
+    <string name="toast_text">Popos Application Has Been Crashed.</string>
+    <string name="notification_title">Application Crashed..</string>
+    <string name="notification_text">Due to some error your application has been crashed.</string>
+    <string name="notification_channel">ArcaNotificationChannel</string>
+    <string name="notification_channel_desc">ArcaNotificationDescription</string>
+    <string name="notification_send">Send Report</string>
+    <string name="notification_discard">Discard</string>
 
 </resources>

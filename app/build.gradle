@@ -4,8 +4,9 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'dagger.hilt.android.plugin'
     id 'kotlin-parcelize'
+    id "com.guardsquare.appsweep" version "latest.release"
     id 'io.realm.kotlin'
-    id 'com.google.devtools.ksp' version '1.8.10-1.0.9'
+    id 'com.google.devtools.ksp' version '1.7.21-1.0.8'
     id 'kotlin-kapt'
 }
 
@@ -31,6 +32,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
 
         benchmark {
@@ -45,16 +47,12 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-
     buildFeatures {
         compose true
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = '1.4.2'
+        kotlinCompilerExtensionVersion = '1.4.0-alpha02'
     }
 
     packagingOptions {
@@ -204,4 +202,7 @@ dependencies {
     implementation "ch.acra:acra-notification:$acra_version"
     implementation "ch.acra:acra-limiter:$acra_version"
     implementation "ch.acra:acra-advanced-scheduler:$acra_version"
+
+    // Kotlin
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
 }
