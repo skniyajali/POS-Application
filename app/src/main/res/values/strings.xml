@@ -60,7 +60,7 @@
     <string name="no_item_in_expenses">Expenses Not Available</string>
     <string name="delete_partner_message">Make sure partner is not currently logged in and all data must be deleted before taking this action.</string>
     <string name="delete_employee_msg">Are you sure to delete employee, this action can not be undone..</string>
-    <string name="delete_expenses_category_msg">Make sure to delete all expanses before this action will taken, otherwise it will occurs some issues on your app..</string>
+    <string name="delete_expenses_category_msg">Make sure to delete all expanses before this action will take, otherwise it will occur some issues on your app..</string>
     <string name="dine_in_orders_not_found">DineIn Orders Not Available..</string>
     <string name="dine_out_orders_not_found">DineOut Orders Not Available..</string>
     <string name="order_details">View Order Details</string>
@@ -72,7 +72,7 @@
     <string name="delete_last_seven_days_cart_order_message">Are you sure to delete past data?</string>
     <string name="delete_all_cart_orders">Are you sure to delete all cart order including today?</string>
     <string name="delete_address_message">Are you sure to delete these address.</string>
-    <string name="cart_order_is_empty">Looks Great! Seems it like you place all order or have not create any order today!</string>
+    <string name="cart_order_is_empty">Seems like you place all order or have not created any order today!</string>
     <string name="delete_charges_message">Are you sure to delete this charges?</string>
     <string name="delete_customer_message">Are you sure to delete these customers?</string>
     <string name="delete_expenses_msg">Are you sure to delete this expenses?</string>

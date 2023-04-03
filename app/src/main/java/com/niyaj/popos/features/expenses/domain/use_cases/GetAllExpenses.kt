@@ -14,10 +14,12 @@ class GetAllExpenses(
 ) {
     suspend operator fun invoke(
         filterExpanses: FilterExpenses = FilterExpenses.ByExpensesCategory(SortType.Descending),
-        searchText: String = ""
+        searchText: String = "",
+        startDate: String,
+        endDate: String
     ): Flow<Resource<List<Expenses>>> {
         return channelFlow {
-            expensesRepository.getAllExpenses().collectLatest{ result ->
+            expensesRepository.getAllExpenses(startDate, endDate).collectLatest{ result ->
                 when(result){
                     is Resource.Loading -> {
                         send(Resource.Loading(result.isLoading))

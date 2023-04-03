@@ -5,11 +5,7 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.components.RoundedBox
 import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculableDate
@@ -25,7 +21,7 @@ fun OrderTypeDropdown(
     Column {
         RoundedBox(
             text = text,
-            showIcon = true,
+            showIcon = false,
             onClick = {
                 menuExpanded = !menuExpanded
             },

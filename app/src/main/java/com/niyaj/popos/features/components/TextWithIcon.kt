@@ -2,10 +2,13 @@ package com.niyaj.popos.features.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Note
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,7 +18,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
+import com.niyaj.popos.features.common.ui.theme.TextGray
 
 @Composable
 fun TextWithIcon(
@@ -126,6 +131,41 @@ fun TextWithTitle(
                     modifier = iconModifier,
                 )
             }
+        }
+    }
+}
+
+
+@Composable
+fun NoteText(
+    modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier.size(SpaceMedium),
+    text: String = "",
+    icon: ImageVector = Icons.Default.Note,
+    color : Color = TextGray,
+    fontWeight: FontWeight = FontWeight.Normal,
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if(text.isNotEmpty()) {
+            Icon(
+                imageVector = icon,
+                contentDescription = text,
+                tint = color,
+                modifier = iconModifier,
+            )
+            Spacer(modifier = Modifier.width(SpaceMini))
+
+            Text(
+                text = text,
+                style = MaterialTheme.typography.caption,
+                fontWeight = fontWeight,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = color,
+            )
         }
     }
 }

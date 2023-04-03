@@ -9,6 +9,7 @@ import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.main_feed.domain.model.ProductWithQuantity
 import com.niyaj.popos.features.main_feed.domain.repository.MainFeedRepository
 import com.niyaj.popos.features.product.domain.model.Product
+import com.niyaj.popos.features.product.domain.util.FilterProduct
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -451,6 +452,22 @@ data class ProductWithFlowQuantity(
     val product: Product,
     val quantity: Flow<Int>
 )
+
+fun FilterProduct.getAscendingComparator(): Comparator<ProductWithFlowQuantity> {
+    return when (this) {
+        is FilterProduct.ByProductId -> compareBy { it.product.productId }
+        is FilterProduct.ByCategoryId -> compareBy { it.product.category?.categoryId }
+        is FilterProduct.ByProductName -> compareBy { it.product.productName.lowercase() }
+        is FilterProduct.ByProductPrice -> compareBy { it.product.productPrice }
+        is FilterProduct.ByProductAvailability -> compareBy { it.product.productAvailability }
+        is FilterProduct.ByProductDate -> compareBy { it.product.createdAt }
+        is FilterProduct.ByProductQuantity -> compareBy { it.product.productId }
+    }
+}
+
+fun FilterProduct.getDescendingComparator(): Comparator<ProductWithFlowQuantity> {
+    return this.getAscendingComparator().reversed()
+}
 
 
 data class ProductWithSelectedCartOrder(

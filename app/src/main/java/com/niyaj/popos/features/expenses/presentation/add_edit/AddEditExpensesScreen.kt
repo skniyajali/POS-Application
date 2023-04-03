@@ -1,43 +1,18 @@
 package com.niyaj.popos.features.expenses.presentation.add_edit
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.Divider
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.ExposedDropdownMenuDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Money
-import androidx.compose.material.icons.filled.Paid
-import androidx.compose.material.icons.filled.SpeakerNotes
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.AddBox
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -55,11 +30,19 @@ import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.destinations.AddEditExpensesCategoryScreenDestination
+import com.niyaj.popos.util.getCalculatedStartDate
+import com.niyaj.popos.util.toCurrentMilliSecond
+import com.niyaj.popos.util.toMilliSecond
+import com.niyaj.popos.util.toSalaryDate
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.vanpra.composematerialdialogs.MaterialDialog
+import com.vanpra.composematerialdialogs.datetime.date.datepicker
+import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.flow.collectLatest
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
@@ -70,6 +53,8 @@ fun AddEditExpensesScreen(
     addEditExpensesViewModel: AddEditExpensesViewModel = hiltViewModel(),
     resultBackNavigator: ResultBackNavigator<String>,
 ) {
+    val dialogState = rememberMaterialDialogState()
+
     val expensesCategories = addEditExpensesViewModel.expensesCategories.collectAsStateWithLifecycle().value.expensesCategory
     val expensesCategoryName = addEditExpensesViewModel.addEditState.value.expensesCategory.expensesCategoryName
     val expensesCategoryError = addEditExpensesViewModel.addEditState.value.expensesCategoryError
@@ -107,6 +92,22 @@ fun AddEditExpensesScreen(
             navController.navigateUp()
         }
     ) {
+        MaterialDialog(
+            dialogState = dialogState,
+            buttons = {
+                positiveButton("Ok")
+                negativeButton("Cancel")
+            }
+        ) {
+            datepicker(
+                allowedDateValidator = { date ->
+                    date.toMilliSecond >= getCalculatedStartDate("-7") && (date <= LocalDate.now())
+                }
+            ) { date ->
+                addEditExpensesViewModel.onExpensesEvent(AddEditExpensesEvent.ExpensesDateChanged(date.toCurrentMilliSecond))
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -132,7 +133,7 @@ fun AddEditExpensesScreen(
                             },
                         text = expensesCategoryName,
                         leadingIcon = Icons.Default.Group,
-                        hint = "Expenses Type/Name",
+                        hint = "Expenses Name",
                         error = expensesCategoryError,
                         onValueChange = {},
                         readOnly = true,
@@ -215,7 +216,7 @@ fun AddEditExpensesScreen(
             StandardOutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 text = addEditExpensesViewModel.addEditState.value.expensesRemarks,
-                hint = "Payment Note/Remarks",
+                hint = "Payment Notes",
                 leadingIcon = Icons.Default.SpeakerNotes,
                 error = null,
                 onValueChange = {
@@ -223,6 +224,26 @@ fun AddEditExpensesScreen(
                         AddEditExpensesEvent.ExpensesRemarksChanged(it)
                     )
                 },
+            )
+
+            Spacer(modifier = Modifier.height(SpaceSmall))
+
+            StandardOutlinedTextField(
+                modifier = Modifier,
+                text = addEditExpensesViewModel.addEditState.value.expensesGivenDate.toSalaryDate,
+                hint = "Given Date",
+                leadingIcon = Icons.Default.CalendarToday,
+                error = null,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(
+                        onClick = { dialogState.show() },
+                        modifier = Modifier.testTag("Given Date")
+                    ) {
+                        Icon(imageVector = Icons.Default.CalendarMonth, contentDescription = "Given Date")
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(SpaceMedium))

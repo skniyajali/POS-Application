@@ -1,11 +1,7 @@
 package com.niyaj.popos.features.main_feed.presentation
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.material.BackdropValue
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.SnackbarDuration
-import androidx.compose.material.rememberBackdropScaffoldState
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -210,6 +206,7 @@ fun MainFeedScreen(
         },
         frontLayerContent = {
             FrontLayerContent(
+                navController = navController,
                 categoriesIsLoading = categoriesIsLoading,
                 productsIsLoading = productsIsLoading,
                 productsHasError = productsHasError,

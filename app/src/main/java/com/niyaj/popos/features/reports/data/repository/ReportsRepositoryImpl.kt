@@ -23,14 +23,10 @@ import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.UpdatedObject
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
@@ -48,10 +44,10 @@ class ReportsRepositoryImpl(
 
     override suspend fun generateReport(startDate: String, endDate: String): Resource<Boolean> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 val itemReport = getItemsReport(startDate, endDate)
 
-                Timber.d("Item Report $itemReport")
+//                Timber.d("Item Report $itemReport")
 
                 val formattedDate = startDate.toSalaryDate
 
@@ -105,7 +101,7 @@ class ReportsRepositoryImpl(
 
     override fun getReport(startDate: String): Flow<Resource<Reports?>> {
         return channelFlow {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 try {
                     val report = realm.query<Reports>("reportDate == $0", startDate.toSalaryDate).first().asFlow()
 
@@ -198,7 +194,7 @@ class ReportsRepositoryImpl(
         orderType: String
     ): Flow<Resource<List<ProductWiseReport>>> {
         return channelFlow {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 try {
                     send(Resource.Loading(true))
 
@@ -246,7 +242,7 @@ class ReportsRepositoryImpl(
 
             val date = getCalculatedStartDate("-7")
 
-            CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(ioDispatcher).launch {
                 realm.write {
                     val reports = realm.query<Reports>("createdAt <= $0", date).find()
 
@@ -265,7 +261,7 @@ class ReportsRepositoryImpl(
 
     override suspend fun getDineOutOrders(startDate: String, endDate: String): Flow<Resource<List<CartOrder>>> {
         return channelFlow {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 try {
                     send(Resource.Loading(true))
 

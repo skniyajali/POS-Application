@@ -21,6 +21,7 @@ private val DarkColorPalette = darkColors(
 
 private val LightColorPalette = lightColors(
 //    primary = Purple500,
+//    primary = newColor,
     primary = Primary,
     primaryVariant = PrimaryVariant,
     onPrimary = Color.White,

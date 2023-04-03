@@ -5,40 +5,15 @@ import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.FabPosition
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Rule
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Sort
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,11 +31,7 @@ import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeSmall
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.BottomSheetScreen
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.ExtendedFabButton
-import com.niyaj.popos.features.components.ItemNotAvailable
-import com.niyaj.popos.features.components.StandardScaffold
-import com.niyaj.popos.features.components.StandardSearchBar
-import com.niyaj.popos.features.components.TextWithCount
+import com.niyaj.popos.features.components.*
 import com.niyaj.popos.features.destinations.AddEditProductScreenDestination
 import com.niyaj.popos.features.destinations.ProductSettingScreenDestination
 import com.niyaj.popos.features.main_feed.presentation.components.category.CategoryItems
@@ -403,7 +374,7 @@ fun ProductScreen(
                                         .clip(
                                             RoundedCornerShape(if (showScrollToTop.value) 4.dp else 0.dp)
                                         ),
-                                    text = category!!,
+                                    text = category ?: "Uncategorized",
                                     count = products_new.count(),
                                     onClick = {
                                         productsViewModel.onProductEvent(ProductEvent.SelectProducts(products_new.map { it.productId }))

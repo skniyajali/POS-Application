@@ -35,17 +35,17 @@ class ExpensesRepositoryImpl(
         Timber.d("ExpensesRealmDao Session:")
     }
 
-    override suspend fun getAllExpenses(): Flow<Resource<List<Expenses>>> {
+    override suspend fun getAllExpenses(startDate: String, endDate: String): Flow<Resource<List<Expenses>>> {
         return channelFlow {
             withContext(ioDispatcher) {
                 try {
                     send(Resource.Loading(true))
 
-                    val startDate = getCalculatedStartDate("-30")
-
-                    val expenses = realm.query<Expenses>("createdAt >= $0", startDate)
-                        .sort("expensesId", Sort.DESCENDING)
-                        .find()
+                    val expenses = realm.query<Expenses>(
+                        "createdAt >= $0 AND createdAt <= $1",
+                        startDate,
+                        endDate
+                    ).sort("expensesId", Sort.DESCENDING).find()
 
                     val items = expenses.asFlow()
 
@@ -94,19 +94,21 @@ class ExpensesRepositoryImpl(
 
                 if (!hasError) {
                     val expansesItem = Expenses()
+                    expansesItem.expensesId = newExpenses.expensesId.ifEmpty { BsonObjectId().toHexString() }
+                    expansesItem.expensesPrice = newExpenses.expensesPrice
+                    expansesItem.expensesRemarks = newExpenses.expensesRemarks
+                    expansesItem.createdAt = newExpenses.createdAt.ifEmpty { System.currentTimeMillis().toString() }
 
                     val expansesCategory = realm.query<ExpensesCategory>(
                         "expensesCategoryId == $0",
                         newExpenses.expensesCategory?.expensesCategoryId
                     ).first().find() ?: return@withContext Resource.Error("Unable to find expenses category", false)
 
-                    expansesItem.expensesId = newExpenses.expensesId.ifEmpty { BsonObjectId().toHexString() }
-                    expansesItem.expensesCategory = expansesCategory
-                    expansesItem.expensesPrice = newExpenses.expensesPrice
-                    expansesItem.expensesRemarks = newExpenses.expensesRemarks
-                    expansesItem.createdAt = newExpenses.createdAt.ifEmpty { System.currentTimeMillis().toString() }
-
                     realm.write {
+                        findLatest(expansesCategory)?.let {
+                            expansesItem.expensesCategory = it
+                        }
+
                         this.copyToRealm(expansesItem)
                     }
 
@@ -141,6 +143,7 @@ class ExpensesRepositoryImpl(
                             findLatest(expansesItem)?.apply {
                                 this.expensesPrice = newExpenses.expensesPrice
                                 this.expensesRemarks = newExpenses.expensesRemarks
+                                this.createdAt = newExpenses.createdAt.ifEmpty { System.currentTimeMillis().toString() }
                                 this.updatedAt = System.currentTimeMillis().toString()
                                 this.expensesCategory = expansesCategory
                             }

@@ -7,6 +7,7 @@ import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.expenses.domain.use_cases.ExpensesUseCases
 import com.niyaj.popos.features.expenses.domain.util.FilterExpenses
+import com.niyaj.popos.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -25,6 +26,9 @@ class ExpensesViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(ExpensesState())
     val state = _state.asStateFlow()
+
+    private val _totalState = MutableStateFlow(TotalExpensesState())
+    val totalState = _totalState.asStateFlow()
 
     private val _selectedExpenses =  MutableStateFlow("")
     val selectedExpenses = _selectedExpenses.asStateFlow()
@@ -137,6 +141,18 @@ class ExpensesViewModel @Inject constructor(
                     }
                 }
             }
+
+            is ExpensesEvent.OnSelectDate -> {
+                val startDate = getCalculatedStartDate(date = event.selectedDate)
+                val endDate = getCalculatedEndDate(date = event.selectedDate)
+
+                getAllExpenses(
+                    filterExpenses = _state.value.filterExpenses,
+                    searchText = _searchText.value,
+                    startDate = startDate,
+                    endDate = endDate
+                )
+            }
         }
     }
 
@@ -157,9 +173,19 @@ class ExpensesViewModel @Inject constructor(
         }
     }
 
-    private fun getAllExpenses(filterExpenses: FilterExpenses, searchText: String = "") {
+    private fun getAllExpenses(
+        filterExpenses : FilterExpenses,
+        searchText : String = "",
+        startDate : String = getStartTime,
+        endDate : String = getEndTime,
+    ) {
         viewModelScope.launch {
-            expensesUseCases.getAllExpenses(filterExpenses, searchText).collect{ result ->
+            expensesUseCases.getAllExpenses(
+                filterExpenses,
+                searchText,
+                startDate,
+                endDate
+            ).collect{ result ->
                 when(result){
                     is Resource.Loading -> {
                         withContext(Dispatchers.Main) {
@@ -170,7 +196,15 @@ class ExpensesViewModel @Inject constructor(
                         result.data?.let {
                             _state.value = _state.value.copy(
                                 expenses = it,
-                                filterExpenses = filterExpenses
+                                filterExpenses = filterExpenses,
+                            )
+
+                            _totalState.value = _totalState.value.copy(
+                                totalAmount = it.sumOf { expenses ->
+                                    expenses.expensesPrice.toLong()
+                                }.toString(),
+                                totalPayment = it.size,
+                                selectedDate = startDate.toFormattedDate
                             )
                         }
                     }

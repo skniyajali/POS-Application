@@ -8,60 +8,19 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.SnackbarDuration
-import androidx.compose.material.SnackbarResult
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeliveryDining
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Outbox
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Print
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Sort
-import androidx.compose.material.icons.filled.Tag
-import androidx.compose.material.icons.filled.Today
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -81,11 +40,7 @@ import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.BottomSheetScreen
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.ItemNotAvailable
-import com.niyaj.popos.features.components.RoundedBox
-import com.niyaj.popos.features.components.StandardScaffold
-import com.niyaj.popos.features.components.StandardSearchBar
-import com.niyaj.popos.features.components.TextWithIcon
+import com.niyaj.popos.features.components.*
 import com.niyaj.popos.features.components.util.Tabs
 import com.niyaj.popos.features.components.util.TabsContent
 import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
@@ -436,6 +391,8 @@ fun OrderScreen(
                         ItemNotAvailable(
                             text = error ?: if(showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(id = R.string.no_items_in_order),
                             buttonText = stringResource(id = R.string.add_items_to_cart_button),
+                            image = painterResource(R.drawable.emptycarttwo),
+
                             onClick = {
                                 navController.navigate(MainFeedScreenDestination())
                             }
@@ -579,7 +536,7 @@ fun OrderScreen(
 
                                                         TextWithIcon(
                                                             text = (order.orderPrice.first.minus(order.orderPrice.second)).toString(),
-                                                            icon = ImageVector.vectorResource(id = R.drawable.round_currency_rupee_20)
+                                                            icon = Icons.Default.CurrencyRupee,
                                                         )
                                                     }
 
@@ -633,6 +590,7 @@ fun OrderScreen(
                         ItemNotAvailable(
                             text = error ?: if(showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(id = R.string.no_items_in_order),
                             buttonText = stringResource(id = R.string.add_items_to_cart_button),
+                            image = painterResource(R.drawable.emptycart),
                             onClick = {
                                 navController.navigate(MainFeedScreenDestination())
                             }
@@ -777,7 +735,7 @@ fun OrderScreen(
 
                                                         TextWithIcon(
                                                             text = (order.orderPrice.first.minus(order.orderPrice.second)).toString(),
-                                                            icon = ImageVector.vectorResource(id = R.drawable.round_currency_rupee_20)
+                                                            icon = Icons.Default.CurrencyRupee
                                                         )
                                                     }
 
@@ -839,5 +797,4 @@ fun OrderScreen(
             }
         }
     }
-
 }

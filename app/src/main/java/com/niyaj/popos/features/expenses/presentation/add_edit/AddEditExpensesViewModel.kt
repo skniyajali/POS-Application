@@ -13,6 +13,7 @@ import com.niyaj.popos.features.expenses.domain.use_cases.ExpensesUseCases
 import com.niyaj.popos.features.expenses_category.domain.use_cases.ExpensesCategoryUseCases
 import com.niyaj.popos.features.expenses_category.domain.util.FilterExpensesCategory
 import com.niyaj.popos.features.expenses_category.presentation.ExpensesCategoryState
+import com.niyaj.popos.util.getCalculatedStartDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,6 +66,10 @@ class AddEditExpensesViewModel @Inject constructor(
                 _addEditState.value = _addEditState.value.copy(expensesRemarks = event.expensesRemarks)
             }
 
+            is AddEditExpensesEvent.ExpensesDateChanged -> {
+                _addEditState.value = _addEditState.value.copy(expensesGivenDate = event.expensesGivenDate)
+            }
+
             is AddEditExpensesEvent.CreateNewExpenses -> {
                 addOrEditExpenses()
             }
@@ -107,6 +112,7 @@ class AddEditExpensesViewModel @Inject constructor(
                             expensesCategory = _addEditState.value.expensesCategory,
                             expensesPrice = _addEditState.value.expensesPrice,
                             expensesRemarks = _addEditState.value.expensesRemarks,
+                            createdAt = _addEditState.value.expensesGivenDate,
                         )
                     )
                     when(result){
@@ -127,6 +133,7 @@ class AddEditExpensesViewModel @Inject constructor(
                             expensesCategory = _addEditState.value.expensesCategory,
                             expensesPrice = _addEditState.value.expensesPrice,
                             expensesRemarks = _addEditState.value.expensesRemarks,
+                            createdAt = getCalculatedStartDate(date = _addEditState.value.expensesGivenDate),
                         ),
                         expensesId
                     )
@@ -159,7 +166,8 @@ class AddEditExpensesViewModel @Inject constructor(
                             _addEditState.value = addEditState.value.copy(
                                 expensesCategory = it.expensesCategory!!,
                                 expensesPrice = it.expensesPrice,
-                                expensesRemarks = it.expensesRemarks
+                                expensesRemarks = it.expensesRemarks,
+                                expensesGivenDate = it.createdAt
                             )
                         }
                     }
@@ -170,7 +178,10 @@ class AddEditExpensesViewModel @Inject constructor(
         }
     }
 
-    private fun getAllExpensesCategory(filterExpensesCategory: FilterExpensesCategory, searchText: String = "") {
+    private fun getAllExpensesCategory(
+        filterExpensesCategory : FilterExpensesCategory,
+        searchText : String = ""
+    ) {
         viewModelScope.launch {
             expensesCategoryUseCases.getAllExpensesCategory(filterExpensesCategory, searchText).collect{ result ->
                 when(result){

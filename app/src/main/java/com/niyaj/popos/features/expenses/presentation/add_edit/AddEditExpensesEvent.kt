@@ -9,6 +9,8 @@ sealed class AddEditExpensesEvent {
 
     data class OnSearchExpensesCategory(val searchText: String): AddEditExpensesEvent()
 
+    data class ExpensesDateChanged(val expensesGivenDate: String): AddEditExpensesEvent()
+
     object CreateNewExpenses : AddEditExpensesEvent()
 
     data class UpdateExpenses(val expensesId: String) : AddEditExpensesEvent()

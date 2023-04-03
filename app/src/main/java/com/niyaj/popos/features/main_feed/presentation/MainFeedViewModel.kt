@@ -17,7 +17,6 @@ import com.niyaj.popos.features.main_feed.presentation.components.product.MainFe
 import com.niyaj.popos.features.main_feed.presentation.components.product.MainFeedProductState
 import com.niyaj.popos.features.product.domain.util.FilterProduct
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -72,14 +71,11 @@ class MainFeedViewModel @Inject constructor(
             }
 
             is MainFeedCategoryEvent.OnSelectCategory -> {
-
                 if(event.categoryId == _selectedCategory.value){
-
                     _selectedCategory.value = ""
-                    getAllMainFeedProducts(_products.value.filterProduct, _selectedCategory.value)
+                    getAllMainFeedProducts(_products.value.filterProduct, _selectedCategory.value, _searchText.value)
                 }else{
-                    getAllMainFeedProducts(_products.value.filterProduct, event.categoryId)
-
+                    getAllMainFeedProducts(_products.value.filterProduct, event.categoryId, _searchText.value)
                     _selectedCategory.value = event.categoryId
                 }
             }
@@ -95,7 +91,6 @@ class MainFeedViewModel @Inject constructor(
                     _products.value = products.value.copy(
                         filterProduct = FilterProduct.ByCategoryId(SortType.Ascending)
                     )
-
                     return
                 }
 
@@ -103,11 +98,11 @@ class MainFeedViewModel @Inject constructor(
                     filterProduct = event.filterProduct
                 )
 
-                getAllMainFeedProducts(event.filterProduct, _selectedCategory.value)
+                getAllMainFeedProducts(event.filterProduct, _selectedCategory.value, _searchText.value)
             }
 
             is MainFeedProductEvent.SearchProduct -> {
-                viewModelScope.launch(Dispatchers.IO) {
+                viewModelScope.launch {
                     _searchText.emit(event.searchText)
                     getAllMainFeedProducts(
                         _products.value.filterProduct,
@@ -123,36 +118,46 @@ class MainFeedViewModel @Inject constructor(
                 }
             }
 
+//            is MainFeedProductEvent.AddProductToCart -> {
+//                viewModelScope.launch {
+//                    if (event.cartOrderId.isEmpty()) {
+//                        _eventFlow.emit(UiEvent.OnError("Create New Order First"))
+//                    } else if(event.productId.isEmpty()){
+//                        _eventFlow.emit(UiEvent.OnError("Unable to get product"))
+//                    }  else {
+//                        when (val result = cartUseCases.addProductToCart(event.cartOrderId, event.productId)){
+//                            is Resource.Loading -> {}
+//                            is Resource.Success -> {
+//                                _eventFlow.emit(UiEvent.OnSuccess("Item added to cart"))
+//                            }
+//                            is Resource.Error -> {
+//                                _eventFlow.emit(UiEvent.OnError(result.message ?: "Error adding product to cart"))
+//                                getSelectedCartOrder()
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+
             is MainFeedProductEvent.AddProductToCart -> {
                 viewModelScope.launch {
-                    if (event.cartOrderId.isEmpty()) {
-                        _eventFlow.emit(UiEvent.OnError("Create New Order First"))
-                    } else if(event.productId.isEmpty()){
-                        _eventFlow.emit(UiEvent.OnError("Unable to get product"))
-                    }  else {
-                        when (val result = cartUseCases.addProductToCart(event.cartOrderId, event.productId)){
-                            is Resource.Loading -> {}
-                            is Resource.Success -> {
-                                _eventFlow.emit(UiEvent.OnSuccess("Item added to cart"))
-                            }
-                            is Resource.Error -> {
-                                _eventFlow.emit(UiEvent.OnError(result.message ?: "Error adding product to cart"))
-                                getSelectedCartOrder()
-                            }
-                        }
+                    when(val result = cartUseCases.addProductToCart(event.cartOrderId, event.productId)) {
+                        is Resource.Loading -> _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
+                        is Resource.Success -> _eventFlow.emit(UiEvent.OnSuccess(successMessage = "Item added to cart"))
+                        is Resource.Error -> _eventFlow.emit(UiEvent.OnError(errorMessage = result.message ?: "Error adding product to cart"))
                     }
                 }
             }
 
             is MainFeedProductEvent.RemoveProductFromCart -> {
                 viewModelScope.launch {
-                    when (cartUseCases.removeProductFromCart(event.cartOrderId, event.productId)){
-                        is Resource.Loading -> {}
+                    when (val result = cartUseCases.removeProductFromCart(event.cartOrderId, event.productId)){
+                        is Resource.Loading -> _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Item removed from cart"))
+                            _eventFlow.emit(UiEvent.OnSuccess(successMessage = "Item removed from cart"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError("Error removing product from cart"))
+                            _eventFlow.emit(UiEvent.OnError(errorMessage = result.message ?: "Error removing product from cart"))
                         }
                     }
                 }
@@ -220,7 +225,7 @@ class MainFeedViewModel @Inject constructor(
                         )
                     }
                     is Resource.Success -> {
-                        result.data?.let {products ->
+                        result.data?.let { products ->
                             _products.value = _products.value.copy(
                                 products = products,
                                 filterProduct = filterProduct,

@@ -1,24 +1,26 @@
 package com.niyaj.popos.features.main_feed.presentation
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.niyaj.popos.R
 import com.niyaj.popos.features.category.domain.model.Category
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.components.GlowIndicator
 import com.niyaj.popos.features.components.ItemNotAvailable
+import com.niyaj.popos.features.destinations.ProductScreenDestination
 import com.niyaj.popos.features.main_feed.data.repository.ProductWithFlowQuantity
 import com.niyaj.popos.features.main_feed.presentation.components.category.CategorySection
 import com.niyaj.popos.features.main_feed.presentation.components.product.ProductSection
+import com.ramcosta.composedestinations.navigation.navigate
 
 @Composable
 fun FrontLayerContent(
+    navController : NavController,
     categoriesIsLoading: Boolean = false,
     productsIsLoading: Boolean = false,
     productsHasError: String? = null,
@@ -51,6 +53,7 @@ fun FrontLayerContent(
             if(productsHasError != null){
                 ItemNotAvailable(
                     text = productsHasError,
+                    image = painterResource(id = R.drawable.emptystatetwo),
                 )
             } else if(categoriesHasError != null){
                 ItemNotAvailable(
@@ -73,6 +76,7 @@ fun FrontLayerContent(
                     onProductLeftClick = onProductLeftClick,
                     onProductRightClick = onProductRightClick,
                     isLoading = productsIsLoading || categoriesIsLoading,
+                    onNavigateToProductScreen = { navController.navigate(ProductScreenDestination) }
                 )
 
                 Spacer(modifier = Modifier.height(SpaceSmall))

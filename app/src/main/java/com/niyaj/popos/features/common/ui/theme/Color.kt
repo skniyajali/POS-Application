@@ -71,6 +71,8 @@ val PrimaryVariant = Color(0xFF186fd9)
 
 val PoposScrimColor = PoposPink300
 
+val newColor = Color(0xFF7C37FA)
+
 internal val PoposLightColorPalette = lightColors(
     primary = PoposPink100,
     primaryVariant = PoposPink500,

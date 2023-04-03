@@ -1,47 +1,13 @@
 package com.niyaj.popos.features.employee.presentation.details
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FabPosition
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.AccountBalance
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Approval
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.EventBusy
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Login
-import androidx.compose.material.icons.filled.Merge
-import androidx.compose.material.icons.filled.MergeType
-import androidx.compose.material.icons.filled.Money
-import androidx.compose.material.icons.filled.Payments
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -52,10 +18,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -67,19 +31,8 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.ButtonSize
-import com.niyaj.popos.features.common.ui.theme.LightColor6
-import com.niyaj.popos.features.common.ui.theme.SpaceMedium
-import com.niyaj.popos.features.common.ui.theme.SpaceMini
-import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.features.components.ExtendedFabButton
-import com.niyaj.popos.features.components.IconBox
-import com.niyaj.popos.features.components.ItemNotAvailable
-import com.niyaj.popos.features.components.PaymentStatusChip
-import com.niyaj.popos.features.components.StandardExpandable
-import com.niyaj.popos.features.components.StandardOutlinedChip
-import com.niyaj.popos.features.components.StandardScaffold
-import com.niyaj.popos.features.components.TextWithIcon
+import com.niyaj.popos.features.common.ui.theme.*
+import com.niyaj.popos.features.components.*
 import com.niyaj.popos.features.destinations.AddEditAbsentScreenDestination
 import com.niyaj.popos.features.destinations.AddEditEmployeeScreenDestination
 import com.niyaj.popos.features.destinations.AddEditSalaryScreenDestination
@@ -87,13 +40,8 @@ import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_D
 import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.REMAINING_AMOUNT_TEXT
 import com.niyaj.popos.features.employee.domain.util.PaymentType
 import com.niyaj.popos.features.reports.presentation.components.SalaryDateDropdown
+import com.niyaj.popos.util.*
 import com.niyaj.popos.util.Constants.PAID
-import com.niyaj.popos.util.toDate
-import com.niyaj.popos.util.toFormattedDate
-import com.niyaj.popos.util.toFormattedDateAndTime
-import com.niyaj.popos.util.toRupee
-import com.niyaj.popos.util.toSalaryDate
-import com.niyaj.popos.util.toYearAndMonth
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
@@ -519,7 +467,7 @@ fun EmployeeDetailsScreen(
                                         TextWithIcon(
                                             modifier = Modifier.testTag(employee.employeeSalary.toRupee),
                                             text = "Salary - ${employee.employeeSalary.toRupee}",
-                                            icon = ImageVector.vectorResource(id = R.drawable.round_currency_rupee_24)
+                                            icon = Icons.Default.CurrencyRupee
                                         )
                                         Spacer(modifier = Modifier.height(SpaceSmall))
                                         TextWithIcon(

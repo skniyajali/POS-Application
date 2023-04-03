@@ -151,16 +151,16 @@ class CategoryRepositoryImpl(
             if (category != null) {
                 withContext(ioDispatcher) {
                     realm.write {
-                        findLatest(category)?.let {
-                            delete(it)
-                        }
-
                         val products = this.query<Product>("category.categoryId == $0", categoryId).find()
                         val cartOrders = this.query<CartRealm>("product.category.categoryId == $0", categoryId).find()
 
                         delete(cartOrders)
 
                         delete(products)
+
+                        findLatest(category)?.let {
+                            delete(it)
+                        }
                     }
                 }
 

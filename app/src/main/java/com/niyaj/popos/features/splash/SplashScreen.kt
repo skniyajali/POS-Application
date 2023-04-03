@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -16,11 +17,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import com.niyaj.popos.util.Constants
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
-import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -55,7 +54,7 @@ fun SplashScreen(
 
             navController.popBackStack()
 
-            navController.navigate(MainFeedScreenDestination())
+//            navController.navigate(MainFeedScreenDestination())
         }
     }
 
@@ -68,6 +67,7 @@ fun SplashScreen(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = stringResource(id = R.string.logo_description),
             modifier = Modifier
+                .fillMaxWidth()
                 .scale(scale.value),
         )
 //        Text(

@@ -12,6 +12,8 @@ sealed class ExpensesEvent{
 
     data class OnSearchExpenses(val searchText: String): ExpensesEvent()
 
+    data class OnSelectDate(val selectedDate: String): ExpensesEvent()
+
     object DeletePastExpenses: ExpensesEvent()
 
     object DeleteAllExpenses: ExpensesEvent()

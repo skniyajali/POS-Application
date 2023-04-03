@@ -4,12 +4,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.niyaj.popos.features.common.ui.theme.ButtonSize
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
@@ -20,11 +22,13 @@ fun StandardButton(
     text: String,
     icon: ImageVector? = null,
     enabled: Boolean = true,
+    shape: Shape = RoundedCornerShape(SpaceMini),
     onClick: () -> Unit,
 ) {
     Button(
         onClick = onClick,
         enabled = enabled,
+        shape = shape,
         modifier = modifier
             .pressClickEffect()
             .fillMaxWidth()

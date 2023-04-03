@@ -10,3 +10,9 @@ data class ExpensesState(
     val isLoading: Boolean = false,
     val error: String? = null,
 )
+
+data class TotalExpensesState(
+    val totalAmount: String = "0",
+    val totalPayment: Int = 0,
+    val selectedDate : String = "Today",
+)
