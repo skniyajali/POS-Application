@@ -3,38 +3,15 @@ package com.niyaj.popos.features.cart_order.presentation.add_edit
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeliveryDining
 import androidx.compose.material.icons.filled.DinnerDining
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -74,14 +51,10 @@ fun AddEditCartOrderScreen(
     viewModel: AddEditCartOrderViewModel = hiltViewModel(),
     resultNavigator: ResultBackNavigator<String>
 ) {
-//    val scope = rememberCoroutineScope()
-
     val addresses = viewModel.addresses.collectAsStateWithLifecycle().value.addresses
     val addressesIsLoading = viewModel.addresses.collectAsStateWithLifecycle().value.isLoading
 
     val customerAddress = viewModel.state.address?.addressName
-
-//    val customers = viewModel.customers.collectAsStateWithLifecycle().value.customers
 
     val filteredAddress by remember(customerAddress) {
         derivedStateOf {
@@ -94,9 +67,6 @@ fun AddEditCartOrderScreen(
             }
         }
     }
-
-
-//    var phoneDropdownToggled by remember { mutableStateOf(false) }
 
     var addressDropdownToggled by remember { mutableStateOf(false) }
 

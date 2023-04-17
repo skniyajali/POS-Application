@@ -114,13 +114,6 @@ fun SheetLayout(
                     onFilterChanged = currentScreen.onFilterChanged
                 )
             }
-
-            is BottomSheetScreen.AttendanceReminderScreen -> {
-//                AbsentReminderScreen()
-            }
-
-            else -> {}
-
         }
     }
 }

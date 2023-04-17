@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Popos</string>
+    <string name="app_description">Restaurant POS Application.</string>
     <string name="logo_description">Popos Highlight</string>
     <string name="password_visible_content_description">Password Visible</string>
     <string name="password_hidden_content_description">Password Hidden</string>
@@ -116,5 +117,7 @@
     <string name="notification_channel_desc">ArcaNotificationDescription</string>
     <string name="notification_send">Send Report</string>
     <string name="notification_discard">Discard</string>
+    <string name="update_reminder_state">Are you sure to update remider state as not completed.</string>
+    <string name="delete_reminder">Are you sure to delete reminder?</string>
 
 </resources>

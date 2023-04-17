@@ -1,6 +1,5 @@
 package com.niyaj.popos.features.components
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,12 +23,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.IconSizeLarge
-import com.niyaj.popos.features.common.ui.theme.LightColor12
-import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeSmall
-import com.niyaj.popos.features.common.ui.theme.SpaceLarge
-import com.niyaj.popos.features.common.ui.theme.SpaceMedium
-import com.niyaj.popos.features.common.ui.theme.SpaceSmall
+import com.niyaj.popos.features.common.ui.theme.*
 import com.niyaj.popos.features.destinations.*
 import com.ramcosta.composedestinations.navigation.navigate
 
@@ -490,7 +484,7 @@ fun StandardDrawer(
                         ) {
                             DrawerItem(
                                 text = "Reminders",
-                                icon = Icons.Default.Event,
+                                icon = Icons.Default.Notifications,
                                 selected = currentRoute == ReminderScreenDestination.route,
                                 iconColor = MaterialTheme.colors.secondary,
                                 onClick = {

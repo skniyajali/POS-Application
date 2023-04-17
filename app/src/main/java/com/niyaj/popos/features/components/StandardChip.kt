@@ -3,15 +3,9 @@ package com.niyaj.popos.features.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -28,6 +22,9 @@ import androidx.compose.ui.unit.dp
 import com.niyaj.popos.features.common.ui.theme.IconSizeSmall
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
+import com.niyaj.popos.features.reminder.domain.util.PaymentStatus
+import com.niyaj.popos.util.Constants.NOT_PAID
+import com.niyaj.popos.util.Constants.PAID
 
 @Composable
 fun StandardOutlinedChip(
@@ -89,15 +86,15 @@ fun StandardOutlinedChip(
 @Composable
 fun PaymentStatusChip(
     modifier: Modifier = Modifier,
-    text: String = "",
-    isSelected: Boolean = false,
-    selectedColor: Color = MaterialTheme.colors.secondary,
-    dissectedColor: Color = MaterialTheme.colors.secondaryVariant,
+    isPaid: Boolean = false,
+    text: String = if (isPaid) PAID else NOT_PAID,
+    paidColor: Color = MaterialTheme.colors.secondary,
+    notPaidColor: Color = MaterialTheme.colors.secondaryVariant,
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(2.dp))
-            .background(if (isSelected) selectedColor else dissectedColor),
+            .background(if (isPaid) paidColor else notPaidColor),
         contentAlignment = Alignment.Center
     ) {
         Row(
@@ -105,7 +102,7 @@ fun PaymentStatusChip(
                 .padding(SpaceMini),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if(isSelected){
+            if(isPaid){
                 Icon(
                     imageVector = Icons.Default.Done,
                     contentDescription = text,
@@ -134,8 +131,53 @@ fun PaymentStatusChip(
     }
 }
 
+@Composable
+fun PaymentStatusChip(
+    modifier: Modifier = Modifier,
+    paymentStatus : PaymentStatus,
+    paidColor: Color = MaterialTheme.colors.secondary,
+    notPaidColor: Color = MaterialTheme.colors.secondaryVariant,
+    absentColor: Color = MaterialTheme.colors.error,
+) {
+    val bgColor = when(paymentStatus) {
+        PaymentStatus.Absent -> absentColor
+        PaymentStatus.NotPaid -> notPaidColor
+        PaymentStatus.Paid -> paidColor
+    }
 
-@OptIn(ExperimentalMaterialApi::class)
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(2.dp))
+            .background(bgColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(SpaceMini),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = paymentStatus.icon,
+                contentDescription = paymentStatus.toString(),
+                tint = MaterialTheme.colors.onPrimary,
+                modifier = Modifier.size(IconSizeSmall)
+            )
+
+            Spacer(modifier = Modifier.width(SpaceSmall))
+
+
+            Text(
+                text = paymentStatus.status,
+                style = MaterialTheme.typography.overline,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colors.onPrimary,
+            )
+        }
+    }
+}
+
+
+
 @Composable
 fun StandardChip(
     modifier: Modifier = Modifier,

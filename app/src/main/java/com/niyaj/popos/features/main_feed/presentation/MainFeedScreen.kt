@@ -5,32 +5,25 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
 import com.niyaj.popos.features.common.util.BottomSheetScreen
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardBackdropScaffold
-import com.niyaj.popos.features.destinations.AbsentReminderScreenDestination
 import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.features.main_feed.presentation.components.category.MainFeedCategoryEvent
 import com.niyaj.popos.features.main_feed.presentation.components.product.MainFeedProductEvent
-import com.niyaj.popos.features.reminder.presentation.absent_reminder.EmployeeAbsentReminder
-import com.niyaj.popos.util.closingTime
-import com.niyaj.popos.util.openingTime
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
+@RootNavGraph(start = true)
 @Destination
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -39,13 +32,8 @@ fun MainFeedScreen(
     navController: NavController,
     scaffoldState: ScaffoldState,
     mainFeedViewModel: MainFeedViewModel = hiltViewModel(),
-    employeeAbsentReminder : EmployeeAbsentReminder = hiltViewModel(),
     resultRecipient: ResultRecipient<AddEditCartOrderScreenDestination, String>,
-    absentReminderRecipient: ResultRecipient<AbsentReminderScreenDestination, String>
 ) {
-    val workManager: WorkManager = WorkManager.getInstance(LocalContext.current)
-    val currentTime = System.currentTimeMillis().toString()
-
     val backdropScaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
     val scope = rememberCoroutineScope()
 
@@ -71,52 +59,6 @@ fun MainFeedScreen(
 
     val showSearchBar by mainFeedViewModel.toggledSearchBar.collectAsStateWithLifecycle()
     val searchText = mainFeedViewModel.searchText.collectAsStateWithLifecycle().value
-
-    val attendanceRemInfo = workManager
-        .getWorkInfoByIdLiveData(employeeAbsentReminder.attendanceWorkRequest.id)
-        .observeAsState().value
-
-    LaunchedEffect(key1 = attendanceRemInfo) {
-        if (attendanceRemInfo != null) {
-            when (attendanceRemInfo.state) {
-                WorkInfo.State.SUCCEEDED -> {
-                    Timber.d("Attendance Reminder Generated Successfully")
-                }
-
-                WorkInfo.State.FAILED -> {
-                    Timber.d("Unable to show attendance Reminder")
-                }
-
-                WorkInfo.State.CANCELLED -> {
-                    Timber.d("Attendance Reminder CANCELLED")
-                }
-
-                WorkInfo.State.ENQUEUED -> {
-                    Timber.d("Attendance Reminder ENQUEUED")
-                }
-
-                WorkInfo.State.RUNNING -> {
-                    Timber.d("Attendance Reminder RUNNING")
-
-                    scope.launch {
-                        if (!employeeAbsentReminder.reminder.value.isCompleted) {
-                            if (currentTime in openingTime..closingTime) {
-                                navController.navigate(AbsentReminderScreenDestination)
-                            } else {
-                                Timber.d("Not in correct time")
-                            }
-                        } else {
-                            workManager.cancelAllWorkByTag(employeeAbsentReminder.reminder.value.attendanceRemId)
-                        }
-                    }
-                }
-
-                WorkInfo.State.BLOCKED -> {
-                    Timber.d("Attendance Reminder BLOCKED")
-                }
-            }
-        }
-    }
 
     LaunchedEffect(key1 = true){
         mainFeedViewModel.eventFlow.collectLatest { event ->
@@ -156,17 +98,6 @@ fun MainFeedScreen(
         }
     }
 
-    absentReminderRecipient.onNavResult { result ->
-        when (result) {
-            is NavResult.Canceled -> {}
-            is NavResult.Value -> {
-                scope.launch {
-                    scaffoldState.snackbarHostState.showSnackbar(result.value)
-                }
-            }
-        }
-    }
-
     LaunchedEffect(key1 = true){
         scope.launch {
             mainFeedViewModel.onEvent(MainFeedEvent.GetSelectedOrder)
@@ -202,7 +133,7 @@ fun MainFeedScreen(
             }
         },
         backLayerContent = {
-            BackLayerContent(navController = navController, backdropScaffoldState)
+            BackLayerContent(navController = navController)
         },
         frontLayerContent = {
             FrontLayerContent(

@@ -1,4 +1,4 @@
-package com.niyaj.popos.features.reminder.presentation.absent_reminder
+package com.niyaj.popos.features.reminder.presentation.daily_salary_reminder
 
 import android.text.format.DateUtils
 import androidx.compose.runtime.mutableStateListOf
@@ -7,23 +7,26 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
-import com.niyaj.popos.features.employee_attendance.domain.use_cases.AttendanceUseCases
-import com.niyaj.popos.features.reminder.domain.model.AbsentReminder
+import com.niyaj.popos.features.employee.domain.util.PaymentType
+import com.niyaj.popos.features.employee.domain.util.SalaryType
+import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
+import com.niyaj.popos.features.employee_salary.domain.use_cases.SalaryUseCases
+import com.niyaj.popos.features.reminder.domain.model.DailySalaryReminder
 import com.niyaj.popos.features.reminder.domain.model.EmployeeReminderWithStatusState
 import com.niyaj.popos.features.reminder.domain.use_cases.ReminderUseCases
 import com.niyaj.popos.features.reminder.domain.util.PaymentStatus
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
 import com.niyaj.popos.util.getStartTime
+import com.niyaj.popos.util.toDailySalaryAmount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AbsentReminderViewModel @Inject constructor(
+class DailySalaryReminderViewModel @Inject constructor(
     private val reminderUseCases: ReminderUseCases,
-    private val attendanceUseCases : AttendanceUseCases,
+    private val salaryUseCases : SalaryUseCases
 ): ViewModel() {
 
     private val _employees = MutableStateFlow(EmployeeReminderWithStatusState())
@@ -41,12 +44,13 @@ class AbsentReminderViewModel @Inject constructor(
     private var count: Int = 0
 
     init {
-        getAbsentReminderEmployee()
+        getDailySalaryReminderEmployee()
     }
 
-    fun onEvent(event : AbsentReminderEvent) {
+    fun onEvent(event: DailySalaryReminderEvent) {
         when(event) {
-            is AbsentReminderEvent.SelectEmployee -> {
+
+            is DailySalaryReminderEvent.SelectEmployee -> {
                 if (_selectedEmployees.contains(event.employeeId)) {
                     _selectedEmployees.remove(event.employeeId)
                 }else {
@@ -54,7 +58,7 @@ class AbsentReminderViewModel @Inject constructor(
                 }
             }
 
-            is AbsentReminderEvent.SelectAllEmployee -> {
+            is DailySalaryReminderEvent.SelectAllEmployee -> {
                 count += 1
 
                 val employees = _employees.value.employees.filter { it.paymentStatus == PaymentStatus.NotPaid }
@@ -74,25 +78,27 @@ class AbsentReminderViewModel @Inject constructor(
                 }
             }
 
-            is AbsentReminderEvent.SelectDate -> {
+            is DailySalaryReminderEvent.SelectDate -> {
                 viewModelScope.launch {
                     _selectedDate.emit(event.date)
 
-                    getAbsentReminderEmployee(event.date)
+                    getDailySalaryReminderEmployee(event.date)
                 }
             }
 
-            is AbsentReminderEvent.MarkAsAbsent -> {
+            is DailySalaryReminderEvent.MarkAsPaid -> {
                 viewModelScope.launch {
                     _selectedEmployees.forEach { employeeId ->
                         val employeeWithStatus = _employees.value.employees.find { it.employee.employeeId == employeeId }
-
-                        if (employeeWithStatus != null) {
-                            val result = attendanceUseCases.addAbsentEntry(
-                                EmployeeAttendance(
+                        if (employeeWithStatus!= null) {
+                            val result = salaryUseCases.addNewSalary(
+                                EmployeeSalary(
                                     employee = employeeWithStatus.employee,
-                                    isAbsent = true,
-                                    absentDate = _selectedDate.value.ifEmpty { getStartTime },
+                                    salaryType = SalaryType.Salary.salaryType,
+                                    employeeSalary = employeeWithStatus.employee.employeeSalary.toDailySalaryAmount(),
+                                    salaryGivenDate = _selectedDate.value.ifEmpty { getStartTime },
+                                    salaryPaymentType = PaymentType.Cash.paymentType,
+                                    salaryNote = "Created from reminder"
                                 )
                             )
 
@@ -101,32 +107,31 @@ class AbsentReminderViewModel @Inject constructor(
                                     _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                                 }
                                 is Resource.Success -> {
-                                    _eventFlow.emit(UiEvent.OnSuccess("${employeeWithStatus.employee.employeeName} Marked as absent."))
+                                    _eventFlow.emit(UiEvent.OnSuccess("${employeeWithStatus.employee.employeeName} Marked as paid."))
                                 }
                                 is Resource.Error -> {
-                                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to mark ${employeeWithStatus.employee.employeeName} as absent."))
+                                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to mark ${employeeWithStatus.employee.employeeName} as paid."))
                                 }
                             }
-                        } else {
-                            _eventFlow.emit(UiEvent.OnError("Unable to find employee"))
                         }
                     }
 
                     val markAsCompleted = DateUtils.isToday(_selectedDate.value.toLong())
 
-                    val result = reminderUseCases.createOrUpdateAbsentReminder(AbsentReminder(isCompleted = markAsCompleted))
+                    val result = reminderUseCases.createOrUpdateDailySalaryReminder(DailySalaryReminder(isCompleted = markAsCompleted))
 
                     if (result) {
-                        _eventFlow.emit(UiEvent.OnSuccess("Selected employee marked as absent on selected date."))
+                        _eventFlow.emit(UiEvent.OnSuccess("Selected employee marked as paid on selected Date."))
                     }
                 }
             }
         }
     }
 
-    private fun getAbsentReminderEmployee(salaryDate: String = _selectedDate.value) {
+
+    private fun getDailySalaryReminderEmployee(salaryDate: String = _selectedDate.value) {
         viewModelScope.launch {
-            reminderUseCases.getReminderEmployees(salaryDate, ReminderType.Attendance).collectLatest{ result ->
+            reminderUseCases.getReminderEmployees(salaryDate, ReminderType.DailySalary).collectLatest{ result ->
                 when(result){
                     is Resource.Loading -> {
                         _employees.value = _employees.value.copy(isLoading = result.isLoading)
@@ -145,4 +150,5 @@ class AbsentReminderViewModel @Inject constructor(
             }
         }
     }
+
 }

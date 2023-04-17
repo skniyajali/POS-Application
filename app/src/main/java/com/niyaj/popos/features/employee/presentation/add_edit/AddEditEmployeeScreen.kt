@@ -4,16 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Accessibility
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MergeType
-import androidx.compose.material.icons.filled.Money
-import androidx.compose.material.icons.filled.Person4
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -31,6 +22,7 @@ import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.Primary
+import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardButton
@@ -132,9 +124,7 @@ fun AddEditEmployeeScreen(
                 }
             ) { date ->
                 addEditEmployeeViewModel.onAddEditEmployeeEvent(
-                    AddEditEmployeeEvent.EmployeeJoinedDateChanged(
-                        date.toMilliSecond
-                    )
+                    AddEditEmployeeEvent.EmployeeJoinedDateChanged(date.toMilliSecond)
                 )
             }
         }
@@ -471,7 +461,7 @@ fun AddEditEmployeeScreen(
             }
 
             item {
-                Spacer(modifier = Modifier.height(SpaceSmall))
+                Spacer(modifier = Modifier.height(SpaceMedium))
 
                 StandardButton(
                     modifier = Modifier.testTag(ADD_EDIT_EMPLOYEE_BUTTON),

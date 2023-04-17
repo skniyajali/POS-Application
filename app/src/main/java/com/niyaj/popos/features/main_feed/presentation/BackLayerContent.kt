@@ -1,13 +1,11 @@
 package com.niyaj.popos.features.main_feed.presentation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,26 +17,18 @@ import com.google.accompanist.flowlayout.SizeMode
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.features.destinations.CartScreenDestination
-import com.niyaj.popos.features.destinations.EmployeeScreenDestination
-import com.niyaj.popos.features.destinations.ExpensesScreenDestination
-import com.niyaj.popos.features.destinations.OrderScreenDestination
-import com.niyaj.popos.features.destinations.ReportScreenDestination
+import com.niyaj.popos.features.destinations.*
 import com.niyaj.popos.features.main_feed.presentation.components.IconBox
 import com.niyaj.popos.features.reports.presentation.ReportsViewModel
 import com.niyaj.popos.features.reports.presentation.components.ReportBox
 import com.ramcosta.composedestinations.navigation.navigate
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun BackLayerContent(
     navController: NavController,
-    backdropScaffoldState: BackdropScaffoldState,
     reportsViewModel: ReportsViewModel = hiltViewModel(),
 ) {
-    val scope = rememberCoroutineScope()
-
     val reportState = reportsViewModel.reportState.collectAsState().value.report
     val totalAmount = reportState.expensesAmount.plus(reportState.dineInSalesAmount).plus(reportState.dineOutSalesAmount).toString()
 
@@ -81,20 +71,10 @@ fun BackLayerContent(
                 onClick = {navController.navigate(EmployeeScreenDestination())}
             )
             Spacer(modifier = Modifier.width(SpaceSmall))
-            AnimatedVisibility(
-                visible = !backdropScaffoldState.isConcealed,
-                enter = fadeIn(),
-                exit = fadeOut(),
-            ) {
-                IconBox(
-                    iconName = Icons.Default.ArrowUpward,
-                    onClick = {
-                        scope.launch {
-                            backdropScaffoldState.conceal()
-                        }
-                    }
-                )
-            }
+            IconBox(
+                iconName = Icons.Default.Notifications,
+                onClick = { navController.navigate(ReminderScreenDestination)}
+            )
         }
 
         Spacer(modifier = Modifier.height(SpaceMedium))

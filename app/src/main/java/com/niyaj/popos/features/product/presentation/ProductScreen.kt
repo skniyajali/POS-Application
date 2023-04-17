@@ -362,7 +362,7 @@ fun ProductScreen(
                     LazyColumn(
                         state = lazyListState,
                     ){
-                        groupedProducts.forEach{ (category, products_new) ->
+                        groupedProducts.forEach{ (category, productsNew) ->
                             stickyHeader {
                                 TextWithCount(
                                     modifier = Modifier
@@ -375,15 +375,15 @@ fun ProductScreen(
                                             RoundedCornerShape(if (showScrollToTop.value) 4.dp else 0.dp)
                                         ),
                                     text = category ?: "Uncategorized",
-                                    count = products_new.count(),
+                                    count = productsNew.count(),
                                     onClick = {
-                                        productsViewModel.onProductEvent(ProductEvent.SelectProducts(products_new.map { it.productId }))
+                                        productsViewModel.onProductEvent(ProductEvent.SelectProducts(productsNew.map { it.productId }))
                                     }
                                 )
                             }
 
                             itemsIndexed(
-                                items = products_new,
+                                items = productsNew,
                             ){ index, product ->
                                 ProductCard(
                                     productName = product.productName,

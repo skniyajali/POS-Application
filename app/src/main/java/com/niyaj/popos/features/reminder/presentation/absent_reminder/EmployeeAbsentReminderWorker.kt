@@ -1,4 +1,4 @@
-package com.niyaj.popos.util.worker
+package com.niyaj.popos.features.reminder.presentation.absent_reminder
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
@@ -9,7 +9,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
 @HiltWorker
-class EmployeeAttendanceWorker @AssistedInject constructor(
+class EmployeeAbsentReminderWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workParams: WorkerParameters,
     private val reminderUseCases: ReminderUseCases
@@ -18,6 +18,6 @@ class EmployeeAttendanceWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val reminder = reminderUseCases.getAbsentReminder()
 
-        return if (reminder.isCompleted) Result.success() else Result.failure()
+        return if (reminder != null && reminder.isCompleted) Result.success() else Result.failure()
     }
 }

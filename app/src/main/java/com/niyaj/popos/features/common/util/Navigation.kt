@@ -23,17 +23,7 @@ import com.niyaj.popos.features.address.presentation.AddressScreen
 import com.niyaj.popos.features.category.presentation.CategoryScreen
 import com.niyaj.popos.features.charges.presentation.ChargesScreen
 import com.niyaj.popos.features.customer.presentation.CustomerScreen
-import com.niyaj.popos.features.destinations.AddOnItemScreenDestination
-import com.niyaj.popos.features.destinations.AddressScreenDestination
-import com.niyaj.popos.features.destinations.CategoryScreenDestination
-import com.niyaj.popos.features.destinations.ChargesScreenDestination
-import com.niyaj.popos.features.destinations.CustomerScreenDestination
-import com.niyaj.popos.features.destinations.EmployeeScreenDestination
-import com.niyaj.popos.features.destinations.ExpensesCategoryScreenDestination
-import com.niyaj.popos.features.destinations.ExpensesScreenDestination
-import com.niyaj.popos.features.destinations.MainFeedScreenDestination
-import com.niyaj.popos.features.destinations.OrderScreenDestination
-import com.niyaj.popos.features.destinations.ProductScreenDestination
+import com.niyaj.popos.features.destinations.*
 import com.niyaj.popos.features.employee.presentation.EmployeeScreen
 import com.niyaj.popos.features.expenses.presentation.ExpensesScreen
 import com.niyaj.popos.features.expenses_category.presentation.ExpensesCategoryScreen
@@ -95,7 +85,6 @@ fun Navigation(
                     scaffoldState = scaffoldState,
                     navController = navController,
                     resultRecipient = resultRecipient(),
-                    absentReminderRecipient = resultRecipient(),
                 )
             }
 

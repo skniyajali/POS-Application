@@ -52,7 +52,22 @@ class Reminder() : RealmObject {
 
 fun Reminder.toAbsentReminder(): AbsentReminder {
     return AbsentReminder(
-        attendanceRemId = this.reminderId,
+        absentRemId = this.reminderId,
+        reminderName = this.reminderName,
+        reminderStartTime = this.reminderStartTime,
+        reminderEndTime = this.reminderEndTime,
+        reminderInterval = this.reminderInterval,
+        reminderIntervalTimeUnit = this.reminderIntervalTimeUnit,
+        reminderType = this.reminderType,
+        isRepeatable = this.isRepeatable,
+        isCompleted = this.isCompleted,
+        updatedAt = this.updatedAt
+    )
+}
+
+internal fun Reminder.toDailySalaryReminder(): DailySalaryReminder {
+    return DailySalaryReminder(
+        dailySalaryRemId = this.reminderId,
         reminderName = this.reminderName,
         reminderStartTime = this.reminderStartTime,
         reminderEndTime = this.reminderEndTime,

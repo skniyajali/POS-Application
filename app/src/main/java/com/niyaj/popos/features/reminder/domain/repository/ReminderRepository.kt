@@ -2,16 +2,26 @@ package com.niyaj.popos.features.reminder.domain.repository
 
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.reminder.domain.model.AbsentReminder
+import com.niyaj.popos.features.reminder.domain.model.DailySalaryReminder
+import com.niyaj.popos.features.reminder.domain.model.EmployeeReminderWithStatus
 import com.niyaj.popos.features.reminder.domain.model.Reminder
+import com.niyaj.popos.features.reminder.domain.util.ReminderType
 import kotlinx.coroutines.flow.Flow
 
 interface ReminderRepository {
 
     fun getAllReminders(): Flow<Resource<List<Reminder>>>
 
-    fun getAttendanceReminder(): AbsentReminder
+    fun getAbsentReminder(): AbsentReminder?
 
-    suspend fun createOrUpdateAttendanceReminder(absentReminder: AbsentReminder): Boolean
+    suspend fun getDailySalaryReminder(): DailySalaryReminder?
 
-    suspend fun createOrUpdateDailySalaryReminder(newReminder : Reminder, reminderId: String? = null): Boolean
+    suspend fun updateReminderAsNotCompleted(reminderId : String): Boolean
+
+    suspend fun deleteReminder(reminderId : String): Boolean
+
+    suspend fun getDailySalaryEmployee(salaryDate: String, reminderType: ReminderType): Flow<Resource<List<EmployeeReminderWithStatus>>>
+
+    suspend fun createOrUpdateReminder(reminder : Reminder): Boolean
 }
+

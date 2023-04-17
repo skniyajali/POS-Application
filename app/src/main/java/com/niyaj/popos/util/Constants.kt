@@ -98,4 +98,13 @@ object Constants {
     const val SORT_DESCENDING = "Sort Descending"
 
     const val ABSENT_REMINDER_NOTE = "Selected employees will be mark as absent."
+    const val DAILY_SALARY_REMINDER_NOTE = "Selected employees will be mark as paid."
+
+    const val ABSENT_REMINDER_ID = "EA889977"
+    const val ABSENT_REMINDER_NAME = "Employee Attendance"
+
+    const val DAILY_SALARY_REMINDER_ID = "DAL907856"
+    const val DAILY_SALARY_REMINDER_NAME = "Daily Salary Reminder"
+
+
 }

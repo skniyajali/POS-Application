@@ -12,6 +12,7 @@ import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculableDate
 import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculation
 import com.niyaj.popos.util.Constants.NOT_PAID
 import com.niyaj.popos.util.Constants.PAID
+import com.niyaj.popos.util.compareSalaryDates
 import com.niyaj.popos.util.getSalaryDates
 import com.niyaj.popos.util.toRupee
 import io.realm.kotlin.Realm
@@ -355,7 +356,7 @@ class SalaryRepositoryImpl(
                 val dates = getSalaryDates(joinedDate)
 
                 dates.forEach { date ->
-                    if (joinedDate <= date.first) {
+                    if (compareSalaryDates(joinedDate, date.first)) {
                         list.add(
                             SalaryCalculableDate(
                                 startDate = date.first,

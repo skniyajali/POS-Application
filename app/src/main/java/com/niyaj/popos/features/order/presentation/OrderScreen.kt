@@ -49,8 +49,8 @@ import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import com.niyaj.popos.features.destinations.OrderDetailsScreenDestination
 import com.niyaj.popos.features.order.presentation.print_order.PrintEvent
 import com.niyaj.popos.features.order.presentation.print_order.PrintViewModel
-import com.niyaj.popos.util.toFormattedDate
 import com.niyaj.popos.util.toFormattedTime
+import com.niyaj.popos.util.toPrettyDate
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
@@ -260,7 +260,7 @@ fun OrderScreen(
 
                 if (showIcon && selectedDate1.isNotEmpty() && selectedDate1 != LocalDate.now().toString()) {
                     RoundedBox(
-                        text = selectedDate1.toFormattedDate,
+                        text = selectedDate1.toPrettyDate(),
                         onClick = {
                             dialogState.show()
                         }

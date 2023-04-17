@@ -8,15 +8,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.niyaj.popos.features.reminder.domain.model.ABSENT_REMINDER_ID
 import com.niyaj.popos.features.reminder.domain.model.AbsentReminder
 import com.niyaj.popos.features.reminder.domain.use_cases.ReminderUseCases
-import com.niyaj.popos.util.closingTime
-import com.niyaj.popos.util.getStartTime
-import com.niyaj.popos.util.openingTime
-import com.niyaj.popos.util.worker.EmployeeAttendanceWorker
+import com.niyaj.popos.util.Constants.ABSENT_REMINDER_ID
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -26,47 +24,51 @@ class EmployeeAbsentReminder @Inject constructor(
     private val reminderUseCases: ReminderUseCases,
     application: Application
 ) : ViewModel() {
-    private val workManager: WorkManager = WorkManager.getInstance(application.applicationContext)
+    private val workManager = WorkManager.getInstance(application.applicationContext)
 
     private val _reminder = mutableStateOf(AbsentReminder())
-    val reminder : State<AbsentReminder> = _reminder
+    val reminder: State<AbsentReminder> = _reminder
 
     private val currentTime = System.currentTimeMillis().toString()
 
+    val absentWorker = PeriodicWorkRequestBuilder<EmployeeAbsentReminderWorker>(
+        _reminder.value.reminderInterval.toLong(),
+        TimeUnit.valueOf(_reminder.value.reminderIntervalTimeUnit)
+    ).addTag(ABSENT_REMINDER_ID).build()
+
     init {
-        getAttendanceReminder()
+        getAbsentReminderOnCurrentDate()
     }
 
-    val attendanceWorkRequest =
-        PeriodicWorkRequestBuilder<EmployeeAttendanceWorker>(
-            _reminder.value.reminderInterval.toLong(),
-            TimeUnit.valueOf(_reminder.value.reminderIntervalTimeUnit)
-        ).addTag(ABSENT_REMINDER_ID).setInitialDelay(500L, TimeUnit.MILLISECONDS).build()
-
-    private fun getAttendanceReminder() {
+    private fun getAbsentReminderOnCurrentDate() {
         viewModelScope.launch {
-            _reminder.value = reminderUseCases.getAbsentReminder()
+            val reminder = reminderUseCases.getAbsentReminder()
 
-            if (!_reminder.value.isCompleted && _reminder.value.reminderStartTime != getStartTime) {
-                reminderUseCases.createOrUpdateAbsentReminder(AbsentReminder())
+            if (reminder == null || reminder.reminderStartTime != _reminder.value.reminderStartTime) {
+                withContext(Dispatchers.IO) {
+                    reminderUseCases.createOrUpdateAbsentReminder(AbsentReminder())
+                }
+
+                _reminder.value = reminderUseCases.getAbsentReminder()!!
             }
+
+            enqueueAbsentReminder()
         }
     }
 
-
-    init {
+    private fun enqueueAbsentReminder() {
         if (!_reminder.value.isCompleted) {
-            if (currentTime in openingTime..closingTime) {
+            if (currentTime in _reminder.value.reminderStartTime .. _reminder.value.reminderEndTime) {
                 workManager.enqueueUniquePeriodicWork(
-                    _reminder.value.reminderName,
-                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                    attendanceWorkRequest
+                    ABSENT_REMINDER_ID,
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    absentWorker
                 )
-            }else {
-                Timber.d("Not In Correct Time..")
+            } else {
+                Timber.d("Absent Reminder is not right time")
             }
         }else {
-            workManager.cancelAllWorkByTag(ABSENT_REMINDER_ID)
+            workManager.cancelWorkById(absentWorker.id)
         }
     }
 }

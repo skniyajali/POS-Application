@@ -9,22 +9,23 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
-import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
 import com.niyaj.popos.features.common.util.BottomSheetScreen
@@ -32,7 +33,7 @@ import com.niyaj.popos.features.common.util.Navigation
 import com.niyaj.popos.features.common.util.hasBluetoothPermission
 import com.niyaj.popos.features.common.util.hasStoragePermission
 import com.niyaj.popos.features.components.util.SheetLayout
-import com.niyaj.popos.features.destinations.SplashScreenDestination
+import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import com.niyaj.popos.features.reminder.domain.use_cases.ReminderUseCases
 import com.niyaj.popos.util.Constants.DELETE_DATA_INTERVAL_HOUR
 import com.niyaj.popos.util.Constants.DELETE_DATA_NOTIFICATION_CHANNEL_ID
@@ -62,6 +63,8 @@ class MainActivity : ComponentActivity() {
     )
     override fun onCreate(savedInstanceState : Bundle?) {
         super.onCreate(savedInstanceState)
+        installSplashScreen()
+
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
         val hasBluetoothPermission = applicationContext.hasBluetoothPermission()
@@ -119,174 +122,176 @@ class MainActivity : ComponentActivity() {
         setContent {
             PoposTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(
-                    color = MaterialTheme.colors.background,
+                val scaffoldState = rememberScaffoldState()
+                val navController = rememberAnimatedNavController()
+                val sheetState = rememberModalBottomSheetState(
+                    initialValue = ModalBottomSheetValue.Hidden,
+                    skipHalfExpanded = true
+                )
+                val bottomSheetNavigator = remember { BottomSheetNavigator(sheetState) }
+//                val bottomSheetNavigator = rememberBottomSheetNavigator()
+                val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
+                val scope = rememberCoroutineScope()
+                val context = LocalContext.current
+                val systemUiController = rememberSystemUiController()
+
+
+                workManager
+                    .getWorkInfoByIdLiveData(periodicDeletionWorker.id)
+                    .observe(this) { workInfo ->
+                        if (workInfo != null) {
+                            when (workInfo.state) {
+                                WorkInfo.State.SUCCEEDED -> {
+                                    Timber.d("Data Deletion Successfully")
+                                }
+
+                                WorkInfo.State.FAILED -> {
+                                    Timber.d("Unable to perform data deletion FAILED")
+                                    Toast.makeText(
+                                        context,
+                                        "Unable to perform data deletion",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+
+                                WorkInfo.State.CANCELLED -> {
+                                    Timber.d("Data Deletion CANCELLED")
+                                }
+
+                                WorkInfo.State.ENQUEUED -> {
+                                    Timber.d("Data Deletion ENQUEUED")
+                                }
+
+                                WorkInfo.State.RUNNING -> {
+                                    Timber.d("Data Deletion RUNNING")
+                                    Toast.makeText(
+                                        context,
+                                        "Data Deletion Running",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+
+                                WorkInfo.State.BLOCKED -> {
+                                    Timber.d("Data Deletion BLOCKED")
+                                }
+                            }
+                        }
+                    }
+
+                workManager
+                    .getWorkInfoByIdLiveData(generateReportWorker.id)
+                    .observe(this) { workInfo ->
+                        if (workInfo != null) {
+                            when (workInfo.state) {
+                                WorkInfo.State.SUCCEEDED -> {
+                                    Timber.d("Report Generated Successfully")
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            "Report Generated Successfully"
+                                        )
+                                    }
+                                }
+
+                                WorkInfo.State.FAILED -> {
+                                    Timber.d("Unable to generate report")
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            "Unable to generate report"
+                                        )
+                                    }
+                                }
+
+                                WorkInfo.State.CANCELLED -> {
+                                    Timber.d("Report Generate CANCELLED")
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            "Report Generate Cancelled",
+                                        )
+                                    }
+                                }
+
+                                WorkInfo.State.ENQUEUED -> {
+                                    Timber.d("Report Generate ENQUEUED")
+                                }
+
+                                WorkInfo.State.RUNNING -> {
+                                    Timber.d("Report Generate RUNNING")
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            "Report Generate Running"
+                                        )
+                                    }
+                                }
+
+                                WorkInfo.State.BLOCKED -> {
+                                    Timber.d("Report Generate BLOCKED")
+                                    scope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            "Report Generate Blocked"
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                systemUiController.setStatusBarColor(
+                    color = MaterialTheme.colors.primary,
+                    darkIcons = false
+                )
+
+                // to set the current sheet to null when the bottom sheet closes
+                if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
+                    currentBottomSheet.value = null
+                }
+
+                val closeSheet : () -> Unit = {
+                    scope.launch {
+                        if (bottomSheetScaffoldState.bottomSheetState.isExpanded) {
+//                                bottomSheetScaffoldState.bottomSheetState.collapse()
+                            bottomSheetScaffoldState.bottomSheetState.animateTo(BottomSheetValue.Collapsed)
+                        }
+
+                        // to set the current sheet to null when the bottom sheet closes
+                        if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
+                            currentBottomSheet.value = null
+                        }
+                    }
+                }
+
+                val openSheet : (BottomSheetScreen) -> Unit = {
+                    scope.launch {
+                        currentBottomSheet.value = it
+                        bottomSheetScaffoldState.bottomSheetState.animateTo(BottomSheetValue.Expanded)
+                    }
+                }
+
+                BottomSheetScaffold(
                     modifier = Modifier
-                        .fillMaxSize(),
+                        .fillMaxWidth(),
+                    sheetContent = {
+                        currentBottomSheet.value?.let { currentSheet ->
+                            SheetLayout(
+                                currentScreen = currentSheet,
+                                onCloseBottomSheet = closeSheet,
+                                navController = navController,
+                            )
+                        }
+                    },
+                    sheetPeekHeight = 0.dp,
+                    scaffoldState = bottomSheetScaffoldState,
+                    sheetGesturesEnabled = true,
+                    sheetElevation = 8.dp,
+                    sheetShape = MaterialTheme.shapes.medium,
                 ) {
-                    val scaffoldState = rememberScaffoldState()
-                    val navController = rememberAnimatedNavController()
-                    val bottomSheetNavigator = rememberBottomSheetNavigator()
-                    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-                    val scope = rememberCoroutineScope()
-                    val context = LocalContext.current
-
-                    workManager
-                        .getWorkInfoByIdLiveData(periodicDeletionWorker.id)
-                        .observe(this) { workInfo ->
-                            if (workInfo != null) {
-                                when (workInfo.state) {
-                                    WorkInfo.State.SUCCEEDED -> {
-                                        Timber.d("Data Deletion Successfully")
-                                    }
-
-                                    WorkInfo.State.FAILED -> {
-                                        Timber.d("Unable to perform data deletion FAILED")
-                                        Toast.makeText(
-                                            context,
-                                            "Unable to perform data deletion",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-
-                                    WorkInfo.State.CANCELLED -> {
-                                        Timber.d("Data Deletion CANCELLED")
-                                    }
-
-                                    WorkInfo.State.ENQUEUED -> {
-                                        Timber.d("Data Deletion ENQUEUED")
-                                    }
-
-                                    WorkInfo.State.RUNNING -> {
-                                        Timber.d("Data Deletion RUNNING")
-                                        Toast.makeText(
-                                            context,
-                                            "Data Deletion Running",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-
-                                    WorkInfo.State.BLOCKED -> {
-                                        Timber.d("Data Deletion BLOCKED")
-                                    }
-                                }
-                            }
-                        }
-
-                    workManager
-                        .getWorkInfoByIdLiveData(generateReportWorker.id)
-                        .observe(this) { workInfo ->
-                            if (workInfo != null) {
-                                when (workInfo.state) {
-                                    WorkInfo.State.SUCCEEDED -> {
-                                        Timber.d("Report Generated Successfully")
-                                        scope.launch {
-                                            scaffoldState.snackbarHostState.showSnackbar(
-                                                "Report Generated Successfully"
-                                            )
-                                        }
-                                    }
-
-                                    WorkInfo.State.FAILED -> {
-                                        Timber.d("Unable to generate report")
-                                        scope.launch {
-                                            scaffoldState.snackbarHostState.showSnackbar(
-                                                "Unable to generate report"
-                                            )
-                                        }
-                                    }
-
-                                    WorkInfo.State.CANCELLED -> {
-                                        Timber.d("Report Generate CANCELLED")
-                                        scope.launch {
-                                            scaffoldState.snackbarHostState.showSnackbar(
-                                                "Report Generate Cancelled",
-                                            )
-                                        }
-                                    }
-
-                                    WorkInfo.State.ENQUEUED -> {
-                                        Timber.d("Report Generate ENQUEUED")
-                                    }
-
-                                    WorkInfo.State.RUNNING -> {
-                                        Timber.d("Report Generate RUNNING")
-                                        scope.launch {
-                                            scaffoldState.snackbarHostState.showSnackbar(
-                                                "Report Generate Running"
-                                            )
-                                        }
-                                    }
-
-                                    WorkInfo.State.BLOCKED -> {
-                                        Timber.d("Report Generate BLOCKED")
-                                        scope.launch {
-                                            scaffoldState.snackbarHostState.showSnackbar(
-                                                "Report Generate Blocked"
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                    val systemUiController = rememberSystemUiController()
-                    systemUiController.setStatusBarColor(
-                        color = MaterialTheme.colors.primary,
-                        darkIcons = false
+                    Navigation(
+                        onOpenSheet = openSheet,
+                        scaffoldState = scaffoldState,
+                        bottomSheetScaffoldState = bottomSheetScaffoldState,
+                        navController = navController,
+                        bottomSheetNavigator = bottomSheetNavigator,
+                        startRoute = MainFeedScreenDestination,
                     )
-
-                    // to set the current sheet to null when the bottom sheet closes
-                    if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
-                        currentBottomSheet.value = null
-                    }
-
-                    val closeSheet : () -> Unit = {
-                        scope.launch {
-                            if (bottomSheetScaffoldState.bottomSheetState.isExpanded) {
-                                bottomSheetScaffoldState.bottomSheetState.collapse()
-                            }
-
-                            // to set the current sheet to null when the bottom sheet closes
-                            if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
-                                currentBottomSheet.value = null
-                            }
-                        }
-                    }
-
-                    val openSheet : (BottomSheetScreen) -> Unit = {
-                        scope.launch {
-                            currentBottomSheet.value = it
-                            bottomSheetScaffoldState.bottomSheetState.expand()
-                        }
-                    }
-
-                    BottomSheetScaffold(
-                        sheetContent = {
-                            currentBottomSheet.value?.let { currentSheet ->
-                                SheetLayout(
-                                    currentScreen = currentSheet,
-                                    onCloseBottomSheet = closeSheet,
-                                    navController = navController,
-                                )
-                            }
-                        },
-                        sheetPeekHeight = 0.dp,
-                        modifier = Modifier.fillMaxWidth(),
-                        scaffoldState = bottomSheetScaffoldState,
-                        sheetGesturesEnabled = true,
-                        sheetElevation = 8.dp,
-                        sheetShape = MaterialTheme.shapes.medium,
-                    ) {
-                        Navigation(
-                            onOpenSheet = openSheet,
-                            scaffoldState = scaffoldState,
-                            bottomSheetScaffoldState = bottomSheetScaffoldState,
-                            navController = navController,
-                            bottomSheetNavigator = bottomSheetNavigator,
-                            startRoute = SplashScreenDestination,
-                        )
-                    }
                 }
             }
         }

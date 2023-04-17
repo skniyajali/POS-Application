@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -104,6 +105,7 @@ fun TextWithTitle(
     iconModifier: Modifier = Modifier,
     text: String = "",
     icon: ImageVector? = null,
+    style : TextStyle = MaterialTheme.typography.body1,
     fontWeight: FontWeight = FontWeight.SemiBold,
     textColor : Color = MaterialTheme.colors.onSurface,
     tintColor: Color = MaterialTheme.colors.secondaryVariant,
@@ -115,7 +117,7 @@ fun TextWithTitle(
         if(text.isNotEmpty()) {
             Text(
                 text = text,
-                style = MaterialTheme.typography.body1,
+                style = style,
                 fontWeight = fontWeight,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -135,6 +137,41 @@ fun TextWithTitle(
     }
 }
 
+@Composable
+fun TopBarTitle(
+    modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier,
+    text: String,
+    icon: ImageVector? = null,
+    style : TextStyle = MaterialTheme.typography.h6,
+    fontWeight: FontWeight = FontWeight.SemiBold,
+    textColor : Color = MaterialTheme.colors.onPrimary,
+    tintColor: Color = MaterialTheme.colors.onPrimary,
+) {
+    Row(
+        modifier = modifier,
+    ) {
+        icon?.let {
+            Icon(
+                imageVector = icon,
+                contentDescription = text,
+                tint = tintColor,
+                modifier = iconModifier,
+            )
+
+            Spacer(modifier = Modifier.width(SpaceMini))
+        }
+
+        Text(
+            text = text,
+            style = style,
+            fontWeight = fontWeight,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            color = textColor,
+        )
+    }
+}
 
 @Composable
 fun NoteText(

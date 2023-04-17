@@ -1,27 +1,26 @@
 package com.niyaj.popos.features.reminder.domain.model
 
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
-import com.niyaj.popos.util.Constants.ABSENT_REMINDER_ID
-import com.niyaj.popos.util.Constants.ABSENT_REMINDER_NAME
+import com.niyaj.popos.util.Constants.DAILY_SALARY_REMINDER_ID
+import com.niyaj.popos.util.Constants.DAILY_SALARY_REMINDER_NAME
 import com.niyaj.popos.util.closingTime
-import com.niyaj.popos.util.openingTime
+import com.niyaj.popos.util.dailySalaryStartTime
 import java.util.concurrent.TimeUnit
 
-data class AbsentReminder(
+data class DailySalaryReminder(
+    val dailySalaryRemId: String = DAILY_SALARY_REMINDER_ID,
 
-    val absentRemId: String = ABSENT_REMINDER_ID,
+    val reminderName: String = DAILY_SALARY_REMINDER_NAME,
 
-    val reminderName: String = ABSENT_REMINDER_NAME,
-
-    val reminderStartTime: String = openingTime,
+    val reminderStartTime: String = dailySalaryStartTime,
 
     val reminderEndTime: String = closingTime,
 
-    val reminderInterval: Int = 16,
+    val reminderInterval: Int = 20,
 
     val reminderIntervalTimeUnit: String = TimeUnit.MINUTES.name,
 
-    val reminderType: String = ReminderType.Attendance.reminderType,
+    val reminderType: String = ReminderType.DailySalary.reminderType,
 
     val isRepeatable: Boolean = true,
 
@@ -30,9 +29,9 @@ data class AbsentReminder(
     val updatedAt: String = "",
 )
 
-internal fun AbsentReminder.toReminder(): Reminder {
+internal fun DailySalaryReminder.toReminder(): Reminder {
     return Reminder(
-        reminderId = this.absentRemId,
+        reminderId = this.dailySalaryRemId,
         reminderName = this.reminderName,
         reminderStartTime = this.reminderStartTime,
         reminderEndTime = this.reminderEndTime,

@@ -199,6 +199,7 @@ fun ExpensesScreen(
                 expensesViewModel.onSearchBarCloseAndClearClick()
             } else {
                 navController.navigate(MainFeedScreenDestination())
+//                navController.navigate(CustomerS)
             }
         },
         title = {

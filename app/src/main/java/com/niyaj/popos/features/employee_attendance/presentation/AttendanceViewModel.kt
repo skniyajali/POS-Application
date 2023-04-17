@@ -132,7 +132,6 @@ class AttendanceViewModel @Inject constructor(
         }
     }
 
-
     fun onSearchBarCloseAndClearClick(){
         viewModelScope.launch {
             onSearchTextClearClick()

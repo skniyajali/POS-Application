@@ -1,13 +1,12 @@
 package com.niyaj.popos.features.reminder.domain.use_cases
 
-import com.niyaj.popos.features.reminder.domain.model.AbsentReminder
 import com.niyaj.popos.features.reminder.domain.repository.ReminderRepository
 import javax.inject.Inject
 
-class GetAbsentReminder @Inject constructor(
+class DeleteReminder @Inject constructor(
     private val reminderRepository : ReminderRepository
 ) {
-    operator fun invoke(): AbsentReminder? {
-        return reminderRepository.getAbsentReminder()
+    suspend operator fun invoke(reminderId: String): Boolean {
+        return reminderRepository.deleteReminder(reminderId)
     }
 }

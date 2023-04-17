@@ -1,6 +1,5 @@
 package com.niyaj.popos.features.order.presentation
 
-import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,20 +12,10 @@ import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.order.domain.use_cases.OrderUseCases
 import com.niyaj.popos.features.order.domain.util.FilterOrder
-import com.niyaj.popos.util.Constants
-import com.niyaj.popos.util.getCalculatedEndDate
-import com.niyaj.popos.util.getCalculatedStartDate
-import com.niyaj.popos.util.getEndTime
-import com.niyaj.popos.util.getStartTime
-import com.niyaj.popos.util.toFormattedDate
-import com.niyaj.popos.util.toTime
+import com.niyaj.popos.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
@@ -36,7 +25,6 @@ import javax.inject.Inject
 class OrderViewModel @Inject constructor(
     private val orderUseCases: OrderUseCases,
     savedStateHandle: SavedStateHandle,
-    application: Application,
 ): ViewModel() {
 
     private lateinit var escposPrinter: EscPosPrinter
@@ -56,6 +44,10 @@ class OrderViewModel @Inject constructor(
     private val _selectedDate = MutableStateFlow("")
     val selectedDate = _selectedDate.asStateFlow()
 
+    private var getStartDate = getCalculatedStartDate(date = _selectedDate.value.ifEmpty { getStartTime })
+    private var getEndDate = getCalculatedEndDate(date = _selectedDate.value.ifEmpty { getStartTime })
+
+
     init {
         savedStateHandle.get<String>("selectedDate")?.let { selectedDate ->
             if(selectedDate.isNotEmpty() && selectedDate != LocalDate.now().toString()){
@@ -72,12 +64,6 @@ class OrderViewModel @Inject constructor(
                 viewModelScope.launch {
                     orderUseCases.changeOrderStatus(event.cartOrderId, OrderStatus.Delivered.orderStatus)
                     getAllOrders(FilterOrder.ByUpdatedDate(SortType.Descending))
-
-//                    if(result){
-//                        _eventFlow.emit(UiEvent.OnSuccess("Order Has Been Delivered"))
-//                    }else{
-//                        _eventFlow.emit(UiEvent.OnError("Unable To Mark Order As Delivered"))
-//                    }
                 }
             }
 
@@ -149,11 +135,11 @@ class OrderViewModel @Inject constructor(
 
             is OrderEvent.SelectDate -> {
                 viewModelScope.launch {
-                    val startDate = getCalculatedStartDate(date = event.date)
-                    val endDate = getCalculatedEndDate(date = event.date)
+                    getStartDate = getCalculatedStartDate(date = event.date)
+                    getEndDate = getCalculatedEndDate(date = event.date)
 
-                    getAllOrders(startDate = startDate, endDate = endDate)
-                    _selectedDate.emit(startDate)
+                    getAllOrders()
+                    _selectedDate.emit(getStartDate)
                 }
             }
 
@@ -163,6 +149,7 @@ class OrderViewModel @Inject constructor(
 
             is OrderEvent.RefreshOrder -> {
                 getAllOrders()
+                _selectedDate.value = ""
             }
         }
     }
@@ -170,8 +157,8 @@ class OrderViewModel @Inject constructor(
     private fun getAllOrders(
         filterOrder: FilterOrder = _orders.value.filterOrder,
         searchText: String = "",
-        startDate: String = getStartTime,
-        endDate: String = getEndTime,
+        startDate: String = getStartDate,
+        endDate: String = getEndDate,
     ){
         viewModelScope.launch(Dispatchers.IO) {
             orderUseCases.getAllOrders(filterOrder, searchText, startDate, endDate).collectLatest { result ->

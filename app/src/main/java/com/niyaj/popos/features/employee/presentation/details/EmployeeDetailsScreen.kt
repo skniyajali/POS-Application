@@ -260,10 +260,7 @@ fun EmployeeDetailsScreen(
                                     Column(
                                         horizontalAlignment = Alignment.End,
                                     ) {
-                                        PaymentStatusChip(
-                                            text = paymentDetail.status,
-                                            isSelected = paymentDetail.status == PAID
-                                        )
+                                        PaymentStatusChip(isPaid = paymentDetail.status == PAID)
 
                                         if (!paymentDetail.message.isNullOrEmpty()) {
                                             Spacer(modifier = Modifier.height(SpaceSmall))
@@ -611,7 +608,7 @@ fun EmployeeDetailsScreen(
                                                     ) {
                                                         PaymentStatusChip(
                                                             text = salary.status,
-                                                            isSelected = salary.status == PAID
+                                                            isPaid = salary.status == PAID
                                                         )
 
                                                         if (!salary.message.isNullOrEmpty()) {
