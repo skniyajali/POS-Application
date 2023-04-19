@@ -3,12 +3,7 @@
     <style name="Theme.Popos" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@color/primary</item>
         <item name="android:windowLightStatusBar">false</item>
-    </style>
-
-    <style name="Theme.MySplash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/only_logo</item>
-        <item name="postSplashScreenTheme">@style/Theme.Popos</item>
-        <item name="windowSplashScreenAnimationDuration">100</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 </resources>
