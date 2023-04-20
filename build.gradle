@@ -3,6 +3,7 @@ buildscript {
         android_version = '7.3.1'
         kotlin_version = '1.7.21'
         kotlin_serialization_version = '1.7.21'
+        kotlin_bom_version = '1.8.0'
         androidx_core_version = '1.8.0'
         compose_version = '1.4.0-beta01'
         lifecycle_version = '2.6.0-beta01'
@@ -33,6 +34,9 @@ buildscript {
         androidx_arch_core_version = '2.2.0'
         androidx_test_ext_junit_version = '1.1.5'
         androidx_test_espresso_version = '3.5.1'
+        androidx_startup_version = '1.1.1'
+        androidx_splash_version = '1.0.0'
+        androidx_paging_version = "3.1.1"
     }
     repositories {
         google()
@@ -55,6 +59,7 @@ plugins {
     id "io.realm.kotlin" version "${realm_version}" apply false
     id "com.google.dagger.hilt.android" version "${dagger_hilt_version}" apply false
     id "com.android.test" version "${android_version}" apply false
+    id "io.sentry.android.gradle" version "3.5.0"
 }
 
 
