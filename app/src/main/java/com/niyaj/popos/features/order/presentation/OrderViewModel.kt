@@ -1,5 +1,8 @@
 package com.niyaj.popos.features.order.presentation
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -41,12 +44,16 @@ class OrderViewModel @Inject constructor(
     private val _toggledSearchBar = MutableStateFlow(false)
     val toggledSearchBar = _toggledSearchBar.asStateFlow()
 
-    private val _selectedDate = MutableStateFlow("")
-    val selectedDate = _selectedDate.asStateFlow()
+    private val _selectedDate = mutableStateOf("")
+    val selectedDate: State<String> = _selectedDate
 
-    private var getStartDate = getCalculatedStartDate(date = _selectedDate.value.ifEmpty { getStartTime })
-    private var getEndDate = getCalculatedEndDate(date = _selectedDate.value.ifEmpty { getStartTime })
 
+    private val getStartDate = derivedStateOf {
+        getCalculatedStartDate(date = _selectedDate.value.ifEmpty { LocalDate.now().toString() })
+    }
+    private val getEndDate = derivedStateOf {
+        getCalculatedEndDate(date = _selectedDate.value.ifEmpty { LocalDate.now().toString() })
+    }
 
     init {
         savedStateHandle.get<String>("selectedDate")?.let { selectedDate ->
@@ -85,18 +92,14 @@ class OrderViewModel @Inject constructor(
 
             is OrderEvent.DeleteOrder -> {
                 viewModelScope.launch {
-                    if(event.cartOrderId.isNotEmpty()){
-                        when(val result = orderUseCases.deleteOrder(event.cartOrderId)){
-                            is Resource.Loading -> {}
-                            is Resource.Success -> {
-                                _eventFlow.emit(UiEvent.OnSuccess("Order Has Been Deleted successfully"))
-                            }
-                            is Resource.Error -> {
-                                _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable To Delete Order"))
-                            }
+                    when(val result = orderUseCases.deleteOrder(event.cartOrderId)){
+                        is Resource.Loading -> {}
+                        is Resource.Success -> {
+                            _eventFlow.emit(UiEvent.OnSuccess("Order Has Been Deleted successfully"))
                         }
-                    }else{
-                        _eventFlow.emit(UiEvent.OnError("Unable To Delete Order"))
+                        is Resource.Error -> {
+                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable To Delete Order"))
+                        }
                     }
                 }
             }
@@ -114,6 +117,7 @@ class OrderViewModel @Inject constructor(
                 _orders.value = _orders.value.copy(
                     filterOrder = event.filterOrder,
                 )
+
                 getAllOrders(event.filterOrder)
             }
 
@@ -122,7 +126,7 @@ class OrderViewModel @Inject constructor(
                     _searchText.emit(event.searchText)
                     getAllOrders(
                         FilterOrder.ByUpdatedDate(SortType.Descending),
-                        event.searchText
+                        event.searchText,
                     )
                 }
             }
@@ -135,11 +139,8 @@ class OrderViewModel @Inject constructor(
 
             is OrderEvent.SelectDate -> {
                 viewModelScope.launch {
-                    getStartDate = getCalculatedStartDate(date = event.date)
-                    getEndDate = getCalculatedEndDate(date = event.date)
-
+                    _selectedDate.value = event.date
                     getAllOrders()
-                    _selectedDate.emit(getStartDate)
                 }
             }
 
@@ -148,8 +149,8 @@ class OrderViewModel @Inject constructor(
             }
 
             is OrderEvent.RefreshOrder -> {
-                getAllOrders()
                 _selectedDate.value = ""
+                getAllOrders()
             }
         }
     }
@@ -157,8 +158,8 @@ class OrderViewModel @Inject constructor(
     private fun getAllOrders(
         filterOrder: FilterOrder = _orders.value.filterOrder,
         searchText: String = "",
-        startDate: String = getStartDate,
-        endDate: String = getEndDate,
+        startDate: String = getStartDate.value,
+        endDate: String = getEndDate.value,
     ){
         viewModelScope.launch(Dispatchers.IO) {
             orderUseCases.getAllOrders(filterOrder, searchText, startDate, endDate).collectLatest { result ->

@@ -2,6 +2,7 @@ package com.niyaj.popos.features.product.domain.repository
 
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.product.domain.model.Product
+import io.realm.kotlin.notifications.ResultsChange
 import kotlinx.coroutines.flow.Flow
 
 interface ProductRepository {

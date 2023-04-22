@@ -27,7 +27,6 @@ class ProductRepositoryImpl(
     config: RealmConfiguration,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ProductRepository, ProductValidationRepository {
-
     val realm = Realm.open(config)
 
     init {
@@ -379,4 +378,5 @@ class ProductRepositoryImpl(
             successful = true
         )
     }
+
 }

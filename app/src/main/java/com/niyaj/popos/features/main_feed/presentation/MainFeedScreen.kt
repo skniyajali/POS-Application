@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -20,19 +21,20 @@ import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
+import io.sentry.compose.SentryTraced
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @RootNavGraph(start = true)
 @Destination
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun MainFeedScreen(
-    onOpenSheet: (BottomSheetScreen) -> Unit = {},
-    navController: NavController,
-    scaffoldState: ScaffoldState,
-    mainFeedViewModel: MainFeedViewModel = hiltViewModel(),
-    resultRecipient: ResultRecipient<AddEditCartOrderScreenDestination, String>,
+    onOpenSheet : (BottomSheetScreen) -> Unit = {},
+    navController : NavController,
+    scaffoldState : ScaffoldState,
+    mainFeedViewModel : MainFeedViewModel = hiltViewModel(),
+    resultRecipient : ResultRecipient<AddEditCartOrderScreenDestination, String>,
 ) {
     val backdropScaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
     val scope = rememberCoroutineScope()
@@ -50,7 +52,7 @@ fun MainFeedScreen(
 
     val selectedOrder = mainFeedViewModel.selectedCartOrder.collectAsStateWithLifecycle().value
     val selectedOrderId = if (selectedOrder != null) {
-        if(!selectedOrder.address?.addressName.isNullOrEmpty()){
+        if (!selectedOrder.address?.addressName.isNullOrEmpty()) {
             selectedOrder.address?.shortName?.uppercase().plus(" -").plus(selectedOrder.orderId)
         } else {
             selectedOrder.orderId
@@ -60,9 +62,9 @@ fun MainFeedScreen(
     val showSearchBar by mainFeedViewModel.toggledSearchBar.collectAsStateWithLifecycle()
     val searchText = mainFeedViewModel.searchText.collectAsStateWithLifecycle().value
 
-    LaunchedEffect(key1 = true){
+    LaunchedEffect(key1 = true) {
         mainFeedViewModel.eventFlow.collectLatest { event ->
-            when(event){
+            when (event) {
                 is UiEvent.OnSuccess -> {
                     scaffoldState.snackbarHostState.showSnackbar(message = event.successMessage)
                 }
@@ -80,11 +82,11 @@ fun MainFeedScreen(
     }
 
     BackHandler(true) {
-        if (showSearchBar){
+        if (showSearchBar) {
             mainFeedViewModel.onSearchBarCloseAndClearClick()
-        } else if(selectedCategory.isNotEmpty()) {
+        } else if (selectedCategory.isNotEmpty()) {
             mainFeedViewModel.onMainFeedCategoryEvent(MainFeedCategoryEvent.OnSelectCategory(selectedCategory))
-        } else{
+        } else {
             navController.popBackStack()
         }
     }
@@ -98,92 +100,104 @@ fun MainFeedScreen(
         }
     }
 
-    LaunchedEffect(key1 = true){
+    LaunchedEffect(key1 = true) {
         scope.launch {
             mainFeedViewModel.onEvent(MainFeedEvent.GetSelectedOrder)
         }
     }
 
-    StandardBackdropScaffold(
-        navController = navController,
-        backdropScaffoldState = backdropScaffoldState,
-        scaffoldState = scaffoldState,
-        scope = scope,
-        selectedOrderId = selectedOrderId,
-        showSearchBar = showSearchBar,
-        searchText = searchText,
-        showFloatingActionButton = !showSearchBar && products.isNotEmpty(),
-        onSelectedOrderClick = {
-            onOpenSheet(BottomSheetScreen.GetAndSelectCartOrderScreen)
-        },
-        onSearchButtonClick = {
-            mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.ToggleSearchBar)
-        },
-        onSearchTextChanged = {
-            mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.SearchProduct(it))
-        },
-        onClearClick = {
-            mainFeedViewModel.onSearchTextClearClick()
-        },
-        onBackButtonClick = {
-            if (showSearchBar){
-                mainFeedViewModel.onSearchBarCloseAndClearClick()
-            }else{
-                navController.navigateUp()
-            }
-        },
-        backLayerContent = {
-            BackLayerContent(navController = navController)
-        },
-        frontLayerContent = {
-            FrontLayerContent(
-                navController = navController,
-                categoriesIsLoading = categoriesIsLoading,
-                productsIsLoading = productsIsLoading,
-                productsHasError = productsHasError,
-                categoriesHasError = categoriesHasError,
-                onCategoryFilterClick = {
-                    onOpenSheet(
-                        BottomSheetScreen.FilterCategoryScreen(
-                            filterCategory = filterCategory,
-                            onFilterChanged = {
-                                mainFeedViewModel.onMainFeedCategoryEvent(MainFeedCategoryEvent.OnFilterCategory(it))
-                            },
-                        )
-                    )
-                },
-                categories = categories,
-                onCategoryClick = {
-                    mainFeedViewModel.onMainFeedCategoryEvent(MainFeedCategoryEvent.OnSelectCategory(it))
-                },
-                selectedCategory = selectedCategory,
-                onProductFilterClick = {
-                    onOpenSheet(
-                        BottomSheetScreen.FilterProductScreen(
-                            filterProduct = filterProduct,
-                            onFilterChanged = {
-                                mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.OnFilterProduct(it))
-                            },
-                        )
-                    )
-                },
-                products = products,
-                onProductLeftClick = {
-                    if (selectedOrder != null) {
-                        mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.RemoveProductFromCart(selectedOrder.cartOrderId, it))
-                    }
-                },
-                onProductRightClick = {
-                    if(selectedOrder == null){
-                        navController.navigate(AddEditCartOrderScreenDestination())
-                    }else{
-                        mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.AddProductToCart(selectedOrder.cartOrderId, it))
-                    }
-                },
-                onRefreshFrontLayer = {
-                    mainFeedViewModel.onEvent(MainFeedEvent.RefreshMainFeed)
+    SentryTraced("main_feed_screen") {
+        StandardBackdropScaffold(
+            navController = navController,
+            backdropScaffoldState = backdropScaffoldState,
+            scaffoldState = scaffoldState,
+            scope = scope,
+            selectedOrderId = selectedOrderId,
+            showSearchBar = showSearchBar,
+            searchText = searchText,
+            showFloatingActionButton = !showSearchBar && products.isNotEmpty(),
+            onSelectedOrderClick = {
+                onOpenSheet(BottomSheetScreen.GetAndSelectCartOrderScreen)
+            },
+            onSearchButtonClick = {
+                mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.ToggleSearchBar)
+            },
+            onSearchTextChanged = {
+                mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.SearchProduct(it))
+            },
+            onClearClick = {
+                mainFeedViewModel.onSearchTextClearClick()
+            },
+            onBackButtonClick = {
+                if (showSearchBar) {
+                    mainFeedViewModel.onSearchBarCloseAndClearClick()
+                } else {
+                    navController.navigateUp()
                 }
-            )
-        },
-    )
+            },
+            backLayerContent = {
+                BackLayerContent(navController = navController)
+            },
+            frontLayerContent = {
+                FrontLayerContent(
+                    navController = navController,
+                    categoriesIsLoading = categoriesIsLoading,
+                    productsIsLoading = productsIsLoading,
+                    productsHasError = productsHasError,
+                    categoriesHasError = categoriesHasError,
+                    onCategoryFilterClick = {
+                        onOpenSheet(
+                            BottomSheetScreen.FilterCategoryScreen(
+                                filterCategory = filterCategory,
+                                onFilterChanged = {
+                                    mainFeedViewModel.onMainFeedCategoryEvent(MainFeedCategoryEvent.OnFilterCategory(it))
+                                },
+                            )
+                        )
+                    },
+                    categories = categories,
+                    onCategoryClick = {
+                        mainFeedViewModel.onMainFeedCategoryEvent(MainFeedCategoryEvent.OnSelectCategory(it))
+                    },
+                    selectedCategory = selectedCategory,
+                    onProductFilterClick = {
+                        onOpenSheet(
+                            BottomSheetScreen.FilterProductScreen(
+                                filterProduct = filterProduct,
+                                onFilterChanged = {
+                                    mainFeedViewModel.onMainFeedProductEvent(MainFeedProductEvent.OnFilterProduct(it))
+                                },
+                            )
+                        )
+                    },
+                    products = products,
+                    onProductLeftClick = {
+                        if (selectedOrder != null) {
+                            mainFeedViewModel.onMainFeedProductEvent(
+                                MainFeedProductEvent.RemoveProductFromCart(
+                                    selectedOrder.cartOrderId,
+                                    it
+                                )
+                            )
+                        }
+                    },
+                    onProductRightClick = {
+                        if (selectedOrder == null) {
+                            navController.navigate(AddEditCartOrderScreenDestination())
+                        } else {
+                            mainFeedViewModel.onMainFeedProductEvent(
+                                MainFeedProductEvent.AddProductToCart(
+                                    selectedOrder.cartOrderId,
+                                    it
+                                )
+                            )
+                        }
+                    },
+                    onRefreshFrontLayer = {
+                        mainFeedViewModel.onEvent(MainFeedEvent.RefreshMainFeed)
+                    }
+                )
+            },
+        )
+    }
 }

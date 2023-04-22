@@ -1,8 +1,6 @@
 package com.niyaj.popos.features.product.presentation
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +9,7 @@ import com.niyaj.popos.features.category.domain.use_cases.CategoryUseCases
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.product.domain.use_cases.ProductUseCases
 import com.niyaj.popos.features.product.domain.util.FilterProduct
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,8 +41,8 @@ class ProductsViewModel @Inject constructor(
     private val _selectedProducts = mutableStateListOf<String>()
     val selectedProducts: SnapshotStateList<String> = _selectedProducts
 
-    private val _selectedCategory = mutableStateOf("")
-    val selectedCategory: State<String> = _selectedCategory
+    private val _selectedCategory = MutableStateFlow("")
+    val selectedCategory = _selectedCategory.asStateFlow()
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -250,4 +249,9 @@ class ProductsViewModel @Inject constructor(
         }
     }
 
+    private fun getProducts() {
+        viewModelScope.launch {
+            productUseCases.getPagingProducts()
+        }
+    }
 }

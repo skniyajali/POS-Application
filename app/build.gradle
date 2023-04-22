@@ -22,7 +22,7 @@ android {
         versionCode 1
         versionName "1.0.4"
         testInstrumentationRunner "com.niyaj.popos.HiltTestRunner"
-        manifestPlaceholders = [sentryEnvironment:"development"]
+        manifestPlaceholders = [sentryEnvironment:"production"]
     }
 
     buildTypes {
@@ -30,11 +30,9 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
         }
 
         benchmark {
-            signingConfig signingConfigs.debug
             matchingFallbacks = ['release']
             debuggable false
         }

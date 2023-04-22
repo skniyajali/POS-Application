@@ -125,9 +125,6 @@ fun EmployeeSelectionHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
-                modifier = Modifier.clickable {
-                    onCheckedChange()
-                },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
@@ -138,6 +135,9 @@ fun EmployeeSelectionHeader(
                 )
 
                 Text(
+                    modifier = Modifier.clickable {
+                        onCheckedChange()
+                    },
                     text = if (selectionCount != 0) "$selectionCount Selected" else "Select All",
                     fontWeight = FontWeight.SemiBold,
                     style = MaterialTheme.typography.body1,
