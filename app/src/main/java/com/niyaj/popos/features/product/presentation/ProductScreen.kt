@@ -56,7 +56,6 @@ fun ProductScreen(
     productsViewModel: ProductsViewModel = hiltViewModel(),
     resultRecipient: ResultRecipient<AddEditProductScreenDestination, String>
 ) {
-
     val lazyListState = rememberLazyListState()
     val deleteProductState = rememberMaterialDialogState()
     val scope = rememberCoroutineScope()
@@ -70,7 +69,7 @@ fun ProductScreen(
     }
 
     val selectedProducts = productsViewModel.selectedProducts
-    val selectedCategory = productsViewModel.selectedCategory.value
+    val selectedCategory = productsViewModel.selectedCategory.collectAsStateWithLifecycle().value
 
     // Remember a SystemUiController
     val systemUiController = rememberSystemUiController()
@@ -352,7 +351,7 @@ fun ProductScreen(
                 } else {
                     CategoryItems(
                         categories = productsViewModel.categories.collectAsState().value,
-                        selectedCategory = productsViewModel.selectedCategory.value,
+                        selectedCategory = selectedCategory,
                         onClick = {
                             productsViewModel.onProductEvent(ProductEvent.SelectCategory(it))
                         },

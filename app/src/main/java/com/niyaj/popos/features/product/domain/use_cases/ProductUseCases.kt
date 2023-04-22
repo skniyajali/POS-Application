@@ -15,5 +15,5 @@ data class ProductUseCases(
     val deleteProduct: DeleteProduct,
     val increaseProductPrice: IncreaseProductPrice,
     val decreaseProductPrice: DecreaseProductPrice,
-    val importProducts: ImportProducts
+    val importProducts: ImportProducts,
 )

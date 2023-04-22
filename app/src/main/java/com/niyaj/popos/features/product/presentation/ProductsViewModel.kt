@@ -1,8 +1,6 @@
 package com.niyaj.popos.features.product.presentation
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -42,8 +40,8 @@ class ProductsViewModel @Inject constructor(
     private val _selectedProducts = mutableStateListOf<String>()
     val selectedProducts: SnapshotStateList<String> = _selectedProducts
 
-    private val _selectedCategory = mutableStateOf("")
-    val selectedCategory: State<String> = _selectedCategory
+    private val _selectedCategory = MutableStateFlow("")
+    val selectedCategory = _selectedCategory.asStateFlow()
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -249,5 +247,4 @@ class ProductsViewModel @Inject constructor(
             }
         }
     }
-
 }

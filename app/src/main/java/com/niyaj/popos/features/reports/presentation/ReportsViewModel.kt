@@ -6,21 +6,12 @@ import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.reports.domain.use_cases.ReportsUseCases
-import com.niyaj.popos.util.Constants
+import com.niyaj.popos.util.*
 import com.niyaj.popos.util.Constants.PRINT_ADDRESS_WISE_REPORT_LIMIT
 import com.niyaj.popos.util.Constants.PRINT_CUSTOMER_WISE_REPORT_LIMIT
 import com.niyaj.popos.util.Constants.PRINT_PRODUCT_WISE_REPORT_LIMIT
-import com.niyaj.popos.util.getCalculatedEndDate
-import com.niyaj.popos.util.getCalculatedStartDate
-import com.niyaj.popos.util.getEndTime
-import com.niyaj.popos.util.getStartTime
-import com.niyaj.popos.util.toFormattedDate
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -89,12 +80,8 @@ class ReportsViewModel @Inject constructor(
 
             is ReportsEvent.OnChangeOrderType -> {
                 if (event.orderType != _productWiseData.value.orderType) {
-                    val startDate =
-                        if (_selectedDate.value.isEmpty()) getStartTime else getCalculatedStartDate(
-                            date = _selectedDate.value
-                        )
-                    val endDate =
-                        if (_selectedDate.value.isEmpty()) getEndTime else getCalculatedEndDate(date = _selectedDate.value)
+                    val startDate =  getCalculatedStartDate(date = _selectedDate.value.ifEmpty { getStartTime })
+                    val endDate = getCalculatedEndDate(date = startDate)
 
                     getProductWiseReport(startDate, endDate, orderType = event.orderType)
                 }
@@ -102,12 +89,8 @@ class ReportsViewModel @Inject constructor(
 
             is ReportsEvent.OnChangeCategoryOrderType -> {
                 if (event.orderType != _categoryWiseData.value.orderType) {
-                    val startDate =
-                        if (_selectedDate.value.isEmpty()) getStartTime else getCalculatedStartDate(
-                            date = _selectedDate.value
-                        )
-                    val endDate =
-                        if (_selectedDate.value.isEmpty()) getEndTime else getCalculatedEndDate(date = _selectedDate.value)
+                    val startDate =  getCalculatedStartDate(date = _selectedDate.value.ifEmpty { getStartTime })
+                    val endDate = getCalculatedEndDate(date = startDate)
 
                     getCategoryWiseReport(startDate, endDate, orderType = event.orderType)
                 }
@@ -118,6 +101,7 @@ class ReportsViewModel @Inject constructor(
             }
 
             is ReportsEvent.RefreshReport -> {
+                _selectedDate.value = ""
                 generateReport()
                 getReport(date)
                 getReportBarData(endTime)

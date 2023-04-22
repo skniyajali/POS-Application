@@ -42,6 +42,7 @@ import com.niyaj.popos.util.Constants.GENERATE_REPORT_INTERVAL_HOUR
 import com.niyaj.popos.util.worker.DataDeletionWorker
 import com.niyaj.popos.util.worker.GenerateReportWorker
 import dagger.hilt.android.AndroidEntryPoint
+import io.sentry.compose.withSentryObservableEffect
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -123,7 +124,7 @@ class MainActivity : ComponentActivity() {
             PoposTheme {
                 // A surface container using the 'background' color from the theme
                 val scaffoldState = rememberScaffoldState()
-                val navController = rememberAnimatedNavController()
+                val navController = rememberAnimatedNavController().withSentryObservableEffect()
                 val sheetState = rememberModalBottomSheetState(
                     initialValue = ModalBottomSheetValue.Hidden,
                     skipHalfExpanded = true

@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.collectLatest
 class GetAllProducts(
     private val productRepository: ProductRepository
 ) {
-    suspend operator fun invoke(
+    operator fun invoke(
         filterProduct: FilterProduct = FilterProduct.ByCategoryId(SortType.Ascending),
         searchText: String = "",
         selectedCategory: String = "",
