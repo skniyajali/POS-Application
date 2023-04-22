@@ -65,6 +65,12 @@ fun EmployeeAbsentReminderScreen(
         }
     }
 
+    LaunchedEffect(key1 = Unit) {
+        if (employees.isEmpty()) {
+            resultBackNavigator.navigateBack("Employees not found, add new employee.")
+        }
+    }
+
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
             when (event) {

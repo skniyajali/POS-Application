@@ -58,6 +58,12 @@ fun EmployeeDailySalaryReminderScreen(
 
     val selectedEmployees = viewModel.selectedEmployees
 
+    LaunchedEffect(key1 = Unit) {
+        if (employees.isEmpty()) {
+            resultBackNavigator.navigateBack("Employees not found, add new employee.")
+        }
+    }
+
     val listState = rememberLazyListState()
     val hideBottomBar = remember {
         derivedStateOf {

@@ -327,7 +327,7 @@ fun toMonthAndYear(date: String): String {
     }
 }
 
-fun setTodayStartTime(time: Int = 1): Calendar {
+fun setTodayStartTime(time: Int = 11): Calendar {
     val startTime = Calendar.getInstance()
     startTime[Calendar.HOUR_OF_DAY] = time
     startTime[Calendar.MINUTE] = 0
@@ -349,7 +349,7 @@ private fun setTodayEndTime(time: Int = 23): Calendar {
 
 val openingTime: String = setTodayStartTime().timeInMillis.toString()
 val closingTime: String = setTodayEndTime().timeInMillis.toString()
-val dailySalaryStartTime = setTodayStartTime(7).timeInMillis.toString()
+val dailySalaryStartTime = setTodayStartTime().timeInMillis.toString()
 
 
 fun createDottedString(name: String): String {
