@@ -1,0 +1,227 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'dagger.hilt.android.plugin'
+    id 'kotlin-parcelize'
+    id "com.guardsquare.appsweep" version "latest.release"
+    id 'io.realm.kotlin'
+    id 'com.google.devtools.ksp' version '1.7.21-1.0.8'
+    id 'kotlin-kapt'
+}
+
+android {
+    namespace 'com.niyaj.popos'
+
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.niyaj.popos"
+        minSdk 26
+        targetSdk 33
+        versionCode 1
+        versionName "1.0.4"
+        testInstrumentationRunner "com.niyaj.popos.HiltTestRunner"
+        manifestPlaceholders = [sentryEnvironment:"production"]
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        benchmark {
+            matchingFallbacks = ['release']
+            debuggable false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = '1.4.0-alpha02'
+    }
+
+    packagingOptions {
+        exclude "lib/arm64-v8a/librealm-jni.so"
+
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            resources.excludes.add("META-INF/LICENSE.md")
+            resources.excludes.add("META-INF/LICENSE-notice.md")
+            resources.excludes += "DebugProbesKt.bin"
+        }
+    }
+
+//    kotlin {
+//        sourceSets {
+//            main.kotlin.srcDirs += 'build/generated/ksp/main/kotlin'
+//            test.kotlin.srcDirs += 'build/generated/ksp/test/kotlin'
+//        }
+//    }
+
+    applicationVariants.all { variant ->
+        kotlin.sourceSets {
+            getByName(variant.name) {
+                kotlin.srcDir("build/generated/ksp/${variant.name}/kotlin")
+            }
+        }
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+    appsweep {
+        apiKey "gs_appsweep_83ofXxg_qCVtI5igS4M0wofGmACUaMSdESX1c5m6"
+        configurations {
+            release {
+                tags "Public"
+            }
+        }
+    }
+
+    hilt {
+        enableAggregatingTask = true
+    }
+}
+
+dependencies {
+
+    implementation "androidx.core:core-ktx:$androidx_core_version"
+    implementation "androidx.compose.ui:ui:$compose_version"
+    implementation "androidx.compose.material:material:$compose_version"
+    implementation "androidx.compose.material:material-icons-extended:$compose_version"
+    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
+    implementation "androidx.activity:activity-compose:$androidx_activity_version"
+
+    //Startup & Splash screen
+    implementation "androidx.startup:startup-runtime:$androidx_startup_version"
+    implementation "androidx.core:core-splashscreen:$androidx_splash_version"
+
+    // ViewModel
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+    implementation "androidx.compose.runtime:runtime-livedata:$androidx_livedata_version"
+    // Saved state module for ViewModel
+    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
+    // Annotation processor
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
+    // Compose dependencies
+    implementation "androidx.navigation:navigation-compose:$androidx_navigation_compose_version"
+    // Kotlin + coroutines
+    implementation "androidx.work:work-runtime-ktx:$androidx_work_version"
+
+    //Accompanist
+    implementation "com.google.accompanist:accompanist-flowlayout:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-permissions:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_swiperefresh_version"
+    implementation "com.google.accompanist:accompanist-placeholder-material:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-pager-indicators:$accompanist_version"
+
+    // Coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
+
+    // For testing
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinx_coroutines_version"
+    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinx_coroutines_version"
+
+    //Dagger - Hilt When using Kotlin.
+    implementation "androidx.hilt:hilt-work:$hilt_version"
+    kapt "androidx.hilt:hilt-compiler:$hilt_version"
+    implementation "com.google.dagger:hilt-android:$dagger_hilt_version"
+    kapt "com.google.dagger:hilt-compiler:$dagger_hilt_version"
+    annotationProcessor "com.google.dagger:hilt-compiler:$dagger_hilt_version"
+    implementation "androidx.hilt:hilt-navigation-compose:$hilt_version"
+
+    // For testing
+    androidTestImplementation  "com.google.dagger:hilt-android-testing:$dagger_hilt_version"
+    kaptAndroidTest "com.google.dagger:hilt-compiler:$dagger_hilt_version"
+    testImplementation "com.google.dagger:hilt-android-testing:$dagger_hilt_version"
+    kaptTest "com.google.dagger:hilt-compiler:$dagger_hilt_version"
+
+
+    // Timber
+    implementation "com.jakewharton.timber:timber:$timber_version"
+
+    //RevealSwipe
+    implementation "de.charlex.compose:revealswipe:$revealswipe_version"
+
+    //Pos-printer
+    implementation "com.github.DantSu:ESCPOS-ThermalPrinter-Android:$pos_printer_version"
+
+    //Realm
+    implementation "io.realm.kotlin:library-sync:$realm_version"
+
+    // debugImplementation because LeakCanary should only run in debug builds.
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanary_version"
+
+    //Compose Material Dialogs
+    implementation "io.github.vanpra.compose-material-dialogs:core:$vanpra_compose_version"
+    implementation "io.github.vanpra.compose-material-dialogs:datetime:$vanpra_compose_version"
+
+    //RamCosta Library
+    implementation "io.github.raamcosta.compose-destinations:animations-core:$raamcosta_version"
+    ksp "io.github.raamcosta.compose-destinations:ksp:$raamcosta_version"
+
+    //Moshi
+    ksp "com.squareup.moshi:moshi-kotlin-codegen:$moshi_version"
+    implementation "com.squareup.moshi:moshi:$moshi_version"
+
+    //ProfileInstaller
+    implementation "androidx.profileinstaller:profileinstaller:$profileinstaller_version"
+
+    // Local unit tests
+    testImplementation "junit:junit:$junit_version"
+    androidTestImplementation "junit:junit:$junit_version"
+
+    testImplementation "androidx.test:core:$androidx_test_core_version"
+    testImplementation "androidx.arch.core:core-testing:$androidx_arch_core_version"
+    androidTestImplementation "androidx.test.ext:junit:$androidx_test_ext_junit_version"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidx_test_espresso_version"
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    androidTestImplementation "androidx.test:core-ktx:$androidx_test_core_version"
+    androidTestImplementation "androidx.test:runner:$androidx_test_runner"
+    androidTestImplementation "androidx.arch.core:core-testing:$androidx_arch_core_version"
+    androidTestImplementation "androidx.work:work-testing:$androidx_work_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+
+    // Truth
+    testImplementation "com.google.truth:truth:$truth_version"
+    androidTestImplementation "com.google.truth:truth:$truth_version"
+
+    //Mockk
+    androidTestImplementation "io.mockk:mockk-android:$mockk_version"
+    testImplementation "io.mockk:mockk:$mockk_version"
+
+    //ACRA Logger
+    implementation "ch.acra:acra-mail:$acra_version"
+    implementation "ch.acra:acra-toast:$acra_version"
+    implementation "ch.acra:acra-notification:$acra_version"
+    implementation "ch.acra:acra-limiter:$acra_version"
+    implementation "ch.acra:acra-advanced-scheduler:$acra_version"
+
+    // Kotlin
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlin_bom_version"))
+
+    //Sentry
+    implementation 'io.sentry:sentry-android:6.17.0'
+    implementation 'io.sentry:sentry-compose-android:6.17.0'
+}
