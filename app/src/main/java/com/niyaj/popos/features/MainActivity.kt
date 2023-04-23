@@ -250,7 +250,7 @@ class MainActivity : ComponentActivity() {
                     scope.launch {
                         if (bottomSheetScaffoldState.bottomSheetState.isExpanded) {
 //                                bottomSheetScaffoldState.bottomSheetState.collapse()
-                            bottomSheetScaffoldState.bottomSheetState.animateTo(BottomSheetValue.Collapsed)
+                            bottomSheetScaffoldState.bottomSheetState.collapse()
                         }
 
                         // to set the current sheet to null when the bottom sheet closes
@@ -263,7 +263,7 @@ class MainActivity : ComponentActivity() {
                 val openSheet : (BottomSheetScreen) -> Unit = {
                     scope.launch {
                         currentBottomSheet.value = it
-                        bottomSheetScaffoldState.bottomSheetState.animateTo(BottomSheetValue.Expanded)
+                        bottomSheetScaffoldState.bottomSheetState.expand()
                     }
                 }
 
