@@ -6,14 +6,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.util.safeString
 import com.niyaj.popos.features.category.domain.model.Category
-import com.niyaj.popos.features.category.domain.use_cases.CategoryUseCases
+import com.niyaj.popos.features.category.domain.use_cases.GetAllCategories
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.common.util.safeString
 import com.niyaj.popos.features.product.domain.model.Product
-import com.niyaj.popos.features.product.domain.use_cases.ProductUseCases
-import com.niyaj.popos.util.capitalizeWords
+import com.niyaj.popos.features.product.domain.repository.ProductRepository
+import com.niyaj.popos.features.product.domain.repository.ProductValidationRepository
+import com.niyaj.popos.utils.capitalizeWords
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,10 +23,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ *
+ */
 @HiltViewModel
 class AddEditProductViewModel @Inject constructor(
-    private val productUseCases: ProductUseCases,
-    private val categoryUseCases: CategoryUseCases,
+    private val productRepository: ProductRepository,
+    private val getAllCategories : GetAllCategories,
+    private val validationRepository : ProductValidationRepository,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -47,6 +52,9 @@ class AddEditProductViewModel @Inject constructor(
         getAllCategories()
     }
 
+    /**
+     * 
+     */
     fun onAddEditEvent(event: AddEditProductEvent) {
         when(event){
             is AddEditProductEvent.CategoryNameChanged -> {
@@ -84,9 +92,9 @@ class AddEditProductViewModel @Inject constructor(
     }
 
     private fun createNewProduct(productId: String? = null){
-        val validatedProductName = productUseCases.validateProductName(addEditProductState.productName, productId)
-        val validatedProductPrice = productUseCases.validateProductPrice(safeString(addEditProductState.productPrice))
-        val validatedCategoryName = productUseCases.validateCategoryName(addEditProductState.category.categoryName)
+        val validatedProductName = validationRepository.validateProductName(addEditProductState.productName, productId)
+        val validatedProductPrice = validationRepository.validateProductPrice(safeString(addEditProductState.productPrice))
+        val validatedCategoryName = validationRepository.validateCategoryName(addEditProductState.category.categoryName)
 
         val hasError = listOf(validatedProductName, validatedProductPrice, validatedCategoryName).any {
             !it.successful
@@ -102,7 +110,7 @@ class AddEditProductViewModel @Inject constructor(
         }else{
             viewModelScope.launch {
                 if(productId == null){
-                    val result = productUseCases.createNewProduct(
+                    val result = productRepository.createNewProduct(
                         Product(
                             productName = addEditProductState.productName.capitalizeWords,
                             productPrice = safeString(addEditProductState.productPrice),
@@ -123,7 +131,7 @@ class AddEditProductViewModel @Inject constructor(
                         }
                     }
                 }else{
-                    val result = productUseCases.updateProduct(
+                    val result = productRepository.updateProduct(
                         Product(
                             productName = addEditProductState.productName.capitalizeWords,
                             productPrice = safeString(addEditProductState.productPrice),
@@ -153,7 +161,7 @@ class AddEditProductViewModel @Inject constructor(
 
     private fun getProductById(productId: String) {
         viewModelScope.launch {
-            when(val result = productUseCases.getProductById(productId)){
+            when(val result = productRepository.getProductById(productId)){
                 is Resource.Loading -> {
 
                 }
@@ -178,7 +186,7 @@ class AddEditProductViewModel @Inject constructor(
 
     private fun getAllCategories(){
         viewModelScope.launch {
-            categoryUseCases.getAllCategories().collect { result ->
+            getAllCategories.invoke().collect { result ->
                 when (result){
                     is Resource.Loading -> {
 

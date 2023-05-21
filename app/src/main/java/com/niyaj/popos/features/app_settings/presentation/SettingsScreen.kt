@@ -13,22 +13,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.RemoveCircleOutline
+import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.ExtendedFabButton
 import com.niyaj.popos.features.components.SettingsCard
+import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.destinations.DeletionSettingsDestination
+import com.niyaj.popos.features.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
@@ -37,8 +42,18 @@ import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.message
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import com.vanpra.composematerialdialogs.title
+import io.sentry.compose.SentryTraced
 import kotlinx.coroutines.launch
 
+/**
+ *  Settings Screen Composable
+ *  @param navController
+ *  @param scaffoldState
+ *  @param settingsViewModel
+ *  @param resultRecipient
+ *
+ */
+@OptIn(ExperimentalComposeUiApi::class)
 @Destination
 @Composable
 fun SettingsScreen(
@@ -47,7 +62,7 @@ fun SettingsScreen(
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     resultRecipient: ResultRecipient<DeletionSettingsDestination, String>
 ) {
-
+    val context = LocalContext.current
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val dialogState = rememberMaterialDialogState()
@@ -90,112 +105,134 @@ fun SettingsScreen(
         }
     }
 
-    StandardScaffold(
-        navController = navController,
-        scaffoldState = scaffoldState,
-        showBackArrow = true,
-        title = {
-            Text(text = "Settings")
-        },
-        navActions = {},
-        isFloatingActionButtonDocked = true,
-        floatingActionButton = {
-            ExtendedFabButton(
-                text = "",
-                showScrollToTop = showScrollToTop.value,
-                visible = false,
-                onScrollToTopClick = {
-                    scope.launch {
-                        lazyListState.animateScrollToItem(index = 0)
-                    }
-                },
-                onClick = {},
-            )
-        },
-        floatingActionButtonPosition = if (showScrollToTop.value) FabPosition.End else FabPosition.Center,
-    ) {
-        MaterialDialog(
-            dialogState = dialogState,
-            buttons = {
-                positiveButton(
-                    text = "Delete",
-                    onClick = {
-                        settingsViewModel.onEvent(SettingsEvent.DeleteAllRecords)
-                    }
-                )
-                negativeButton(
-                    text = "Cancel",
-                    onClick = {
-                        dialogState.hide()
+    SentryTraced(tag = SettingsScreenDestination.route) {
+        StandardScaffold(
+            navController = navController,
+            scaffoldState = scaffoldState,
+            showBackArrow = true,
+            title = {
+                Text(text = "Settings")
+            },
+            navActions = {},
+            isFloatingActionButtonDocked = true,
+            floatingActionButton = {
+                StandardFabButton(
+                    text = "",
+                    showScrollToTop = showScrollToTop.value,
+                    visible = false,
+                    onScrollToTopClick = {
+                        scope.launch {
+                            lazyListState.animateScrollToItem(index = 0)
+                        }
                     },
+                    onClick = {},
                 )
-            }
+            },
+            floatingActionButtonPosition = if (showScrollToTop.value) FabPosition.End else FabPosition.Center,
         ) {
-            title(text = "Delete All Records?")
-            message(res = R.string.delete_all_records)
+            MaterialDialog(
+                dialogState = dialogState,
+                buttons = {
+                    positiveButton(
+                        text = "Delete",
+                        onClick = {
+                            settingsViewModel.onEvent(SettingsEvent.DeleteAllRecords)
+                        }
+                    )
+                    negativeButton(
+                        text = "Cancel",
+                        onClick = {
+                            dialogState.hide()
+                        },
+                    )
+                }
+            ) {
+                title(text = "Delete All Records?")
+                message(res = R.string.delete_all_records)
+            }
+
+            MaterialDialog(
+                dialogState = deletePastState,
+                buttons = {
+                    positiveButton(
+                        text = "Delete",
+                        onClick = {
+                            settingsViewModel.onEvent(SettingsEvent.DeletePastRecords)
+                        }
+                    )
+                    negativeButton(
+                        text = "Cancel",
+                        onClick = {
+                            deletePastState.hide()
+                        },
+                    )
+                }
+            ) {
+                title(text = "Delete Past Records?")
+                message(res = R.string.delete_past_records)
+            }
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(SpaceSmall)
+            ) {
+
+                item {
+                    Spacer(modifier = Modifier.height(SpaceSmall))
+                    SettingsCard(
+                        text = "Data Deletion Settings",
+                        icon = Icons.Default.RemoveCircleOutline,
+                        onClick = {
+                            navController.navigate(DeletionSettingsDestination())
+                        },
+                    )
+                    Spacer(modifier = Modifier.height(SpaceMedium))
+                }
+
+                item {
+                    SettingsCard(
+                        text = "Delete Past Records",
+                        icon = Icons.Default.Delete,
+                        onClick = {
+                            deletePastState.show()
+                        },
+                    )
+                    Spacer(modifier = Modifier.height(SpaceMedium))
+                }
+
+                item {
+                    SettingsCard(
+                        text = "Delete All Records",
+                        icon = Icons.Default.DeleteForever,
+                        onClick = {
+                            dialogState.show()
+                        },
+                    )
+                    Spacer(modifier = Modifier.height(SpaceMedium))
+                }
+
+                item {
+                    SettingsCard(
+                        text = "Backup Files",
+                        icon = Icons.Default.UploadFile,
+                        onClick = settingsViewModel::backupFiles,
+                    )
+                    Spacer(modifier = Modifier.height(SpaceMedium))
+                }
+
+                item {
+                    SettingsCard(
+                        text = "Restore Files",
+                        icon = Icons.Default.Update,
+                        onClick = {
+                            settingsViewModel.restoreFiles(context)
+                        },
+                    )
+                    Spacer(modifier = Modifier.height(SpaceMedium))
+                }
+            }
+
         }
-
-        MaterialDialog(
-            dialogState = deletePastState,
-            buttons = {
-                positiveButton(
-                    text = "Delete",
-                    onClick = {
-                        settingsViewModel.onEvent(SettingsEvent.DeletePastRecords)
-                    }
-                )
-                negativeButton(
-                    text = "Cancel",
-                    onClick = {
-                        deletePastState.hide()
-                    },
-                )
-            }
-        ) {
-            title(text = "Delete Past Records?")
-            message(res = R.string.delete_past_records)
-        }
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SpaceSmall)
-        ) {
-
-            item {
-                Spacer(modifier = Modifier.height(SpaceSmall))
-                SettingsCard(
-                    text = "Data Deletion Settings",
-                    icon = Icons.Default.RemoveCircleOutline,
-                    onClick = {
-                        navController.navigate(DeletionSettingsDestination())
-                    },
-                )
-                Spacer(modifier = Modifier.height(SpaceMedium))
-            }
-
-            item {
-                SettingsCard(
-                    text = "Delete Past Records",
-                    icon = Icons.Default.Delete,
-                    onClick = {
-                        deletePastState.show()
-                    },
-                )
-                Spacer(modifier = Modifier.height(SpaceMedium))
-            }
-
-            item {
-                SettingsCard(
-                    text = "Delete All Records",
-                    icon = Icons.Default.DeleteForever,
-                    onClick = {
-                        dialogState.show()
-                    },
-                )
-                Spacer(modifier = Modifier.height(SpaceMedium))
-            }
-        }
-
     }
 }

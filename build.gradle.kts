@@ -12,6 +12,7 @@ buildscript {
     }
 }
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
@@ -21,6 +22,8 @@ plugins {
     alias(libs.plugins.hilt) apply false
     alias(libs.plugins.android.test) apply false
     alias(libs.plugins.sentry)
+    alias(libs.plugins.androidx.baselineprofile) apply false
+    alias(libs.plugins.androidx.benchmark) apply false
 }
 
 

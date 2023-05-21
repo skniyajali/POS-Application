@@ -1,5 +1,6 @@
 package com.niyaj.popos.features.cart.presentation.components
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,8 +21,10 @@ import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.R
@@ -33,76 +36,99 @@ import com.niyaj.popos.features.components.TextWithIcon
 
 @Composable
 fun CartItemOrderDetailsSection(
+    modifier : Modifier = Modifier,
     orderId: String = "",
     customerPhone: String? = "",
     orderType: String = CartOrderType.DineIn.orderType,
-    selected: Boolean = false,
-    onClick: () -> Unit = {},
-    onEditClick: () -> Unit = {},
-    onViewClick: () -> Unit = {},
+    selected: Boolean,
+    onClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onViewClick: () -> Unit,
 ) {
     val height = if (orderType == CartOrderType.DineIn.orderType) 56.dp else 64.dp
     val iconColor = if(orderType == CartOrderType.DineIn.orderType) MaterialTheme.colors.primary else MaterialTheme.colors.secondaryVariant
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(height)
-            .background(
-                LightColor13,
-                RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp)
-            )
-            .padding(SpaceSmall),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.Start
+    key(orderId) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(height)
+                .background(LightColor13, RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                .padding(SpaceSmall),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextWithIcon(
-                text = orderId,
-                icon = Icons.Default.Tag,
-                isTitle = true,
-            )
-
-            if (customerPhone != null) {
-                Spacer(modifier = Modifier.height(SpaceMini))
+            Column(
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.Start
+            ) {
                 TextWithIcon(
-                    text = customerPhone,
-                    icon = Icons.Default.PhoneAndroid,
+                    text = orderId,
+                    icon = Icons.Default.Tag,
                     isTitle = true,
                 )
+
+                customerPhone?.let {
+                    Spacer(modifier = Modifier.height(SpaceMini))
+                    TextWithIcon(
+                        text = it,
+                        icon = Icons.Default.PhoneAndroid,
+                        isTitle = true,
+                    )
+                }
             }
+
+            CartOrderDetailsButtons(
+                selected = selected,
+                iconColor = iconColor,
+                onClick = onClick,
+                onEditClick = onEditClick,
+                onViewClick = onViewClick
+            )
+        }
+    }
+}
+
+
+@Composable
+fun CartOrderDetailsButtons(
+    modifier : Modifier = Modifier,
+    selected: Boolean,
+    iconColor: Color,
+    onClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onViewClick: () -> Unit,
+) {
+    Row(modifier) {
+        IconButton(
+            onClick = onEditClick
+        ) {
+            Icon(
+                imageVector = Icons.Default.Edit,
+                contentDescription = "Edit Cart",
+                tint = iconColor
+            )
         }
 
-        Row {
-            IconButton(onClick = { onEditClick() }) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = null,
-                    tint = iconColor
-                )
-            }
+        IconButton(
+            onClick = onViewClick
+        ) {
+            Icon(
+                imageVector = Icons.Default.Visibility,
+                contentDescription = stringResource(id = R.string.order_details),
+                tint = iconColor,
+            )
+        }
 
+        Crossfade(targetState = selected, label = "selected") {
             IconButton(
-                onClick = { onViewClick() }
+                onClick = onClick
             ) {
                 Icon(
-                    imageVector = Icons.Default.Visibility,
-                    contentDescription = stringResource(id = R.string.order_details),
-                    tint = iconColor,
-                )
-            }
-
-            IconButton(onClick = { onClick() }) {
-                Icon(
-                    imageVector = if (selected) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
+                    imageVector = if (it) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
                     contentDescription = null,
                     tint = iconColor
                 )
             }
         }
-
     }
 }

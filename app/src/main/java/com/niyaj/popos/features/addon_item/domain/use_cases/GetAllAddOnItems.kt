@@ -1,74 +1,46 @@
 package com.niyaj.popos.features.addon_item.domain.use_cases
 
 import com.niyaj.popos.features.addon_item.domain.model.AddOnItem
+import com.niyaj.popos.features.addon_item.domain.model.searchAddOnItem
 import com.niyaj.popos.features.addon_item.domain.repository.AddOnItemRepository
-import com.niyaj.popos.features.addon_item.domain.util.FilterAddOnItem
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.withContext
 
 class GetAllAddOnItems(
-    private val addOnItemRepository: AddOnItemRepository
+    private val addOnItemRepository : AddOnItemRepository,
+    private val ioDispatcher : CoroutineDispatcher = Dispatchers.IO,
 ) {
     suspend operator fun invoke(
-        filterAddOnItem: FilterAddOnItem,
-        searchText: String = ""
-    ): Flow<Resource<List<AddOnItem>>>  {
+        searchText : String = ""
+    ) : Flow<Resource<List<AddOnItem>>> {
         return channelFlow {
-            addOnItemRepository.getAllAddOnItems().collectLatest{ result ->
-                when(result){
-                    is Resource.Loading -> {
-                        send(Resource.Loading(result.isLoading))
-                    }
-                    is Resource.Success -> {
-                        val data = result.data?.let { data ->
-                            when(filterAddOnItem.sortType){
-                                is SortType.Ascending -> {
-                                    when(filterAddOnItem){
-                                        is FilterAddOnItem.ByAddOnItemId -> {
-                                            data.sortedBy { it.addOnItemId }
-                                        }
-                                        is FilterAddOnItem.ByAddOnItemName -> {
-                                            data.sortedBy { it.itemName }
-                                        }
-                                        is FilterAddOnItem.ByAddOnItemPrice -> {
-                                            data.sortedBy { it.itemPrice }
-                                        }
-                                        is FilterAddOnItem.ByAddOnItemDate -> {
-                                            data.sortedBy { it.createdAt }
-                                        }
-                                    }
+            withContext(ioDispatcher) {
+                addOnItemRepository.getAllAddOnItems().collectLatest { result ->
+                    when (result) {
+                        is Resource.Loading -> {
+                            send(Resource.Loading(result.isLoading))
+                        }
+
+                        is Resource.Success -> {
+                            val data = result.data?.let { addOnItemList ->
+                                addOnItemList.filter { addOnItem ->
+                                    addOnItem.searchAddOnItem(searchText)
                                 }
-                                is SortType.Descending -> {
-                                    when(filterAddOnItem){
-                                        is FilterAddOnItem.ByAddOnItemId -> {
-                                            data.sortedByDescending { it.addOnItemId }
-                                        }
-                                        is FilterAddOnItem.ByAddOnItemName -> {
-                                            data.sortedByDescending { it.itemName }
-                                        }
-                                        is FilterAddOnItem.ByAddOnItemPrice -> {
-                                            data.sortedByDescending { it.itemPrice }
-                                        }
-                                        is FilterAddOnItem.ByAddOnItemDate -> {
-                                            data.sortedByDescending { it.createdAt }
-                                        }
-                                    }
-                                }
-                            }.filter { addOnItem ->
-                                addOnItem.itemName.contains(searchText, true) ||
-                                        addOnItem.itemPrice.toString().contains(searchText, true) ||
-                                        addOnItem.createdAt.contains(searchText, true) ||
-                                        addOnItem.updatedAt?.contains(searchText, true) == true
+                            }
+
+                            data?.let { addOnItems ->
+                                send(Resource.Success(addOnItems))
                             }
                         }
 
-                        send(Resource.Success(data))
-                    }
-                    is Resource.Error -> {
-                        send(Resource.Error(result.message ?: "Unable to get data from repository"))
+                        is Resource.Error -> {
+                            send(Resource.Error(result.message ?: "Unable to get data from repository"))
+                        }
                     }
                 }
             }

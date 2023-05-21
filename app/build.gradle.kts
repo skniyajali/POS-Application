@@ -1,26 +1,26 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id(libs.plugins.android.application.get().pluginId)
     id(libs.plugins.kotlin.android.get().pluginId)
-//    id(libs.plugins.kotlin.serialization.get().pluginId)
-//    id(libs.plugins.kotlin.parcelize.get().pluginId)
     id(libs.plugins.hilt.get().pluginId)
     id(libs.plugins.realm.get().pluginId)
     alias(libs.plugins.appsweep)
     alias(libs.plugins.ksp)
     id(libs.plugins.kotlin.kapt.get().pluginId)
+    alias(libs.plugins.androidx.baselineprofile)
 }
 
 android {
-    namespace = "com.niyaj.popos"
+    namespace = libs.versions.namespace.get()
 
-    compileSdk = 33
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.niyaj.popos"
-        minSdk = 26
-        targetSdk = 33
-        versionCode = 1
-        versionName = "1.0.4"
+        applicationId = libs.versions.namespace.get()
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
+        versionCode = libs.versions.versionCode.get().toInt()
+        versionName = libs.versions.versionName.get()
         testInstrumentationRunner = "com.niyaj.popos.HiltTestRunner"
         manifestPlaceholders.putAll(mapOf("sentryEnvironment" to "production"))
     }
@@ -29,11 +29,17 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
+            setProguardFiles(
+                listOf(
+                    getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+                )
+            )
         }
 
-        val benchmark by creating {
-            matchingFallbacks.add("release")
+        create("benchmark") {
+            initWith(buildTypes.getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
             isDebuggable = false
         }
     }
@@ -52,7 +58,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.1"
+        kotlinCompilerExtensionVersion = "1.4.4"
     }
 
     packaging {
@@ -64,37 +70,6 @@ android {
         }
         jniLibs {
             excludes += "lib/arm64-v8a/librealm-jni.so"
-        }
-    }
-
-//    kotlin {
-//        sourceSets {
-//            main.kotlin.srcDirs += 'build/generated/ksp/main/kotlin'
-//            test.kotlin.srcDirs += 'build/generated/ksp/test/kotlin'
-//        }
-//    }
-
-//    applicationVariants.all { variant ->
-//        kotlin.sourceSets {
-//            getByName(variant.name) {
-//                kotlin.srcDir("build/generated/ksp/${variant.name}/kotlin")
-//            }
-//        }
-//    }
-
-    kotlin {
-        sourceSets.main {
-            kotlin.srcDir("build/generated/ksp/main/kotlin")
-        }
-        sourceSets.test {
-            kotlin.srcDir("build/generated/ksp/test/kotlin")
-        }
-    }
-
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-            isReturnDefaultValues = true
         }
     }
 
@@ -189,7 +164,7 @@ dependencies {
     implementation(libs.pos.printer)
 
     //Realm
-    implementation(libs.realm.library.sync)
+    implementation(libs.realm.library.base)
 
     // debugImplementation because LeakCanary should only run in debug builds.
     debugImplementation(libs.leakcanary)
@@ -244,6 +219,9 @@ dependencies {
     //Sentry
     implementation(libs.sentry.android)
     implementation(libs.sentry.compose.android)
+
+    //Baseline Profile
+    "baselineProfile"(project(mapOf("path" to ":benchmark")))
 }
 
 kapt {

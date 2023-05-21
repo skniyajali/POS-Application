@@ -23,6 +23,8 @@ class Reminder() : RealmObject {
 
     var isCompleted: Boolean = false
 
+    var notificationId: Int = 0
+
     var updatedAt: String = ""
 
     constructor(
@@ -35,6 +37,7 @@ class Reminder() : RealmObject {
         reminderType: String = "",
         isRepeatable: Boolean = true,
         isCompleted: Boolean = false,
+        notificationId: Int = 0,
         updatedAt: String = ""
     ) : this() {
         this.reminderId = reminderId
@@ -46,6 +49,7 @@ class Reminder() : RealmObject {
         this.reminderType = reminderType
         this.isRepeatable = isRepeatable
         this.isCompleted = isCompleted
+        this.notificationId = notificationId
         this.updatedAt = updatedAt
     }
 }
@@ -61,6 +65,7 @@ fun Reminder.toAbsentReminder(): AbsentReminder {
         reminderType = this.reminderType,
         isRepeatable = this.isRepeatable,
         isCompleted = this.isCompleted,
+        notificationId = this.notificationId,
         updatedAt = this.updatedAt
     )
 }
@@ -76,6 +81,7 @@ internal fun Reminder.toDailySalaryReminder(): DailySalaryReminder {
         reminderType = this.reminderType,
         isRepeatable = this.isRepeatable,
         isCompleted = this.isCompleted,
+        notificationId = this.notificationId,
         updatedAt = this.updatedAt
     )
 }

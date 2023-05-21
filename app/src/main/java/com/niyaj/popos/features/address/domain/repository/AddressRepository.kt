@@ -1,6 +1,7 @@
 package com.niyaj.popos.features.address.domain.repository
 
 import com.niyaj.popos.features.address.domain.model.Address
+import com.niyaj.popos.features.address.domain.model.AddressWiseOrder
 import com.niyaj.popos.features.common.util.Resource
 import kotlinx.coroutines.flow.Flow
 
@@ -18,4 +19,9 @@ interface AddressRepository {
 
     suspend fun deleteAddress(addressId: String): Resource<Boolean>
 
+    suspend fun deleteAllAddress(): Resource<Boolean>
+
+    suspend fun importAddresses(addresses: List<Address>): Resource<Boolean>
+
+    suspend fun getRecentOrdersOnAddress(addressId: String): Flow<Resource<List<AddressWiseOrder>>>
 }

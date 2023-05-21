@@ -34,3 +34,10 @@ class Charges() : RealmObject {
         this.updatedAt = updatedAt
     }
 }
+
+fun Charges.filterCharges(searchText: String): Boolean {
+    return this.chargesName.contains(searchText, true) ||
+            this.chargesPrice.toString().contains(searchText, true) ||
+            this.createdAt.contains(searchText, true) ||
+            this.updatedAt?.contains(searchText, true) == true
+}

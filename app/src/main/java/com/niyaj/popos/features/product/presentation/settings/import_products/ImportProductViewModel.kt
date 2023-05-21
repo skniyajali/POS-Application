@@ -1,6 +1,5 @@
 package com.niyaj.popos.features.product.presentation.settings.import_products
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -11,8 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.product.domain.model.Product
-import com.niyaj.popos.features.product.domain.use_cases.ProductUseCases
-import com.niyaj.popos.util.Constants
+import com.niyaj.popos.features.product.domain.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -20,9 +18,12 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ *
+ */
 @HiltViewModel
 class ImportProductViewModel @Inject constructor(
-    private val productUseCases: ProductUseCases
+    private val productRepository: ProductRepository
 ) : ViewModel()  {
 
     private val _importedProducts = mutableStateListOf<Product>()
@@ -30,9 +31,6 @@ class ImportProductViewModel @Inject constructor(
 
     private val _selectedProducts = mutableStateListOf<String>()
     val selectedProducts: SnapshotStateList<String> = _selectedProducts
-
-    private val _selectedFileType = mutableStateOf(Constants.JSON_FILE_NAME)
-    val selectedFileType : State<String> = _selectedFileType
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -43,6 +41,9 @@ class ImportProductViewModel @Inject constructor(
 
     private var productCount = 1
 
+    /**
+     *
+     */
     fun onEvent(event: ImportProductEvent){
         when (event) {
 
@@ -106,7 +107,6 @@ class ImportProductViewModel @Inject constructor(
                 onChoose = !onChoose
             }
 
-
             is ImportProductEvent.ImportProductsData -> {
                 _importedProducts.clear()
 
@@ -125,7 +125,7 @@ class ImportProductViewModel @Inject constructor(
                 }
 
                 viewModelScope.launch(Dispatchers.IO) {
-                    when (val result = productUseCases.importProducts(products.toList())){
+                    when (val result = productRepository.importProducts(products.toList())){
                         is Resource.Loading -> { }
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("${products.toList().size} products imported successfully"))

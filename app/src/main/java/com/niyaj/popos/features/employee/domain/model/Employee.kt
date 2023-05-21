@@ -3,6 +3,20 @@ package com.niyaj.popos.features.employee.domain.model
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 
+/**
+ * Employee Realm Object.
+ *
+ * @property employeeId [String]
+ * @property employeeName [String]
+ * @property employeePhone [String]
+ * @property employeeSalary [String]
+ * @property employeeSalaryType [String]
+ * @property employeeType [String]
+ * @property employeePosition [String]
+ * @property employeeJoinedDate [String]
+ * @property createdAt [String]
+ * @property updatedAt [String]
+ */
 class Employee(): RealmObject {
 
     @PrimaryKey
@@ -49,4 +63,20 @@ class Employee(): RealmObject {
         this.createdAt = createdAt
         this.updatedAt = updatedAt
     }
+}
+
+/**
+ * Filter employee by search text
+ * @param searchText String
+ * @return Boolean
+ */
+fun Employee.filterEmployee(searchText: String) : Boolean {
+    return this.employeeName.contains(searchText, true) ||
+            this.employeePosition.contains(searchText, true) ||
+            this.employeePhone.contains(searchText, true) ||
+            this.employeeSalaryType.contains(searchText, true) ||
+            this.employeeSalary.contains(searchText, true) ||
+            this.employeeJoinedDate.contains(searchText, true) ||
+            this.createdAt.contains(searchText, true) ||
+            this.updatedAt?.contains(searchText, true) == true
 }

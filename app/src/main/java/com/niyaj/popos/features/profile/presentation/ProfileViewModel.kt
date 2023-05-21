@@ -8,7 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
-import com.niyaj.popos.features.profile.domain.use_cases.RestaurantInfoUseCases
+import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoRepository
+import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val restaurantInfoUseCases: RestaurantInfoUseCases
+    private val restaurantInfoUseCases: RestaurantInfoRepository,
+    private val validationRepository : RestaurantInfoValidationRepository,
 ) : ViewModel() {
 
     var updateState by mutableStateOf(UpdateProfileState())
@@ -107,13 +109,13 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun updateProfile() {
-        val validatedName = restaurantInfoUseCases.validateRestaurantName(updateState.name)
-        val validatedTagLine = restaurantInfoUseCases.validateRestaurantTagline(updateState.tagline)
-        val validatedEmail = restaurantInfoUseCases.validateRestaurantEmail(updateState.email)
-        val validatedPrimaryPhone = restaurantInfoUseCases.validatePrimaryPhone(updateState.primaryPhone)
-        val validatedSecondaryPhone = restaurantInfoUseCases.validateSecondaryPhone(updateState.secondaryPhone)
-        val validatedAddress = restaurantInfoUseCases.validateRestaurantAddress(updateState.address)
-        val validatedPaymentQrCode = restaurantInfoUseCases.validatePaymentQrCode(updateState.paymentQrCode)
+        val validatedName = validationRepository.validateRestaurantName(updateState.name)
+        val validatedTagLine = validationRepository.validateRestaurantTagline(updateState.tagline)
+        val validatedEmail = validationRepository.validateRestaurantEmail(updateState.email)
+        val validatedPrimaryPhone = validationRepository.validatePrimaryPhone(updateState.primaryPhone)
+        val validatedSecondaryPhone = validationRepository.validateSecondaryPhone(updateState.secondaryPhone)
+        val validatedAddress = validationRepository.validateRestaurantAddress(updateState.address)
+        val validatedPaymentQrCode = validationRepository.validatePaymentQrCode(updateState.paymentQrCode)
 
 
         val hasError = listOf(

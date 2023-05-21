@@ -1,7 +1,7 @@
 package com.niyaj.popos.features.employee_attendance.presentation.add_edit
 
 import com.niyaj.popos.features.employee.domain.model.Employee
-import com.niyaj.popos.util.toMilliSecond
+import com.niyaj.popos.utils.toMilliSecond
 import java.time.LocalDate
 
 data class AbsentState(

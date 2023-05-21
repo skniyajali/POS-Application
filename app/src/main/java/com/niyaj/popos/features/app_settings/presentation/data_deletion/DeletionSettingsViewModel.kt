@@ -6,7 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.app_settings.domain.model.Settings
-import com.niyaj.popos.features.app_settings.domain.use_cases.SettingsUseCases
+import com.niyaj.popos.features.app_settings.domain.repository.SettingsRepository
+import com.niyaj.popos.features.app_settings.domain.repository.SettingsValidationRepository
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DeletionSettingsViewModel @Inject constructor(
-    private val settingsUseCases: SettingsUseCases
+    private val settingsRepository: SettingsRepository,
+    private val validationRepository : SettingsValidationRepository,
 ): ViewModel() {
     
     var state by mutableStateOf(DeletionSettingsState())
@@ -58,10 +60,10 @@ class DeletionSettingsViewModel @Inject constructor(
     }
 
     private fun updateSetting() {
-        val validatedExpenses = settingsUseCases.validateExpensesInterval(state.expensesInterval)
-        val validatedReports = settingsUseCases.validateReportsInterval(state.reportsInterval)
-        val validatedCart = settingsUseCases.validateCartInterval(state.cartInterval)
-        val validatedCartOrder = settingsUseCases.validateCartOrderInterval(state.cartOrderInterval)
+        val validatedExpenses = validationRepository.validateExpensesInterval(state.expensesInterval)
+        val validatedReports = validationRepository.validateReportsInterval(state.reportsInterval)
+        val validatedCart = validationRepository.validateCartInterval(state.cartInterval)
+        val validatedCartOrder = validationRepository.validateCartOrderInterval(state.cartOrderInterval)
 
         val hasError = listOf(validatedExpenses, validatedReports, validatedCart, validatedCartOrder).any {
             !it.successful
@@ -79,34 +81,29 @@ class DeletionSettingsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            try {
-                val settings = Settings()
-                settings.expensesDataDeletionInterval = state.expensesInterval.toInt()
-                settings.reportDataDeletionInterval = state.reportsInterval.toInt()
-                settings.cartDataDeletionInterval = state.cartInterval.toInt()
-                settings.cartOrderDataDeletionInterval = state.cartOrderInterval.toInt()
+            val settings = Settings()
+            settings.expensesDataDeletionInterval = state.expensesInterval.toInt()
+            settings.reportDataDeletionInterval = state.reportsInterval.toInt()
+            settings.cartDataDeletionInterval = state.cartInterval.toInt()
+            settings.cartOrderDataDeletionInterval = state.cartOrderInterval.toInt()
 
-                when(val result = settingsUseCases.updateSetting(settings)) {
-                    is Resource.Loading -> {
-                        _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
-                    }
-                    is Resource.Success -> {
-                        _eventFlow.emit(UiEvent.OnSuccess("Deletion Settings Updated"))
-                    }
-                    is Resource.Error -> {
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to deletion settings"))
-                    }
+            when(val result = settingsRepository.updateSetting(settings)) {
+                is Resource.Loading -> {
+                    _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                 }
-
-            }catch (e: Exception) {
-                return@launch _eventFlow.emit(UiEvent.OnError("Unable to update settings"))
+                is Resource.Success -> {
+                    _eventFlow.emit(UiEvent.OnSuccess("Deletion Settings Updated"))
+                }
+                is Resource.Error -> {
+                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to update settings"))
+                }
             }
         }
     }
 
     private fun getSetting() {
         viewModelScope.launch {
-            when(val result = settingsUseCases.getSetting()) {
+            when(val result = settingsRepository.getSetting()) {
                 is Resource.Loading -> {
                     _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                 }

@@ -45,7 +45,7 @@ fun StandardExpandable(
     title: @Composable (RowScope.() -> Unit)? = null,
     trailing: @Composable (RowScope.() -> Unit)? = null,
     rowClickable: Boolean = true,
-    expand: @Composable (RowScope.(modifier: Modifier) -> Unit)? = null,
+    expand: @Composable (RowScope.(Modifier) -> Unit)? = null,
     content: @Composable () -> Unit,
     contentAnimation: FiniteAnimationSpec<IntSize> = spring(
         dampingRatio = Spring.DampingRatioLowBouncy,
@@ -53,7 +53,8 @@ fun StandardExpandable(
     ),
     expandAnimation: State<Float> = animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
-        animationSpec = tween(1000, easing = FastOutSlowInEasing)
+        animationSpec = tween(1000, easing = FastOutSlowInEasing),
+        label = "expandAnimation"
     )
 ) {
     Column(
@@ -96,10 +97,8 @@ fun StandardExpandable(
                     trailing()
                 }
 
-                expand?.let {
-                    expand(
-                        modifier = Modifier.rotate(expandAnimation.value),
-                    )
+                expand?.let { expand ->
+                    expand(Modifier.rotate(expandAnimation.value))
                 } ?: run {
                     IconButton(
                         modifier = Modifier

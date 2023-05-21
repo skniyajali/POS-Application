@@ -5,14 +5,19 @@ import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.util.EmployeeSalaryType
 import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
 import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
-import com.niyaj.popos.features.reminder.domain.model.*
+import com.niyaj.popos.features.reminder.domain.model.AbsentReminder
+import com.niyaj.popos.features.reminder.domain.model.DailySalaryReminder
+import com.niyaj.popos.features.reminder.domain.model.EmployeeReminderWithStatus
+import com.niyaj.popos.features.reminder.domain.model.Reminder
+import com.niyaj.popos.features.reminder.domain.model.toAbsentReminder
+import com.niyaj.popos.features.reminder.domain.model.toDailySalaryReminder
 import com.niyaj.popos.features.reminder.domain.repository.ReminderRepository
 import com.niyaj.popos.features.reminder.domain.util.PaymentStatus
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
-import com.niyaj.popos.util.Constants.ABSENT_REMINDER_ID
-import com.niyaj.popos.util.Constants.DAILY_SALARY_REMINDER_ID
-import com.niyaj.popos.util.toDailySalaryAmount
-import com.niyaj.popos.util.toRupee
+import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_ID
+import com.niyaj.popos.utils.Constants.DAILY_SALARY_REMINDER_ID
+import com.niyaj.popos.utils.toDailySalaryAmount
+import com.niyaj.popos.utils.toRupee
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -73,9 +78,7 @@ class ReminderRepositoryImpl(
     }
 
     override suspend fun getDailySalaryReminder() : DailySalaryReminder? {
-        val reminder = withContext(ioDispatcher) {
-            realm.query<Reminder>("reminderId == $0", DAILY_SALARY_REMINDER_ID).first().find()
-        }
+        val reminder = realm.query<Reminder>("reminderId == $0", DAILY_SALARY_REMINDER_ID).first().find()
 
         return reminder?.toDailySalaryReminder()
     }
@@ -143,6 +146,7 @@ class ReminderRepositoryImpl(
                         newReminder.isRepeatable = reminder.isRepeatable
                         newReminder.isCompleted = reminder.isCompleted
                         newReminder.reminderType = reminder.reminderType
+                        newReminder.notificationId = reminder.notificationId
                         newReminder.updatedAt = System.currentTimeMillis().toString()
 
                         this.copyToRealm(newReminder)
@@ -157,7 +161,7 @@ class ReminderRepositoryImpl(
         }
     }
 
-    override suspend fun getDailySalaryEmployee(
+    override suspend fun getReminderEmployee(
         salaryDate : String,
         reminderType : ReminderType
     ) : Flow<Resource<List<EmployeeReminderWithStatus>>> {
@@ -172,7 +176,8 @@ class ReminderRepositoryImpl(
                         ReminderType.DailySalary -> {
                             realm.query<Employee>("employeeSalaryType == $0", EmployeeSalaryType.Daily.salaryType).find().asFlow()
                         }
-                        ReminderType.MonthlySalary -> {
+
+                        else -> {
                             realm.query<Employee>("employeeSalaryType == $0", EmployeeSalaryType.Monthly.salaryType).find().asFlow()
                         }
                     }
@@ -215,7 +220,7 @@ class ReminderRepositoryImpl(
             val employeeSalary = when(reminderType) {
                 ReminderType.Attendance -> employee.employeePhone
                 ReminderType.DailySalary -> employee.employeeSalary.toDailySalaryAmount()
-                ReminderType.MonthlySalary -> employee.employeeSalary.toRupee
+                else -> employee.employeeSalary.toRupee
             }
 
             val paymentStatus = if (isPaid != null) PaymentStatus.Paid else if (isAbsent != null) PaymentStatus.Absent else PaymentStatus.NotPaid

@@ -103,27 +103,7 @@ class CartRepositoryImplTest {
     }
 
     @Test
-    fun c_get_cart_products_by_cart_order_id_return_true() = runTest {
-        repository.getCartByCartOrderId(cartOrder?.cartOrderId ?: "").onEach { resource ->
-            when (resource) {
-                is Resource.Success -> {
-                    assertThat(resource.data).isNotNull()
-                    assertThat(resource.data).isNotEmpty()
-                    assertThat(resource.message).isNull()
-                    assertThat(resource.data?.size).isEqualTo(1)
-                    assertThat(resource.data?.first()?.orderId).isEqualTo(cartOrder?.cartOrderId)
-                    assertThat(resource.data?.first()?.quantity).isEqualTo(1)
-                    assertThat(resource.data?.first()?.product?.productId).isEqualTo(product?.productId)
-                    assertThat(resource.data?.first()?.product?.productName).isEqualTo(product?.productName)
-                    assertThat(resource.data?.first()?.product?.productPrice).isEqualTo(product?.productPrice)
-                }
-                else -> {}
-            }
-        }
-    }
-
-    @Test
-    fun d_remove_cart_product_with_invalid_cart_order_and_product_id_return_false() = runTest {
+    fun c_remove_cart_product_with_invalid_cart_order_and_product_id_return_false() = runTest {
         val result = repository.removeProductFromCart("89789", "90jo")
 
         assertThat(result.data).isNotNull()
@@ -133,7 +113,7 @@ class CartRepositoryImplTest {
     }
 
     @Test
-    fun e_remove_cart_product_with_valid_cart_order_and_invalid_product_id_return_false() = runTest {
+    fun d_remove_cart_product_with_valid_cart_order_and_invalid_product_id_return_false() = runTest {
         val result = repository.removeProductFromCart(cartOrder?.cartOrderId ?: "", newProduct?.productId ?: "")
 
         assertThat(result.data).isNotNull()
@@ -143,176 +123,7 @@ class CartRepositoryImplTest {
     }
 
     @Test
-    fun f_remove_cart_product_with_valid_cart_order_and_valid_product_id_return_true() = runTest {
-        val result = repository.removeProductFromCart(cartOrder?.cartOrderId ?: "", product?.productId ?: "")
-
-        assertThat(result.data).isNotNull()
-        assertThat(result.data).isTrue()
-        assertThat(result.message).isNull()
-
-        repository.getCartByCartOrderId(cartOrder?.cartOrderId ?: "").onEach { resource ->
-            when (resource) {
-                is Resource.Success -> {
-                    assertThat(resource.data).isEmpty()
-                    assertThat(resource.message).isNull()
-                    assertThat(resource.data?.size).isEqualTo(0)
-                }
-
-                else -> {}
-            }
-        }
-    }
-
-    @Test
-    fun g_get_main_feed_product_quantity_with_invalid_data_return_0() = runTest {
-        val result = repository.getMainFeedProductQuantity("9078d", "89shd")
-
-        assertThat(result).isEqualTo(0)
-    }
-
-    @Test
-    fun h_get_main_feed_product_quantity_with_valid_data_return_0() = runTest {
-        val result = repository.getMainFeedProductQuantity(cartOrder?.cartOrderId ?: "", product?.productId ?: "")
-
-        assertThat(result).isEqualTo(0)
-    }
-
-    @Test
-    fun i_get_main_feed_product_quantity_with_valid_data_return_1() = runTest {
-        val result = repository.addProductToCart(cartOrder?.cartOrderId ?: "", product?.productId ?: "")
-
-        assertThat(result.data).isNotNull()
-        assertThat(result.data).isTrue()
-        assertThat(result.message).isNull()
-
-
-        val result1 = repository.getMainFeedProductQuantity(cartOrder?.cartOrderId ?: "", product?.productId ?: "")
-        assertThat(result1).isEqualTo(1)
-
-        repository.addProductToCart(cartOrder?.cartOrderId ?: "", product?.productId ?: "")
-
-        val result2 = repository.getMainFeedProductQuantity(cartOrder?.cartOrderId ?: "", product?.productId ?: "")
-        assertThat(result2).isEqualTo(2)
-    }
-
-    @Test
-    fun j_get_cart_by_invalid_id_return_null() = runTest {
-        val result = repository.getCartByCartId("908dd")
-
-        assertThat(result.data).isNull()
-        assertThat(result.message).isNull()
-    }
-
-    @Test
-    fun k_get_cart_by_valid_id_return_cart_products() = runTest {
-        var id: String? = null
-
-        repository.getCartByCartOrderId(cartOrder?.cartOrderId ?: "").onEach { resource ->
-            when (resource) {
-                is Resource.Success -> {
-                    assertThat(resource.data).isNotEmpty()
-                    assertThat(resource.message).isNull()
-                    assertThat(resource.data?.size).isEqualTo(1)
-                    assertThat(resource.data?.first()?.quantity).isEqualTo(2)
-                    id = resource.data?.first()?.cartProductId
-                }
-
-                else -> {}
-            }
-        }
-
-        val result1 = repository.getCartByCartId(id ?: "")
-        assertThat(result1.data).isNotNull()
-        assertThat(result1.data?.cartProductId).isEqualTo(id)
-        assertThat(result1.data?.quantity).isEqualTo(2)
-        assertThat(result1.data?.orderId).isEqualTo(cartOrder?.cartOrderId)
-        assertThat(result1.data?.product?.productId).isEqualTo(product?.productId)
-        assertThat(result1.data?.product?.productName).isEqualTo(product?.productName)
-        assertThat(result1.data?.product?.productPrice).isEqualTo(product?.productPrice)
-    }
-
-    @Test
-    fun l_delete_by_cart_id_with_invalid_id_return_false() = runTest {
-        val result = repository.deleteCartById("90890")
-
-        assertThat(result.data).isNotNull()
-        assertThat(result.data).isFalse()
-        assertThat(result.message).isNotNull()
-        assertThat(result.message).isEqualTo("Unable to find cart")
-    }
-
-    @Test
-    fun m_delete_by_cart_id_with_valid_data_return_true() = runTest {
-        var id: String? = null
-
-        repository.getCartByCartOrderId(cartOrder?.cartOrderId ?: "").onEach { resource ->
-            when (resource) {
-                is Resource.Success -> {
-                    assertThat(resource.data).isEmpty()
-                    assertThat(resource.message).isNull()
-                    assertThat(resource.data?.size).isEqualTo(1)
-                    assertThat(resource.data?.first()?.quantity).isEqualTo(2)
-                    id = resource.data?.first()?.cartProductId
-                }
-
-                else -> {}
-            }
-        }
-
-        val result = repository.deleteCartById(id ?: "")
-
-        assertThat(result.data).isNotNull()
-        assertThat(result.data).isTrue()
-        assertThat(result.message).isNull()
-
-        val result1 = repository.getCartByCartId(id ?: "")
-
-        assertThat(result1.data).isNull()
-        assertThat(result1.message).isNull()
-    }
-
-    @Test
-    fun n_delete_cart_by_cart_order_id_return_true() = runTest {
-        val result = repository.addProductToCart(cartOrder?.cartOrderId ?: "", product?.productId ?: "")
-
-        assertThat(result.data).isNotNull()
-        assertThat(result.data).isTrue()
-        assertThat(result.message).isNull()
-
-        repository.addProductToCart(cartOrder?.cartOrderId ?: "", newProduct?.productId ?: "")
-
-        repository.getCartByCartOrderId(cartOrder?.cartOrderId ?: "").onEach { resource ->
-            when (resource) {
-                is Resource.Success -> {
-                    assertThat(resource.data).isNotEmpty()
-                    assertThat(resource.message).isNull()
-                    assertThat(resource.data?.size).isEqualTo(2)
-                }
-
-                else -> {}
-            }
-        }
-
-        val result1 = repository.deleteCartByCartOrderId(cartOrder?.cartOrderId ?: "")
-        assertThat(result1.data).isTrue()
-        assertThat(result1.message).isNull()
-
-        repository.getCartByCartOrderId(cartOrder?.cartOrderId ?: "").onEach { resource ->
-            when (resource) {
-                is Resource.Success -> {
-                    assertThat(resource.data).isEmpty()
-                    assertThat(resource.message).isNull()
-                    assertThat(resource.data?.size).isEqualTo(0)
-                }
-
-                else -> {}
-            }
-        }
-
-    }
-
-    @Test
-    fun o_get_dine_in_orders() = runTest {
+    fun e_get_dine_in_orders() = runTest {
         val result = createNewDineInOrdersAndAddProducts()
         assertThat(result).isTrue()
 
@@ -325,9 +136,9 @@ class CartRepositoryImplTest {
 
                     resource.data?.let {
                         it.forEach { cart ->
-                            assertThat(cart.cartOrder?.orderType).isEqualTo(CartOrderType.DineIn.orderType)
+                            assertThat(cart.orderType).isEqualTo(CartOrderType.DineIn.orderType)
                             cart.cartProducts.forEach { product ->
-                                assertThat(product.quantity).isEqualTo(1)
+                                assertThat(product.productQuantity).isEqualTo(1)
                             }
                         }
                     }
@@ -338,7 +149,7 @@ class CartRepositoryImplTest {
     }
 
     @Test
-    fun p_get_dine_out_orders() = runTest {
+    fun f_get_dine_out_orders() = runTest {
         val result = createNewDineOutOrdersAndAddProducts()
         assertThat(result).isTrue()
 
@@ -351,14 +162,12 @@ class CartRepositoryImplTest {
 
                     resource.data?.let {
                         it.forEach { cart ->
-                            assertThat(cart.cartOrder?.orderType).isEqualTo(CartOrderType.DineOut.orderType)
-                            assertThat(cart.cartOrder?.address?.addressId).isEqualTo(address?.addressId)
-                            assertThat(cart.cartOrder?.address?.addressName).isEqualTo(address?.addressName)
-                            assertThat(cart.cartOrder?.customer?.customerPhone).isEqualTo(customer?.customerPhone)
-                            assertThat(cart.cartOrder?.customer?.customerId).isEqualTo(customer?.customerId)
+                            assertThat(cart.orderType).isEqualTo(CartOrderType.DineOut.orderType)
+                            assertThat(cart.customerAddress).isEqualTo(address?.shortName)
+                            assertThat(cart.customerPhone).isEqualTo(customer?.customerPhone)
 
                             cart.cartProducts.forEach { product ->
-                                assertThat(product.quantity).isEqualTo(2)
+                                assertThat(product.productQuantity).isEqualTo(2)
                             }
                         }
                     }

@@ -1,5 +1,6 @@
 package com.niyaj.popos.features.reminder.presentation.daily_salary_reminder
 
+import android.app.Application
 import android.text.format.DateUtils
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -10,23 +11,33 @@ import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.employee.domain.util.PaymentType
 import com.niyaj.popos.features.employee.domain.util.SalaryType
 import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
-import com.niyaj.popos.features.employee_salary.domain.use_cases.SalaryUseCases
+import com.niyaj.popos.features.employee_salary.domain.repository.SalaryRepository
 import com.niyaj.popos.features.reminder.domain.model.DailySalaryReminder
 import com.niyaj.popos.features.reminder.domain.model.EmployeeReminderWithStatusState
-import com.niyaj.popos.features.reminder.domain.use_cases.ReminderUseCases
+import com.niyaj.popos.features.reminder.domain.model.toReminder
+import com.niyaj.popos.features.reminder.domain.repository.ReminderRepository
 import com.niyaj.popos.features.reminder.domain.util.PaymentStatus
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
-import com.niyaj.popos.util.getStartTime
-import com.niyaj.popos.util.toDailySalaryAmount
+import com.niyaj.popos.utils.getStartTime
+import com.niyaj.popos.utils.stopPendingIntentNotification
+import com.niyaj.popos.utils.toDailySalaryAmount
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ *
+ */
 @HiltViewModel
 class DailySalaryReminderViewModel @Inject constructor(
-    private val reminderUseCases: ReminderUseCases,
-    private val salaryUseCases : SalaryUseCases
+    private val reminderRepository: ReminderRepository,
+    private val salaryRepository : SalaryRepository,
+    private val application : Application
 ): ViewModel() {
 
     private val _employees = MutableStateFlow(EmployeeReminderWithStatusState())
@@ -47,6 +58,9 @@ class DailySalaryReminderViewModel @Inject constructor(
         getDailySalaryReminderEmployee()
     }
 
+    /**
+     *
+     */
     fun onEvent(event: DailySalaryReminderEvent) {
         when(event) {
 
@@ -91,7 +105,7 @@ class DailySalaryReminderViewModel @Inject constructor(
                     _selectedEmployees.forEach { employeeId ->
                         val employeeWithStatus = _employees.value.employees.find { it.employee.employeeId == employeeId }
                         if (employeeWithStatus!= null) {
-                            val result = salaryUseCases.addNewSalary(
+                            val result = salaryRepository.addNewSalary(
                                 EmployeeSalary(
                                     employee = employeeWithStatus.employee,
                                     salaryType = SalaryType.Salary.salaryType,
@@ -118,20 +132,21 @@ class DailySalaryReminderViewModel @Inject constructor(
 
                     val markAsCompleted = DateUtils.isToday(_selectedDate.value.toLong())
 
-                    val result = reminderUseCases.createOrUpdateDailySalaryReminder(DailySalaryReminder(isCompleted = markAsCompleted))
+                    val result = reminderRepository.createOrUpdateReminder(DailySalaryReminder(isCompleted = markAsCompleted).toReminder())
 
                     if (result) {
                         _eventFlow.emit(UiEvent.OnSuccess("Selected employee marked as paid on selected Date."))
+                        val reminder = reminderRepository.getDailySalaryReminder()!!
+                        stopPendingIntentNotification(application.applicationContext, reminder.notificationId)
                     }
                 }
             }
         }
     }
 
-
     private fun getDailySalaryReminderEmployee(salaryDate: String = _selectedDate.value) {
         viewModelScope.launch {
-            reminderUseCases.getReminderEmployees(salaryDate, ReminderType.DailySalary).collectLatest{ result ->
+            reminderRepository.getReminderEmployee(salaryDate, ReminderType.DailySalary).collectLatest{ result ->
                 when(result){
                     is Resource.Loading -> {
                         _employees.value = _employees.value.copy(isLoading = result.isLoading)

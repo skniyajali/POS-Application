@@ -5,20 +5,36 @@ import androidx.lifecycle.viewModelScope
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.niyaj.popos.features.common.util.Resource
+import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
 import com.niyaj.popos.features.reports.domain.use_cases.ReportsUseCases
-import com.niyaj.popos.util.*
-import com.niyaj.popos.util.Constants.PRINT_ADDRESS_WISE_REPORT_LIMIT
-import com.niyaj.popos.util.Constants.PRINT_CUSTOMER_WISE_REPORT_LIMIT
-import com.niyaj.popos.util.Constants.PRINT_PRODUCT_WISE_REPORT_LIMIT
+import com.niyaj.popos.utils.Constants
+import com.niyaj.popos.utils.Constants.PRINT_ADDRESS_WISE_REPORT_LIMIT
+import com.niyaj.popos.utils.Constants.PRINT_CUSTOMER_WISE_REPORT_LIMIT
+import com.niyaj.popos.utils.Constants.PRINT_PRODUCT_WISE_REPORT_LIMIT
+import com.niyaj.popos.utils.getCalculatedEndDate
+import com.niyaj.popos.utils.getCalculatedStartDate
+import com.niyaj.popos.utils.getEndTime
+import com.niyaj.popos.utils.getStartTime
+import com.niyaj.popos.utils.toFormattedDate
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+/**
+ * ReportsViewModel
+ * @author Sk Niyaj Ali
+ */
 @HiltViewModel
 class ReportsViewModel @Inject constructor(
-    private val reportsUseCases: ReportsUseCases
+    private val reportsUseCases: ReportsUseCases,
+    private val reportsRepository : ReportsRepository,
 ) : ViewModel() {
 
     private lateinit var escposPrinter: EscPosPrinter
@@ -120,6 +136,10 @@ class ReportsViewModel @Inject constructor(
                     }
                 }
             }
+
+            is ReportsEvent.GenerateReport -> {
+                generateReport()
+            }
         }
     }
 
@@ -190,28 +210,30 @@ class ReportsViewModel @Inject constructor(
         endDate: String = endTime,
         orderType: String = ""
     ) {
-        reportsUseCases.getCategoryWiseReport(startDate, endDate, orderType).onEach { result ->
-            when (result){
-                is Resource.Loading -> {
-                    _categoryWiseData.value = _categoryWiseData.value.copy(
-                        isLoading = result.isLoading
-                    )
-                }
-                is Resource.Success -> {
-                    result.data?.let { data ->
+        viewModelScope.launch {
+            reportsRepository.getProductWiseReport(startDate, endDate, orderType).collectLatest { result ->
+                when (result){
+                    is Resource.Loading -> {
                         _categoryWiseData.value = _categoryWiseData.value.copy(
-                            categoryWiseReport = data,
-                            orderType = orderType,
+                            isLoading = result.isLoading
+                        )
+                    }
+                    is Resource.Success -> {
+                        result.data?.let { data ->
+                            _categoryWiseData.value = _categoryWiseData.value.copy(
+                                categoryWiseReport = data,
+                                orderType = orderType,
+                            )
+                        }
+                    }
+                    is Resource.Error -> {
+                        _categoryWiseData.value = _categoryWiseData.value.copy(
+                            hasError = result.message
                         )
                     }
                 }
-                is Resource.Error -> {
-                    _categoryWiseData.value = _categoryWiseData.value.copy(
-                        hasError = result.message
-                    )
-                }
             }
-        }.launchIn(viewModelScope)
+        }
     }
 
     private fun getCustomerWiseReport(
@@ -270,13 +292,13 @@ class ReportsViewModel @Inject constructor(
     }
 
     private fun generateReport() {
-        viewModelScope.launch {
-            reportsUseCases.generateReport(getStartTime, getEndTime)
+        viewModelScope.launch(Dispatchers.IO) {
+            reportsRepository.generateReport(getStartTime, getEndTime)
         }
     }
 
     private fun getReport(startDate: String) {
-        reportsUseCases.getReport(startDate).onEach { result ->
+        reportsRepository.getReport(startDate).onEach { result ->
             when(result){
                 is Resource.Loading -> {
                     _reportState.value = _reportState.value.copy(

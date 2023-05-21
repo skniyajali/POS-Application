@@ -1,14 +1,15 @@
 package com.niyaj.popos.features.profile.domain.model
 
-import com.niyaj.popos.util.Constants.PAYMENT_QR_DATA
-import com.niyaj.popos.util.Constants.RESTAURANT_ADDRESS
-import com.niyaj.popos.util.Constants.RESTAURANT_DESCRIPTION
-import com.niyaj.popos.util.Constants.RESTAURANT_EMAIL
-import com.niyaj.popos.util.Constants.RESTAURANT_ID
-import com.niyaj.popos.util.Constants.RESTAURANT_NAME
-import com.niyaj.popos.util.Constants.RESTAURANT_PRIMARY_PHONE
-import com.niyaj.popos.util.Constants.RESTAURANT_SECONDARY_PHONE
-import com.niyaj.popos.util.Constants.RESTAURANT_TAGLINE
+import com.niyaj.popos.utils.Constants.PAYMENT_QR_DATA
+import com.niyaj.popos.utils.Constants.RESTAURANT_ADDRESS
+import com.niyaj.popos.utils.Constants.RESTAURANT_DESCRIPTION
+import com.niyaj.popos.utils.Constants.RESTAURANT_EMAIL
+import com.niyaj.popos.utils.Constants.RESTAURANT_ID
+import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO
+import com.niyaj.popos.utils.Constants.RESTAURANT_NAME
+import com.niyaj.popos.utils.Constants.RESTAURANT_PRIMARY_PHONE
+import com.niyaj.popos.utils.Constants.RESTAURANT_SECONDARY_PHONE
+import com.niyaj.popos.utils.Constants.RESTAURANT_TAGLINE
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 
@@ -31,7 +32,7 @@ class RestaurantInfo(): RealmObject {
 
     var address: String = RESTAURANT_ADDRESS
 
-    var logo: String? = null
+    var logo: String = RESTAURANT_LOGO
 
     var paymentQrCode: String = PAYMENT_QR_DATA
 
@@ -48,7 +49,7 @@ class RestaurantInfo(): RealmObject {
         description: String = RESTAURANT_DESCRIPTION,
         address: String = RESTAURANT_ADDRESS,
         paymentQrCode: String = PAYMENT_QR_DATA,
-        logo: String? = null,
+        logo: String = RESTAURANT_LOGO,
         createdAt: String = System.currentTimeMillis().toString(),
         updatedAt: String? = null
     ): this() {

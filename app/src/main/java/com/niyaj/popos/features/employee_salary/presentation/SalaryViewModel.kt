@@ -5,23 +5,22 @@ import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.employee.domain.model.Employee
-import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
-import com.niyaj.popos.features.employee_salary.domain.use_cases.SalaryUseCases
+import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.features.employee_salary.domain.repository.SalaryRepository
+import com.niyaj.popos.features.employee_salary.domain.use_cases.GetAllSalary
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class SalaryViewModel @Inject constructor(
-    private val salaryUseCases: SalaryUseCases,
-    private val employeeUseCases: EmployeeUseCases,
+    private val salaryUseCases: SalaryRepository,
+    private val employeeUseCases: EmployeeRepository,
+    private val getAllSalary : GetAllSalary,
 ): ViewModel(){
 
     private val _salaries = MutableStateFlow(SalaryState())
@@ -70,7 +69,7 @@ class SalaryViewModel @Inject constructor(
 
             is SalaryEvent.DeleteSalary -> {
                 viewModelScope.launch {
-                    when (val result = salaryUseCases.deleteSalary(event.salaryId)) {
+                    when (val result = salaryUseCases.deleteSalaryById(event.salaryId)) {
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -123,7 +122,7 @@ class SalaryViewModel @Inject constructor(
 
     private fun getAllSalaries(searchText: String = "") {
         viewModelScope.launch {
-          salaryUseCases.getAllSalary(searchText).collect { result ->
+          getAllSalary.invoke(searchText).collect { result ->
               when(result){
                   is Resource.Loading -> {
                       _salaries.value = _salaries.value.copy(

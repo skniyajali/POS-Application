@@ -1,7 +1,5 @@
 package com.niyaj.popos.features.address.presentation
 
-import com.niyaj.popos.features.address.domain.util.FilterAddress
-
 sealed class AddressEvent{
 
     data class SelectAddress(val addressId: String) : AddressEvent()
@@ -11,8 +9,6 @@ sealed class AddressEvent{
     object DeselectAddress : AddressEvent()
 
     data class DeleteAddress(val addresses: List<String>) : AddressEvent()
-
-    data class OnFilterAddress(val filterAddress: FilterAddress): AddressEvent()
 
     data class OnSearchAddress(val searchText: String): AddressEvent()
 

@@ -2,15 +2,8 @@ package com.niyaj.popos.features.addon_item.presentation
 
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -20,7 +13,6 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.plusAssign
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -29,7 +21,6 @@ import com.google.accompanist.navigation.material.ExperimentalMaterialNavigation
 import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
 import com.google.common.truth.Truth.assertThat
 import com.niyaj.popos.features.MainActivity
-import com.niyaj.popos.features.RealmModule
 import com.niyaj.popos.features.addon_item.domain.model.AddOnItem
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_ADD_EDIT_BUTTON
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_DELETE_BUTTON
@@ -58,22 +49,20 @@ import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADD_EDIT_S
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.CREATE_NEW_ADD_ON
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.FILTER_ADD_ON_ITEM
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.NO_ITEMS_IN_ADDON
+import com.niyaj.popos.features.common.di.RealmModule
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
-import com.niyaj.popos.features.common.util.BottomSheetScreen
 import com.niyaj.popos.features.common.util.Navigation
-import com.niyaj.popos.features.components.util.SheetLayout
 import com.niyaj.popos.features.destinations.AddOnItemScreenDestination
-import com.niyaj.popos.util.Constants.NEGATIVE_BUTTON
-import com.niyaj.popos.util.Constants.POSITIVE_BUTTON
-import com.niyaj.popos.util.Constants.SEARCH_BAR_CLEAR_BUTTON
-import com.niyaj.popos.util.Constants.SORT_ASCENDING
-import com.niyaj.popos.util.Constants.STANDARD_BACK_BUTTON
+import com.niyaj.popos.utils.Constants.NEGATIVE_BUTTON
+import com.niyaj.popos.utils.Constants.POSITIVE_BUTTON
+import com.niyaj.popos.utils.Constants.SEARCH_BAR_CLEAR_BUTTON
+import com.niyaj.popos.utils.Constants.SORT_ASCENDING
+import com.niyaj.popos.utils.Constants.STANDARD_BACK_BUTTON
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -94,8 +83,6 @@ class AddOnItemScreenKtTest {
 
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
-
-    private var currentBottomSheet = mutableStateOf<BottomSheetScreen?>(null)
 
     private lateinit var navController: NavHostController
 
@@ -125,63 +112,16 @@ class AddOnItemScreenKtTest {
         composeRule.activity.setContent {
             PoposTheme {
                 val scaffoldState = rememberScaffoldState()
-                val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-                val scope = rememberCoroutineScope()
                 navController = rememberAnimatedNavController()
                 val bottomSheetNavigator = rememberBottomSheetNavigator()
                 navController.navigatorProvider += bottomSheetNavigator
 
-                // to set the current sheet to null when the bottom sheet closes
-                if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
-                    currentBottomSheet.value = null
-                }
-
-                val closeSheet: () -> Unit = {
-                    scope.launch {
-                        if (bottomSheetScaffoldState.bottomSheetState.isExpanded) {
-                            bottomSheetScaffoldState.bottomSheetState.collapse()
-                        }
-
-                        // to set the current sheet to null when the bottom sheet closes
-                        if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
-                            currentBottomSheet.value = null
-                        }
-                    }
-                }
-
-                val openSheet: (BottomSheetScreen) -> Unit = {
-                    scope.launch {
-                        currentBottomSheet.value = it
-                        bottomSheetScaffoldState.bottomSheetState.expand()
-                    }
-                }
-
-                BottomSheetScaffold(
-                    sheetContent = {
-                        currentBottomSheet.value?.let { currentSheet ->
-                            SheetLayout(
-                                currentScreen = currentSheet,
-                                onCloseBottomSheet = closeSheet,
-                                navController = navController,
-                            )
-                        }
-                    },
-                    sheetPeekHeight = 0.dp,
-                    modifier = Modifier.fillMaxWidth(),
-                    scaffoldState = bottomSheetScaffoldState,
-                    sheetGesturesEnabled = true,
-                    sheetElevation = 8.dp,
-                    sheetShape = MaterialTheme.shapes.medium,
-                ) {
-                    Navigation(
-                        onOpenSheet = openSheet,
-                        scaffoldState = scaffoldState,
-                        bottomSheetScaffoldState = bottomSheetScaffoldState,
-                        navController = navController,
-                        bottomSheetNavigator = bottomSheetNavigator,
-                        startRoute = AddOnItemScreenDestination,
-                    )
-                }
+                Navigation(
+                    scaffoldState = scaffoldState,
+                    navController = navController,
+                    bottomSheetNavigator = bottomSheetNavigator,
+                    startRoute = AddOnItemScreenDestination,
+                )
 
             }
         }

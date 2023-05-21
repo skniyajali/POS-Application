@@ -8,23 +8,17 @@ import android.content.Intent
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -34,11 +28,12 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.R
 import com.niyaj.popos.features.addon_item.presentation.AddOnItemViewModel
-import com.niyaj.popos.features.cart.presentation.components.*
-import com.niyaj.popos.features.common.ui.theme.SpaceMini
-import com.niyaj.popos.features.common.ui.theme.SpaceSmall
+import com.niyaj.popos.features.cart.presentation.components.CartFooterPlaceOrder
+import com.niyaj.popos.features.cart.presentation.components.CartItems
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.ItemNotAvailable
+import com.niyaj.popos.features.components.LoadingIndicator
+import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import com.niyaj.popos.features.destinations.OrderDetailsScreenDestination
@@ -48,14 +43,27 @@ import com.niyaj.popos.features.order.presentation.print_order.PrintViewModel
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
-import kotlinx.coroutines.flow.collectLatest
+import io.sentry.compose.SentryTraced
 import timber.log.Timber
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class)
+/**
+ * DineOutScreen is the screen where the user can see all the dine out orders
+ * @author Sk Niyaj Ali
+ * @param navController
+ * @param scaffoldState
+ * @param dineOutViewModel
+ * @param addOnItemViewModel
+ * @param printViewModel
+ * @param resultRecipient
+ * @see DineOutViewModel
+ * @see AddOnItemViewModel
+ * @see PrintViewModel
+ */
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun DineOutScreen(
     navController: NavController,
-    bottomSheetScaffoldState: BottomSheetScaffoldState,
+    scaffoldState : ScaffoldState,
     dineOutViewModel: DineOutViewModel = hiltViewModel(),
     addOnItemViewModel: AddOnItemViewModel = hiltViewModel(),
     printViewModel: PrintViewModel = hiltViewModel(),
@@ -146,12 +154,13 @@ fun DineOutScreen(
     val countSelectedDineOutItem = selectedDineOutOrder.size
 
     val addOnItems = addOnItemViewModel.state.collectAsStateWithLifecycle().value.addOnItems
+    val events = dineOutViewModel.eventFlow.collectAsStateWithLifecycle(initialValue = null).value
 
-    LaunchedEffect(key1 = true){
-        dineOutViewModel.eventFlow.collectLatest { event ->
+    LaunchedEffect(key1 = events){
+        events?.let { event ->
             when(event){
                 is UiEvent.OnSuccess -> {
-                    val result = bottomSheetScaffoldState.snackbarHostState.showSnackbar(
+                    val result = scaffoldState.snackbarHostState.showSnackbar(
                         message = event.successMessage,
                         actionLabel = "View",
                         duration = SnackbarDuration.Short
@@ -162,7 +171,7 @@ fun DineOutScreen(
                 }
 
                 is UiEvent.OnError -> {
-                    bottomSheetScaffoldState.snackbarHostState.showSnackbar(
+                    scaffoldState.snackbarHostState.showSnackbar(
                         message = event.errorMessage,
                         duration = SnackbarDuration.Short
                     )
@@ -177,192 +186,93 @@ fun DineOutScreen(
         when(result) {
             is NavResult.Canceled -> {}
             is NavResult.Value -> {
-                dineOutViewModel.onDineOutEvent(DineOutEvent.RefreshDineOutOrder)
+                dineOutViewModel.onEvent(DineOutEvent.RefreshDineOutOrder)
             }
         }
     }
-
-    SwipeRefresh(
-        state = rememberSwipeRefreshState(isLoading),
-        onRefresh = {
-            dineOutViewModel.onDineOutEvent(DineOutEvent.RefreshDineOutOrder)
-        }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            if(isLoading){
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ){
-                    CircularProgressIndicator()
-                }
-            } else if(countTotalDineOutItems == 0 || hasError != null) {
-                ItemNotAvailable(
-                    text = hasError ?: stringResource(id = R.string.dine_out_orders_not_found),
-                    buttonText = stringResource(id = R.string.add_items_to_cart_button),
-                    image = painterResource(R.drawable.emptycarttwo),
-                    onClick = {
-                        navController.navigate(MainFeedScreenDestination())
-                    }
-                )
-            } else{
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(2.7f)
-                        .padding(SpaceSmall),
-                    verticalArrangement = Arrangement.Top,
-                    state = listState
-                ) {
-                    items(
-                        items = dineOutOrders,
-                    ){ cartItem ->
-                        if(cartItem.cartOrder != null && cartItem.cartProducts.isNotEmpty()) {
-
-                            val newOrderId = if(!cartItem.cartOrder.address?.shortName.isNullOrEmpty()){
-                                cartItem.cartOrder.address?.shortName?.uppercase().plus(" -")
-                                    .plus(cartItem.cartOrder.orderId)
-                            }else{
-                                cartItem.cartOrder.orderId
-                            }
-
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        MaterialTheme.colors.surface,
-                                        RoundedCornerShape(6.dp)
-                                    )
-                                    .clickable {
-                                        dineOutViewModel.onDineOutEvent(
-                                            DineOutEvent.SelectDineOutOrder(
-                                                cartItem.cartOrder.cartOrderId
-                                            )
-                                        )
-                                    },
-                                elevation = 6.dp
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                ) {
-                                    CartItemOrderDetailsSection(
-                                        orderId = newOrderId,
-                                        orderType =  cartItem.cartOrder.orderType,
-                                        customerPhone = cartItem.cartOrder.customer?.customerPhone,
-                                        selected = selectedDineOutOrder.contains(cartItem.cartOrder.cartOrderId),
-                                        onClick = {
-                                            dineOutViewModel.onDineOutEvent(
-                                                DineOutEvent.SelectDineOutOrder(
-                                                    cartItem.cartOrder.cartOrderId
-                                                )
-                                            )
-                                        },
-                                        onEditClick = {
-                                            navController.navigate(AddEditCartOrderScreenDestination(cartOrderId = cartItem.cartOrder.cartOrderId))
-                                        },
-                                        onViewClick = {
-                                            navController.navigate(OrderDetailsScreenDestination(cartOrderId = cartItem.cartOrder.cartOrderId))
-                                        }
-                                    )
-
-                                    Spacer(modifier = Modifier.height(SpaceMini))
-
-                                    CartItemProductDetailsSection(
-                                        cartProducts = cartItem.cartProducts,
-                                        decreaseQuantity = {
-                                            dineOutViewModel.onDineOutEvent(
-                                                DineOutEvent.RemoveProductFromCart(
-                                                    cartItem.cartOrder.cartOrderId,
-                                                    it
-                                                )
-                                            )
-                                        },
-                                        increaseQuantity = {
-                                            dineOutViewModel.onDineOutEvent(
-                                                DineOutEvent.AddProductToCart(
-                                                    cartItem.cartOrder.cartOrderId,
-                                                    it
-                                                )
-                                            )
-                                        }
-                                    )
-
-
-                                    if(addOnItems.isNotEmpty()){
-                                        val cartAddOnItem = cartItem.cartOrder.addOnItems
-
-                                        Spacer(modifier = Modifier.height(SpaceSmall))
-
-                                        val selectedAddOnItems = cartAddOnItem.map {
-                                            it.addOnItemId
-                                        }
-
-                                        CartAddOnItems(
-                                            addOnItems = addOnItems,
-                                            selectedAddOnItem = selectedAddOnItems,
-                                            onClick = {
-                                                dineOutViewModel.onDineOutEvent(
-                                                    DineOutEvent.UpdateAddOnItemInCart(
-                                                        it,
-                                                        cartItem.cartOrder.cartOrderId
-                                                    )
-                                                )
-                                            },
-                                        )
-                                    }
-
-                                    Spacer(modifier = Modifier.height(SpaceSmall))
-
-                                    CartItemTotalPriceSection(
-                                        itemCount = cartItem.cartProducts.size,
-                                        orderType = cartItem.cartOrder.orderType,
-                                        totalPrice = cartItem.orderPrice.first,
-                                        discountPrice = cartItem.orderPrice.second,
-                                        onClickPlaceOrder = {
-                                            dineOutViewModel.onDineOutEvent(
-                                                DineOutEvent.PlaceDineOutOrder(
-                                                    cartItem.cartOrder.cartOrderId
-                                                )
-                                            )
-                                        },
-                                        onClickPrintOrder = {
-                                            dineOutViewModel.onDineOutEvent(
-                                                DineOutEvent.PlaceDineOutOrder(
-                                                    cartItem.cartOrder.cartOrderId
-                                                )
-                                            )
-                                            printOrder(cartItem.cartOrder.cartOrderId)
-                                        }
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(SpaceSmall))
+    
+    SentryTraced(tag = "DineOutScreen") {
+        StandardScaffold(
+            navController = navController,
+            scaffoldState = scaffoldState,
+            showTopBar = false,
+            bottomBar = {
+                if (dineOutOrders.isNotEmpty()) {
+                    CartFooterPlaceOrder(
+                        countTotalItems = countTotalDineOutItems,
+                        countSelectedItem = countSelectedDineOutItem,
+                        showPrintBtn = true,
+                        onClickSelectAll = {
+                            dineOutViewModel.onEvent(DineOutEvent.SelectAllDineOutOrder)
+                        },
+                        onClickPlaceAllOrder = {
+                            dineOutViewModel.onEvent(DineOutEvent.PlaceAllDineOutOrder)
+                        },
+                        onClickPrintAllOrder = {
+                            dineOutViewModel.onEvent(DineOutEvent.PlaceAllDineOutOrder)
+                            printAllOrder(selectedDineOutOrder)
                         }
-                    }
+                    )
                 }
-
-                CartFooterPlaceOrder(
-                    modifier = Modifier.weight(0.3f, true),
-                    countTotalItems = countTotalDineOutItems,
-                    countSelectedItem = countSelectedDineOutItem,
-                    onClickSelectAll = {
-                        dineOutViewModel.onDineOutEvent(DineOutEvent.SelectAllDineOutOrder)
-                    },
-                    onClickPlaceOrder = {
-                        dineOutViewModel.onDineOutEvent(DineOutEvent.PlaceAllDineOutOrder)
-                    },
-                    onClickPrintOrder = {
-                        dineOutViewModel.onDineOutEvent(DineOutEvent.PlaceAllDineOutOrder)
-                        printAllOrder(selectedDineOutOrder)
-                    }
-                )
+            }
+        ) {
+            SwipeRefresh(
+                state = rememberSwipeRefreshState(isLoading),
+                onRefresh = {
+                    dineOutViewModel.onEvent(DineOutEvent.RefreshDineOutOrder)
+                }
+            ) {
+                if(isLoading){
+                    LoadingIndicator()
+                } else if(dineOutOrders.isEmpty() || hasError != null) {
+                    ItemNotAvailable(
+                        text = hasError ?: stringResource(id = R.string.dine_out_orders_not_found),
+                        buttonText = stringResource(id = R.string.add_items_to_cart_button),
+                        image = painterResource(R.drawable.emptycarttwo),
+                        onClick = {
+                            navController.navigate(MainFeedScreenDestination())
+                        }
+                    )
+                } else{
+                    CartItems(
+                        listState = listState,
+                        cartItems = dineOutOrders,
+                        selectedCartItems = selectedDineOutOrder,
+                        addOnItems = addOnItems,
+                        showPrintBtn = true,
+                        onSelectCartOrder = {
+                            dineOutViewModel.onEvent(DineOutEvent.SelectDineOutOrder(it))
+                        },
+                        onClickEditOrder = {
+                            navController.navigate(AddEditCartOrderScreenDestination(it))
+                        },
+                        onClickViewOrder = {
+                            navController.navigate(OrderDetailsScreenDestination(it))
+                        },
+                        onClickDecreaseQty = { cartOrderId, productId ->
+                            dineOutViewModel.onEvent(
+                                DineOutEvent.DecreaseQuantity(cartOrderId, productId)
+                            )
+                        },
+                        onClickIncreaseQty = { cartOrderId, productId ->
+                            dineOutViewModel.onEvent(
+                                DineOutEvent.IncreaseQuantity(cartOrderId, productId)
+                            )
+                        },
+                        onClickAddOnItem = { addOnItemId, cartOrderId ->
+                            dineOutViewModel.onEvent(
+                                DineOutEvent.UpdateAddOnItemInCart(addOnItemId, cartOrderId)
+                            )
+                        },
+                        onClickPlaceOrder = {
+                            dineOutViewModel.onEvent(DineOutEvent.PlaceDineOutOrder(it))
+                        },
+                        onClickPrintOrder = {
+                            printOrder(it)
+                            dineOutViewModel.onEvent(DineOutEvent.PlaceDineOutOrder(it))
+                        },
+                    )
+                }
             }
         }
     }

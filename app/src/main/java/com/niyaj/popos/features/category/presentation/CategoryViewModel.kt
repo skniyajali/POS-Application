@@ -9,14 +9,13 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.category.domain.model.Category
-import com.niyaj.popos.features.category.domain.use_cases.CategoryUseCases
-import com.niyaj.popos.features.category.domain.util.FilterCategory
+import com.niyaj.popos.features.category.domain.repository.CategoryRepository
+import com.niyaj.popos.features.category.domain.repository.CategoryValidationRepository
+import com.niyaj.popos.features.category.domain.use_cases.GetAllCategories
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.util.capitalizeWords
+import com.niyaj.popos.utils.capitalizeWords
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -24,9 +23,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ *
+ */
 @HiltViewModel
 class CategoryViewModel @Inject constructor(
-    private val categoryUseCases: CategoryUseCases,
+    private val categoryUseCases: CategoryRepository,
+    private val getAllCategories : GetAllCategories,
+    private val validationRepository : CategoryValidationRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -52,14 +56,17 @@ class CategoryViewModel @Inject constructor(
     var expanded by mutableStateOf(false)
 
     init {
-        getAllCategory(FilterCategory.ByCategoryId(SortType.Ascending))
+        getAllCategory()
 
         savedStateHandle.get<String>("categoryId")?.let { categoryId ->
             getCategoryById(categoryId)
         }
     }
 
-    fun onCategoryEvent(event: CategoryEvent) {
+    /**
+     *
+     */
+    fun onEvent(event: CategoryEvent) {
         when (event) {
 
             is CategoryEvent.CategoryNameChanged -> {
@@ -111,7 +118,7 @@ class CategoryViewModel @Inject constructor(
             }
 
             is CategoryEvent.DeselectCategories -> {
-                _selectedCategories.removeAll(_selectedCategories.toList())
+                _selectedCategories.clear()
             }
 
             is CategoryEvent.DeleteCategories -> {
@@ -135,29 +142,10 @@ class CategoryViewModel @Inject constructor(
                 }
             }
 
-            is CategoryEvent.OnFilterCategory -> {
-                if(categories.value.filterCategory::class == event.filterCategory::class &&
-                    categories.value.filterCategory.sortType == event.filterCategory.sortType
-                ){
-                    _categories.value = _categories.value.copy(
-                        filterCategory = FilterCategory.ByCategoryId(SortType.Ascending),
-                    )
-                    return
-                }
-
-                _categories.value = _categories.value.copy(
-                    filterCategory = event.filterCategory,
-                )
-                getAllCategory(event.filterCategory)
-            }
-
             is CategoryEvent.OnSearchCategory -> {
                 viewModelScope.launch {
                     _searchText.emit(event.searchText)
-                    getAllCategory(
-                        FilterCategory.ByCategoryId(SortType.Ascending),
-                        event.searchText
-                    )
+                    getAllCategory(event.searchText)
                 }
             }
 
@@ -168,7 +156,7 @@ class CategoryViewModel @Inject constructor(
             }
 
             is CategoryEvent.RefreshCategory -> {
-                getAllCategory(_categories.value.filterCategory)
+                getAllCategory()
             }
         }
     }
@@ -192,6 +180,9 @@ class CategoryViewModel @Inject constructor(
         }
     }
 
+    /**
+     *
+     */
     fun onSearchBarCloseAndClearClick(){
         viewModelScope.launch {
             onSearchTextClearClick()
@@ -201,18 +192,18 @@ class CategoryViewModel @Inject constructor(
         }
     }
 
+    /**
+     *
+     */
     fun onSearchTextClearClick(){
         viewModelScope.launch {
             _searchText.emit("")
-            getAllCategory(
-                FilterCategory.ByCategoryId(SortType.Ascending),
-                _searchText.value
-            )
+            getAllCategory(_searchText.value)
         }
     }
 
     private fun createOrUpdateCategory(categoryId: String? = null){
-        val categoryNameResult = categoryUseCases.validateCategoryName(addEditCategoryState.categoryName, categoryId)
+        val categoryNameResult = validationRepository.validateCategoryName(addEditCategoryState.categoryName, categoryId)
 
         if (!categoryNameResult.successful){
             addEditCategoryState = addEditCategoryState.copy(categoryNameError = categoryNameResult.errorMessage)
@@ -256,14 +247,14 @@ class CategoryViewModel @Inject constructor(
 
                 addEditCategoryState = AddEditCategoryState()
 
-                onCategoryEvent(CategoryEvent.DeselectCategories)
+                onEvent(CategoryEvent.DeselectCategories)
             }
         }
     }
 
-    private fun getAllCategory(filterCategory: FilterCategory, searchText:String = ""){
-        viewModelScope.launch(Dispatchers.IO) {
-            categoryUseCases.getAllCategories(filterCategory, searchText).collect { result ->
+    private fun getAllCategory(searchText:String = ""){
+        viewModelScope.launch {
+            getAllCategories.invoke(searchText).collect { result ->
                 when(result){
                     is Resource.Loading -> {
                         _categories.value = _categories.value.copy(
@@ -273,8 +264,7 @@ class CategoryViewModel @Inject constructor(
                     is Resource.Success -> {
                         result.data?.let {
                             _categories.value = _categories.value.copy(
-                                categories = it,
-                                filterCategory = filterCategory,
+                                categories = it
                             )
                         }
                     }

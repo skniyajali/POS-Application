@@ -1,12 +1,16 @@
 package com.niyaj.popos.features.category.presentation
 
 import com.niyaj.popos.features.category.domain.model.Category
-import com.niyaj.popos.features.category.domain.util.FilterCategory
-import com.niyaj.popos.features.common.util.SortType
 
+/**
+ * Category state class for displaying the category list
+ * @author Sk Niyaj Ali
+ * @property categories [List]
+ * @property isLoading [Boolean]
+ * @property error [String]
+ */
 data class CategoryState(
     val categories: List<Category> = emptyList(),
-    val filterCategory: FilterCategory = FilterCategory.ByCategoryId(SortType.Ascending),
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val error: String? = null
 )

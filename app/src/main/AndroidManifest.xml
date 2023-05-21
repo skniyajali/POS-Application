@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dist="http://schemas.android.com/apk/distribution"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <dist:module dist:instant="true" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -31,6 +34,7 @@
         android:windowSoftInputMode="adjustResize"
         tools:replace="android:name"
         tools:targetApi="31">
+
 
         <!-- Required: set your sentry.io project identifier (DSN) -->
         <meta-data android:name="io.sentry.dsn" android:value="https://09c662d873604b2eac7554651e9703cc@o4504689913692160.ingest.sentry.io/4504689921163264" />
@@ -74,6 +78,20 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="reminder" android:scheme="popos"/>
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="popos.com" android:pathPrefix="/place" android:scheme="https" />
+            </intent-filter>
         </activity>
 
         <provider
@@ -93,6 +111,8 @@
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="location|microphone"
             tools:node="merge" />
+
+
     </application>
 
 </manifest>

@@ -9,9 +9,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-class GetCustomerWiseReport @Inject constructor(
+class GetCustomerWiseReport(
     private val reportsRepository: ReportsRepository,
     private val customerRepository: CustomerRepository
 ) {

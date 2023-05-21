@@ -7,9 +7,10 @@ import com.niyaj.popos.features.expenses.domain.model.Expenses
 import com.niyaj.popos.features.expenses.domain.repository.ExpensesRepository
 import com.niyaj.popos.features.expenses.domain.repository.ExpensesValidationRepository
 import com.niyaj.popos.features.expenses_category.domain.model.ExpensesCategory
-import com.niyaj.popos.util.getCalculatedStartDate
+import com.niyaj.popos.utils.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
+import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
@@ -35,21 +36,23 @@ class ExpensesRepositoryImpl(
         Timber.d("ExpensesRealmDao Session:")
     }
 
-    override suspend fun getAllExpenses(startDate: String, endDate: String): Flow<Resource<List<Expenses>>> {
+    override suspend fun getAllExpenses(startDate : String?, endDate : String?): Flow<Resource<List<Expenses>>> {
         return channelFlow {
             withContext(ioDispatcher) {
                 try {
                     send(Resource.Loading(true))
 
-                    val expenses = realm.query<Expenses>(
-                        "createdAt >= $0 AND createdAt <= $1",
-                        startDate,
-                        endDate
-                    ).sort("expensesId", Sort.DESCENDING).find()
+                    val expenses = if (startDate != null && endDate != null) {
+                        realm.query<Expenses>(
+                            "createdAt >= $0 AND createdAt <= $1",
+                            startDate,
+                            endDate
+                        ).sort("createdAt", Sort.DESCENDING).asFlow()
+                    }else {
+                        realm.query<Expenses>().sort("createdAt", Sort.DESCENDING).asFlow()
+                    }
 
-                    val items = expenses.asFlow()
-
-                    items.collect { changes: ResultsChange<Expenses> ->
+                    expenses.collect { changes: ResultsChange<Expenses> ->
                         when (changes) {
                             is UpdatedResults -> {
                                 send(Resource.Success(changes.list))
@@ -208,6 +211,57 @@ class ExpensesRepositoryImpl(
             Resource.Success(true)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to delete expanses", false)
+        }
+    }
+
+    override suspend fun importExpenses(expenses : List<Expenses>) : Resource<Boolean> {
+        return try {
+            withContext(ioDispatcher) {
+                realm.write {
+                    expenses.forEach { expense ->
+                        val data = this.query<Expenses>(
+                            "expensesId == $0 OR expensesCategory.expensesCategoryId == $1 AND createdAt == $2",
+                            expense.expensesId,
+                            expense.expensesCategory?.expensesCategoryId,
+                            expense.createdAt
+                        ).first().find()
+
+                        if (data == null && expense.expensesCategory != null) {
+                            val newExpense = Expenses()
+                            newExpense.expensesId = expense.expensesId.ifEmpty { BsonObjectId().toHexString() }
+                            newExpense.expensesPrice = expense.expensesPrice
+                            newExpense.expensesRemarks = expense.expensesRemarks
+                            newExpense.createdAt = expense.createdAt
+                            newExpense.updatedAt = System.currentTimeMillis().toString()
+
+                            val category = this.query<ExpensesCategory>(
+                                "expensesCategoryId == $0 OR expensesCategoryName == $1",
+                                expense.expensesCategory?.expensesCategoryId,
+                                expense.expensesCategory?.expensesCategoryName
+                            ).first().find()
+
+                            if (category == null) {
+                                val newCategory = this.copyToRealm(ExpensesCategory().apply {
+                                    this.expensesCategoryId = expense.expensesCategory!!.expensesCategoryId
+                                    this.expensesCategoryName = expense.expensesCategory!!.expensesCategoryName
+                                    this.createdAt = expense.expensesCategory!!.createdAt
+                                    this.updatedAt = System.currentTimeMillis().toString()
+                                }, UpdatePolicy.ALL)
+
+                                newExpense.expensesCategory = newCategory
+                            } else {
+                                newExpense.expensesCategory = category
+                            }
+
+                            this.copyToRealm(newExpense)
+                        }
+                    }
+                }
+            }
+
+            Resource.Success(true)
+        }catch (e: Exception) {
+            Resource.Error(e.message ?: "Unable to import expenses", false)
         }
     }
 

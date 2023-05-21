@@ -31,3 +31,9 @@ class Category(): RealmObject {
         this.updatedAt = updatedAt
     }
 }
+
+fun Category.filterCategory(searchText: String): Boolean {
+    return this.categoryName.contains(searchText, true) ||
+            this.categoryAvailability.toString().contains(searchText, true) ||
+            this.createdAt.contains(searchText, true)
+}

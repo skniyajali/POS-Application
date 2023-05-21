@@ -32,7 +32,7 @@ import com.niyaj.popos.features.components.chart.horizontalbar.config.Horizontal
 import com.niyaj.popos.features.components.chart.horizontalbar.config.StartDirection
 import com.niyaj.popos.features.components.chart.horizontalbar.model.HorizontalBarData
 import com.niyaj.popos.features.components.chart.horizontalbar.model.maxXValue
-import com.niyaj.popos.util.toRupee
+import com.niyaj.popos.utils.toRupee
 
 @Composable
 fun HorizontalBarChart(

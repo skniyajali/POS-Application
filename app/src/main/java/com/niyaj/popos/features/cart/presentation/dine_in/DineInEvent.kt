@@ -4,9 +4,9 @@ sealed class DineInEvent {
 
     object GetAllDineInOrders: DineInEvent()
 
-    data class AddProductToCart(val cartOrderId: String, val productId: String): DineInEvent()
+    data class IncreaseQuantity(val cartOrderId: String, val productId: String): DineInEvent()
 
-    data class RemoveProductFromCart(val cartOrderId: String, val productId: String): DineInEvent()
+    data class DecreaseQuantity(val cartOrderId: String, val productId: String): DineInEvent()
 
     data class UpdateAddOnItemInCart(val addOnItemId: String, val cartOrderId: String): DineInEvent()
 

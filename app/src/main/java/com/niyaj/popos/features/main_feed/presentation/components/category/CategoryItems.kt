@@ -4,7 +4,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
@@ -31,40 +35,62 @@ fun CategoryItems(
     selectedColor: Color = MaterialTheme.colors.primary,
     unselectedColor: Color = MaterialTheme.colors.onPrimary,
     isLoading: Boolean = false,
-    onClick: (String) -> Unit = {},
+    onClickCategory: (String) -> Unit = {},
 ) {
     LazyRow(
         modifier = modifier
             .fillMaxWidth()
     ){
         items(categories){ category ->
-            val backgroundColor = if (selectedCategory == category.categoryId) selectedColor else unselectedColor
-            val borderStroke = if (selectedCategory == category.categoryId) BorderStroke(0.dp, Color.Transparent) else BorderStroke(1.dp, MaterialTheme.colors.primary)
-            Box(
-                modifier = Modifier
-                    .width(120.dp)
-                    .height(40.dp)
-                    .placeholder(
-                        visible = isLoading,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-                    .clip(CutCornerShape(4.dp))
-                    .border(borderStroke, CutCornerShape(4.dp))
-                    .clickable {
-                        onClick(category.categoryId)
-                    }
-                    .background(backgroundColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = category.categoryName,
-                    style = MaterialTheme.typography.body1,
-                    color = if (selectedCategory == category.categoryId) MaterialTheme.colors.onPrimary else MaterialTheme.colors.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+            CategoryItem(
+                category = category,
+                selectedCategory = selectedCategory,
+                isLoading = isLoading,
+                selectedColor = selectedColor,
+                unselectedColor = unselectedColor,
+                onClickCategory = {
+                    onClickCategory(it)
+                }
+            )
+
             Spacer(modifier = Modifier.width(SpaceSmall))
         }
+    }
+}
+
+@Composable
+fun CategoryItem(
+    category : Category,
+    selectedCategory : String,
+    isLoading : Boolean,
+    selectedColor : Color,
+    unselectedColor : Color,
+    onClickCategory : (String) -> Unit
+) {
+    val backgroundColor = if (selectedCategory == category.categoryId) selectedColor else unselectedColor
+    val borderStroke = if (selectedCategory == category.categoryId) BorderStroke(0.dp, Color.Transparent) else BorderStroke(1.dp, MaterialTheme.colors.primary)
+    Box(
+        modifier = Modifier
+            .width(120.dp)
+            .height(40.dp)
+            .placeholder(
+                visible = isLoading,
+                highlight = PlaceholderHighlight.shimmer(),
+            )
+            .clip(CutCornerShape(4.dp))
+            .border(borderStroke, CutCornerShape(4.dp))
+            .clickable {
+                onClickCategory(category.categoryId)
+            }
+            .background(backgroundColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = category.categoryName,
+            style = MaterialTheme.typography.body1,
+            color = if (selectedCategory == category.categoryId) MaterialTheme.colors.onPrimary else MaterialTheme.colors.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }

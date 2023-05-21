@@ -3,8 +3,8 @@ package com.niyaj.popos.features.cart.presentation.dine_out
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.features.cart.domain.use_cases.CartUseCases
-import com.niyaj.popos.features.cart_order.domain.use_cases.CartOrderUseCases
+import com.niyaj.popos.features.cart.domain.repository.CartRepository
+import com.niyaj.popos.features.cart_order.domain.repository.CartOrderRepository
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,8 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DineOutViewModel @Inject constructor(
-    private val cartUseCases: CartUseCases,
-    private val cartOrderUseCases: CartOrderUseCases,
+    private val cartRepository: CartRepository,
+    private val cartOrderRepository: CartOrderRepository,
 ): ViewModel() {
 
     private val _dineOutOrders = MutableStateFlow(DineOutState())
@@ -38,14 +38,14 @@ class DineOutViewModel @Inject constructor(
         getAllDineOutOrders()
     }
 
-    fun onDineOutEvent(event: DineOutEvent) {
+    fun onEvent(event: DineOutEvent) {
         when (event) {
 
             is DineOutEvent.GetAllDineOutOrders -> {
                 getAllDineOutOrders()
             }
 
-            is DineOutEvent.AddProductToCart -> {
+            is DineOutEvent.IncreaseQuantity -> {
                 viewModelScope.launch {
                     if (event.orderId.isEmpty()) {
                         _eventFlow.emit(UiEvent.OnError("Create New Order First"))
@@ -53,7 +53,7 @@ class DineOutViewModel @Inject constructor(
                         _eventFlow.emit(UiEvent.OnError("Unable to get product"))
                     } else {
                         when (val result =
-                            cartUseCases.addProductToCart(event.orderId, event.productId)) {
+                            cartRepository.addProductToCart(event.orderId, event.productId)) {
                             is Resource.Loading -> {}
                             is Resource.Success -> {
 //                                _eventFlow.emit(UiEvent.OnSuccess("Item added to cart"))
@@ -68,10 +68,10 @@ class DineOutViewModel @Inject constructor(
                 }
             }
 
-            is DineOutEvent.RemoveProductFromCart -> {
+            is DineOutEvent.DecreaseQuantity -> {
                 viewModelScope.launch {
 
-                    when (cartUseCases.removeProductFromCart(event.orderId, event.productId)) {
+                    when (cartRepository.removeProductFromCart(event.orderId, event.productId)) {
                         is Resource.Loading -> {}
                         is Resource.Success -> {
 //                            _eventFlow.emit(UiEvent.OnSuccess("Item removed from cart"))
@@ -85,16 +85,11 @@ class DineOutViewModel @Inject constructor(
 
             is DineOutEvent.UpdateAddOnItemInCart -> {
                 viewModelScope.launch {
-                    when (cartOrderUseCases.updateAddOnItemInCart(event.addOnItemId,
-                        event.cartOrderId)) {
-                        is Resource.Loading -> {}
-                        is Resource.Success -> {
-//                            _eventFlow.emit(UiEvent.OnSuccess("AddOnItem Updated Successfully"))
-
-                        }
+                    when (cartOrderRepository.updateAddOnItem(event.addOnItemId, event.cartOrderId)) {
                         is Resource.Error -> {
                             _eventFlow.emit(UiEvent.OnError("Unable To Update AddOnItem"))
                         }
+                        else -> {}
                     }
                 }
             }
@@ -106,15 +101,15 @@ class DineOutViewModel @Inject constructor(
                 _dineOutOrders.value.cartItems.map { cart ->
                     if(cart.cartProducts.isNotEmpty()) {
                         if(count % 2 != 0){
-                            val cartItem = _opSelectedCarts.contains(cart.cartOrder?.cartOrderId)
+                            val cartItem = _opSelectedCarts.contains(cart.cartOrderId)
                             if(!cartItem){
                                 _opSelectedCarts.add(
-                                    cart.cartOrder?.cartOrderId!!
+                                    cart.cartOrderId
                                 )
                             }
                         }else{
                             _opSelectedCarts.removeIf {
-                                it == cart.cartOrder?.cartOrderId!!
+                                it == cart.cartOrderId
                             }
                         }
                     }
@@ -137,7 +132,7 @@ class DineOutViewModel @Inject constructor(
 
             is DineOutEvent.PlaceDineOutOrder -> {
                 viewModelScope.launch {
-                    when(cartOrderUseCases.placeOrder(event.cartId)){
+                    when(cartOrderRepository.placeOrder(event.cartId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("Order Placed Successfully"))
@@ -153,7 +148,7 @@ class DineOutViewModel @Inject constructor(
                 viewModelScope.launch {
                     val selectedCartItem = _selectedDineOutOrder.value
 
-                    when(cartOrderUseCases.placeAllOrder(selectedCartItem)){
+                    when(cartOrderRepository.placeAllOrder(selectedCartItem)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("${selectedCartItem.size} DineOut Order Placed Successfully"))
@@ -173,7 +168,7 @@ class DineOutViewModel @Inject constructor(
 
     private fun getAllDineOutOrders() {
         viewModelScope.launch {
-            cartUseCases.getAllDineOutOrders().collect { result ->
+            cartRepository.getAllDineOutOrders().collect { result ->
                 when (result) {
                     is Resource.Loading -> {
                         _dineOutOrders.value = _dineOutOrders.value.copy(
@@ -193,7 +188,6 @@ class DineOutViewModel @Inject constructor(
                         )
                     }
                 }
-
             }
         }
     }

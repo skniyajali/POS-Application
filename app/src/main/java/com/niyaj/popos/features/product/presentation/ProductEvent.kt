@@ -1,6 +1,6 @@
 package com.niyaj.popos.features.product.presentation
 
-import com.niyaj.popos.features.product.domain.util.FilterProduct
+import com.niyaj.popos.features.product.presentation.components.ViewType
 
 sealed class ProductEvent {
 
@@ -12,13 +12,13 @@ sealed class ProductEvent {
 
     data class SelectProducts(val products: List<String>) : ProductEvent()
 
+    data class OnSearchProduct(val searchText: String): ProductEvent()
+
+    data class OnChangeViewType(val viewType: ViewType): ProductEvent()
+
     object SelectAllProduct : ProductEvent()
 
     object DeselectProducts : ProductEvent()
-
-    data class OnFilterProduct(val filterProduct: FilterProduct): ProductEvent()
-
-    data class OnSearchProduct(val searchText: String): ProductEvent()
 
     object ToggleSearchBar : ProductEvent()
 

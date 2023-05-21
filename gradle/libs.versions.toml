@@ -1,12 +1,12 @@
 [versions]
-androidGradlePlugin = '8.0.0'
-kotlin = '1.8.0'
+androidGradlePlugin = '8.0.1'
+kotlin = '1.8.10'
 dagger-hilt-version = "2.45"
 hilt-version = '1.0.0'
-realm-version = "1.7.1"
+realm-version = "1.8.0"
 sentry-version = '3.5.0'
 sentry-android-version = '6.17.0'
-ksp-version = '1.8.0-1.0.9'
+ksp-version = '1.8.10-1.0.9'
 appsweep = 'latest.release'
 androidx-core-version = "1.10.0"
 junit = '4.13.2'
@@ -26,8 +26,8 @@ raamcosta-version = "1.8.32-beta"
 moshi-version = '1.14.0'
 truth-version = '1.1.3'
 mockk-version = "1.13.5"
-profileinstaller-version = '1.3.0'
-androidx-livedata-version = "1.4.2"
+profileinstaller-version = '1.3.1'
+androidx-livedata-version = "1.4.3"
 androidx-navigation-compose-version = "2.6.0-beta01"
 androidx-test-core-version = '1.5.0'
 androidx-test-runner = '1.5.2'
@@ -37,14 +37,24 @@ androidx-splash-version = "1.0.1"
 androidx-paging-version = "3.1.1"
 # Compose
 compose-version = '1.4.0-beta01'
-compose-bom = "2023.04.01"
+compose-bom = "2023.05.00"
 activity-compose = "1.7.1"
 lifecycle-version = "2.6.1"
-ui-test-junit = '1.4.2'
+ui-test-junit = '1.4.3'
 kotlinComposeExtension = '1.4.1' # As per Kotlin version
 # Benchmark Variables
 uiautomator = '2.2.0'
-benchmark-macro = "1.2.0-alpha13"
+benchmark-macro = "1.2.0-alpha14"
+androidx-baselineprofile = "1.2.0-alpha13"
+androidx-benchmark = "1.1.1"
+benchmark-junit4 = "1.1.1"
+# App Version
+namespace = "com.niyaj.popos"
+minSdk = "26"
+compileSdk = "33"
+targetSdk = "33"
+versionCode = "1"
+versionName = "1.0.5"
 
 [libraries]
 # Androidx Core
@@ -123,7 +133,7 @@ revealswipe = { group = "de.charlex.compose", name = "revealswipe", version.ref 
 pos-printer = { group = "com.github.DantSu", name = "ESCPOS-ThermalPrinter-Android", version.ref = "pos-printer-version" }
 
 # Realm
-realm-library-sync = { group = "io.realm.kotlin", name = "library-sync", version.ref = "realm-version" }
+realm-library-base = { group = "io.realm.kotlin", name = "library-base", version.ref = "realm-version" }
 
 
 # debugImplementation because LeakCanary should only run in debug builds.
@@ -190,6 +200,7 @@ kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref 
 # Benchmarking
 uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 benchmark-macro = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark-macro" }
+benchmark-junit4 = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "benchmark-junit4" }
 
 
 [plugins]
@@ -206,4 +217,6 @@ appsweep = { id = "com.guardsquare.appsweep", version.ref = "appsweep" }
 sentry = { id = "io.sentry.android.gradle", version.ref = "sentry-version" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp-version" }
 kotlin-kapt = { id = "kotlin-kapt", version.ref = "kotlin" }
+androidx-baselineprofile = { id = "androidx.baselineprofile", version.ref = "androidx-baselineprofile" }
+androidx-benchmark = { id = "androidx.benchmark", version.ref = "androidx-benchmark" }
 

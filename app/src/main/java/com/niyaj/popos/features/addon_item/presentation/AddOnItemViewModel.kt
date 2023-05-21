@@ -4,10 +4,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.features.addon_item.domain.use_cases.AddOnItemUseCases
-import com.niyaj.popos.features.addon_item.domain.util.FilterAddOnItem
+import com.niyaj.popos.features.addon_item.domain.repository.AddOnItemRepository
+import com.niyaj.popos.features.addon_item.domain.use_cases.GetAllAddOnItems
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -20,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddOnItemViewModel @Inject constructor(
-    private val addOnItemUseCases: AddOnItemUseCases,
+    private val addOnItemRepository : AddOnItemRepository,
+    private val getAllAddOnItems : GetAllAddOnItems,
 ): ViewModel() {
 
     private val _state = MutableStateFlow(AddOnItemState())
@@ -41,7 +41,7 @@ class AddOnItemViewModel @Inject constructor(
     private var count: Int = 0
 
     init {
-        getAllAddOnItems(FilterAddOnItem.ByAddOnItemId(SortType.Descending))
+        getAllAddOnItems()
     }
 
     fun onAddOnItemsEvent(event: AddOnItemEvent) {
@@ -83,14 +83,14 @@ class AddOnItemViewModel @Inject constructor(
             }
 
             is AddOnItemEvent.DeselectAddOnItem -> {
-                _selectedAddOnItems.removeAll(_selectedAddOnItems.toList())
+                _selectedAddOnItems.clear()
             }
 
             is AddOnItemEvent.DeleteAddOnItem -> {
                 viewModelScope.launch {
                     if(event.addOnItems.isNotEmpty()){
                         event.addOnItems.forEach { addOnItem ->
-                            when (val result = addOnItemUseCases.deleteAddOnItem(addOnItem)) {
+                            when (val result = addOnItemRepository.deleteAddOnItem(addOnItem)) {
                                 is Resource.Loading -> {
                                     _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                                 }
@@ -108,33 +108,12 @@ class AddOnItemViewModel @Inject constructor(
                 }
             }
 
-            is AddOnItemEvent.OnFilterAddOnItem -> {
-                if(_state.value.filterAddOnItem::class == event.filterAddOnItem::class &&
-                    _state.value.filterAddOnItem.sortType == event.filterAddOnItem.sortType
-                ){
-                    _state.value = _state.value.copy(
-                        filterAddOnItem = FilterAddOnItem.ByAddOnItemId(SortType.Descending)
-                    )
-                    return
-                }
-
-                _state.value = _state.value.copy(
-                    filterAddOnItem = event.filterAddOnItem
-                )
-
-                getAllAddOnItems(event.filterAddOnItem)
-
-            }
-
             is AddOnItemEvent.OnSearchAddOnItem -> {
                 viewModelScope.launch {
                     _searchText.emit(event.searchText)
 
                     delay(500L)
-                    getAllAddOnItems(
-                        _state.value.filterAddOnItem,
-                        searchText = event.searchText
-                    )
+                    getAllAddOnItems(searchText = event.searchText)
                 }
             }
 
@@ -145,14 +124,14 @@ class AddOnItemViewModel @Inject constructor(
             }
 
             is AddOnItemEvent.RefreshAddOnItem -> {
-                getAllAddOnItems(_state.value.filterAddOnItem)
+                getAllAddOnItems()
             }
         }
     }
 
-    private fun getAllAddOnItems(filterAddOnItem: FilterAddOnItem, searchText: String = "") {
+    private fun getAllAddOnItems(searchText: String = "") {
         viewModelScope.launch {
-            addOnItemUseCases.getAllAddOnItems(filterAddOnItem, searchText).collect { result ->
+            getAllAddOnItems.invoke(searchText).collect { result ->
                 when(result){
                     is Resource.Loading -> {
                         _state.value = _state.value.copy(isLoading = result.isLoading)
@@ -161,13 +140,11 @@ class AddOnItemViewModel @Inject constructor(
                         result.data?.let {
                             _state.value = _state.value.copy(
                                 addOnItems = it,
-                                filterAddOnItem = filterAddOnItem
                             )
                         }
                     }
                     is Resource.Error -> {
                         _state.value = _state.value.copy(error = "Unable to load resources")
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
                     }
                 }
             }
@@ -187,7 +164,6 @@ class AddOnItemViewModel @Inject constructor(
         viewModelScope.launch {
             _searchText.emit("")
             getAllAddOnItems(
-                _state.value.filterAddOnItem,
                 _searchText.value
             )
         }

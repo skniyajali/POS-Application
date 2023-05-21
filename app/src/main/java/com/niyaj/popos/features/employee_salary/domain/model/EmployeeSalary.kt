@@ -46,5 +46,18 @@ class EmployeeSalary(): RealmObject {
         this.createdAt = createdAt
         this.updatedAt = updatedAt
     }
+}
 
+fun EmployeeSalary.filterEmployeeSalary(searchText: String): Boolean {
+    return this.employeeSalary.contains(searchText, true) ||
+            this.salaryType.contains(searchText, true) ||
+            this.salaryGivenDate.contains(searchText, true) ||
+            this.salaryPaymentType.contains(searchText, true) ||
+            this.salaryNote.contains(searchText, true) ||
+            this.createdAt.contains(searchText, true) ||
+            this.updatedAt?.contains(searchText, true) == true ||
+            this.employee?.employeeName?.contains(searchText, true) == true ||
+            this.employee?.employeePhone?.contains(searchText, true) == true ||
+            this.employee?.employeeType?.contains(searchText, true) == true ||
+            this.employee?.employeePosition?.contains(searchText, true) == true
 }

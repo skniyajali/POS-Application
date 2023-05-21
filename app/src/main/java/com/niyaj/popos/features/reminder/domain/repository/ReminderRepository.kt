@@ -20,7 +20,7 @@ interface ReminderRepository {
 
     suspend fun deleteReminder(reminderId : String): Boolean
 
-    suspend fun getDailySalaryEmployee(salaryDate: String, reminderType: ReminderType): Flow<Resource<List<EmployeeReminderWithStatus>>>
+    suspend fun getReminderEmployee(salaryDate: String, reminderType: ReminderType): Flow<Resource<List<EmployeeReminderWithStatus>>>
 
     suspend fun createOrUpdateReminder(reminder : Reminder): Boolean
 }

@@ -69,7 +69,6 @@ class EmployeeRepositoryImpl(
         return try {
             val employee = realm.query<Employee>("employeeId == $0", employeeId).first().find()
 
-
             Resource.Success(employee)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to get Employee", null)

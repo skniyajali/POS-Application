@@ -13,8 +13,8 @@ import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.ValidationResult
 import com.niyaj.popos.features.customer.domain.model.Customer
-import com.niyaj.popos.util.Constants.SELECTED_CART_ORDER_ID
-import com.niyaj.popos.util.getCalculatedStartDate
+import com.niyaj.popos.utils.Constants.SELECTED_CART_ORDER_ID
+import com.niyaj.popos.utils.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.UpdatePolicy
@@ -66,11 +66,9 @@ class CartOrderRepositoryImpl(
                             "cartOrderStatus == $0",
                             OrderStatus.Processing.orderStatus
                         ).sort("cartOrderId", Sort.DESCENDING)
-                    }
+                    }.asFlow()
 
-                    val itemsFlow = items.asFlow()
-
-                    itemsFlow.collect { changes: ResultsChange<CartOrder> ->
+                    items.collect { changes: ResultsChange<CartOrder> ->
                         when (changes) {
                             is UpdatedResults -> {
                                 if (changes.list.isNotEmpty()) {
@@ -456,7 +454,7 @@ class CartOrderRepositoryImpl(
             withContext(ioDispatcher){
                 val order = realm.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
 
-                if (order != null) {
+                if (order != null && order.cartOrderStatus != OrderStatus.Placed.orderStatus) {
                     realm.write {
                         val selectedCartOrder = this.query<SelectedCartOrder>("selectedCartId == $0",
                             SELECTED_CART_ORDER_ID

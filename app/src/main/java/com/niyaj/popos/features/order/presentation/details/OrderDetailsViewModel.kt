@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.order.domain.use_cases.OrderUseCases
+import com.niyaj.popos.features.order.domain.repository.OrderRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OrderDetailsViewModel @Inject constructor(
-    private val orderUseCases: OrderUseCases,
+    private val orderRepository: OrderRepository,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -28,7 +28,7 @@ class OrderDetailsViewModel @Inject constructor(
 
     private fun getOrderDetails(cartOrderId: String) {
         viewModelScope.launch {
-            when(val result = orderUseCases.getOrderDetails(cartOrderId)){
+            when(val result = orderRepository.getOrderDetails(cartOrderId)){
                 is Resource.Loading -> {
                     _orderDetails.value = _orderDetails.value.copy(
                         isLoading = result.isLoading

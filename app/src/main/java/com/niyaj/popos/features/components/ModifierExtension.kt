@@ -54,7 +54,9 @@ enum class ButtonState { Pressed, Idle }
 
 fun Modifier.bounceClick() = composed {
     var buttonState by remember { mutableStateOf(ButtonState.Idle) }
-    val scale by animateFloatAsState(if (buttonState == ButtonState.Pressed) 0.70f else 1f)
+    val scale by animateFloatAsState(if (buttonState == ButtonState.Pressed) 0.70f else 1f,
+        label = "scale"
+    )
 
     this
         .graphicsLayer {
@@ -81,7 +83,7 @@ fun Modifier.bounceClick() = composed {
 
 fun Modifier.pressClickEffect() = composed {
     var buttonState by remember { mutableStateOf(ButtonState.Idle) }
-    val ty by animateFloatAsState(if (buttonState == ButtonState.Pressed) 0f else -20f)
+    val ty by animateFloatAsState(if (buttonState == ButtonState.Pressed) 0f else -20f, label = "animatedAsState")
 
     this
         .graphicsLayer {
@@ -114,7 +116,7 @@ fun Modifier.shakeClickEffect() = composed {
             iterations = 2,
             animation = tween(durationMillis = 50, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
-        )
+        ), label = "animateAsState"
     )
     this
         .graphicsLayer {

@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -54,18 +55,29 @@ import com.niyaj.popos.features.employee_attendance.domain.util.AbsentScreenTest
 import com.niyaj.popos.features.employee_attendance.domain.util.AbsentScreenTestTags.ABSENT_EMPLOYEE_NAME_FIELD
 import com.niyaj.popos.features.employee_attendance.domain.util.AbsentScreenTestTags.ABSENT_REASON_FIELD
 import com.niyaj.popos.features.employee_attendance.domain.util.AbsentScreenTestTags.ADD_EDIT_ABSENT_ENTRY_BTN
-import com.niyaj.popos.util.toMilliSecond
-import com.niyaj.popos.util.toSalaryDate
+import com.niyaj.popos.utils.toMilliSecond
+import com.niyaj.popos.utils.toSalaryDate
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import io.sentry.compose.SentryTraced
 import java.time.LocalDate
 
 
-@OptIn(ExperimentalMaterialApi::class)
+/**
+ * Add/Edit Absent Screen
+ * @author Sk Niyaj Ali
+ * @param attendanceId
+ * @param employeeId
+ * @param navController
+ * @param resultBackNavigator
+ * @param absentViewModel
+ * @see AbsentViewModel
+ */
+@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
 @Composable
 fun AddEditAbsentScreen(
@@ -102,152 +114,157 @@ fun AddEditAbsentScreen(
         }
     }
 
-    BottomSheetWithCloseDialog(
-        modifier = Modifier.fillMaxWidth(),
-        text = if (attendanceId.isNotEmpty())
-            stringResource(id = R.string.update_absent_entry)
-        else
-            stringResource(id = R.string.create_absent_entry),
-        icon = Icons.Default.EventBusy,
-        onClosePressed = {
-            navController.navigateUp()
-        }
-    ) {
-
-        MaterialDialog(
-            dialogState = dialogState,
-            buttons = {
-                positiveButton("Ok")
-                negativeButton("Cancel")
+    SentryTraced(tag = "AddEditAbsentScreen-$employeeId") {
+        BottomSheetWithCloseDialog(
+            modifier = Modifier.fillMaxWidth(),
+            text = if (attendanceId.isNotEmpty())
+                stringResource(id = R.string.update_absent_entry)
+            else
+                stringResource(id = R.string.create_absent_entry),
+            icon = Icons.Default.EventBusy,
+            onClosePressed = {
+                navController.navigateUp()
             }
         ) {
-            datepicker(
-                allowedDateValidator = { date ->
-                    if (absentViewModel.absentState.employee.employeeId.isNotEmpty()) {
-                        (date.toMilliSecond >= absentViewModel.absentState.employee.employeeJoinedDate) && (date <= LocalDate.now())
-                    } else date == LocalDate.now()
+
+            MaterialDialog(
+                dialogState = dialogState,
+                buttons = {
+                    positiveButton("Ok")
+                    negativeButton("Cancel")
                 }
-            ) {date ->
-                absentViewModel.onEvent(
-                    AbsentEvent.AbsentDateChanged(date.toMilliSecond)
-                )
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SpaceSmall),
-        ) {
-            ExposedDropdownMenuBox(
-                expanded = employees.isNotEmpty() && employeeToggled,
-                onExpandedChange = {
-                    employeeToggled = !employeeToggled
-                },
-                modifier = Modifier.testTag(ABSENT_EMPLOYEE_NAME_FIELD)
             ) {
-                StandardOutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onGloballyPositioned { coordinates ->
-                            //This is used to assign to the DropDown the same width
-                            textFieldSize = coordinates.size.toSize()
+                datepicker(
+                    allowedDateValidator = { date ->
+                        if (absentViewModel.absentState.employee.employeeId.isNotEmpty()) {
+                            (date.toMilliSecond >= absentViewModel.absentState.employee.employeeJoinedDate) && (date <= LocalDate.now())
+                        } else date == LocalDate.now()
+                    }
+                ) {date ->
+                    absentViewModel.onEvent(
+                        AbsentEvent.AbsentDateChanged(date.toMilliSecond)
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(SpaceSmall),
+            ) {
+                ExposedDropdownMenuBox(
+                    expanded = employees.isNotEmpty() && employeeToggled,
+                    onExpandedChange = {
+                        employeeToggled = !employeeToggled
+                    },
+                    modifier = Modifier.testTag(ABSENT_EMPLOYEE_NAME_FIELD)
+                ) {
+                    StandardOutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onGloballyPositioned { coordinates ->
+                                //This is used to assign to the DropDown the same width
+                                textFieldSize = coordinates.size.toSize()
+                            },
+                        text = absentViewModel.absentState.employee.employeeName,
+                        hint = "Employee Name",
+                        leadingIcon = Icons.Default.Person4,
+                        error = absentViewModel.absentState.employeeError,
+                        errorTag = ABSENT_EMPLOYEE_NAME_ERROR,
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                expanded = employeeToggled
+                            )
                         },
-                    text = absentViewModel.absentState.employee.employeeName,
-                    hint = "Employee Name",
-                    leadingIcon = Icons.Default.Person4,
-                    error = absentViewModel.absentState.employeeError,
-                    errorTag = ABSENT_EMPLOYEE_NAME_ERROR,
+                    )
+
+                    DropdownMenu(
+                        expanded = employees.isNotEmpty() && employeeToggled,
+                        onDismissRequest = {
+                            employeeToggled = false
+                        },
+                        modifier = Modifier
+                            .width(with(LocalDensity.current){textFieldSize.width.toDp()}),
+                    ) {
+                        employees.forEachIndexed{ index, employee ->
+                            DropdownMenuItem(
+                                modifier = Modifier
+                                    .testTag(employee.employeeName)
+                                    .fillMaxWidth(),
+                                onClick = {
+                                    absentViewModel.onEvent(
+                                        AbsentEvent.EmployeeChanged(employee.employeeId)
+                                    )
+                                    employeeToggled = false
+                                }
+                            ) {
+                                Text(
+                                    text = employee.employeeName,
+                                    style = MaterialTheme.typography.body1,
+                                )
+                            }
+
+                            if(index != employees.size - 1) {
+                                Divider(modifier = Modifier.fillMaxWidth(), color = Color.Gray, thickness = 0.8.dp)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(SpaceSmall))
+
+                StandardOutlinedTextField(
+                    text = absentViewModel.absentState.absentDate.toSalaryDate,
+                    hint = "Absent Date",
+                    leadingIcon = Icons.Default.CalendarToday,
+                    error = absentViewModel.absentState.absentDateError,
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(
-                            expanded = employeeToggled
-                        )
+                        IconButton(
+                            onClick = { dialogState.show() },
+                            modifier = Modifier.testTag(ABSENT_DATE_FIELD)
+                        ) {
+                            Icon(imageVector = Icons.Default.CalendarToday, contentDescription = null)
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(SpaceSmall))
+
+                StandardOutlinedTextField(
+                    modifier = Modifier.testTag(ABSENT_REASON_FIELD),
+                    text = absentViewModel.absentState.absentReason,
+                    hint = "Absent Reason",
+                    leadingIcon = Icons.Default.EventNote,
+                    onValueChange = {
+                        absentViewModel.onEvent(AbsentEvent.AbsentReasonChanged(it))
                     },
                 )
 
-                DropdownMenu(
-                    expanded = employees.isNotEmpty() && employeeToggled,
-                    onDismissRequest = {
-                        employeeToggled = false
-                    },
+                Spacer(modifier = Modifier.height(SpaceMedium))
+
+                StandardButton(
                     modifier = Modifier
-                        .width(with(LocalDensity.current){textFieldSize.width.toDp()}),
-                ) {
-                    employees.forEachIndexed{ index, employee ->
-                        DropdownMenuItem(
-                            modifier = Modifier
-                                .testTag(employee.employeeName)
-                                .fillMaxWidth(),
-                            onClick = {
-                                absentViewModel.onEvent(
-                                    AbsentEvent.EmployeeChanged(employee.employeeId)
-                                )
-                                employeeToggled = false
-                            }
-                        ) {
-                            Text(
-                                text = employee.employeeName,
-                                style = MaterialTheme.typography.body1,
-                            )
-                        }
-
-                        if(index != employees.size - 1) {
-                            Divider(modifier = Modifier.fillMaxWidth(), color = Color.Gray, thickness = 0.8.dp)
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(SpaceSmall))
-
-            StandardOutlinedTextField(
-                text = absentViewModel.absentState.absentDate.toSalaryDate,
-                hint = "Absent Date",
-                leadingIcon = Icons.Default.CalendarToday,
-                error = absentViewModel.absentState.absentDateError,
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(
-                        onClick = { dialogState.show() },
-                        modifier = Modifier.testTag(ABSENT_DATE_FIELD)
-                    ) {
-                        Icon(imageVector = Icons.Default.CalendarToday, contentDescription = null)
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(SpaceSmall))
-
-            StandardOutlinedTextField(
-                modifier = Modifier.testTag(ABSENT_REASON_FIELD),
-                text = absentViewModel.absentState.absentReason,
-                hint = "Absent Reason",
-                leadingIcon = Icons.Default.EventNote,
-                onValueChange = {
-                    absentViewModel.onEvent(AbsentEvent.AbsentReasonChanged(it))
-                },
-            )
-
-            Spacer(modifier = Modifier.height(SpaceMedium))
-
-            StandardButton(
-                modifier = Modifier.testTag(ADD_EDIT_ABSENT_ENTRY_BTN),
-                text = if (attendanceId.isNotEmpty()) stringResource(id = R.string.update_absent_entry)
+                        .fillMaxWidth()
+                        .testTag(ADD_EDIT_ABSENT_ENTRY_BTN),
+                    text = if (attendanceId.isNotEmpty()) stringResource(id = R.string.update_absent_entry)
                     else stringResource(id = R.string.create_absent_entry),
-                icon = if (attendanceId.isNotEmpty()) Icons.Default.Edit else Icons.Default.Add,
-                onClick = {
-                    if (attendanceId.isNotEmpty()) {
-                        absentViewModel.onEvent(
-                            AbsentEvent.UpdateAbsentEntry(attendanceId)
-                        )
-                    } else {
-                        absentViewModel.onEvent(AbsentEvent.AddAbsentEntry)
-                    }
-                },
-            )
+                    icon = if (attendanceId.isNotEmpty()) Icons.Default.Edit else Icons.Default.Add,
+                    onClick = {
+                        if (attendanceId.isNotEmpty()) {
+                            absentViewModel.onEvent(
+                                AbsentEvent.UpdateAbsentEntry(attendanceId)
+                            )
+                        } else {
+                            absentViewModel.onEvent(AbsentEvent.AddAbsentEntry)
+                        }
+                    },
+                )
+            }
         }
     }
+
 }

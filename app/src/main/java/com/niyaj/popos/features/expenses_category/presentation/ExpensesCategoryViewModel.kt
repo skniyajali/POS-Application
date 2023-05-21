@@ -7,13 +7,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.expenses_category.domain.model.ExpensesCategory
-import com.niyaj.popos.features.expenses_category.domain.use_cases.ExpensesCategoryUseCases
-import com.niyaj.popos.features.expenses_category.domain.util.FilterExpensesCategory
+import com.niyaj.popos.features.expenses_category.domain.repository.ExpCategoryValidationRepository
+import com.niyaj.popos.features.expenses_category.domain.repository.ExpensesCategoryRepository
+import com.niyaj.popos.features.expenses_category.domain.use_cases.GetAllExpensesCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -23,7 +22,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExpensesCategoryViewModel @Inject constructor(
-    private val expensesCategoryUseCases: ExpensesCategoryUseCases,
+    private val expensesCategoryRepository: ExpensesCategoryRepository,
+    private val getAllExpensesCategory : GetAllExpensesCategory,
+    private val validationRepository : ExpCategoryValidationRepository,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -47,13 +48,16 @@ class ExpensesCategoryViewModel @Inject constructor(
     var expanded by mutableStateOf(false)
 
     init {
-        getAllExpensesCategory(FilterExpensesCategory.ByExpensesCategoryId(SortType.Descending))
+        getAllExpensesCategory()
 
         savedStateHandle.get<String>("expensesCategoryId")?.let { expensesCategoryId ->
             getExpensesCategoryById(expensesCategoryId)
         }
     }
 
+    /**
+     *
+     */
     fun onExpensesCategoryEvent(event: ExpensesCategoryEvent) {
         when (event){
 
@@ -81,7 +85,7 @@ class ExpensesCategoryViewModel @Inject constructor(
 
             is ExpensesCategoryEvent.DeleteExpensesCategory -> {
                 viewModelScope.launch {
-                    when (val result = expensesCategoryUseCases.deleteExpensesCategory(event.expensesCategoryId)) {
+                    when (val result = expensesCategoryRepository.deleteExpensesCategory(event.expensesCategoryId)) {
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -96,33 +100,10 @@ class ExpensesCategoryViewModel @Inject constructor(
                 _selectedExpensesCategory.value = ""
             }
 
-            is ExpensesCategoryEvent.OnFilterExpensesCategory -> {
-                if(_expensesCategories.value.filterExpensesCategory::class == event.filterExpensesCategory::class &&
-                    _expensesCategories.value.filterExpensesCategory.sortType == event.filterExpensesCategory.sortType
-                ){
-                    _expensesCategories.value = _expensesCategories.value.copy(
-                        filterExpensesCategory = FilterExpensesCategory.ByExpensesCategoryId(
-                            SortType.Descending)
-                    )
-                    return
-                }
-
-                _expensesCategories.value = _expensesCategories.value.copy(
-                    filterExpensesCategory = event.filterExpensesCategory
-                )
-
-                getAllExpensesCategory(event.filterExpensesCategory)
-            }
-
             is ExpensesCategoryEvent.OnSearchExpensesCategory -> {
                 viewModelScope.launch {
                     _searchText.emit(event.searchText)
-
-                    delay(500L)
-                    getAllExpensesCategory(
-                        _expensesCategories.value.filterExpensesCategory,
-                        searchText = event.searchText
-                    )
+                    getAllExpensesCategory(searchText = event.searchText)
                 }
             }
 
@@ -133,14 +114,14 @@ class ExpensesCategoryViewModel @Inject constructor(
             }
 
             is ExpensesCategoryEvent.RefreshExpenses -> {
-                getAllExpensesCategory(_expensesCategories.value.filterExpensesCategory)
+                getAllExpensesCategory()
             }
         }
     }
 
-    private fun getAllExpensesCategory(filterExpensesCategory: FilterExpensesCategory, searchText: String = "") {
+    private fun getAllExpensesCategory(searchText: String = "") {
         viewModelScope.launch {
-            expensesCategoryUseCases.getAllExpensesCategory(filterExpensesCategory, searchText).collect{ result ->
+            getAllExpensesCategory.invoke(searchText).collect{ result ->
                 when(result){
                     is Resource.Loading -> {
                         _expensesCategories.value = _expensesCategories.value.copy(isLoading = result.isLoading)
@@ -148,8 +129,7 @@ class ExpensesCategoryViewModel @Inject constructor(
                     is Resource.Success -> {
                         result.data?.let {
                             _expensesCategories.value = _expensesCategories.value.copy(
-                                expensesCategory = it,
-                                filterExpensesCategory = filterExpensesCategory
+                                expensesCategory = it
                             )
                         }
                     }
@@ -163,7 +143,7 @@ class ExpensesCategoryViewModel @Inject constructor(
     }
 
     private fun addOrEditExpensesCategory(expensesCategoryId: String? = null){
-        val validatedExpensesCategoryName = expensesCategoryUseCases.validateExpensesCategoryName(addEditState.expensesCategoryName)
+        val validatedExpensesCategoryName = validationRepository.validateExpensesCategoryName(addEditState.expensesCategoryName)
 
         val hasError = listOf(validatedExpensesCategoryName).any {
             !it.successful
@@ -178,7 +158,7 @@ class ExpensesCategoryViewModel @Inject constructor(
         }else {
             viewModelScope.launch {
                 if(expensesCategoryId.isNullOrEmpty()){
-                    val result = expensesCategoryUseCases.createNewExpensesCategory(
+                    val result = expensesCategoryRepository.createNewExpensesCategory(
                         ExpensesCategory(
                             expensesCategoryName = addEditState.expensesCategoryName,
                         )
@@ -197,7 +177,7 @@ class ExpensesCategoryViewModel @Inject constructor(
 
                 }else {
 
-                    val result = expensesCategoryUseCases.updateExpensesCategory(
+                    val result = expensesCategoryRepository.updateExpensesCategory(
                         ExpensesCategory(
                             expensesCategoryName = addEditState.expensesCategoryName,
                         ),
@@ -224,7 +204,7 @@ class ExpensesCategoryViewModel @Inject constructor(
 
     private fun getExpensesCategoryById(expensesCategoryId: String) {
         viewModelScope.launch {
-            when(val result = expensesCategoryUseCases.getExpensesCategoryById(expensesCategoryId)) {
+            when(val result = expensesCategoryRepository.getExpensesCategoryById(expensesCategoryId)) {
                 is Resource.Loading -> {}
 
                 is Resource.Success -> {
@@ -239,6 +219,9 @@ class ExpensesCategoryViewModel @Inject constructor(
         }
     }
 
+    /**
+     *
+     */
     fun onSearchBarCloseAndClearClick(){
         viewModelScope.launch {
             onSearchTextClearClick()
@@ -248,13 +231,13 @@ class ExpensesCategoryViewModel @Inject constructor(
         }
     }
 
+    /**
+     *
+     */
     fun onSearchTextClearClick(){
         viewModelScope.launch {
             _searchText.emit("")
-            getAllExpensesCategory(
-                _expensesCategories.value.filterExpensesCategory,
-                _searchText.value
-            )
+            getAllExpensesCategory(_searchText.value)
         }
     }
 }

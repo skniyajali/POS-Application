@@ -22,7 +22,6 @@ import androidx.navigation.NavController
 import com.niyaj.popos.R
 import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.features.destinations.CartScreenDestination
-import com.niyaj.popos.features.order.presentation.SelectedOrder
 import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -50,9 +49,7 @@ fun StandardBackdropScaffold(
         modifier = Modifier.fillMaxSize(),
         scaffoldState = scaffoldState,
         drawerContent = {
-            StandardDrawer(
-                navController
-            )
+            StandardDrawer(navController)
         },
         drawerShape = RectangleShape,
         drawerGesturesEnabled = true,
@@ -122,9 +119,9 @@ fun StandardBackdropScaffold(
                                 onClearClick = onClearClick,
                             )
                         }else{
-                            IconButton(onClick = {
-                                onSearchButtonClick()
-                            }) {
+                            IconButton(
+                                onClick = onSearchButtonClick
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.Search,
                                     contentDescription = stringResource(id = R.string.search_icon),

@@ -9,7 +9,7 @@ import androidx.compose.runtime.*
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.components.RoundedBox
 import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculableDate
-import com.niyaj.popos.util.toYearAndMonth
+import com.niyaj.popos.utils.toYearAndMonth
 
 @Composable
 fun OrderTypeDropdown(

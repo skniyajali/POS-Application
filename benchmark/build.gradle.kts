@@ -1,12 +1,14 @@
 import com.android.build.api.dsl.ManagedVirtualDevice
 
+@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.android.test)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.androidx.baselineprofile)
 }
 
 android {
-    namespace = "com.popos.benchmark"
+    namespace = "com.baselineprofile.baselineprofile"
     compileSdk = 33
 
     compileOptions {
@@ -25,37 +27,22 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-//    testOptions {
-//        managedDevices {
-//            devices {
-//
-//                pixel4aApi33(ManagedVirtualDevice) {
-//                    device = "Pixel 4a"
-//                    apiLevel = 33
-//                }
-//            }
-//        }
-//    }
+    targetProjectPath = ":app"
 
-    buildTypes {
-
-//        getByName("release") {
-//            isMinifyEnabled = true
-//            isShrinkResources = true
-//            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
-//        }
-
-        val benchmark by creating {
-            // Keep the build type debuggable so we can attach a debugger if needed.
-            isDebuggable = true
-            signingConfig = signingConfigs.getByName("debug")
-            matchingFallbacks.add("release")
-            proguardFiles("benchmark-rules.pro")
+    testOptions.managedDevices.devices {
+        create<ManagedVirtualDevice>("pixel6Api31") {
+            device = "Pixel 6"
+            apiLevel = 31
+            systemImageSource = "aosp"
         }
     }
+}
 
-    targetProjectPath = ":app"
-    experimentalProperties["android.experimental.self-instrumenting"] = true
+// This is the configuration block for the Baseline Profile plugin.
+// You can specify to run the generators on a managed devices or connected devices.
+baselineProfile {
+    managedDevices += "pixel6Api31"
+    useConnectedDevices = false
 }
 
 dependencies {
@@ -63,10 +50,4 @@ dependencies {
     implementation(libs.espresso.core)
     implementation(libs.uiautomator)
     implementation(libs.benchmark.macro)
-}
-
-androidComponents {
-    beforeVariants {
-        it.enable = it.buildType == "benchmark"
-    }
 }

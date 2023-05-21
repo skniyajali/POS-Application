@@ -8,8 +8,8 @@ import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.expenses.domain.model.Expenses
 import com.niyaj.popos.features.expenses_category.data.repository.ExpensesCategoryRepositoryImpl
 import com.niyaj.popos.features.expenses_category.domain.model.ExpensesCategory
-import com.niyaj.popos.util.getEndTime
-import com.niyaj.popos.util.getStartTime
+import com.niyaj.popos.utils.getEndTime
+import com.niyaj.popos.utils.getStartTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.runTest

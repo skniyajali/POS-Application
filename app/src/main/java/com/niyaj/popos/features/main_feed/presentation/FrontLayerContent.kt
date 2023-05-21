@@ -1,6 +1,10 @@
 package com.niyaj.popos.features.main_feed.presentation
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -13,11 +17,15 @@ import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.components.GlowIndicator
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.destinations.ProductScreenDestination
-import com.niyaj.popos.features.main_feed.data.repository.ProductWithFlowQuantity
+import com.niyaj.popos.features.main_feed.domain.model.ProductWithFlowQuantity
 import com.niyaj.popos.features.main_feed.presentation.components.category.CategorySection
 import com.niyaj.popos.features.main_feed.presentation.components.product.ProductSection
 import com.ramcosta.composedestinations.navigation.navigate
 
+/**
+ * Main Feed Screen Content
+ * @author Sk Niyaj Ali
+ */
 @Composable
 fun FrontLayerContent(
     navController : NavController,

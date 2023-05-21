@@ -9,17 +9,21 @@ import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.employee.domain.model.Employee
-import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
+import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.features.employee.domain.repository.EmployeeValidationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
+/**
+ * Created by Niyaj on 9/10/2020.
+ */
 @HiltViewModel
 class AddEditEmployeeViewModel @Inject constructor(
-    private val employeeUseCases: EmployeeUseCases,
+    private val employeeUseCases: EmployeeRepository,
+    private val validationRepository : EmployeeValidationRepository,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -37,6 +41,9 @@ class AddEditEmployeeViewModel @Inject constructor(
         }
     }
 
+    /**
+     * This function is called when any event is triggered from the UI
+     */
     fun onAddEditEmployeeEvent(event: AddEditEmployeeEvent) {
         when (event){
 
@@ -55,14 +62,17 @@ class AddEditEmployeeViewModel @Inject constructor(
             is AddEditEmployeeEvent.EmployeeJoinedDateChanged -> {
                 addEditState = addEditState.copy(employeeJoinedDate = event.employeeJoinedDate)
             }
+
             is AddEditEmployeeEvent.EmployeePositionChanged -> {
                 addEditState = addEditState.copy(employeePosition = event.employeePosition)
 
             }
+
             is AddEditEmployeeEvent.EmployeeSalaryTypeChanged -> {
                 addEditState = addEditState.copy(employeeSalaryType = event.employeeSalaryType)
 
             }
+
             is AddEditEmployeeEvent.EmployeeTypeChanged -> {
                 addEditState = addEditState.copy(employeeType = event.employeeType)
             }
@@ -78,10 +88,10 @@ class AddEditEmployeeViewModel @Inject constructor(
     }
 
     private fun addOrEditEmployee(employeeId: String? = null){
-        val validatedEmployeeName = employeeUseCases.validateEmployeeName(addEditState.employeeName, employeeId)
-        val validatedEmployeePhone = employeeUseCases.validateEmployeePhone(addEditState.employeePhone, employeeId)
-        val validatedEmployeeSalary = employeeUseCases.validateEmployeeSalary(addEditState.employeeSalary)
-        val validatedEmployeePosition = employeeUseCases.validateEmployeePosition(addEditState.employeePosition)
+        val validatedEmployeeName = validationRepository.validateEmployeeName(addEditState.employeeName, employeeId)
+        val validatedEmployeePhone = validationRepository.validateEmployeePhone(addEditState.employeePhone, employeeId)
+        val validatedEmployeeSalary = validationRepository.validateEmployeeSalary(addEditState.employeeSalary)
+        val validatedEmployeePosition = validationRepository.validateEmployeePosition(addEditState.employeePosition)
 
         val hasError = listOf(validatedEmployeeName, validatedEmployeePhone, validatedEmployeeSalary, validatedEmployeePosition).any {
             !it.successful

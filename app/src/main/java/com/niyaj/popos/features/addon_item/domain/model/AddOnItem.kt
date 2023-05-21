@@ -31,3 +31,10 @@ class AddOnItem() : RealmObject {
 }
 
 class InvalidAddOnItemException(message: String): Exception(message)
+
+fun AddOnItem.searchAddOnItem(searchText: String): Boolean {
+    return this.itemName.contains(searchText, true) ||
+            this.itemPrice.toString().contains(searchText, true) ||
+            this.createdAt.contains(searchText, true) ||
+            this.updatedAt?.contains(searchText, true) == true
+}

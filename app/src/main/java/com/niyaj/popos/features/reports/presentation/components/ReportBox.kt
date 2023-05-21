@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.util.toRupee
+import com.niyaj.popos.utils.toRupee
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

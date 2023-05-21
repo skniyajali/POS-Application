@@ -24,13 +24,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.niyaj.popos.features.common.ui.theme.BackgroundColor1
+import com.niyaj.popos.features.common.ui.theme.LightColor6
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.util.Constants.STANDARD_BOTTOM_SHEET
-import com.niyaj.popos.util.Constants.STANDARD_BOTTOM_SHEET_CLOSE_BTN
+import com.niyaj.popos.utils.Constants.STANDARD_BOTTOM_SHEET
+import com.niyaj.popos.utils.Constants.STANDARD_BOTTOM_SHEET_CLOSE_BTN
 
+/**
+ * Bottom sheet with close icon
+ * @param modifier [Modifier]
+ * @param closeBtnModifier [Modifier]
+ * @param text [String]
+ * @param icon [ImageVector]
+ * @param color [Color]
+ * @param onClosePressed [Unit]
+ * @param content @Composable [Unit]
+ * @author Sk Niyaj Ali
+ */
 @Composable
 fun BottomSheetWithCloseDialog(
     modifier: Modifier = Modifier,
@@ -43,15 +54,14 @@ fun BottomSheetWithCloseDialog(
 ) {
     Column(
         modifier = modifier
-            .fillMaxWidth()
-            .testTag(text)
             .testTag(STANDARD_BOTTOM_SHEET)
-            .background(MaterialTheme.colors.surface)
+            .fillMaxWidth()
+            .background(MaterialTheme.colors.background)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(BackgroundColor1)
+                .background(LightColor6)
                 .padding(SpaceMedium),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,

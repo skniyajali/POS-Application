@@ -6,14 +6,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.expenses.domain.model.Expenses
-import com.niyaj.popos.features.expenses.domain.use_cases.ExpensesUseCases
-import com.niyaj.popos.features.expenses_category.domain.use_cases.ExpensesCategoryUseCases
-import com.niyaj.popos.features.expenses_category.domain.util.FilterExpensesCategory
+import com.niyaj.popos.features.expenses.domain.repository.ExpensesRepository
+import com.niyaj.popos.features.expenses.domain.repository.ExpensesValidationRepository
+import com.niyaj.popos.features.expenses_category.domain.repository.ExpensesCategoryRepository
+import com.niyaj.popos.features.expenses_category.domain.use_cases.GetAllExpensesCategory
 import com.niyaj.popos.features.expenses_category.presentation.ExpensesCategoryState
-import com.niyaj.popos.util.getCalculatedStartDate
+import com.niyaj.popos.utils.getCalculatedStartDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,10 +22,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ *
+ */
 @HiltViewModel
 class AddEditExpensesViewModel @Inject constructor(
-    private val expensesUseCases: ExpensesUseCases,
-    private val expensesCategoryUseCases: ExpensesCategoryUseCases,
+    private val expensesRepository: ExpensesRepository,
+    private val getAllExpensesCategory : GetAllExpensesCategory,
+    private val validationRepository : ExpensesValidationRepository,
+    private val expensesCategoryRepository: ExpensesCategoryRepository,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -43,18 +48,23 @@ class AddEditExpensesViewModel @Inject constructor(
             getExpensesById(expensesId)
         }
 
-        getAllExpensesCategory(FilterExpensesCategory.ByExpensesCategoryId(SortType.Descending))
+        getAllExpensesCategory()
     }
 
+    /**
+     *
+     */
     fun onExpensesEvent(event: AddEditExpensesEvent) {
         when(event) {
             is AddEditExpensesEvent.ExpensesCategoryNameChanged -> {
                 viewModelScope.launch {
-                    val result = expensesCategoryUseCases.getExpensesCategoryById(event.expensesCategoryId).data
+                    val result = expensesCategoryRepository.getExpensesCategoryById(event.expensesCategoryId).data
 
-                    _addEditState.value = _addEditState.value.copy(
-                        expensesCategory = result!!
-                    )
+                    result?.let {
+                        _addEditState.value = _addEditState.value.copy(
+                            expensesCategory = it
+                        )
+                    }
                 }
             }
 
@@ -80,19 +90,16 @@ class AddEditExpensesViewModel @Inject constructor(
 
             is AddEditExpensesEvent.OnSearchExpensesCategory -> {
                 viewModelScope.launch {
-                    getAllExpensesCategory(
-                        _expensesCategories.value.filterExpensesCategory,
-                        searchText = event.searchText
-                    )
+                    getAllExpensesCategory(searchText = event.searchText)
                 }
             }
         }
     }
 
     private fun addOrEditExpenses(expensesId: String? = null){
-        val validatedExpensesCategory = expensesUseCases.validateExpensesCategory(_addEditState.value.expensesCategory.expensesCategoryId)
+        val validatedExpensesCategory = validationRepository.validateExpensesCategory(_addEditState.value.expensesCategory.expensesCategoryId)
 
-        val validatedExpensesPrice = expensesUseCases.validateExpensesPrice(_addEditState.value.expensesPrice)
+        val validatedExpensesPrice = validationRepository.validateExpensesPrice(_addEditState.value.expensesPrice)
 
         val hasError = listOf(validatedExpensesCategory, validatedExpensesPrice).any {
             !it.successful
@@ -107,7 +114,7 @@ class AddEditExpensesViewModel @Inject constructor(
         }else {
             viewModelScope.launch {
                 if(expensesId.isNullOrEmpty()){
-                    val result = expensesUseCases.createNewExpenses(
+                    val result = expensesRepository.createNewExpenses(
                         Expenses(
                             expensesCategory = _addEditState.value.expensesCategory,
                             expensesPrice = _addEditState.value.expensesPrice,
@@ -128,7 +135,7 @@ class AddEditExpensesViewModel @Inject constructor(
                     }
 
                 }else {
-                    val result = expensesUseCases.updateExpenses(
+                    val result = expensesRepository.updateExpenses(
                         Expenses(
                             expensesCategory = _addEditState.value.expensesCategory,
                             expensesPrice = _addEditState.value.expensesPrice,
@@ -157,7 +164,7 @@ class AddEditExpensesViewModel @Inject constructor(
 
     private fun getExpensesById(expensesId: String) {
         viewModelScope.launch {
-            when(val result = expensesUseCases.getExpensesById(expensesId)) {
+            when(val result = expensesRepository.getExpensesById(expensesId)) {
                 is Resource.Loading -> {}
 
                 is Resource.Success -> {
@@ -178,12 +185,9 @@ class AddEditExpensesViewModel @Inject constructor(
         }
     }
 
-    private fun getAllExpensesCategory(
-        filterExpensesCategory : FilterExpensesCategory,
-        searchText : String = ""
-    ) {
+    private fun getAllExpensesCategory(searchText : String = "") {
         viewModelScope.launch {
-            expensesCategoryUseCases.getAllExpensesCategory(filterExpensesCategory, searchText).collect{ result ->
+            getAllExpensesCategory.invoke(searchText).collect{ result ->
                 when(result){
                     is Resource.Loading -> {
                         _expensesCategories.value = _expensesCategories.value.copy(isLoading = result.isLoading)
@@ -191,8 +195,7 @@ class AddEditExpensesViewModel @Inject constructor(
                     is Resource.Success -> {
                         result.data?.let {
                             _expensesCategories.value = _expensesCategories.value.copy(
-                                expensesCategory = it,
-                                filterExpensesCategory = filterExpensesCategory
+                                expensesCategory = it
                             )
                         }
                     }

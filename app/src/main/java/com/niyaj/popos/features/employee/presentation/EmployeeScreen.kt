@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -59,9 +59,8 @@ import com.niyaj.popos.features.common.ui.theme.LightColor12
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeSmall
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.features.common.util.BottomSheetScreen
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.ExtendedFabButton
+import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.StandardSearchBar
@@ -80,14 +79,25 @@ import com.vanpra.composematerialdialogs.message
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import com.vanpra.composematerialdialogs.title
 import de.charlex.compose.RevealSwipe
+import io.sentry.compose.SentryTraced
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-@OptIn(ExperimentalMaterialApi::class)
+/**
+ * Employee Screen
+ * @author Sk Niyaj Ali
+ * @param navController
+ * @param scaffoldState
+ * @param employeeViewModel
+ * @param resultRecipient
+ * @param addEditAbsentRecipient
+ * @param addEditSalaryRecipient
+ * @see EmployeeViewModel
+ */
+@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Destination
 @Composable
 fun EmployeeScreen(
-    onOpenSheet: (BottomSheetScreen) -> Unit = {},
     navController: NavController,
     scaffoldState: ScaffoldState = rememberScaffoldState(),
     employeeViewModel: EmployeeViewModel = hiltViewModel(),
@@ -100,7 +110,6 @@ fun EmployeeScreen(
     val scope = rememberCoroutineScope()
 
     val employees = employeeViewModel.state.collectAsStateWithLifecycle().value.employees
-    val filterEmployee = employeeViewModel.state.collectAsStateWithLifecycle().value.filterEmployee
     val isLoading = employeeViewModel.state.collectAsStateWithLifecycle().value.isLoading
     val hasError = employeeViewModel.state.collectAsStateWithLifecycle().value.error
 
@@ -239,292 +248,271 @@ fun EmployeeScreen(
         )
     }
 
-    StandardScaffold(
-        navController = navController,
-        scaffoldState = scaffoldState,
-        showBackArrow = true,
-        onBackButtonClick = {
-            if (showSearchBar) {
-                employeeViewModel.onSearchBarCloseAndClearClick()
-            } else {
-                navController.navigateUp()
-            }
-        },
-        title = {
-            Text(text = "Employees")
-        },
-        isFloatingActionButtonDocked = employees.isNotEmpty(),
-        floatingActionButton = {
-            ExtendedFabButton(
-                text = stringResource(id = R.string.create_new_employee).uppercase(),
-                showScrollToTop = showScrollToTop.value,
-                visible = employees.isNotEmpty() && selectedEmployeeItem.isEmpty() && !showSearchBar,
-                onScrollToTopClick = {
-                    scope.launch {
-                        lazyListState.animateScrollToItem(index = 0)
-                    }
-                },
-                onClick = {
-                    navController.navigate(AddEditEmployeeScreenDestination())
-                },
-            )
-        },
-        floatingActionButtonPosition = if (showScrollToTop.value) FabPosition.End else FabPosition.Center,
-        navActions = {
-            if (showSearchBar) {
-                StandardSearchBar(
-                    searchText = employeeViewModel.searchText.collectAsStateWithLifecycle().value,
-                    placeholderText = "Search for employees...",
-                    onSearchTextChanged = {
-                        employeeViewModel.onEmployeeEvent(EmployeeEvent.OnSearchEmployee(it))
+    SentryTraced(tag = "EmployeeScreen") {
+        StandardScaffold(
+            navController = navController,
+            scaffoldState = scaffoldState,
+            showBackArrow = true,
+            onBackButtonClick = {
+                if (showSearchBar) {
+                    employeeViewModel.onSearchBarCloseAndClearClick()
+                } else {
+                    navController.navigateUp()
+                }
+            },
+            title = {
+                Text(text = "Employees")
+            },
+            isFloatingActionButtonDocked = employees.isNotEmpty(),
+            floatingActionButton = {
+                StandardFabButton(
+                    text = stringResource(id = R.string.create_new_employee).uppercase(),
+                    showScrollToTop = showScrollToTop.value,
+                    visible = employees.isNotEmpty() && selectedEmployeeItem.isEmpty() && !showSearchBar,
+                    onScrollToTopClick = {
+                        scope.launch {
+                            lazyListState.animateScrollToItem(index = 0)
+                        }
                     },
-                    onClearClick = {
-                        employeeViewModel.onSearchTextClearClick()
+                    onClick = {
+                        navController.navigate(AddEditEmployeeScreenDestination())
                     },
                 )
-            } else {
-                if (employees.isNotEmpty()) {
-                    IconButton(
-                        onClick = {
-                            employeeViewModel.onEmployeeEvent(EmployeeEvent.ToggleSearchBar)
+            },
+            floatingActionButtonPosition = if (showScrollToTop.value) FabPosition.End else FabPosition.Center,
+            navActions = {
+                if (showSearchBar) {
+                    StandardSearchBar(
+                        searchText = employeeViewModel.searchText.collectAsStateWithLifecycle().value,
+                        placeholderText = "Search for employees...",
+                        onSearchTextChanged = {
+                            employeeViewModel.onEmployeeEvent(EmployeeEvent.OnSearchEmployee(it))
+                        },
+                        onClearClick = {
+                            employeeViewModel.onSearchTextClearClick()
+                        },
+                    )
+                } else {
+                    if (employees.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                employeeViewModel.onEmployeeEvent(EmployeeEvent.ToggleSearchBar)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = stringResource(id = R.string.search_icon),
+                                tint = MaterialTheme.colors.onPrimary,
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = stringResource(id = R.string.search_icon),
-                            tint = MaterialTheme.colors.onPrimary,
-                        )
-                    }
 
-                    IconButton(
+                        IconButton(
+                            onClick = {
+                                navController.navigate(SalaryScreenDestination)
+                            }
+                        ) {
+                            Icon(imageVector = Icons.Default.Money, contentDescription = "Goto Salary Screen")
+                        }
+
+                        IconButton(
+                            onClick = {
+                                navController.navigate(AttendanceScreenDestination())
+                            }
+                        ) {
+                            Icon(imageVector = Icons.Default.EventBusy, contentDescription = "Goto Attendance Screen")
+                        }
+                    }
+                }
+            },
+            navigationIcon = {},
+            topAppBarBackgroundColor = backgroundColor,
+        ) {
+            MaterialDialog(
+                dialogState = dialogState,
+                buttons = {
+                    positiveButton(
+                        text = "Delete",
                         onClick = {
-                            onOpenSheet(
-                                BottomSheetScreen.FilterEmployeeScreen(
-                                    filterEmployee = filterEmployee,
-                                    onFilterChanged = {
-                                        employeeViewModel.onEmployeeEvent(
-                                            EmployeeEvent.OnFilterEmployee(
-                                                it
-                                            )
-                                        )
-                                    },
+                            employeeViewModel.onEmployeeEvent(
+                                EmployeeEvent.DeleteEmployee(
+                                    selectedEmployeeItem
                                 )
                             )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Sort,
-                            contentDescription = stringResource(id = R.string.filter_employee),
-                            tint = MaterialTheme.colors.onPrimary,
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            navController.navigate(SalaryScreenDestination)
-                        }
-                    ) {
-                        Icon(imageVector = Icons.Default.Money, contentDescription = "Goto Salary Screen")
-                    }
-
-                    IconButton(
-                        onClick = {
-                            navController.navigate(AttendanceScreenDestination())
-                        }
-                    ) {
-                        Icon(imageVector = Icons.Default.EventBusy, contentDescription = "Goto Attendance Screen")
-                    }
-                }
-            }
-        },
-        navigationIcon = {},
-        topAppBarBackgroundColor = backgroundColor,
-    ) {
-        MaterialDialog(
-            dialogState = dialogState,
-            buttons = {
-                positiveButton(
-                    text = "Delete",
-                    onClick = {
-                        employeeViewModel.onEmployeeEvent(
-                            EmployeeEvent.DeleteEmployee(
-                                selectedEmployeeItem
-                            )
-                        )
-                    }
-                )
-                negativeButton(
-                    text = "Cancel",
-                    onClick = {
-                        dialogState.hide()
-                        employeeViewModel.onEmployeeEvent(EmployeeEvent.SelectEmployee(selectedEmployeeItem))
-                    },
-                )
-            }
-        ) {
-            title(text = "Delete Employee?")
-            message(res = R.string.delete_employee_msg)
-        }
-
-        SwipeRefresh(
-            state = rememberSwipeRefreshState(isRefreshing = isLoading),
-            onRefresh = {
-                employeeViewModel.onEmployeeEvent(EmployeeEvent.RefreshEmployee)
-            }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(SpaceSmall),
-            ) {
-                if (employees.isEmpty() || hasError != null) {
-                    ItemNotAvailable(
-                        text = hasError
-                            ?: if (showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(
-                                id = R.string.no_items_in_employee),
-                        buttonText = stringResource(id = R.string.create_new_employee).uppercase(),
-                        onClick = {
-                            navController.navigate(AddEditEmployeeScreenDestination())
-                        }
                     )
-                } else {
-                    LazyColumn(
-                        state = lazyListState,
-                    ) {
-                        itemsIndexed(employees) { index, employee ->
-                            RevealSwipe(
-                                modifier = Modifier
-                                    .testTag(employee.employeeName.plus("Tag"))
-                                    .fillMaxWidth(),
-                                onContentClick = {
-                                    navController.navigate(
-                                        EmployeeDetailsScreenDestination(employeeId = employee.employeeId)
-                                    )
-                                },
-                                closeOnContentClick = true,
-                                closeOnBackgroundClick = true,
-                                maxRevealDp = 150.dp,
-                                hiddenContentStart = {
-                                    IconButton(
-                                        onClick = {
-                                            navController.navigate(
-                                                AddEditSalaryScreenDestination(employeeId = employee.employeeId)
-                                            )
-                                        },
-                                        modifier = Modifier.testTag(employee.employeeName.plus("Payment")),
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = "Add Payment Entry",
-                                            modifier = Modifier.padding(horizontal = 25.dp),
-                                        )
-                                    }
-                                    IconButton(
-                                        onClick = {
-                                            navController.navigate(AddEditEmployeeScreenDestination(
-                                                employeeId = employee.employeeId))
-                                        },
-                                        modifier = Modifier.testTag(employee.employeeName.plus("Edit")),
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Edit,
-                                            contentDescription = "Edit Employee",
-                                            modifier = Modifier.padding(horizontal = 25.dp),
-                                        )
-                                    }
-                                },
-                                hiddenContentEnd = {
-                                    IconButton(
-                                        onClick = {
-                                            navController.navigate(AddEditAbsentScreenDestination(employeeId = employee.employeeId))
-                                        },
-                                        modifier = Modifier.testTag(employee.employeeName.plus("Absent")),
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.EventBusy,
-                                            contentDescription = "Mark as Absent",
-                                            modifier = Modifier.padding(horizontal = 25.dp),
-                                        )
-                                    }
+                    negativeButton(
+                        text = "Cancel",
+                        onClick = {
+                            dialogState.hide()
+                            employeeViewModel.onEmployeeEvent(EmployeeEvent.SelectEmployee(selectedEmployeeItem))
+                        },
+                    )
+                }
+            ) {
+                title(text = "Delete Employee?")
+                message(res = R.string.delete_employee_msg)
+            }
 
-                                    IconButton(
-                                        onClick = {
-                                            dialogState.show()
-                                            employeeViewModel.onEmployeeEvent(EmployeeEvent.SelectEmployee(employee.employeeId))
-                                        },
-                                        modifier = Modifier.testTag(employee.employeeName.plus("Delete"))
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            contentDescription = "Delete Employee",
-                                            modifier = Modifier.padding(horizontal = 25.dp),
-                                        )
-                                    }
-                                },
-                                contentColor = MaterialTheme.colors.primary,
-                                backgroundCardContentColor = LightColor12,
-                                backgroundCardStartColor = MaterialTheme.colors.primary,
-                                backgroundCardEndColor = MaterialTheme.colors.error,
-                                shape = RoundedCornerShape(4.dp),
-                                backgroundStartActionLabel = "Start",
-                                backgroundEndActionLabel = "End",
-                            ) {
-                                Card(
+            SwipeRefresh(
+                state = rememberSwipeRefreshState(isRefreshing = isLoading),
+                onRefresh = {
+                    employeeViewModel.onEmployeeEvent(EmployeeEvent.RefreshEmployee)
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(SpaceSmall),
+                ) {
+                    if (employees.isEmpty() || hasError != null) {
+                        ItemNotAvailable(
+                            text = hasError
+                                ?: if (showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(
+                                    id = R.string.no_items_in_employee),
+                            buttonText = stringResource(id = R.string.create_new_employee).uppercase(),
+                            onClick = {
+                                navController.navigate(AddEditEmployeeScreenDestination())
+                            }
+                        )
+                    } else {
+                        LazyColumn(
+                            state = lazyListState,
+                        ) {
+                            itemsIndexed(employees) { index, employee ->
+                                RevealSwipe(
                                     modifier = Modifier
+                                        .testTag(employee.employeeName.plus("Tag"))
                                         .fillMaxWidth(),
-                                    shape = it,
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(SpaceSmall),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Column(
-                                            verticalArrangement = Arrangement.SpaceBetween,
-                                            horizontalAlignment = Alignment.Start
+                                    onContentClick = {
+                                        navController.navigate(
+                                            EmployeeDetailsScreenDestination(employeeId = employee.employeeId)
+                                        )
+                                    },
+                                    closeOnContentClick = true,
+                                    closeOnBackgroundClick = true,
+                                    maxRevealDp = 150.dp,
+                                    hiddenContentStart = {
+                                        IconButton(
+                                            onClick = {
+                                                navController.navigate(
+                                                    AddEditSalaryScreenDestination(employeeId = employee.employeeId)
+                                                )
+                                            },
+                                            modifier = Modifier.testTag(employee.employeeName.plus("Payment")),
                                         ) {
-                                            Text(
-                                                text = employee.employeeName,
-                                                style = MaterialTheme.typography.body1,
-                                                textAlign = TextAlign.Center,
-                                                fontWeight = FontWeight.Bold,
-                                                overflow = TextOverflow.Ellipsis,
+                                            Icon(
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = "Add Payment Entry",
+                                                modifier = Modifier.padding(horizontal = 25.dp),
                                             )
-                                            Spacer(modifier = Modifier.height(SpaceMini))
-
-                                            Text(
-                                                text = employee.employeePhone,
-                                                style = MaterialTheme.typography.body1,
-                                                textAlign = TextAlign.Center,
+                                        }
+                                        IconButton(
+                                            onClick = {
+                                                navController.navigate(AddEditEmployeeScreenDestination(
+                                                    employeeId = employee.employeeId))
+                                            },
+                                            modifier = Modifier.testTag(employee.employeeName.plus("Edit")),
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Edit,
+                                                contentDescription = "Edit Employee",
+                                                modifier = Modifier.padding(horizontal = 25.dp),
+                                            )
+                                        }
+                                    },
+                                    hiddenContentEnd = {
+                                        IconButton(
+                                            onClick = {
+                                                navController.navigate(AddEditAbsentScreenDestination(employeeId = employee.employeeId))
+                                            },
+                                            modifier = Modifier.testTag(employee.employeeName.plus("Absent")),
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.EventBusy,
+                                                contentDescription = "Mark as Absent",
+                                                modifier = Modifier.padding(horizontal = 25.dp),
                                             )
                                         }
 
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically
+                                        IconButton(
+                                            onClick = {
+                                                dialogState.show()
+                                                employeeViewModel.onEmployeeEvent(EmployeeEvent.SelectEmployee(employee.employeeId))
+                                            },
+                                            modifier = Modifier.testTag(employee.employeeName.plus("Delete"))
                                         ) {
-                                            IconButton(
-                                                onClick = {
-                                                    navController.navigate(
-                                                        EmployeeDetailsScreenDestination(employeeId = employee.employeeId)
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = "Delete Employee",
+                                                modifier = Modifier.padding(horizontal = 25.dp),
+                                            )
+                                        }
+                                    },
+                                    contentColor = MaterialTheme.colors.primary,
+                                    backgroundCardContentColor = LightColor12,
+                                    backgroundCardStartColor = MaterialTheme.colors.primary,
+                                    backgroundCardEndColor = MaterialTheme.colors.error,
+                                    shape = RoundedCornerShape(4.dp),
+                                    backgroundStartActionLabel = "Start",
+                                    backgroundEndActionLabel = "End",
+                                ) {
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        shape = it,
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(SpaceSmall),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            Column(
+                                                verticalArrangement = Arrangement.SpaceBetween,
+                                                horizontalAlignment = Alignment.Start
+                                            ) {
+                                                Text(
+                                                    text = employee.employeeName,
+                                                    style = MaterialTheme.typography.body1,
+                                                    textAlign = TextAlign.Center,
+                                                    fontWeight = FontWeight.Bold,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                )
+                                                Spacer(modifier = Modifier.height(SpaceMini))
+
+                                                Text(
+                                                    text = employee.employeePhone,
+                                                    style = MaterialTheme.typography.body1,
+                                                    textAlign = TextAlign.Center,
+                                                )
+                                            }
+
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                IconButton(
+                                                    onClick = {
+                                                        navController.navigate(
+                                                            EmployeeDetailsScreenDestination(employeeId = employee.employeeId)
+                                                        )
+                                                    }
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.OpenInNew,
+                                                        contentDescription = stringResource(id = R.string.employee_details),
+                                                        tint = MaterialTheme.colors.primary,
                                                     )
                                                 }
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.OpenInNew,
-                                                    contentDescription = stringResource(id = R.string.employee_details),
-                                                    tint = MaterialTheme.colors.primary,
-                                                )
                                             }
                                         }
                                     }
                                 }
-                            }
 
-                            Spacer(modifier = Modifier.height(SpaceSmall))
-                            if (index == employees.size - 1) {
-                                Spacer(modifier = Modifier.height(ProfilePictureSizeSmall))
+                                Spacer(modifier = Modifier.height(SpaceSmall))
+                                if (index == employees.size - 1) {
+                                    Spacer(modifier = Modifier.height(ProfilePictureSizeSmall))
+                                }
                             }
                         }
                     }

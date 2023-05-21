@@ -32,7 +32,7 @@ import com.niyaj.popos.features.common.ui.theme.MediumGray
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.StandardScaffold
-import com.niyaj.popos.util.toRupee
+import com.niyaj.popos.utils.toRupee
 import com.ramcosta.composedestinations.annotation.Destination
 
 @Destination

@@ -1,15 +1,14 @@
 package com.niyaj.popos.features.order.presentation
 
-import com.niyaj.popos.features.order.domain.util.FilterOrder
-
+/**
+ * Order event is used to handle all the events that are triggered from the UI
+ */
 sealed class OrderEvent{
     data class DeleteOrder(val cartOrderId: String) : OrderEvent()
 
     data class MarkedAsProcessing(val cartOrderId: String): OrderEvent()
 
     data class MarkedAsDelivered(val cartOrderId: String): OrderEvent()
-
-    data class OnFilterOrder(val filterOrder: FilterOrder): OrderEvent()
 
     data class OnSearchOrder(val searchText: String): OrderEvent()
 

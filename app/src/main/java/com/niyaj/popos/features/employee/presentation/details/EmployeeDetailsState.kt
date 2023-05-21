@@ -7,7 +7,7 @@ import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculableDate
 import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculation
 
 data class EmployeeDetailsState(
-    val employee: Employee = Employee(),
+    val employee: Employee? = null,
     val isLoading: Boolean = false,
     val error: String? = null
 )

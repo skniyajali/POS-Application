@@ -1,7 +1,16 @@
 package com.niyaj.popos.features.components
 
 import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.StartOffset
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -83,7 +92,7 @@ fun NiaLoadingWheel(
             .size(48.dp)
             .padding(8.dp)
             .graphicsLayer { rotationZ = rotationAnim }
-            .testTag("loadingWheel"),
+            .testTag(contentDesc),
     ) {
         repeat(NUM_OF_LINES) { index ->
             rotate(degrees = index * 30f) {

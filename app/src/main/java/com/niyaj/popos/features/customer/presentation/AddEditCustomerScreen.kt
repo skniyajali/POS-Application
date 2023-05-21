@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -37,7 +38,14 @@ import com.niyaj.popos.features.customer.domain.util.CustomerTestTags.CUSTOMER_P
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import io.sentry.compose.SentryTraced
 
+/**
+ * Create a new customer or Update customer if [customerId] is provided via navigation
+ *  Upon successful creation or updating the customer
+ *  will return back the status as [String] to the Navigator.
+ */
+@OptIn(ExperimentalComposeUiApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
 @Composable
 fun AddEditCustomerScreen(
@@ -63,77 +71,81 @@ fun AddEditCustomerScreen(
         }
     }
 
-    BottomSheetWithCloseDialog(
-        modifier = Modifier.fillMaxWidth(),
-        text = if (!customerId.isNullOrEmpty())
-            stringResource(id = R.string.edit_customer)
-        else
-            stringResource(id = R.string.create_customer),
-        icon = Icons.Default.PersonAdd,
-        onClosePressed = {
-            navController.navigateUp()
-        }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
+    SentryTraced(tag = "AddEditCustomerScreen") {
+        BottomSheetWithCloseDialog(
+            modifier = Modifier.fillMaxWidth(),
+            text = if (!customerId.isNullOrEmpty())
+                stringResource(id = R.string.edit_customer)
+            else
+                stringResource(id = R.string.create_customer),
+            icon = Icons.Default.PersonAdd,
+            onClosePressed = {
+                navController.navigateUp()
+            }
         ) {
-            StandardOutlinedTextField(
-                modifier = Modifier.testTag(CUSTOMER_PHONE_FIELD),
-                text = customerViewModel.addEditCustomerState.customerPhone,
-                hint = "Customer Phone",
-                leadingIcon = Icons.Default.PhoneAndroid,
-                error = customerViewModel.addEditCustomerState.customerPhoneError,
-                errorTag = CUSTOMER_PHONE_ERROR,
-                keyboardType = KeyboardType.Number,
-                onValueChange = {
-                    customerViewModel.onCustomerEvent(CustomerEvent.CustomerPhoneChanged(it))
-                },
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                StandardOutlinedTextField(
+                    modifier = Modifier.testTag(CUSTOMER_PHONE_FIELD),
+                    text = customerViewModel.addEditCustomerState.customerPhone,
+                    hint = "Customer Phone",
+                    leadingIcon = Icons.Default.PhoneAndroid,
+                    error = customerViewModel.addEditCustomerState.customerPhoneError,
+                    errorTag = CUSTOMER_PHONE_ERROR,
+                    keyboardType = KeyboardType.Number,
+                    onValueChange = {
+                        customerViewModel.onCustomerEvent(CustomerEvent.CustomerPhoneChanged(it))
+                    },
+                )
 
-            Spacer(modifier = Modifier.height(SpaceSmall))
+                Spacer(modifier = Modifier.height(SpaceSmall))
 
-            StandardOutlinedTextField(
-                modifier = Modifier.testTag(CUSTOMER_NAME_FIELD),
-                text = customerViewModel.addEditCustomerState.customerName ?: "",
-                hint = "Customer Name",
-                leadingIcon = Icons.Default.Badge,
-                error = customerViewModel.addEditCustomerState.customerNameError,
-                errorTag = CUSTOMER_NAME_ERROR,
-                onValueChange = {
-                    customerViewModel.onCustomerEvent(CustomerEvent.CustomerNameChanged(it))
-                },
-            )
+                StandardOutlinedTextField(
+                    modifier = Modifier.testTag(CUSTOMER_NAME_FIELD),
+                    text = customerViewModel.addEditCustomerState.customerName ?: "",
+                    hint = "Customer Name",
+                    leadingIcon = Icons.Default.Badge,
+                    error = customerViewModel.addEditCustomerState.customerNameError,
+                    errorTag = CUSTOMER_NAME_ERROR,
+                    onValueChange = {
+                        customerViewModel.onCustomerEvent(CustomerEvent.CustomerNameChanged(it))
+                    },
+                )
 
-            Spacer(modifier = Modifier.height(SpaceSmall))
+                Spacer(modifier = Modifier.height(SpaceSmall))
 
-            StandardOutlinedTextField(
-                modifier = Modifier.testTag(CUSTOMER_EMAIL_FIELD),
-                text = customerViewModel.addEditCustomerState.customerEmail ?: "",
-                hint = "Customer Email",
-                leadingIcon = Icons.Default.Mail,
-                error = customerViewModel.addEditCustomerState.customerEmailError,
-                errorTag = CUSTOMER_EMAIL_ERROR,
-                onValueChange = {
-                    customerViewModel.onCustomerEvent(CustomerEvent.CustomerEmailChanged(it))
-                },
-            )
+                StandardOutlinedTextField(
+                    modifier = Modifier.testTag(CUSTOMER_EMAIL_FIELD),
+                    text = customerViewModel.addEditCustomerState.customerEmail ?: "",
+                    hint = "Customer Email",
+                    leadingIcon = Icons.Default.Mail,
+                    error = customerViewModel.addEditCustomerState.customerEmailError,
+                    errorTag = CUSTOMER_EMAIL_ERROR,
+                    onValueChange = {
+                        customerViewModel.onCustomerEvent(CustomerEvent.CustomerEmailChanged(it))
+                    },
+                )
 
-            Spacer(modifier = Modifier.height(SpaceMedium))
+                Spacer(modifier = Modifier.height(SpaceMedium))
 
-            StandardButton(
-                modifier = Modifier.testTag(ADD_EDIT_CUSTOMER_BUTTON),
-                text = if (!customerId.isNullOrEmpty()) stringResource(id = R.string.edit_customer)
-                else stringResource(id = R.string.create_customer),
-                icon = if (!customerId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.Add,
-                onClick = {
-                    if (!customerId.isNullOrEmpty()) {
-                        customerViewModel.onCustomerEvent(CustomerEvent.UpdateCustomer(customerId))
-                    } else {
-                        customerViewModel.onCustomerEvent(CustomerEvent.CreateNewCustomer)
-                    }
-                },
-            )
+                StandardButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(ADD_EDIT_CUSTOMER_BUTTON),
+                    text = if (!customerId.isNullOrEmpty()) stringResource(id = R.string.edit_customer)
+                    else stringResource(id = R.string.create_customer),
+                    icon = if (!customerId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.Add,
+                    onClick = {
+                        if (!customerId.isNullOrEmpty()) {
+                            customerViewModel.onCustomerEvent(CustomerEvent.UpdateCustomer(customerId))
+                        } else {
+                            customerViewModel.onCustomerEvent(CustomerEvent.CreateNewCustomer)
+                        }
+                    },
+                )
+            }
         }
     }
 }

@@ -7,14 +7,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.employee.domain.model.Employee
-import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
-import com.niyaj.popos.features.employee.domain.util.FilterEmployee
+import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.features.employee.domain.use_cases.GetAllEmployee
 import com.niyaj.popos.features.employee.presentation.EmployeeState
 import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
-import com.niyaj.popos.features.employee_attendance.domain.use_cases.AttendanceUseCases
+import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceRepository
+import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceValidationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,10 +24,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
+/**
+ *
+ */
 @HiltViewModel
 class AbsentViewModel @Inject constructor(
-    private val employeeUseCases: EmployeeUseCases,
-    private val attendanceUseCases: AttendanceUseCases,
+    private val employeeRepository : EmployeeRepository,
+    private val attendanceRepository: AttendanceRepository,
+    private val validationRepository : AttendanceValidationRepository,
+    private val getAllEmployee : GetAllEmployee,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -48,9 +53,12 @@ class AbsentViewModel @Inject constructor(
             getAttendanceById(attendanceId)
         }
 
-        getAllEmployees(filterEmployee = FilterEmployee.ByEmployeeId(SortType.Descending))
+        getAllEmployees()
     }
 
+    /**
+     *
+     */
     fun onEvent(event: AbsentEvent) {
         when (event) {
             is AbsentEvent.EmployeeChanged -> {
@@ -88,9 +96,9 @@ class AbsentViewModel @Inject constructor(
 
     private fun addUpdateAbsentEntry(attendanceId: String = "") {
 
-        val validatedEmployee = attendanceUseCases.validateAbsentEmployee(absentState.employee.employeeId)
-        val validateIsAbsent = attendanceUseCases.validateIsAbsent(absentState.isAbsent)
-        val validateAbsentDate = attendanceUseCases.validateAbsentDate(
+        val validatedEmployee = validationRepository.validateAbsentEmployee(absentState.employee.employeeId)
+        val validateIsAbsent = validationRepository.validateIsAbsent(absentState.isAbsent)
+        val validateAbsentDate = validationRepository.validateAbsentDate(
             absentDate = absentState.absentDate,
             employeeId = absentState.employee.employeeId,
             attendanceId = attendanceId
@@ -118,7 +126,7 @@ class AbsentViewModel @Inject constructor(
                 )
 
                 if (attendanceId.isEmpty()) {
-                    when (val result = attendanceUseCases.addAbsentEntry(employeeAttendance)) {
+                    when (val result = attendanceRepository.addAbsentEntry(employeeAttendance)) {
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -133,7 +141,7 @@ class AbsentViewModel @Inject constructor(
                     }
 
                 } else {
-                    when (val result = attendanceUseCases.updateAbsentEntry(attendanceId, employeeAttendance)) {
+                    when (val result = attendanceRepository.updateAbsentEntry(attendanceId, employeeAttendance)) {
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -151,9 +159,9 @@ class AbsentViewModel @Inject constructor(
         }
     }
 
-    private fun getAllEmployees(filterEmployee: FilterEmployee, searchText: String = "") {
+    private fun getAllEmployees(searchText: String = "") {
         viewModelScope.launch {
-            employeeUseCases.getAllEmployee(filterEmployee, searchText).collect { result ->
+            getAllEmployee.invoke(searchText).collect { result ->
                 when (result) {
                     is Resource.Loading -> {
                         _employeeState.value = _employeeState.value.copy(isLoading = result.isLoading)
@@ -161,8 +169,7 @@ class AbsentViewModel @Inject constructor(
                     is Resource.Success -> {
                         result.data?.let {
                             _employeeState.value = _employeeState.value.copy(
-                                employees = it,
-                                filterEmployee = filterEmployee
+                                employees = it
                             )
                         }
                     }
@@ -180,7 +187,7 @@ class AbsentViewModel @Inject constructor(
     private fun getEmployeeById(employeeId: String) {
         if (employeeId.isNotEmpty()) {
             viewModelScope.launch {
-                when (val result = employeeUseCases.getEmployeeById(employeeId)) {
+                when (val result = employeeRepository.getEmployeeById(employeeId)) {
                     is Resource.Loading -> {}
                     is Resource.Success -> {
                         result.data?.let {
@@ -209,7 +216,7 @@ class AbsentViewModel @Inject constructor(
     private fun getAttendanceById(attendanceId: String) {
         if(attendanceId.isNotEmpty()) {
             viewModelScope.launch {
-                when(val result = attendanceUseCases.getAttendanceById(attendanceId)) {
+                when(val result = attendanceRepository.getAttendanceById(attendanceId)) {
                     is Resource.Success -> {
                         result.data?.let { attendance ->
                             if (attendance.employee != null){

@@ -2,9 +2,26 @@ package com.niyaj.popos.features.reminder.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
+import androidx.compose.material.Checkbox
+import androidx.compose.material.CheckboxDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedButton
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EventAvailable
 import androidx.compose.material.icons.filled.HighlightOff
@@ -20,16 +37,25 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
-import com.niyaj.popos.features.common.ui.theme.*
+import com.niyaj.popos.features.common.ui.theme.ButtonSize
+import com.niyaj.popos.features.common.ui.theme.IconSizeMedium
+import com.niyaj.popos.features.common.ui.theme.LightColor16
+import com.niyaj.popos.features.common.ui.theme.LightColor9
+import com.niyaj.popos.features.common.ui.theme.Pewter
+import com.niyaj.popos.features.common.ui.theme.PoposPink300
+import com.niyaj.popos.features.common.ui.theme.SpaceMedium
+import com.niyaj.popos.features.common.ui.theme.SpaceMini
+import com.niyaj.popos.features.common.ui.theme.SpaceSmall
+import com.niyaj.popos.features.common.ui.theme.Teal200
 import com.niyaj.popos.features.components.PaymentStatusChip
 import com.niyaj.popos.features.components.RoundedBox
 import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.components.TextWithTitle
 import com.niyaj.popos.features.reminder.domain.util.PaymentStatus
-import com.niyaj.popos.util.getCalculatedStartDate
-import com.niyaj.popos.util.getEndTime
-import com.niyaj.popos.util.toMilliSecond
-import com.niyaj.popos.util.toPrettyDate
+import com.niyaj.popos.utils.getCalculatedStartDate
+import com.niyaj.popos.utils.getEndTime
+import com.niyaj.popos.utils.toMilliSecond
+import com.niyaj.popos.utils.toPrettyDate
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
@@ -163,7 +189,6 @@ fun EmployeeSelectionBodyRow(
     isSelected: Boolean = false,
     isEnabled: Boolean = true,
     paymentStatus: PaymentStatus? = null,
-    isAbsent: Boolean? = null,
     secIcon: ImageVector? = null,
 ) {
     Row(

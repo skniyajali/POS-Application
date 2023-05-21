@@ -11,21 +11,20 @@ import androidx.lifecycle.viewModelScope
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg
-import com.niyaj.popos.R
 import com.niyaj.popos.features.addon_item.domain.model.AddOnItem
-import com.niyaj.popos.features.cart.domain.model.CartProduct
+import com.niyaj.popos.features.cart.domain.model.CartProductItem
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.charges.domain.model.Charges
-import com.niyaj.popos.features.charges.domain.use_cases.ChargesUseCases
+import com.niyaj.popos.features.charges.domain.use_cases.GetAllCharges
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.order.domain.use_cases.OrderUseCases
+import com.niyaj.popos.features.order.domain.repository.OrderRepository
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
-import com.niyaj.popos.features.profile.domain.use_cases.RestaurantInfoUseCases
-import com.niyaj.popos.util.Constants
-import com.niyaj.popos.util.createDottedString
-import com.niyaj.popos.util.toFormattedTime
-import com.niyaj.popos.util.toRupee
+import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoRepository
+import com.niyaj.popos.utils.Constants
+import com.niyaj.popos.utils.createDottedString
+import com.niyaj.popos.utils.toFormattedTime
+import com.niyaj.popos.utils.toRupee
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -34,18 +33,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PrintViewModel @Inject constructor(
-    private val orderUseCases: OrderUseCases,
-    private val chargesUseCases: ChargesUseCases,
-    private val restaurantInfoUseCases: RestaurantInfoUseCases,
+    private val orderUseCases: OrderRepository,
+    private val getAllCharges : GetAllCharges,
+    private val restaurantInfoUseCases: RestaurantInfoRepository,
     application : Application,
 ) : ViewModel() {
 
     private lateinit var escposPrinter: EscPosPrinter
     private var chargesList = mutableStateListOf<Charges>()
 
-    private val resLogo = application.applicationContext.getDrawable(R.drawable.reslogo)
 
     private var resInfo by mutableStateOf(RestaurantInfo())
+    private val resLogo = application.applicationContext.getDrawable(resInfo.logo.toInt())
 
     init {
         getAllCharges()
@@ -64,10 +63,10 @@ class PrintViewModel @Inject constructor(
                 printOrders(event.cartOrders)
 
             }
+
             is PrintEvent.PrintAllExpenses -> {
 
             }
-
         }
     }
 
@@ -107,7 +106,7 @@ class PrintViewModel @Inject constructor(
             if (itemDetails != null) {
                 printItems += printRestaurantDetails()
                 printItems += printOrderDetails(itemDetails.cartOrder!!)
-                printItems += printProductDetails(itemDetails.cartProducts)
+                printItems += printProductDetails(itemDetails.orderedProducts)
 
                 if (itemDetails.cartOrder.addOnItems.isNotEmpty()){
                     printItems += printAddOnItems(itemDetails.cartOrder.addOnItems)
@@ -163,7 +162,7 @@ class PrintViewModel @Inject constructor(
         return order
     }
 
-    private fun printProductDetails(cartProduct: List<CartProduct>): String {
+    private fun printProductDetails(orderedProduct: List<CartProductItem>): String {
         var products = ""
 
         products += "[L]-------------------------------\n"
@@ -172,19 +171,10 @@ class PrintViewModel @Inject constructor(
 
         products += "[L]-------------------------------\n"
 
-        cartProduct.forEach {
-            if (it.product != null) {
-                val productNames = createDottedString(it.product.productName)
+        orderedProduct.forEach {
+            val productName = createDottedString(it.productName)
 
-                products += "[L]${productNames}[R]${it.quantity}[R]${it.product.productPrice}\n"
-
-//                val name = it.product.productName
-//                val productName = if (name.length >= Constants.PRODUCT_NAME_LENGTH) {
-//                    name.substring(0, Constants.PRODUCT_NAME_LENGTH.minus(3)).plus("..")
-//                }else name
-//
-//                products += "[L]${productName}[R]${it.quantity}[R]${it.product.productPrice}\n"
-            }
+            products += "[L]${productName}[R]${it.productQuantity}[R]${it.productPrice}\n"
         }
 
         return products
@@ -244,7 +234,7 @@ class PrintViewModel @Inject constructor(
 
     private fun getAllCharges(){
         viewModelScope.launch {
-            chargesUseCases.getAllCharges().collect { result ->
+            getAllCharges.invoke().collect { result ->
                 when (result){
                     is Resource.Loading -> {}
                     is Resource.Success -> {

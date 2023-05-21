@@ -6,7 +6,8 @@ import com.niyaj.popos.features.common.util.ValidationResult
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoRepository
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
-import com.niyaj.popos.util.Constants.RESTAURANT_ID
+import com.niyaj.popos.utils.Constants.RESTAURANT_ID
+import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -74,7 +75,7 @@ class RestaurantInfoRepositoryImpl(
                             restaurant.secondaryPhone = restaurantInfo.secondaryPhone
                             restaurant.description = restaurantInfo.description
                             restaurant.paymentQrCode = restaurantInfo.paymentQrCode
-                            restaurant.logo = restaurantInfo.logo
+                            restaurant.logo = restaurantInfo.logo.ifEmpty { RESTAURANT_LOGO }
                             restaurant.updatedAt = restaurantInfo.updatedAt
                         }else {
                             val newRestaurant = RestaurantInfo()
@@ -86,7 +87,7 @@ class RestaurantInfoRepositoryImpl(
                             newRestaurant.secondaryPhone = restaurantInfo.secondaryPhone
                             newRestaurant.description = restaurantInfo.description
                             newRestaurant.paymentQrCode = restaurantInfo.paymentQrCode
-                            newRestaurant.logo = restaurantInfo.logo
+                            newRestaurant.logo = restaurantInfo.logo.ifEmpty { RESTAURANT_LOGO }
                             newRestaurant.createdAt = System.currentTimeMillis().toString()
 
                             this.copyToRealm(newRestaurant)

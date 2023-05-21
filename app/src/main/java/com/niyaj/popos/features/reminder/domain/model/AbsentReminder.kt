@@ -1,11 +1,12 @@
 package com.niyaj.popos.features.reminder.domain.model
 
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
-import com.niyaj.popos.util.Constants.ABSENT_REMINDER_ID
-import com.niyaj.popos.util.Constants.ABSENT_REMINDER_NAME
-import com.niyaj.popos.util.closingTime
-import com.niyaj.popos.util.openingTime
+import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_ID
+import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_NAME
+import com.niyaj.popos.utils.closingTime
+import com.niyaj.popos.utils.openingTime
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 data class AbsentReminder(
 
@@ -27,6 +28,8 @@ data class AbsentReminder(
 
     val isCompleted: Boolean = false,
 
+    val notificationId: Int = Random.nextInt(),
+
     val updatedAt: String = "",
 )
 
@@ -41,6 +44,7 @@ internal fun AbsentReminder.toReminder(): Reminder {
         reminderType = this.reminderType,
         isRepeatable = this.isRepeatable,
         isCompleted = this.isCompleted,
+        notificationId = this.notificationId,
         updatedAt = System.currentTimeMillis().toString()
     )
 }

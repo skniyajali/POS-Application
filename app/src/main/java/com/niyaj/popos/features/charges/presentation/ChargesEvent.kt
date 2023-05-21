@@ -1,7 +1,5 @@
 package com.niyaj.popos.features.charges.presentation
 
-import com.niyaj.popos.features.charges.domain.util.FilterCharges
-
 sealed class ChargesEvent{
 
     data class ChargesNameChanged(val chargesName: String) : ChargesEvent()
@@ -17,8 +15,6 @@ sealed class ChargesEvent{
     data class UpdateCharges(val chargesId: String) : ChargesEvent()
 
     data class DeleteCharges(val chargesId: String) : ChargesEvent()
-
-    data class OnFilterCharges(val filterCharges: FilterCharges): ChargesEvent()
 
     data class OnSearchCharges(val searchText: String): ChargesEvent()
 

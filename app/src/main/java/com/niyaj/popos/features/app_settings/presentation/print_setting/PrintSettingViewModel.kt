@@ -7,8 +7,8 @@ import com.dantsu.escposprinter.connection.DeviceConnection
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnections
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
-import com.niyaj.popos.features.order.domain.use_cases.OrderUseCases
-import com.niyaj.popos.util.Constants
+import com.niyaj.popos.features.order.domain.repository.OrderRepository
+import com.niyaj.popos.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +18,7 @@ import javax.inject.Inject
 @SuppressLint("MissingPermission")
 @HiltViewModel
 class PrintSettingViewModel @Inject constructor(
-    private val orderUseCases: OrderUseCases,
+    private val orderRepository: OrderRepository,
 ) : ViewModel() {
 
     private var _deviceConnection: DeviceConnection? = null

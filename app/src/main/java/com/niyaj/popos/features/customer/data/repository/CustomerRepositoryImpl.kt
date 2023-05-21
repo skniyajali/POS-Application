@@ -3,15 +3,19 @@ package com.niyaj.popos.features.customer.data.repository
 import android.util.Patterns
 import com.niyaj.popos.features.cart.domain.model.CartRealm
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
+import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
+import com.niyaj.popos.features.charges.domain.model.Charges
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.ValidationResult
-import com.niyaj.popos.features.customer.domain.model.Contact
 import com.niyaj.popos.features.customer.domain.model.Customer
+import com.niyaj.popos.features.customer.domain.model.CustomerWiseOrder
 import com.niyaj.popos.features.customer.domain.repository.CustomerRepository
 import com.niyaj.popos.features.customer.domain.repository.CustomerValidationRepository
+import com.niyaj.popos.utils.Constants
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
+import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
@@ -19,16 +23,30 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
+/**
+ * Created by Niyaj on 5/26/2020.
+ * @author Niyaj
+ * @param config : Realm Configuration
+ * @param ioDispatcher : Coroutine Dispatcher
+ * @see CustomerRepository
+ * @see CustomerValidationRepository
+ */
 class CustomerRepositoryImpl(
     config: RealmConfiguration,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : CustomerRepository, CustomerValidationRepository {
 
-    val realm = Realm.open(config)
+    /**
+     * Realm instance to interact with database.
+     * @see Realm
+     * @see RealmConfiguration
+     */
+    val realm : Realm = Realm.open(config)
 
     init {
         Timber.d("Customer Session")
@@ -66,12 +84,7 @@ class CustomerRepositoryImpl(
 
     override suspend fun getCustomerById(customerId: String): Resource<Customer?> {
         return try {
-            val customer = withContext(ioDispatcher) {
-                realm.query<Customer>(
-                    "customerId == $0",
-                    customerId
-                ).first().find()
-            }
+            val customer = realm.query<Customer>("customerId == $0", customerId).first().find()
 
             Resource.Success(customer)
         } catch (e: Exception) {
@@ -168,6 +181,17 @@ class CustomerRepositoryImpl(
             if (customer != null) {
                 withContext(ioDispatcher) {
                     realm.write {
+                        val cartOrder = this.query<CartOrder>("customer.customerId == $0", customerId).find()
+                        val cart = this.query<CartRealm>("cartOrder.customer.customerId == $0", customerId).find()
+
+                        if (cartOrder.isNotEmpty()){
+                            delete(cartOrder)
+                        }
+
+                        if (cart.isNotEmpty()){
+                            delete(cart)
+                        }
+
                         findLatest(customer)?.let {
                             delete(it)
                         }
@@ -210,33 +234,33 @@ class CustomerRepositoryImpl(
 
             Resource.Success(true)
         } catch (e: Exception){
-            Timber.e(e)
-
             Resource.Error(e.message?: "Unable to delete all customer", false)
         }
     }
 
-    override suspend fun importContacts(contacts: List<Contact>): Resource<Boolean> {
+    override suspend fun importContacts(customers: List<Customer>): Resource<Boolean> {
         return try {
             withContext(ioDispatcher){
                 realm.write {
-                    contacts.forEach { contact ->
-                        val customer = this.query<Customer>("customerPhone == $0", contact.phoneNo).first().find()
+                    customers.forEach { customer ->
+                        val findCustomer = this.query<Customer>(
+                            "customerPhone == $0", customer.customerPhone
+                        ).first().find()
 
-                        if (customer == null){
+                        if (findCustomer == null){
                             val newCustomer = Customer()
                             newCustomer.customerId = BsonObjectId().toHexString()
-                            newCustomer.customerName = contact.name
-                            newCustomer.customerPhone = contact.phoneNo
-                            newCustomer.customerEmail = contact.email
+                            newCustomer.customerName = customer.customerName
+                            newCustomer.customerPhone = customer.customerPhone
+                            newCustomer.customerEmail = customer.customerEmail
                             newCustomer.createdAt = System.currentTimeMillis().toString()
 
                             this.copyToRealm(newCustomer)
 
                         }else {
-                            customer.customerName = contact.name
-                            customer.customerEmail = contact.email
-                            customer.updatedAt = System.currentTimeMillis().toString()
+                            findCustomer.customerName = findCustomer.customerName
+                            findCustomer.customerEmail = findCustomer.customerEmail
+                            findCustomer.updatedAt = System.currentTimeMillis().toString()
                         }
                     }
                 }
@@ -312,5 +336,85 @@ class CustomerRepositoryImpl(
         return ValidationResult(
             successful = true
         )
+    }
+
+    override suspend fun getCustomerWiseOrder(customerId : String) : Flow<Resource<List<CustomerWiseOrder>>> {
+        return channelFlow {
+            try {
+                val orders = realm.query<CartOrder>("customer.customerId == $0", customerId)
+                    .sort("updatedAt", Sort.DESCENDING)
+                    .asFlow()
+
+                orders.collectLatest { result ->
+                    when(result) {
+                        is InitialResults -> {
+                            send(Resource.Success(mapCartOrdersToCustomerWiseOrder(result.list)))
+                            send(Resource.Loading(false))
+                        }
+                        is UpdatedResults -> {
+                            send(Resource.Success(mapCartOrdersToCustomerWiseOrder(result.list)))
+                            send(Resource.Loading(false))
+                        }
+                    }
+                }
+
+            }catch (e: Exception) {
+                send(Resource.Error(e.message ?: "Unable to get customer order details"))
+            }
+        }
+    }
+
+    private fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
+        var totalPrice = 0
+        var discountPrice = 0
+
+        val cartOrder = realm.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
+        val cartOrders = realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
+
+        if (cartOrder != null && cartOrders.isNotEmpty()) {
+            if (cartOrder.doesChargesIncluded) {
+                val charges = realm.query<Charges>().find()
+                for (charge in charges) {
+                    if (charge.isApplicable && cartOrder.orderType != CartOrderType.DineIn.orderType) {
+                        totalPrice += charge.chargesPrice
+                    }
+                }
+            }
+
+            if (cartOrder.addOnItems.isNotEmpty()) {
+                for (addOnItem in cartOrder.addOnItems) {
+
+                    totalPrice += addOnItem.itemPrice
+
+                    // Todo: use dynamic fields for discount calculation.
+                    if (addOnItem.itemName == Constants.ADD_ON_EXCLUDE_ITEM_ONE || addOnItem.itemName == Constants.ADD_ON_EXCLUDE_ITEM_TWO) {
+                        discountPrice += addOnItem.itemPrice
+                    }
+                }
+            }
+
+            for (cartOrder1 in cartOrders) {
+                if (cartOrder1.product != null) {
+                    totalPrice += cartOrder1.quantity.times(cartOrder1.product?.productPrice!!)
+                }
+            }
+        }
+
+        return Pair(totalPrice, discountPrice)
+    }
+
+    private fun mapCartOrdersToCustomerWiseOrder(data: List<CartOrder>): List<CustomerWiseOrder> {
+        return data.map { order ->
+            val price = countTotalPrice(order.cartOrderId)
+            val totalPrice = price.first.minus(price.second).toString()
+
+            CustomerWiseOrder(
+                cartOrderId = order.cartOrderId,
+                orderId = order.orderId,
+                totalPrice = totalPrice,
+                updatedAt = order.updatedAt ?: order.createdAt,
+                customerAddress = order.address?.addressName
+            )
+        }
     }
 }

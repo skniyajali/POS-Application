@@ -10,11 +10,11 @@ import com.niyaj.popos.features.employee_salary.domain.repository.SalaryValidati
 import com.niyaj.popos.features.employee_salary.domain.util.CalculatedSalary
 import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculableDate
 import com.niyaj.popos.features.employee_salary.domain.util.SalaryCalculation
-import com.niyaj.popos.util.Constants.NOT_PAID
-import com.niyaj.popos.util.Constants.PAID
-import com.niyaj.popos.util.compareSalaryDates
-import com.niyaj.popos.util.getSalaryDates
-import com.niyaj.popos.util.toRupee
+import com.niyaj.popos.utils.Constants.NOT_PAID
+import com.niyaj.popos.utils.Constants.PAID
+import com.niyaj.popos.utils.compareSalaryDates
+import com.niyaj.popos.utils.getSalaryDates
+import com.niyaj.popos.utils.toRupee
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query

@@ -14,4 +14,6 @@ sealed class ReportsEvent {
 
     object RefreshReport : ReportsEvent()
 
+    object GenerateReport : ReportsEvent()
+
 }

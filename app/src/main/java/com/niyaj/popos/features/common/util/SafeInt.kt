@@ -1,4 +1,4 @@
-package com.niyaj.popos.domain.util
+package com.niyaj.popos.features.common.util
 
 fun safeString(price: String): Int{
     return if(price.isEmpty()){

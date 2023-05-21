@@ -3,9 +3,9 @@ package com.niyaj.popos.features.reminder.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.employee_attendance.domain.use_cases.AttendanceUseCases
-import com.niyaj.popos.features.employee_salary.domain.use_cases.SalaryUseCases
-import com.niyaj.popos.features.reminder.domain.use_cases.ReminderUseCases
+import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceRepository
+import com.niyaj.popos.features.employee_salary.domain.repository.SalaryRepository
+import com.niyaj.popos.features.reminder.domain.repository.ReminderRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,9 +17,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ReminderViewModel @Inject constructor(
-    private val reminderUseCases: ReminderUseCases,
-    private val attendanceUseCases : AttendanceUseCases,
-    private val salaryUseCases : SalaryUseCases
+    private val reminderRepository: ReminderRepository,
+    private val attendanceRepository : AttendanceRepository,
+    private val salaryRepository : SalaryRepository
 ): ViewModel() {
 
     private val _state = MutableStateFlow(ReminderState())
@@ -50,13 +50,13 @@ class ReminderViewModel @Inject constructor(
 
             is ReminderEvent.UpdateReminder -> {
                 viewModelScope.launch {
-                    reminderUseCases.updateReminderAsNotCompleted(event.reminderId)
+                    reminderRepository.updateReminderAsNotCompleted(event.reminderId)
                 }
             }
 
             is ReminderEvent.DeleteReminder -> {
                 viewModelScope.launch {
-                    reminderUseCases.deleteReminder(event.reminderId)
+                    reminderRepository.deleteReminder(event.reminderId)
                 }
             }
 
@@ -70,7 +70,7 @@ class ReminderViewModel @Inject constructor(
     private fun getAllReminders() {
         reminderJob?.cancel()
 
-        reminderJob = reminderUseCases.getAllReminders().onEach { result ->
+        reminderJob = reminderRepository.getAllReminders().onEach { result ->
             when(result) {
                 is Resource.Loading -> {
                     _state.value = _state.value.copy(

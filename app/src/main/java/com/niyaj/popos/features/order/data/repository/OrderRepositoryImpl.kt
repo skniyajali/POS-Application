@@ -1,19 +1,21 @@
 package com.niyaj.popos.features.order.data.repository
 
-import com.niyaj.popos.features.cart.domain.model.Cart
-import com.niyaj.popos.features.cart.domain.model.CartProduct
+import com.niyaj.popos.features.cart.domain.model.CartProductItem
 import com.niyaj.popos.features.cart.domain.model.CartRealm
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.charges.domain.model.Charges
 import com.niyaj.popos.features.common.util.Resource
+import com.niyaj.popos.features.order.domain.model.DineInOrder
+import com.niyaj.popos.features.order.domain.model.DineOutOrder
+import com.niyaj.popos.features.order.domain.model.OrderDetail
 import com.niyaj.popos.features.order.domain.repository.OrderRepository
+import com.niyaj.popos.utils.Constants.DISCOUNT_ITEM
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.InitialResults
-import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.RealmResults
 import io.realm.kotlin.query.Sort
@@ -35,45 +37,7 @@ class OrderRepositoryImpl(
         Timber.d("Order Session")
     }
 
-    override suspend fun getAllOrders(
-        startDate: String,
-        endDate: String
-    ): Flow<Resource<List<Cart>>> {
-        return channelFlow {
-            withContext(ioDispatcher) {
-                try {
-                    send(Resource.Loading(true))
-
-                    val items = realm.query<CartRealm>(
-                        "cartOrder.cartOrderStatus != $0 AND cartOrder.updatedAt >= $1 AND cartOrder.updatedAt <= $2",
-                        OrderStatus.Processing.orderStatus,
-                        startDate,
-                        endDate,
-                    ).sort("cartId", Sort.DESCENDING).find()
-
-                    val itemFlow = items.asFlow()
-
-                    itemFlow.collect { changes: ResultsChange<CartRealm> ->
-                        when (changes) {
-                            is InitialResults -> {
-                                send(Resource.Success(mapCartRealmToCartList(changes.list)))
-                                send(Resource.Loading(false))
-                            }
-
-                            is UpdatedResults -> {
-                                send(Resource.Success(mapCartRealmToCartList(changes.list)))
-                                send(Resource.Loading(false))
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    send(Resource.Error(e.message ?: "Unable to get order", emptyList()))
-                }
-            }
-        }
-    }
-
-    override suspend fun getOrderDetails(cartOrderId: String): Resource<Cart?> {
+    override suspend fun getOrderDetails(cartOrderId: String): Resource<OrderDetail?> {
         return try {
             val carts = withContext(ioDispatcher) {
                 realm.query<CartRealm>("cartOrder.cartOrderId == $0", cartOrderId).find()
@@ -89,10 +53,7 @@ class OrderRepositoryImpl(
         }
     }
 
-    override suspend fun updateOrderStatus(
-        cartOrderId: String,
-        orderStatus: String
-    ): Resource<Boolean> {
+    override suspend fun updateOrderStatus(cartOrderId : String, orderStatus : String): Resource<Boolean> {
         return try {
             val cartOrder = realm.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
 
@@ -173,7 +134,7 @@ class OrderRepositoryImpl(
                     totalPrice += addOnItem.itemPrice
 
                     // Todo: use dynamic fields for discount calculation.
-                    if (addOnItem.itemName == "Masala" || addOnItem.itemName == "Mayonnaise") {
+                    if (DISCOUNT_ITEM.any { it == addOnItem.itemName }) {
                         discountPrice += addOnItem.itemPrice
                     }
                 }
@@ -189,53 +150,145 @@ class OrderRepositoryImpl(
         return Pair(totalPrice, discountPrice)
     }
 
-    private fun mapCartRealmToCartList(carts: List<CartRealm>): List<Cart>{
-        val groupedByOrder = carts.groupBy { it.cartOrder?.cartOrderId }
-
-        val data = groupedByOrder.map { groupedCartProducts ->
-            if (groupedCartProducts.key != null && groupedCartProducts.value.isNotEmpty()) {
-                val cartOrder = getCartOrderById(groupedCartProducts.key!!)
-
-                Cart(
-                    cartOrder = cartOrder,
-                    cartProducts = groupedCartProducts.value.map { cartProducts ->
-                        CartProduct(
-                            cartProductId = cartProducts.cartId,
-                            orderId = cartOrder.cartOrderId,
-                            product = cartProducts.product,
-                            quantity = cartProducts.quantity
-                        )
-                    },
-                    orderPrice = countTotalPrice(cartOrder.cartOrderId)
-                )
-            } else {
-                Cart()
-            }
-        }
-
-        return data
-    }
-
-    private fun mapCartRealmToCart(carts: List<CartRealm>): Cart? {
+    private fun mapCartRealmToCart(carts: List<CartRealm>): OrderDetail? {
         val groupedByOrder = carts.groupBy { it.cartOrder?.cartOrderId }
 
         groupedByOrder.map { groupedCartProducts ->
             val cartOrder = getCartOrderById(groupedCartProducts.key!!)
-            return Cart(
+            return OrderDetail(
                 cartOrder = cartOrder,
-                cartProducts = groupedCartProducts.value.map { cartProducts ->
-                    CartProduct(
-                        cartProductId = cartProducts.cartId,
-                        orderId = cartOrder.cartOrderId,
-                        product = cartProducts.product,
-                        quantity = cartProducts.quantity
-                    )
+                orderedProducts = groupedCartProducts.value.map { cartProducts ->
+                    if (cartProducts.product != null) {
+                        CartProductItem(
+                            productId = cartProducts.product!!.productId,
+                            productName = cartProducts.product!!.productName,
+                            productPrice = cartProducts.product!!.productPrice,
+                            productQuantity = cartProducts.quantity
+                        )
+                    }else {
+                        CartProductItem()
+                    }
                 },
                 orderPrice = countTotalPrice(cartOrder.cartOrderId)
             )
         }
 
         return null
+    }
+
+
+    override suspend fun getDineInOrders(
+        startDate : String,
+        endDate : String
+    ) : Flow<Resource<List<DineInOrder>>> {
+        return channelFlow {
+            withContext(ioDispatcher) {
+                try {
+                    send(Resource.Loading(true))
+
+                    val items = realm.query<CartOrder>(
+                        "cartOrderStatus != $0 AND updatedAt >= $1 AND updatedAt <= $2 AND orderType == $3",
+                        OrderStatus.Processing.orderStatus,
+                        startDate,
+                        endDate,
+                        CartOrderType.DineIn.orderType
+                    ).sort("updatedAt", Sort.DESCENDING).find().asFlow()
+
+                    items.collect { changes ->
+                        when (changes) {
+                            is InitialResults -> {
+                                send(Resource.Success(mapCartOrderToDineInOrders(changes.list)))
+                                send(Resource.Loading(false))
+                            }
+
+                            is UpdatedResults -> {
+                                send(Resource.Success(mapCartOrderToDineInOrders(changes.list)))
+                                send(Resource.Loading(false))
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    send(Resource.Error(e.message ?: "Unable to get order", emptyList()))
+                }
+            }
+        }
+    }
+
+    override suspend fun getDineOutOrders(
+        startDate : String,
+        endDate : String
+    ) : Flow<Resource<List<DineOutOrder>>> {
+        return channelFlow {
+            withContext(ioDispatcher) {
+                try {
+                    send(Resource.Loading(true))
+
+                    val items = realm.query<CartOrder>(
+                        "cartOrderStatus != $0 AND updatedAt >= $1 AND updatedAt <= $2 AND orderType == $3",
+                        OrderStatus.Processing.orderStatus,
+                        startDate,
+                        endDate,
+                        CartOrderType.DineOut.orderType
+                    ).sort("updatedAt", Sort.DESCENDING).find().asFlow()
+
+
+                    items.collect { changes ->
+                        when (changes) {
+                            is InitialResults -> {
+                                send(Resource.Success(mapCartOrderToDineOutOrders(changes.list)))
+                                send(Resource.Loading(false))
+                            }
+
+                            is UpdatedResults -> {
+                                send(Resource.Success(mapCartOrderToDineOutOrders(changes.list)))
+                                send(Resource.Loading(false))
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    send(Resource.Error(e.message ?: "Unable to get order", emptyList()))
+                }
+            }
+        }
+    }
+
+
+    private suspend fun mapCartOrderToDineOutOrders(data: List<CartOrder>): List<DineOutOrder> {
+        val result = withContext(ioDispatcher) {
+            data.map {cartOrder ->
+                val getPrice = countTotalPrice(cartOrder.cartOrderId)
+                val price = getPrice.first.minus(getPrice.second).toString()
+
+                DineOutOrder(
+                    cartOrderId = cartOrder.cartOrderId,
+                    orderId = cartOrder.orderId,
+                    customerPhone = cartOrder.customer?.customerPhone!!,
+                    customerAddress = cartOrder.address?.shortName!!,
+                    totalAmount = price,
+                    updatedAt = cartOrder.updatedAt!!
+                )
+            }
+        }
+
+        return result
+    }
+
+    private suspend fun mapCartOrderToDineInOrders(data: List<CartOrder>): List<DineInOrder> {
+        val result = withContext(ioDispatcher) {
+            data.map {cartOrder ->
+                val getPrice = countTotalPrice(cartOrder.cartOrderId)
+                val price = getPrice.first.minus(getPrice.second).toString()
+
+                DineInOrder(
+                    cartOrderId = cartOrder.cartOrderId,
+                    orderId = cartOrder.orderId,
+                    totalAmount = price,
+                    updatedAt = cartOrder.updatedAt!!
+                )
+            }
+        }
+
+        return result
     }
 
 }

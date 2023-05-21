@@ -1,8 +1,10 @@
 package com.niyaj.popos.features.customer.domain.model
 
+import com.squareup.moshi.JsonClass
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 
+@JsonClass(generateAdapter = true)
 class Customer(): RealmObject {
 
     @PrimaryKey
@@ -33,4 +35,12 @@ class Customer(): RealmObject {
         this.createdAt = createdAt
         this.updatedAt = updatedAt
     }
+}
+
+fun Customer.filterCustomer(searchText: String): Boolean {
+    return if (searchText.isNotEmpty()) {
+        this.customerEmail?.contains(searchText, true) == true ||
+                this.customerPhone.contains(searchText, true) ||
+                this.customerName?.contains(searchText, true) == true
+    }else true
 }

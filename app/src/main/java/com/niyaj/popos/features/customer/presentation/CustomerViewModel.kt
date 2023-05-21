@@ -9,12 +9,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.customer.domain.model.Customer
-import com.niyaj.popos.features.customer.domain.use_cases.CustomerUseCases
-import com.niyaj.popos.features.customer.domain.util.FilterCustomer
-import com.niyaj.popos.util.capitalizeWords
+import com.niyaj.popos.features.customer.domain.repository.CustomerRepository
+import com.niyaj.popos.features.customer.domain.repository.CustomerValidationRepository
+import com.niyaj.popos.features.customer.domain.use_cases.GetAllCustomers
+import com.niyaj.popos.utils.capitalizeWords
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,9 +25,16 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * Customer View Model
+ * @author Sk Niyaj Ali
+ *
+ */
 @HiltViewModel
 class CustomerViewModel @Inject constructor(
-    private val customerUseCases: CustomerUseCases,
+    private val customerRepository: CustomerRepository,
+    private val validationRepository : CustomerValidationRepository,
+    private val getAllCustomers : GetAllCustomers,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -53,7 +60,7 @@ class CustomerViewModel @Inject constructor(
     private var count: Int = 0
 
     init {
-        getAllCustomers(FilterCustomer.ByCustomerId(SortType.Descending))
+        getAllCustomers()
 
         savedStateHandle.get<String>("customerId")?.let { customerId ->
             getCustomerById(customerId)
@@ -91,7 +98,7 @@ class CustomerViewModel @Inject constructor(
             }
 
             is CustomerEvent.DeselectAllCustomer -> {
-                _selectedCustomer.removeAll(_selectedCustomer.toList())
+                _selectedCustomer.clear()
             }
 
             is CustomerEvent.SelectAllCustomer -> {
@@ -127,7 +134,7 @@ class CustomerViewModel @Inject constructor(
                     viewModelScope.launch {
                         event.customers.forEach { customer ->
 
-                            when (val result = customerUseCases.deleteCustomer(customer)) {
+                            when (val result = customerRepository.deleteCustomer(customer)) {
                                 is Resource.Loading -> {}
                                 is Resource.Success -> {
                                     _eventFlow.emit(UiEvent.OnSuccess("Customer deleted successfully"))
@@ -144,30 +151,10 @@ class CustomerViewModel @Inject constructor(
 
             }
 
-            is CustomerEvent.OnFilterCustomer -> {
-                if(_customers.value.filterCustomer::class == event.filterCustomer::class &&
-                   _customers.value.filterCustomer.sortType == event.filterCustomer.sortType
-                ){
-                    _customers.value = _customers.value.copy(
-                        filterCustomer = FilterCustomer.ByCustomerId(SortType.Ascending),
-                    )
-                    return
-                }
-
-                _customers.value = _customers.value.copy(
-                    filterCustomer = event.filterCustomer,
-                )
-
-                getAllCustomers(event.filterCustomer)
-            }
-
             is CustomerEvent.OnSearchCustomer -> {
                 viewModelScope.launch {
                     _searchText.emit(event.searchText)
-                    getAllCustomers(
-                        _customers.value.filterCustomer,
-                        event.searchText
-                    )
+                    getAllCustomers(event.searchText)
                 }
             }
 
@@ -178,7 +165,7 @@ class CustomerViewModel @Inject constructor(
             }
 
             is CustomerEvent.RefreshCustomer -> {
-                getAllCustomers(_customers.value.filterCustomer)
+                getAllCustomers()
             }
         }
     }
@@ -195,16 +182,13 @@ class CustomerViewModel @Inject constructor(
     fun onSearchTextClearClick(){
         viewModelScope.launch {
             _searchText.emit("")
-            getAllCustomers(
-                _customers.value.filterCustomer,
-                _searchText.value
-            )
+            getAllCustomers(_searchText.value)
         }
     }
 
     private fun getCustomerById(customerId: String) {
         viewModelScope.launch {
-            when (val result = customerUseCases.getCustomerById(customerId)){
+            when (val result = customerRepository.getCustomerById(customerId)){
                 is Resource.Loading -> {}
                 is Resource.Success -> {
                     result.data?.let { customer ->
@@ -224,9 +208,9 @@ class CustomerViewModel @Inject constructor(
     }
 
     private fun addOrEditCustomer(customerId: String? =null){
-        val customerNameResult = customerUseCases.validateCustomerName(addEditCustomerState.customerName)
-        val customerPhoneResult = customerUseCases.validateCustomerPhone(addEditCustomerState.customerPhone, customerId)
-        val customerEmailResult = customerUseCases.validateCustomerEmail(addEditCustomerState.customerEmail)
+        val customerNameResult = validationRepository.validateCustomerName(addEditCustomerState.customerName)
+        val customerPhoneResult = validationRepository.validateCustomerPhone(addEditCustomerState.customerPhone, customerId)
+        val customerEmailResult = validationRepository.validateCustomerEmail(addEditCustomerState.customerEmail)
 
         val hasError = listOf(customerNameResult,customerPhoneResult,customerEmailResult).any{
             !it.successful
@@ -248,7 +232,7 @@ class CustomerViewModel @Inject constructor(
 
 
                 if(customerId.isNullOrEmpty()){
-                    when(val result = customerUseCases.createNewCustomer(customer)){
+                    when(val result = customerRepository.createNewCustomer(customer)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("Customer Created Successfully"))
@@ -258,7 +242,7 @@ class CustomerViewModel @Inject constructor(
                         }
                     }
                 }else{
-                    val result = customerUseCases.updateCustomer(
+                    val result = customerRepository.updateCustomer(
                         customer,
                         customerId
                     )
@@ -282,8 +266,8 @@ class CustomerViewModel @Inject constructor(
         }
     }
 
-    private fun getAllCustomers(filterCustomer: FilterCustomer, searchText:String = "") {
-        customerUseCases.getAllCustomers(filterCustomer, searchText).onEach { result ->
+    private fun getAllCustomers(searchText:String = "") {
+        getAllCustomers.invoke(searchText).onEach { result ->
             when(result){
                 is Resource.Loading -> {
                     _customers.value = _customers.value.copy(
@@ -294,7 +278,6 @@ class CustomerViewModel @Inject constructor(
                     result.data?.let { customers ->
                         _customers.value = _customers.value.copy(
                             customers = customers,
-                            filterCustomer = filterCustomer,
                         )
                     }
                 }

@@ -8,11 +8,10 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.product.domain.model.Product
-import com.niyaj.popos.features.product.domain.use_cases.ProductUseCases
-import com.niyaj.popos.features.product.domain.util.FilterProduct
+import com.niyaj.popos.features.product.domain.repository.ProductRepository
+import com.niyaj.popos.features.product.domain.use_cases.GetAllProducts
 import com.niyaj.popos.features.product.presentation.ProductsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +22,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ *
+ */
 @HiltViewModel
 class ExportProductViewModel @Inject  constructor(
-    private val productUseCases: ProductUseCases
+    private val productRepository: ProductRepository,
+    private val getAllProducts : GetAllProducts,
 ): ViewModel() {
 
     private val _products = MutableStateFlow(ProductsState())
@@ -50,6 +53,9 @@ class ExportProductViewModel @Inject  constructor(
         getAllProducts()
     }
 
+    /**
+     *
+     */
     fun onEvent(event: ExportProductEvent){
         when (event) {
 
@@ -135,12 +141,11 @@ class ExportProductViewModel @Inject  constructor(
     }
 
     private fun getAllProducts(
-        filterProduct: FilterProduct = FilterProduct.ByCategoryId(SortType.Ascending),
         searchText: String = "",
         selectedCategory: String = "",
     ){
-        viewModelScope.launch(Dispatchers.Main) {
-            productUseCases.getAllProducts(filterProduct = filterProduct, searchText, selectedCategory).collect { result ->
+        viewModelScope.launch {
+            getAllProducts.invoke(searchText, selectedCategory).collect { result ->
                 when(result){
                     is Resource.Loading -> {
                         _products.value = _products.value.copy(
@@ -149,10 +154,7 @@ class ExportProductViewModel @Inject  constructor(
                     }
                     is Resource.Success -> {
                         result.data?.let {products ->
-                            _products.value = _products.value.copy(
-                                products = products,
-                                filterProduct = filterProduct,
-                            )
+                            _products.value = _products.value.copy(products = products)
                         }
                     }
                     is Resource.Error -> {

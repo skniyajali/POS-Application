@@ -7,11 +7,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.address.domain.model.Address
-import com.niyaj.popos.features.address.domain.use_cases.AddressUseCases
+import com.niyaj.popos.features.address.domain.repository.AddressRepository
+import com.niyaj.popos.features.address.domain.repository.AddressValidationRepository
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.util.capitalizeWords
-import com.niyaj.popos.util.getAllCapitalizedLetters
+import com.niyaj.popos.utils.capitalizeWords
+import com.niyaj.popos.utils.getAllCapitalizedLetters
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -20,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditAddressViewModel @Inject constructor(
-    private val addressUseCases: AddressUseCases,
+    private val addressRepository : AddressRepository,
+    private val validationRepository : AddressValidationRepository,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -65,7 +67,7 @@ class AddEditAddressViewModel @Inject constructor(
 
     private fun getAddressById(addressId: String){
         viewModelScope.launch {
-            when(val result = addressUseCases.getAddressById(addressId)) {
+            when(val result = addressRepository.getAddressById(addressId)) {
                 is Resource.Loading -> {}
                 is Resource.Success -> {
                     result.data.let {address ->
@@ -86,8 +88,8 @@ class AddEditAddressViewModel @Inject constructor(
 
     private fun addOrEditAddress(addressId: String? = null){
         viewModelScope.launch {
-            val validatedAddressName = addressUseCases.validateAddressName(addEditAddressState.address.capitalizeWords, addressId)
-            val validatedShortName = addressUseCases.validateAddressShortName(addEditAddressState.shortName)
+            val validatedAddressName = validationRepository.validateAddressName(addEditAddressState.address.capitalizeWords, addressId)
+            val validatedShortName = validationRepository.validateAddressShortName(addEditAddressState.shortName)
 
             val hasError = listOf(validatedAddressName,validatedShortName).any {
                 !it.successful
@@ -105,7 +107,7 @@ class AddEditAddressViewModel @Inject constructor(
                 address.addressName = addEditAddressState.address.capitalizeWords
 
                 if (addressId.isNullOrEmpty()){
-                    when(val result = addressUseCases.createNewAddress(address)){
+                    when(val result = addressRepository.addNewAddress(address)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("Address created successfully"))
@@ -117,7 +119,7 @@ class AddEditAddressViewModel @Inject constructor(
                     addEditAddressState = AddEditAddressState()
 
                 }else{
-                    when(val result = addressUseCases.updateAddress(address, addressId)){
+                    when(val result = addressRepository.updateAddress(address, addressId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("Address updated successfully"))

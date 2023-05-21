@@ -31,3 +31,28 @@ fun StandardIconButton(
         )
     }
 }
+
+
+@Composable
+fun StandardIconButtonPrimary(
+    modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier,
+    imageVector: ImageVector,
+    tint : Color = MaterialTheme.colors.primary,
+    enabled: Boolean = true,
+    contentDescription: String? = null,
+    onClick: () -> Unit,
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = onClick,
+        enabled = enabled,
+    ){
+        Icon(
+            imageVector = imageVector,
+            modifier = iconModifier,
+            contentDescription = contentDescription ?: imageVector.name,
+            tint = tint,
+        )
+    }
+}

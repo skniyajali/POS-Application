@@ -12,12 +12,12 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.niyaj.popos.domain.util.safeString
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_ADD_EDIT_BUTTON
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_NAME_ERROR_TAG
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_NAME_FIELD
@@ -30,14 +30,18 @@ import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.EDIT_ADD_O
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.common.util.safeString
 import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
+import com.niyaj.popos.features.destinations.AddEditAddOnItemScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import io.sentry.compose.SentryTraced
 import kotlinx.coroutines.flow.collectLatest
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
 @Composable
 fun AddEditAddOnItemScreen(
@@ -62,67 +66,71 @@ fun AddEditAddOnItemScreen(
         }
     }
 
-    BottomSheetWithCloseDialog(
-        modifier = Modifier
-            .testTag(ADD_EDIT_ADDON_SCREEN)
-            .fillMaxWidth(),
-        closeBtnModifier = Modifier.testTag(ADD_EDIT_SCREEN_CLOSE_BUTTON),
-        text = if (!addOnItemId.isNullOrEmpty()) EDIT_ADD_ON_ITEM else CREATE_NEW_ADD_ON,
-        icon = Icons.Default.Link,
-        onClosePressed = {
-            navController.navigateUp()
-        }
-    ) {
-        Column(
+    SentryTraced(tag = AddEditAddOnItemScreenDestination.route) {
+        BottomSheetWithCloseDialog(
             modifier = Modifier
-                .fillMaxWidth()
+                .testTag(ADD_EDIT_ADDON_SCREEN)
+                .fillMaxWidth(),
+            closeBtnModifier = Modifier.testTag(ADD_EDIT_SCREEN_CLOSE_BUTTON),
+            text = if (!addOnItemId.isNullOrEmpty()) EDIT_ADD_ON_ITEM else CREATE_NEW_ADD_ON,
+            icon = Icons.Default.Link,
+            onClosePressed = {
+                navController.navigateUp()
+            }
         ) {
-            StandardOutlinedTextField(
-                modifier = Modifier.testTag(ADDON_NAME_FIELD),
-                text = addEditAddOnItemViewModel.addEditState.itemName,
-                hint = ADDON_NAME_FIELD,
-                leadingIcon = Icons.Default.Badge,
-                error = addEditAddOnItemViewModel.addEditState.itemNameError,
-                errorTag = ADDON_NAME_ERROR_TAG,
-                onValueChange = {
-                    addEditAddOnItemViewModel.onEvent(AddEditAddOnItemEvent.ItemNameChanged(it))
-                },
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                StandardOutlinedTextField(
+                    modifier = Modifier.testTag(ADDON_NAME_FIELD),
+                    text = addEditAddOnItemViewModel.addEditState.itemName,
+                    hint = ADDON_NAME_FIELD,
+                    leadingIcon = Icons.Default.Badge,
+                    error = addEditAddOnItemViewModel.addEditState.itemNameError,
+                    errorTag = ADDON_NAME_ERROR_TAG,
+                    onValueChange = {
+                        addEditAddOnItemViewModel.onEvent(AddEditAddOnItemEvent.ItemNameChanged(it))
+                    },
+                )
 
-            Spacer(modifier = Modifier.height(SpaceSmall))
+                Spacer(modifier = Modifier.height(SpaceSmall))
 
-            StandardOutlinedTextField(
-                modifier = Modifier.testTag(ADDON_PRICE_FIELD),
-                text = addEditAddOnItemViewModel.addEditState.itemPrice,
-                hint = ADDON_PRICE_FIELD,
-                errorTag = ADDON_PRICE_ERROR_TAG,
-                leadingIcon = Icons.Default.CurrencyRupee,
-                keyboardType = KeyboardType.Number,
-                error = addEditAddOnItemViewModel.addEditState.itemPriceError,
-                onValueChange = {
-                    addEditAddOnItemViewModel.onEvent(
-                        AddEditAddOnItemEvent.ItemPriceChanged(safeString(it).toString())
-                    )
-                },
-            )
-
-            Spacer(modifier = Modifier.height(SpaceMedium))
-
-            StandardButton(
-                modifier = Modifier.testTag(ADDON_ADD_EDIT_BUTTON),
-                text = if (!addOnItemId.isNullOrEmpty()) EDIT_ADD_ON_ITEM
-                    else CREATE_NEW_ADD_ON,
-                icon = if(!addOnItemId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.Add,
-                onClick = {
-                    if (!addOnItemId.isNullOrEmpty()) {
+                StandardOutlinedTextField(
+                    modifier = Modifier.testTag(ADDON_PRICE_FIELD),
+                    text = addEditAddOnItemViewModel.addEditState.itemPrice,
+                    hint = ADDON_PRICE_FIELD,
+                    errorTag = ADDON_PRICE_ERROR_TAG,
+                    leadingIcon = Icons.Default.CurrencyRupee,
+                    keyboardType = KeyboardType.Number,
+                    error = addEditAddOnItemViewModel.addEditState.itemPriceError,
+                    onValueChange = {
                         addEditAddOnItemViewModel.onEvent(
-                            AddEditAddOnItemEvent.UpdateAddOnItem(addOnItemId)
+                            AddEditAddOnItemEvent.ItemPriceChanged(safeString(it).toString())
                         )
-                    } else {
-                        addEditAddOnItemViewModel.onEvent(AddEditAddOnItemEvent.CreateNewAddOnItem)
-                    }
-                },
-            )
+                    },
+                )
+
+                Spacer(modifier = Modifier.height(SpaceMedium))
+
+                StandardButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(ADDON_ADD_EDIT_BUTTON),
+                    text = if (!addOnItemId.isNullOrEmpty()) EDIT_ADD_ON_ITEM
+                    else CREATE_NEW_ADD_ON,
+                    icon = if(!addOnItemId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.Add,
+                    onClick = {
+                        if (!addOnItemId.isNullOrEmpty()) {
+                            addEditAddOnItemViewModel.onEvent(
+                                AddEditAddOnItemEvent.UpdateAddOnItem(addOnItemId)
+                            )
+                        } else {
+                            addEditAddOnItemViewModel.onEvent(AddEditAddOnItemEvent.CreateNewAddOnItem)
+                        }
+                    },
+                )
+            }
         }
     }
 }

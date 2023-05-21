@@ -1,9 +1,11 @@
 package com.niyaj.popos.features.expenses.domain.model
 
 import com.niyaj.popos.features.expenses_category.domain.model.ExpensesCategory
+import com.squareup.moshi.JsonClass
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 
+@JsonClass(generateAdapter = true)
 class Expenses(): RealmObject {
     @PrimaryKey
     var expensesId: String = ""
@@ -34,4 +36,14 @@ class Expenses(): RealmObject {
         this.updatedAt = updatedAt
     }
 
+}
+
+fun Expenses.filterExpenses(searchText: String): Boolean {
+    return if (searchText.isNotEmpty()) {
+        this.expensesCategory?.expensesCategoryName?.contains(searchText, true) == true ||
+                this.expensesPrice.contains(searchText, true) ||
+                this.expensesRemarks.contains(searchText, true) ||
+                this.createdAt.contains(searchText, true) ||
+                this.updatedAt?.contains(searchText, true) == true
+    } else true
 }

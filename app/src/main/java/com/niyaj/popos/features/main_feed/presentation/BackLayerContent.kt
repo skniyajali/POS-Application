@@ -1,14 +1,30 @@
 package com.niyaj.popos.features.main_feed.presentation
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.material.icons.filled.DeliveryDining
+import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.RamenDining
+import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
 import com.google.accompanist.flowlayout.FlowMainAxisAlignment
@@ -17,20 +33,36 @@ import com.google.accompanist.flowlayout.SizeMode
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.features.destinations.*
+import com.niyaj.popos.features.destinations.CartScreenDestination
+import com.niyaj.popos.features.destinations.EmployeeScreenDestination
+import com.niyaj.popos.features.destinations.ExpensesScreenDestination
+import com.niyaj.popos.features.destinations.OrderScreenDestination
+import com.niyaj.popos.features.destinations.ReminderScreenDestination
+import com.niyaj.popos.features.destinations.ReportScreenDestination
 import com.niyaj.popos.features.main_feed.presentation.components.IconBox
-import com.niyaj.popos.features.reports.presentation.ReportsViewModel
 import com.niyaj.popos.features.reports.presentation.components.ReportBox
 import com.ramcosta.composedestinations.navigation.navigate
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+/**
+ * Main Feed Back Layer Component
+ * @author Sk Niyaj Ali
+ */
 @Composable
 fun BackLayerContent(
     navController: NavController,
-    reportsViewModel: ReportsViewModel = hiltViewModel(),
+    viewModel: BackLayerViewModel = hiltViewModel(),
 ) {
-    val reportState = reportsViewModel.reportState.collectAsState().value.report
+    val reportState = viewModel.reportState.collectAsStateWithLifecycle().value.report
     val totalAmount = reportState.expensesAmount.plus(reportState.dineInSalesAmount).plus(reportState.dineOutSalesAmount).toString()
+
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(key1 = Unit) {
+        scope.launch {
+            viewModel.generateReport()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -116,9 +148,7 @@ fun BackLayerContent(
                 amount = totalAmount,
                 icon = Icons.Default.Money,
                 enabled = false,
-                onClick = {
-
-                }
+                onClick = {}
             )
         }
     }

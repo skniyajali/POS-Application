@@ -4,11 +4,6 @@ import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.reminder.domain.util.PaymentStatus
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
 
-data class EmployeeSalaryWithStatus(
-    val employee: Employee = Employee(),
-    val paymentStatus: PaymentStatus = PaymentStatus.NotPaid,
-)
-
 data class EmployeeReminderWithStatus(
     val employee : Employee = Employee(),
     val paymentStatus : PaymentStatus = PaymentStatus.NotPaid,

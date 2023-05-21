@@ -1,7 +1,6 @@
 package com.niyaj.popos.features.components.chart.horizontalbar.axis
 
 import android.graphics.Paint
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
@@ -13,7 +12,7 @@ internal fun DrawScope.horizontalYAxis(
     startAngle: Float
 ) {
     val xScaleFactor = size.width.div(4)
-    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(40f, 20f), 0f)
+//    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(40f, 20f), 0f)
     val axisScaleFactor = maxValue.div(4)
     val graphHeight = size.height
 

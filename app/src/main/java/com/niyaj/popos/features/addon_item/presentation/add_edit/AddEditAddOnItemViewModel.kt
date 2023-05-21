@@ -6,23 +6,22 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.util.safeString
 import com.niyaj.popos.features.addon_item.domain.model.AddOnItem
-import com.niyaj.popos.features.addon_item.domain.use_cases.AddOnItemUseCases
+import com.niyaj.popos.features.addon_item.domain.repository.AddOnItemRepository
+import com.niyaj.popos.features.addon_item.domain.repository.AddOnItemValidationRepository
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.common.util.safeString
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class AddEditAddOnItemViewModel @Inject constructor(
-    private val addOnItemUseCases: AddOnItemUseCases,
+    private val validationRepository: AddOnItemValidationRepository,
+    private val addOnItemRepository : AddOnItemRepository,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -39,7 +38,6 @@ class AddEditAddOnItemViewModel @Inject constructor(
 
     fun onEvent(event: AddEditAddOnItemEvent){
         when(event){
-
             is AddEditAddOnItemEvent.ItemNameChanged -> {
                 addEditState = addEditState.copy(itemName = event.itemName)
             }
@@ -60,8 +58,8 @@ class AddEditAddOnItemViewModel @Inject constructor(
 
     private fun addOrEditAddOnItem(addOnItemId: String? = null){
         viewModelScope.launch {
-            val validatedItemName = addOnItemUseCases.validateItemName(addEditState.itemName, addOnItemId)
-            val validatedItemPrice = addOnItemUseCases.validateItemPrice(safeString(addEditState.itemPrice))
+            val validatedItemName = validationRepository.validateItemName(addEditState.itemName, addOnItemId)
+            val validatedItemPrice = validationRepository.validateItemPrice(safeString(addEditState.itemPrice))
 
             val hasError = listOf(validatedItemName, validatedItemPrice).any {
                 !it.successful
@@ -80,7 +78,7 @@ class AddEditAddOnItemViewModel @Inject constructor(
                 addOnItem.itemPrice = safeString(addEditState.itemPrice)
 
                 if(addOnItemId.isNullOrEmpty()){
-                    when(val result = addOnItemUseCases.createNewAddOnItem(addOnItem)){
+                    when(val result = addOnItemRepository.createNewAddOnItem(addOnItem)){
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -92,9 +90,8 @@ class AddEditAddOnItemViewModel @Inject constructor(
                         }
                     }
                 }else {
-                    when(val result = addOnItemUseCases.updateAddOnItem(addOnItem, addOnItemId)){
+                    when(addOnItemRepository.updateAddOnItem(addOnItem, addOnItemId)){
                         is Resource.Error -> {
-                            Timber.d(result.message)
                             _eventFlow.emit(UiEvent.OnError( "Unable to Update AddOnItems"))
                         }
                         is Resource.Loading -> {
@@ -113,21 +110,17 @@ class AddEditAddOnItemViewModel @Inject constructor(
 
     private fun getAllAddOnItemById(addOnItemId: String) {
         viewModelScope.launch {
-            when(val result = addOnItemUseCases.getAddOnItemById(addOnItemId)) {
+            when(val result = addOnItemRepository.getAddOnItemById(addOnItemId)) {
                 is Resource.Loading -> {}
-
                 is Resource.Success -> {
-                    withContext(Dispatchers.Main){
-                        result.data?.let {
-                            addEditState = addEditState.copy(
-                                itemName = result.data.itemName,
-                                itemPrice = result.data.itemPrice.toString(),
-                            )
-                        }
+                    result.data?.let {
+                        addEditState = addEditState.copy(
+                            itemName = result.data.itemName,
+                            itemPrice = result.data.itemPrice.toString(),
+                        )
                     }
                 }
-                is Resource.Error -> {
-                }
+                is Resource.Error -> {}
             }
         }
     }

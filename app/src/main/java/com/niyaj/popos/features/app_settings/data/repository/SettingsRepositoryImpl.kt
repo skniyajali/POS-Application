@@ -5,8 +5,8 @@ import com.niyaj.popos.features.app_settings.domain.repository.SettingsRepositor
 import com.niyaj.popos.features.app_settings.domain.repository.SettingsValidationRepository
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.ValidationResult
-import com.niyaj.popos.util.Constants.SETTINGS_ID
-import com.niyaj.popos.util.isContainsArithmeticCharacter
+import com.niyaj.popos.utils.Constants.SETTINGS_ID
+import com.niyaj.popos.utils.isContainsArithmeticCharacter
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query

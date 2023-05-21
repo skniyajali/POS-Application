@@ -6,9 +6,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
-import com.niyaj.popos.features.employee_attendance.domain.use_cases.AttendanceUseCases
-import com.niyaj.popos.features.employee_salary.domain.use_cases.SalaryUseCases
+import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceRepository
+import com.niyaj.popos.features.employee_salary.domain.repository.SalaryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,11 +16,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
+/**
+ * Employee Details view model class
+ *
+ */
 @HiltViewModel
 class EmployeeDetailsViewModel @Inject constructor(
-    private val employeeUseCases: EmployeeUseCases,
-    private val salaryUseCases: SalaryUseCases,
-    private val attendanceUseCases: AttendanceUseCases,
+    private val employeeRepository: EmployeeRepository,
+    private val salaryRepository: SalaryRepository,
+    private val attendanceRepository: AttendanceRepository,
     private val savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -55,6 +59,9 @@ class EmployeeDetailsViewModel @Inject constructor(
     }
 
 
+    /**
+     *
+     */
     fun onEvent(event: EmployeeDetailsEvent) {
         when (event) {
             is EmployeeDetailsEvent.RefreshEmployeeDetails -> {
@@ -80,7 +87,7 @@ class EmployeeDetailsViewModel @Inject constructor(
     private fun getEmployeeById(employeeId: String) {
         if(employeeId.isNotEmpty()) {
             viewModelScope.launch {
-                when(val result = employeeUseCases.getEmployeeById(employeeId)) {
+                when(val result = employeeRepository.getEmployeeById(employeeId)) {
                     is Resource.Loading -> {
                         _employeeDetails.value = _employeeDetails.value.copy(
                             isLoading = result.isLoading
@@ -113,7 +120,7 @@ class EmployeeDetailsViewModel @Inject constructor(
                 else Pair("", "")
 
             if (selectedDate != null) {
-                when (val result = salaryUseCases.getSalaryByEmployeeId(employeeId,  selectedDate)) {
+                when (val result = salaryRepository.getSalaryByEmployeeId(employeeId,  selectedDate)) {
                     is Resource.Loading -> {}
                     is Resource.Success -> {
                         result.data?.let {
@@ -132,7 +139,7 @@ class EmployeeDetailsViewModel @Inject constructor(
 
     private fun getSalaryDetails(employeeId: String) {
         viewModelScope.launch {
-            salaryUseCases.getEmployeeSalary(employeeId).collect { result ->
+            salaryRepository.getEmployeeSalary(employeeId).collect { result ->
                 when(result) {
                     is Resource.Loading -> {
                         _salaries.value = _salaries.value.copy(
@@ -159,7 +166,7 @@ class EmployeeDetailsViewModel @Inject constructor(
 
     private fun getSalaryCalculableDate(employeeId: String) {
         viewModelScope.launch {
-            val result = salaryUseCases.getSalaryCalculableDate(employeeId)
+            val result = salaryRepository.getSalaryCalculableDate(employeeId)
 
             result.data?.let {
                 _salaryDates.value = _salaryDates.value.copy(
@@ -171,7 +178,7 @@ class EmployeeDetailsViewModel @Inject constructor(
 
     private fun getMonthlyAbsentReport(employeeId: String) {
         viewModelScope.launch {
-            attendanceUseCases.getMonthlyAbsentReports(employeeId).collect { result ->
+            attendanceRepository.getMonthlyAbsentReport(employeeId).collect { result ->
                 when (result) {
                     is Resource.Loading -> {
                         _absentReports.value = _absentReports.value.copy(

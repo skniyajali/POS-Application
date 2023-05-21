@@ -1,12 +1,14 @@
 package com.niyaj.popos.features.product.data.repository
 
 import com.niyaj.popos.features.cart.domain.model.CartRealm
+import com.niyaj.popos.features.cart_order.domain.model.CartOrder
 import com.niyaj.popos.features.category.domain.model.Category
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.ValidationResult
 import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.product.domain.repository.ProductRepository
 import com.niyaj.popos.features.product.domain.repository.ProductValidationRepository
+import com.niyaj.popos.features.product.presentation.details.ProductOrder
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.UpdatePolicy
@@ -19,6 +21,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
@@ -39,9 +42,9 @@ class ProductRepositoryImpl(
                 try {
                     send(Resource.Loading(true))
 
-                    val products = realm.query<Product>().sort("productId", Sort.DESCENDING)
-                    val items = products.asFlow()
-                    items.collect { changes: ResultsChange<Product> ->
+                    val products = realm.query<Product>().asFlow()
+
+                    products.collect { changes: ResultsChange<Product> ->
                         when (changes) {
                             is UpdatedResults -> {
                                 send(Resource.Success(changes.list))
@@ -62,11 +65,9 @@ class ProductRepositoryImpl(
         }
     }
 
-    override suspend fun getProductById(productId: String): Resource<Product?> {
+    override fun getProductById(productId: String): Resource<Product?> {
         return try {
-            val product = withContext(ioDispatcher) {
-                realm.query<Product>("productId == $0", productId).first().find()
-            }
+            val product = realm.query<Product>("productId == $0", productId).first().find()
             Resource.Success(product)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to get product", null)
@@ -263,7 +264,6 @@ class ProductRepositoryImpl(
                 withContext(ioDispatcher) {
                     realm.write {
                         products.forEach { product ->
-
                             val findProduct = this.query<Product>(
                                 "productId == $0 OR productName == $1 AND productPrice == $2",
                                 product.productId,
@@ -273,7 +273,7 @@ class ProductRepositoryImpl(
 
                             if (findProduct == null) {
                                 val newProduct = Product()
-                                newProduct.productId = product.productId
+                                newProduct.productId = product.productId.ifEmpty { BsonObjectId().toHexString() }
                                 newProduct.productName = product.productName
                                 newProduct.productPrice = product.productPrice
                                 newProduct.productAvailability = product.productAvailability
@@ -289,8 +289,7 @@ class ProductRepositoryImpl(
                                     if (category != null) {
                                         newProduct.category = category
                                     } else {
-
-                                        val newCategory = this.copyToRealm(instance = Category().apply {
+                                        val newCategory = this.copyToRealm(Category().apply {
                                             categoryId = product.category!!.categoryId
                                             categoryName = product.category!!.categoryName
                                             categoryAvailability = product.category!!.categoryAvailability
@@ -379,4 +378,56 @@ class ProductRepositoryImpl(
         )
     }
 
+    override suspend fun getProductOrders(productId : String) : Flow<Resource<List<ProductOrder>>> {
+        return channelFlow {
+            try {
+                withContext(ioDispatcher) {
+                    val orders = realm.query<CartRealm>("product.productId == $0", productId)
+                        .sort("updatedAt", Sort.DESCENDING).asFlow()
+
+                    orders.collectLatest { result ->
+                        when(result) {
+                            is InitialResults -> {
+                                send(Resource.Success(mapCartOrdersToProductOrders(result.list)))
+                                send(Resource.Loading(false))
+                            }
+                            is UpdatedResults -> {
+                                send(Resource.Success(mapCartOrdersToProductOrders(result.list)))
+                                send(Resource.Loading(false))
+                            }
+                        }
+                    }
+                }
+            }catch (e: Exception) {
+                send(Resource.Error(e.message ?: "Unable to get product orders."))
+            }
+        }
+    }
+
+    private fun getCartOrderDetails(cartOrderId: String): CartOrder {
+        return realm.query<CartOrder>("cartOrderId == $0", cartOrderId).find().first()
+    }
+
+    private fun mapCartOrdersToProductOrders(orders: List<CartRealm>): List<ProductOrder> {
+        val groupedOrder = orders.groupBy { it.cartOrder?.cartOrderId }
+
+        return groupedOrder.map { results ->
+            if (results.key != null) {
+                val cartOrder = getCartOrderDetails(results.key!!)
+                val totalQuantity = results.value.sumOf { it.quantity }
+
+                ProductOrder(
+                    cartOrderId = cartOrder.cartOrderId,
+                    orderId = cartOrder.orderId,
+                    orderedDate = cartOrder.updatedAt ?: cartOrder.createdAt,
+                    orderType = cartOrder.orderType,
+                    quantity = totalQuantity,
+                    customerPhone = cartOrder.customer?.customerPhone,
+                    customerAddress = cartOrder.address?.addressName
+                )
+            }else {
+                ProductOrder()
+            }
+        }
+    }
 }

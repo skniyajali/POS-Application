@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -16,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import com.niyaj.popos.features.components.TextWithIcon
 
 @Composable
@@ -26,11 +28,14 @@ fun TitleWithIcon(
     text: String,
     icon: ImageVector? = null,
     showScrollToTop: Boolean = false,
+    showFilterIcon: Boolean = false,
     onClick: () -> Unit = {},
     onClickScrollToTop: () -> Unit = {},
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(50.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -59,15 +64,21 @@ fun TitleWithIcon(
                 }
             }
 
-            IconButton(
-                onClick = onClick,
-                modifier = iconModifier
+            AnimatedVisibility(
+                visible = showFilterIcon,
+                enter = fadeIn(),
+                exit = fadeOut(),
             ) {
-                Icon(
-                    imageVector = Icons.Default.Sort,
-                    contentDescription = text,
-                    tint = MaterialTheme.colors.primary,
-                )
+                IconButton(
+                    onClick = onClick,
+                    modifier = iconModifier
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Sort,
+                        contentDescription = text,
+                        tint = MaterialTheme.colors.primary,
+                    )
+                }
             }
         }
     }

@@ -1,12 +1,16 @@
 package com.niyaj.popos.features.customer.presentation
 
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.customer.domain.model.Customer
-import com.niyaj.popos.features.customer.domain.util.FilterCustomer
 
+/**
+ * Contains the state of the customer screen
+ * @param customers List of customers
+ * @param isLoading Boolean to indicate if the screen is loading
+ * @param error String to indicate if there is an error
+ * @constructor Creates a new CustomerState
+ */
 data class CustomerState(
     val customers: List<Customer> = emptyList(),
-    val filterCustomer: FilterCustomer = FilterCustomer.ByCustomerId(SortType.Ascending),
     val isLoading: Boolean = false,
     val error: String? = null
 )

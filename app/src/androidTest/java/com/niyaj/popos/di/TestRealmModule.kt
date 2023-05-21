@@ -3,7 +3,7 @@ package com.niyaj.popos.di
 import com.niyaj.popos.applicationScope
 import com.niyaj.popos.features.addon_item.data.repository.AddOnItemRepositoryImpl
 import com.niyaj.popos.features.addon_item.domain.repository.AddOnItemRepository
-import com.niyaj.popos.features.addon_item.domain.repository.ValidationRepository
+import com.niyaj.popos.features.addon_item.domain.repository.AddOnItemValidationRepository
 import com.niyaj.popos.features.address.data.repository.AddressRepositoryImpl
 import com.niyaj.popos.features.address.domain.repository.AddressRepository
 import com.niyaj.popos.features.address.domain.repository.AddressValidationRepository
@@ -27,8 +27,8 @@ import com.niyaj.popos.features.customer.domain.repository.CustomerValidationRep
 import com.niyaj.popos.features.data_deletion.data.repository.DataDeletionRepositoryImpl
 import com.niyaj.popos.features.data_deletion.domain.repository.DataDeletionRepository
 import com.niyaj.popos.features.employee.data.repository.EmployeeRepositoryImpl
-import com.niyaj.popos.features.employee.domain.repository.EmployeeValidationRepository
 import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.features.employee.domain.repository.EmployeeValidationRepository
 import com.niyaj.popos.features.employee_attendance.data.repository.AttendanceRepositoryImpl
 import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceRepository
 import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceValidationRepository
@@ -146,7 +146,7 @@ object TestRealmModule {
     }
 
     @Provides
-    fun provideValidationAddOnItemRepository(): ValidationRepository {
+    fun provideValidationAddOnItemRepository(): AddOnItemValidationRepository {
         return AddOnItemRepositoryImpl(config)
     }
 

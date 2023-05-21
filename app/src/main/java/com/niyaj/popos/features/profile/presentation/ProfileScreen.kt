@@ -35,6 +35,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,14 +45,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeLarge
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.ExtendedFabButton
+import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.destinations.CartScreenDestination
 import com.niyaj.popos.features.destinations.EmployeeScreenDestination
@@ -65,8 +65,15 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
+import io.sentry.compose.SentryTraced
 import kotlinx.coroutines.launch
 
+/**
+ * Profile Screen Composable
+ * @author Sk Niyaj Ali
+ *
+ */
+@OptIn(ExperimentalComposeUiApi::class)
 @Destination
 @Composable
 fun ProfileScreen(
@@ -121,224 +128,226 @@ fun ProfileScreen(
         }
     }
 
-    StandardScaffold(
-        navController = navController,
-        scaffoldState = scaffoldState,
-        showBackArrow = true,
-        title = {
-            Text(text = info.name)
-        },
-        navActions = {
-            IconButton(
-                onClick = {
-                    navController.navigate(UpdateProfileScreenDestination)
+    SentryTraced(tag = "ProfileScreen") {
+        StandardScaffold(
+            navController = navController,
+            scaffoldState = scaffoldState,
+            showBackArrow = true,
+            title = {
+                Text(text = info.name)
+            },
+            navActions = {
+                IconButton(
+                    onClick = {
+                        navController.navigate(UpdateProfileScreenDestination)
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Profile")
+                }
+            },
+            isFloatingActionButtonDocked = true,
+            floatingActionButton = {
+                StandardFabButton(
+                    text = "",
+                    showScrollToTop = showScrollToTop.value,
+                    visible = false,
+                    onScrollToTopClick = {
+                        scope.launch {
+                            lazyListState.animateScrollToItem(index = 0)
+                        }
+                    },
+                    onClick = {},
+                )
+            },
+            floatingActionButtonPosition = if (showScrollToTop.value) FabPosition.End else FabPosition.Center,
+        ) {
+            SwipeRefresh(
+                state = rememberSwipeRefreshState(isRefreshing = isLoading),
+                onRefresh = {
+                    profileViewModel.onEvent(ProfileEvent.RefreshEvent)
                 }
             ) {
-                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Profile")
-            }
-        },
-        isFloatingActionButtonDocked = true,
-        floatingActionButton = {
-            ExtendedFabButton(
-                text = "",
-                showScrollToTop = showScrollToTop.value,
-                visible = false,
-                onScrollToTopClick = {
-                    scope.launch {
-                        lazyListState.animateScrollToItem(index = 0)
-                    }
-                },
-                onClick = {},
-            )
-        },
-        floatingActionButtonPosition = if (showScrollToTop.value) FabPosition.End else FabPosition.Center,
-    ) {
-        SwipeRefresh(
-            state = rememberSwipeRefreshState(isRefreshing = isLoading),
-            onRefresh = {
-                profileViewModel.onEvent(ProfileEvent.RefreshEvent)
-            }
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(SpaceSmall),
-            ) {
-                item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        elevation = 4.dp,
-                    ) {
-                        Column(
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(SpaceSmall),
+                ) {
+                    item {
+                        Card(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(SpaceSmall),
-                            verticalArrangement = Arrangement.SpaceBetween,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .fillMaxWidth(),
+                            elevation = 4.dp,
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.only_logo),
-                                contentDescription = "logo",
+                            Column(
                                 modifier = Modifier
-                                    .size(
-                                        width = ProfilePictureSizeLarge,
-                                        height = ProfilePictureSizeMedium
-                                    )
-                                    .align(Alignment.CenterHorizontally)
-                            )
-                            Spacer(modifier = Modifier.height(SpaceMini))
-
-                            Text(
-                                text = info.name,
-                                style = MaterialTheme.typography.h5,
-                                fontWeight = FontWeight.Bold,
-                            )
-
-                            Spacer(modifier = Modifier.height(SpaceMini))
-
-                            Text(
-                                text = info.tagline,
-                                style = MaterialTheme.typography.body1,
-                                fontWeight = FontWeight.Medium,
-                            )
-
-                            Spacer(modifier = Modifier.height(SpaceSmall))
-                            Divider(modifier = Modifier.fillMaxWidth())
-                            Spacer(modifier = Modifier.height(SpaceSmall))
-
-                            Text(
-                                text = info.description,
-                                style = MaterialTheme.typography.body1,
-                                fontWeight = FontWeight.Medium,
-                            )
-
-                            Spacer(modifier = Modifier.height(SpaceSmall))
-                            Divider(modifier = Modifier.fillMaxWidth())
-                            Spacer(modifier = Modifier.height(SpaceSmall))
-
-                            Text(
-                                text = info.address,
-                                style = MaterialTheme.typography.body1,
-                                fontWeight = FontWeight.Medium,
-                                textAlign = TextAlign.Center,
-                                minLines = 2,
-                            )
-                            Spacer(modifier = Modifier.height(SpaceSmall))
-                            Divider(modifier = Modifier.fillMaxWidth())
-                            Spacer(modifier = Modifier.height(SpaceSmall))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
+                                    .fillMaxWidth()
+                                    .padding(SpaceSmall),
+                                verticalArrangement = Arrangement.SpaceBetween,
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
+                                Image(
+                                    painter = painterResource(id = info.logo.toInt()),
+                                    contentDescription = "logo",
+                                    modifier = Modifier
+                                        .size(
+                                            width = ProfilePictureSizeLarge,
+                                            height = ProfilePictureSizeMedium
+                                        )
+                                        .align(Alignment.CenterHorizontally)
+                                )
+                                Spacer(modifier = Modifier.height(SpaceMini))
+
                                 Text(
-                                    text = info.primaryPhone,
+                                    text = info.name,
+                                    style = MaterialTheme.typography.h5,
+                                    fontWeight = FontWeight.Bold,
+                                )
+
+                                Spacer(modifier = Modifier.height(SpaceMini))
+
+                                Text(
+                                    text = info.tagline,
+                                    style = MaterialTheme.typography.body1,
+                                    fontWeight = FontWeight.Medium,
+                                )
+
+                                Spacer(modifier = Modifier.height(SpaceSmall))
+                                Divider(modifier = Modifier.fillMaxWidth())
+                                Spacer(modifier = Modifier.height(SpaceSmall))
+
+                                Text(
+                                    text = info.description,
+                                    style = MaterialTheme.typography.body1,
+                                    fontWeight = FontWeight.Medium,
+                                )
+
+                                Spacer(modifier = Modifier.height(SpaceSmall))
+                                Divider(modifier = Modifier.fillMaxWidth())
+                                Spacer(modifier = Modifier.height(SpaceSmall))
+
+                                Text(
+                                    text = info.address,
                                     style = MaterialTheme.typography.body1,
                                     fontWeight = FontWeight.Medium,
                                     textAlign = TextAlign.Center,
+                                    minLines = 2,
                                 )
-                                Text(text = " / ")
-                                Text(
-                                    text = info.secondaryPhone,
-                                    style = MaterialTheme.typography.body1,
-                                    fontWeight = FontWeight.Medium,
-                                    textAlign = TextAlign.Center,
-                                )
+                                Spacer(modifier = Modifier.height(SpaceSmall))
+                                Divider(modifier = Modifier.fillMaxWidth())
+                                Spacer(modifier = Modifier.height(SpaceSmall))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = info.primaryPhone,
+                                        style = MaterialTheme.typography.body1,
+                                        fontWeight = FontWeight.Medium,
+                                        textAlign = TextAlign.Center,
+                                    )
+                                    Text(text = " / ")
+                                    Text(
+                                        text = info.secondaryPhone,
+                                        style = MaterialTheme.typography.body1,
+                                        fontWeight = FontWeight.Medium,
+                                        textAlign = TextAlign.Center,
+                                    )
+                                }
                             }
                         }
                     }
-                }
-                item {
-                    Spacer(modifier = Modifier.height(SpaceMedium))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        IconBox(
-                            modifier = Modifier.width(148.dp),
-                            iconName = Icons.Default.ShoppingCart,
-                            text = "My Carts",
-                            elevation = 2.dp,
-                            backgroundColor = MaterialTheme.colors.onPrimary,
-                            iconColor = MaterialTheme.colors.secondaryVariant,
-                            textColor = MaterialTheme.colors.onBackground,
-                            onClick = { navController.navigate(CartScreenDestination) }
-                        )
-                        Spacer(modifier = Modifier.width(SpaceMedium))
-                        IconBox(
-                            modifier = Modifier.width(148.dp),
-                            iconName = Icons.Default.Inventory,
-                            text = "My Orders",
-                            elevation = 2.dp,
-                            backgroundColor = MaterialTheme.colors.onPrimary,
-                            iconColor = MaterialTheme.colors.secondaryVariant,
-                            textColor = MaterialTheme.colors.onBackground,
-                            onClick = { navController.navigate(OrderScreenDestination()) }
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(SpaceMedium))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        IconBox(
-                            modifier = Modifier.width(148.dp),
-                            iconName = Icons.Default.Assessment,
-                            text = "Reports",
-                            elevation = 2.dp,
-                            backgroundColor = MaterialTheme.colors.onPrimary,
-                            iconColor = MaterialTheme.colors.secondaryVariant,
-                            textColor = MaterialTheme.colors.onBackground,
-                            onClick = { navController.navigate(ReportScreenDestination()) }
-                        )
-                        Spacer(modifier = Modifier.width(SpaceMedium))
-                        IconBox(
-                            modifier = Modifier.width(148.dp),
-                            iconName = Icons.Default.People,
-                            text = "Employee",
-                            elevation = 2.dp,
-                            backgroundColor = MaterialTheme.colors.onPrimary,
-                            iconColor = MaterialTheme.colors.secondaryVariant,
-                            textColor = MaterialTheme.colors.onBackground,
-                            onClick = { navController.navigate(EmployeeScreenDestination) }
-                        )
-                    }
+                    item {
+                        Spacer(modifier = Modifier.height(SpaceMedium))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            IconBox(
+                                modifier = Modifier.width(148.dp),
+                                iconName = Icons.Default.ShoppingCart,
+                                text = "My Carts",
+                                elevation = 2.dp,
+                                backgroundColor = MaterialTheme.colors.onPrimary,
+                                iconColor = MaterialTheme.colors.secondaryVariant,
+                                textColor = MaterialTheme.colors.onBackground,
+                                onClick = { navController.navigate(CartScreenDestination) }
+                            )
+                            Spacer(modifier = Modifier.width(SpaceMedium))
+                            IconBox(
+                                modifier = Modifier.width(148.dp),
+                                iconName = Icons.Default.Inventory,
+                                text = "My Orders",
+                                elevation = 2.dp,
+                                backgroundColor = MaterialTheme.colors.onPrimary,
+                                iconColor = MaterialTheme.colors.secondaryVariant,
+                                textColor = MaterialTheme.colors.onBackground,
+                                onClick = { navController.navigate(OrderScreenDestination()) }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(SpaceMedium))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            IconBox(
+                                modifier = Modifier.width(148.dp),
+                                iconName = Icons.Default.Assessment,
+                                text = "Reports",
+                                elevation = 2.dp,
+                                backgroundColor = MaterialTheme.colors.onPrimary,
+                                iconColor = MaterialTheme.colors.secondaryVariant,
+                                textColor = MaterialTheme.colors.onBackground,
+                                onClick = { navController.navigate(ReportScreenDestination()) }
+                            )
+                            Spacer(modifier = Modifier.width(SpaceMedium))
+                            IconBox(
+                                modifier = Modifier.width(148.dp),
+                                iconName = Icons.Default.People,
+                                text = "Employee",
+                                elevation = 2.dp,
+                                backgroundColor = MaterialTheme.colors.onPrimary,
+                                iconColor = MaterialTheme.colors.secondaryVariant,
+                                textColor = MaterialTheme.colors.onBackground,
+                                onClick = { navController.navigate(EmployeeScreenDestination) }
+                            )
+                        }
 
-                    Spacer(modifier = Modifier.height(SpaceMedium))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        IconBox(
-                            modifier = Modifier.width(148.dp),
-                            iconName = Icons.Default.Money,
-                            text = "Expenses",
-                            elevation = 2.dp,
-                            backgroundColor = MaterialTheme.colors.onPrimary,
-                            iconColor = MaterialTheme.colors.secondaryVariant,
-                            textColor = MaterialTheme.colors.onBackground,
-                            onClick = { navController.navigate(ExpensesScreenDestination()) }
-                        )
-                        Spacer(modifier = Modifier.width(SpaceMedium))
-                        IconBox(
-                            modifier = Modifier.width(148.dp),
-                            iconName = Icons.Default.Dns,
-                            text = "Products",
-                            elevation = 2.dp,
-                            backgroundColor = MaterialTheme.colors.onPrimary,
-                            iconColor = MaterialTheme.colors.secondaryVariant,
-                            textColor = MaterialTheme.colors.onBackground,
-                            onClick = { navController.navigate(ProductScreenDestination) }
-                        )
+                        Spacer(modifier = Modifier.height(SpaceMedium))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            IconBox(
+                                modifier = Modifier.width(148.dp),
+                                iconName = Icons.Default.Money,
+                                text = "Expenses",
+                                elevation = 2.dp,
+                                backgroundColor = MaterialTheme.colors.onPrimary,
+                                iconColor = MaterialTheme.colors.secondaryVariant,
+                                textColor = MaterialTheme.colors.onBackground,
+                                onClick = { navController.navigate(ExpensesScreenDestination()) }
+                            )
+                            Spacer(modifier = Modifier.width(SpaceMedium))
+                            IconBox(
+                                modifier = Modifier.width(148.dp),
+                                iconName = Icons.Default.Dns,
+                                text = "Products",
+                                elevation = 2.dp,
+                                backgroundColor = MaterialTheme.colors.onPrimary,
+                                iconColor = MaterialTheme.colors.secondaryVariant,
+                                textColor = MaterialTheme.colors.onBackground,
+                                onClick = { navController.navigate(ProductScreenDestination) }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(SpaceMedium))
                     }
-                    Spacer(modifier = Modifier.height(SpaceMedium))
                 }
             }
         }

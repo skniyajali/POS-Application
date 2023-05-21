@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ShortText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -29,10 +30,22 @@ import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
+import com.niyaj.popos.features.destinations.AddEditAddressScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import io.sentry.compose.SentryTraced
 
+/**
+ *  Add/Edit Address Screen
+ *  @author Sk Niyaj Ali
+ *  @param addressId[String]
+ *  @param navController[NavController]
+ *  @param addEditAddressViewModel
+ *  @param resultNavigator[ResultBackNavigator]
+ *  @see AddEditAddressViewModel
+ */
+@OptIn(ExperimentalComposeUiApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
 @Composable
 fun AddEditAddressScreen(
@@ -57,67 +70,71 @@ fun AddEditAddressScreen(
             }
         }
     }
-    
-    BottomSheetWithCloseDialog(
-        modifier = Modifier.fillMaxWidth(),
-        text = if (!addressId.isNullOrEmpty())
-            stringResource(id = R.string.edit_address)
-        else
-            stringResource(id = R.string.create_address),
-        icon = Icons.Default.DomainAdd,
-        onClosePressed = {
-            navController.navigateUp()
-        }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
+
+    SentryTraced(tag = AddEditAddressScreenDestination.route) {
+        BottomSheetWithCloseDialog(
+            modifier = Modifier.fillMaxWidth(),
+            text = if (!addressId.isNullOrEmpty())
+                stringResource(id = R.string.edit_address)
+            else
+                stringResource(id = R.string.create_address),
+            icon = Icons.Default.DomainAdd,
+            onClosePressed = {
+                navController.navigateUp()
+            }
         ) {
-            StandardOutlinedTextField(
-                modifier = Modifier.testTag(ADDRESS_FULL_NAME_FIELD),
-                text = addEditAddressViewModel.addEditAddressState.address,
-                hint = ADDRESS_FULL_NAME_FIELD,
-                leadingIcon = Icons.Default.Business,
-                error = addEditAddressViewModel.addEditAddressState.addressError,
-                errorTag = ADDRESS_FULL_NAME_ERROR,
-                onValueChange = {
-                    addEditAddressViewModel.onAddressEvent(AddEditAddressEvent.AddressNameChanged(it))
-                },
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                StandardOutlinedTextField(
+                    modifier = Modifier.testTag(ADDRESS_FULL_NAME_FIELD),
+                    text = addEditAddressViewModel.addEditAddressState.address,
+                    hint = ADDRESS_FULL_NAME_FIELD,
+                    leadingIcon = Icons.Default.Business,
+                    error = addEditAddressViewModel.addEditAddressState.addressError,
+                    errorTag = ADDRESS_FULL_NAME_ERROR,
+                    onValueChange = {
+                        addEditAddressViewModel.onAddressEvent(AddEditAddressEvent.AddressNameChanged(it))
+                    },
+                )
 
-            Spacer(modifier = Modifier.height(SpaceSmall))
+                Spacer(modifier = Modifier.height(SpaceSmall))
 
-            StandardOutlinedTextField(
-                modifier = Modifier.testTag(ADDRESS_SHORT_NAME_FIELD),
-                text = addEditAddressViewModel.addEditAddressState.shortName,
-                hint = ADDRESS_SHORT_NAME_FIELD,
-                leadingIcon = Icons.Default.ShortText,
-                error = addEditAddressViewModel.addEditAddressState.shortNameError,
-                errorTag = ADDRESS_SHORT_NAME_ERROR,
-                onValueChange = {
-                    addEditAddressViewModel.onAddressEvent(AddEditAddressEvent.ShortNameChanged(it))
-                },
-            )
+                StandardOutlinedTextField(
+                    modifier = Modifier.testTag(ADDRESS_SHORT_NAME_FIELD),
+                    text = addEditAddressViewModel.addEditAddressState.shortName,
+                    hint = ADDRESS_SHORT_NAME_FIELD,
+                    leadingIcon = Icons.Default.ShortText,
+                    error = addEditAddressViewModel.addEditAddressState.shortNameError,
+                    errorTag = ADDRESS_SHORT_NAME_ERROR,
+                    onValueChange = {
+                        addEditAddressViewModel.onAddressEvent(AddEditAddressEvent.ShortNameChanged(it))
+                    },
+                )
 
-            Spacer(modifier = Modifier.height(SpaceMedium))
+                Spacer(modifier = Modifier.height(SpaceMedium))
 
-            StandardButton(
-                modifier = Modifier.testTag(CREATE_UPDATE_ADDRESS_BUTTON),
-                text = if (!addressId.isNullOrEmpty()) stringResource(id = R.string.edit_address)
+                StandardButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(CREATE_UPDATE_ADDRESS_BUTTON),
+                    text = if (!addressId.isNullOrEmpty()) stringResource(id = R.string.edit_address)
                     else stringResource(id = R.string.create_address),
-                icon = if (!addressId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.Add,
-                onClick = {
-                    if (!addressId.isNullOrEmpty()) {
-                        addEditAddressViewModel.onAddressEvent(
-                            AddEditAddressEvent.UpdateAddress(
-                                addressId
+                    icon = if (!addressId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.Add,
+                    onClick = {
+                        if (!addressId.isNullOrEmpty()) {
+                            addEditAddressViewModel.onAddressEvent(
+                                AddEditAddressEvent.UpdateAddress(
+                                    addressId
+                                )
                             )
-                        )
-                    } else {
-                        addEditAddressViewModel.onAddressEvent(AddEditAddressEvent.CreateNewAddress)
+                        } else {
+                            addEditAddressViewModel.onAddressEvent(AddEditAddressEvent.CreateNewAddress)
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }

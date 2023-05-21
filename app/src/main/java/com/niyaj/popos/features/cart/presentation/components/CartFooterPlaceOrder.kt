@@ -5,7 +5,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -33,21 +32,21 @@ import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 
 @Composable
 fun CartFooterPlaceOrder(
-    modifier: Modifier = Modifier,
-    countTotalItems: Int,
-    countSelectedItem: Int,
-    showPrintBtn: Boolean = true,
-    onClickSelectAll: () -> Unit = {},
-    onClickPlaceOrder: () -> Unit = {},
-    onClickPrintOrder: () -> Unit = {},
+    modifier : Modifier = Modifier,
+    countTotalItems : Int,
+    countSelectedItem : Int,
+    showPrintBtn : Boolean = true,
+    onClickSelectAll : () -> Unit = {},
+    onClickPlaceAllOrder : () -> Unit = {},
+    onClickPrintAllOrder : () -> Unit = {},
 ) {
     Surface(
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(SpaceSmall),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -56,27 +55,19 @@ fun CartFooterPlaceOrder(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = {
-                        onClickSelectAll()
-                    }
-                ){
+                    onClick = onClickSelectAll
+                ) {
                     Icon(
-                        imageVector = if(countTotalItems == countSelectedItem)
+                        imageVector = if (countTotalItems == countSelectedItem)
                             Icons.Default.CheckCircle
-                        else
-                            Icons.Default.CheckCircleOutline,
-
+                        else Icons.Default.CheckCircleOutline,
                         contentDescription = null,
-
-                        tint = if(countTotalItems == countSelectedItem)
-                            MaterialTheme.colors.primary
-                        else
-                            MaterialTheme.colors.secondary
+                        tint = if (countTotalItems == countSelectedItem) MaterialTheme.colors.primary
+                        else MaterialTheme.colors.secondary
                     )
                 }
                 Text(
                     buildAnnotatedString {
-
                         withStyle(
                             style = SpanStyle(
                                 color = MaterialTheme.colors.primary,
@@ -95,32 +86,32 @@ fun CartFooterPlaceOrder(
                     modifier = Modifier.clickable(
                         interactionSource = MutableInteractionSource(),
                         indication = null,
-                    ){
-                        onClickSelectAll()
-                    }
+                        onClick = onClickSelectAll
+                    )
                 )
             }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val text =
+                    if (countSelectedItem == 0) " " else if (countSelectedItem < countTotalItems) " $countSelectedItem " else " All "
                 Button(
-                    onClick = {
-                        onClickPlaceOrder()
-                    },
+                    onClick = onClickPlaceAllOrder,
                     enabled = countSelectedItem > 0,
                     shape = CutCornerShape(4.dp)
                 ) {
-                    Text(text = "Place All Order".uppercase(), style = MaterialTheme.typography.button)
+                    Text(
+                        text = "Place${text}Order".uppercase(),
+                        style = MaterialTheme.typography.button
+                    )
                 }
 
-                if (showPrintBtn){
+                if (showPrintBtn) {
                     Spacer(modifier = Modifier.width(SpaceSmall))
 
                     Button(
-                        onClick = {
-                            onClickPrintOrder()
-                        },
+                        onClick = onClickPrintAllOrder,
                         enabled = countSelectedItem > 0,
                         shape = CutCornerShape(4.dp),
                         colors = ButtonDefaults.buttonColors(MaterialTheme.colors.secondaryVariant)

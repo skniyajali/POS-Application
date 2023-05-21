@@ -117,7 +117,14 @@
     <string name="notification_channel_desc">ArcaNotificationDescription</string>
     <string name="notification_send">Send Report</string>
     <string name="notification_discard">Discard</string>
-    <string name="update_reminder_state">Are you sure to update remider state as not completed.</string>
+    <string name="update_reminder_state">Are you sure to update reminder state as not completed.</string>
     <string name="delete_reminder">Are you sure to delete reminder?</string>
+    <string name="setting_icon">Settings Icon</string>
+    <string name="export_customers">Export Customers</string>
+    <string name="delete_all_addresses">Are you sure to delete all addresses? Make sure to export all addresses before deleting.</string>
+    <string name="import_addresses">Import Addresses</string>
+    <string name="export_addresses">Export Addresses</string>
+    <string name="import_expenses">Import Expenses</string>
+    <string name="export_expenses">Export Expenses</string>
 
 </resources>

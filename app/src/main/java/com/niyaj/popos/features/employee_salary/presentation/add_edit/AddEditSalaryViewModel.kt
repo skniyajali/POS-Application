@@ -7,28 +7,29 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.employee.domain.model.Employee
-import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
-import com.niyaj.popos.features.employee.domain.util.FilterEmployee
+import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.features.employee.domain.use_cases.GetAllEmployee
 import com.niyaj.popos.features.employee.domain.util.PaymentType
 import com.niyaj.popos.features.employee.presentation.EmployeeState
 import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
-import com.niyaj.popos.features.employee_salary.domain.use_cases.SalaryUseCases
+import com.niyaj.popos.features.employee_salary.domain.repository.SalaryRepository
+import com.niyaj.popos.features.employee_salary.domain.repository.SalaryValidationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class AddEditSalaryViewModel @Inject constructor(
-    private val salaryUseCases: SalaryUseCases,
-    private val employeeUseCases: EmployeeUseCases,
+    private val salaryRepository: SalaryRepository,
+    private val employeeRepository: EmployeeRepository,
+    private val getAllEmployee : GetAllEmployee,
+    private val validationRepository : SalaryValidationRepository,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -50,7 +51,7 @@ class AddEditSalaryViewModel @Inject constructor(
             getSalaryById(salaryId)
         }
 
-        getAllEmployees(filterEmployee = FilterEmployee.ByEmployeeId(SortType.Descending))
+        getAllEmployees()
     }
 
     fun onEvent(event: AddEditSalaryEvent) {
@@ -101,12 +102,12 @@ class AddEditSalaryViewModel @Inject constructor(
     }
 
     private fun addEditSalaryEntry(salaryId: String? = null) {
-        val validateEmployee = salaryUseCases.validateEmployee(addEditSalaryState.employee.employeeId)
-        val validateSalary = salaryUseCases.validateSalary(addEditSalaryState.salary)
-        val validateSalaryType = salaryUseCases.validateSalaryType(addEditSalaryState.salaryType)
-        val validateGiveDate = salaryUseCases.validateGiveDate(addEditSalaryState.salaryDate)
-        val validatePaymentType = salaryUseCases.validatePaymentType(addEditSalaryState.salaryPaymentType)
-        val validateSalaryNote = salaryUseCases.validateSalaryNote(
+        val validateEmployee = validationRepository.validateEmployee(addEditSalaryState.employee.employeeId)
+        val validateSalary = validationRepository.validateSalary(addEditSalaryState.salary)
+        val validateSalaryType = validationRepository.validateSalaryType(addEditSalaryState.salaryType)
+        val validateGiveDate = validationRepository.validateGivenDate(addEditSalaryState.salaryDate)
+        val validatePaymentType = validationRepository.validatePaymentType(addEditSalaryState.salaryPaymentType)
+        val validateSalaryNote = validationRepository.validateSalaryNote(
             salaryNote = addEditSalaryState.salaryNote,
             isRequired = addEditSalaryState.salaryPaymentType == PaymentType.Both.paymentType
         )
@@ -136,7 +137,7 @@ class AddEditSalaryViewModel @Inject constructor(
         } else {
             viewModelScope.launch {
                 if (salaryId.isNullOrEmpty()){
-                    val result = salaryUseCases.addNewSalary(
+                    val result = salaryRepository.addNewSalary(
                         EmployeeSalary(
                             employee = addEditSalaryState.employee,
                             salaryType = addEditSalaryState.salaryType,
@@ -159,7 +160,7 @@ class AddEditSalaryViewModel @Inject constructor(
                         }
                     }
                 }else {
-                    val result = salaryUseCases.updateSalary(
+                    val result = salaryRepository.updateSalaryById(
                         salaryId,
                         EmployeeSalary(
                             employee = addEditSalaryState.employee,
@@ -190,9 +191,9 @@ class AddEditSalaryViewModel @Inject constructor(
         }
     }
 
-    private fun getAllEmployees(filterEmployee: FilterEmployee, searchText: String = "") {
+    private fun getAllEmployees(searchText: String = "") {
         viewModelScope.launch {
-            employeeUseCases.getAllEmployee(filterEmployee, searchText).collect{ result ->
+            getAllEmployee.invoke(searchText).collect{ result ->
                 when(result){
                     is Resource.Loading -> {
                         _employeeState.value = _employeeState.value.copy(isLoading = result.isLoading)
@@ -200,8 +201,7 @@ class AddEditSalaryViewModel @Inject constructor(
                     is Resource.Success -> {
                         result.data?.let {
                             _employeeState.value = _employeeState.value.copy(
-                                employees = it,
-                                filterEmployee = filterEmployee
+                                employees = it
                             )
                         }
                     }
@@ -217,7 +217,7 @@ class AddEditSalaryViewModel @Inject constructor(
     private fun getEmployeeById(employeeId: String) {
         if(employeeId.isNotEmpty()) {
             viewModelScope.launch {
-                when(val result = employeeUseCases.getEmployeeById(employeeId)) {
+                when(val result = employeeRepository.getEmployeeById(employeeId)) {
                     is Resource.Loading -> {}
                     is Resource.Success -> {
                         result.data?.let {
@@ -243,7 +243,7 @@ class AddEditSalaryViewModel @Inject constructor(
 
     private fun getSalaryById(salaryId: String) {
         viewModelScope.launch {
-            when(val result = salaryUseCases.getSalaryById(salaryId)) {
+            when(val result = salaryRepository.getSalaryById(salaryId)) {
                 is Resource.Loading -> {}
                 is Resource.Success -> {
                     result.data?.let { salary ->

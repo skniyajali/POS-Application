@@ -8,13 +8,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.util.safeString
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.product.domain.use_cases.ProductUseCases
-import com.niyaj.popos.features.product.domain.use_cases.validation.ValidateProductPrice
-import com.niyaj.popos.features.product.domain.util.FilterProduct
+import com.niyaj.popos.features.common.util.safeString
+import com.niyaj.popos.features.product.domain.repository.ProductRepository
+import com.niyaj.popos.features.product.domain.repository.ProductValidationRepository
+import com.niyaj.popos.features.product.domain.use_cases.GetAllProducts
 import com.niyaj.popos.features.product.presentation.ProductsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,10 +23,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ *
+ */
 @HiltViewModel
 class ProductPriceViewModel @Inject constructor(
-    private val validateProductPrice: ValidateProductPrice,
-    private val productUseCases: ProductUseCases,
+    private val validationRepository: ProductValidationRepository,
+    private val productRepository: ProductRepository,
+    private val getAllProducts : GetAllProducts,
 ): ViewModel() {
 
     private val _products = MutableStateFlow(ProductsState())
@@ -49,6 +52,9 @@ class ProductPriceViewModel @Inject constructor(
     private var productCount = 0
 
 
+    /**
+     *
+     */
     fun onEvent(event: ProductPriceEvent){
         when (event){
             is ProductPriceEvent.OnPriceChanged -> {
@@ -122,7 +128,7 @@ class ProductPriceViewModel @Inject constructor(
 
             is ProductPriceEvent.IncreaseProductPrice -> {
 
-                val validationResult = validateProductPrice(safeString(_productPrice.value.productPrice), type = "increase")
+                val validationResult = validationRepository.validateProductPrice(safeString(_productPrice.value.productPrice), type = "increase")
 
                 if (!validationResult.successful) {
                     _productPrice.value = _productPrice.value.copy(
@@ -130,7 +136,7 @@ class ProductPriceViewModel @Inject constructor(
                     )
                 }else{
                     viewModelScope.launch {
-                        val result = productUseCases.increaseProductPrice(
+                        val result = productRepository.increasePrice(
                             safeString(_productPrice.value.productPrice),
                             _selectedProducts.toList()
                         )
@@ -153,7 +159,7 @@ class ProductPriceViewModel @Inject constructor(
 
             is ProductPriceEvent.DecreaseProductPrice -> {
 
-                val validationResult = validateProductPrice(safeString(_productPrice.value.productPrice), type = "decrease")
+                val validationResult = validationRepository.validateProductPrice(safeString(_productPrice.value.productPrice), type = "decrease")
 
                 if (!validationResult.successful) {
                     _productPrice.value = _productPrice.value.copy(
@@ -161,7 +167,7 @@ class ProductPriceViewModel @Inject constructor(
                     )
                 }else{
                     viewModelScope.launch {
-                        val result = productUseCases.decreaseProductPrice(
+                        val result = productRepository.decreasePrice(
                             safeString(_productPrice.value.productPrice),
                             _selectedProducts.toList()
                         )
@@ -185,12 +191,11 @@ class ProductPriceViewModel @Inject constructor(
     }
 
     private fun getAllProducts(
-        filterProduct: FilterProduct = FilterProduct.ByCategoryId(SortType.Ascending),
         searchText: String = "",
         selectedCategory: String = "",
     ){
         viewModelScope.launch {
-            productUseCases.getAllProducts(filterProduct = filterProduct, searchText, selectedCategory).collect { result ->
+            getAllProducts.invoke(searchText, selectedCategory).collect { result ->
                 when(result){
                     is Resource.Loading -> {
                         _products.value = _products.value.copy(
@@ -199,10 +204,7 @@ class ProductPriceViewModel @Inject constructor(
                     }
                     is Resource.Success -> {
                         result.data?.let {products ->
-                            _products.value = _products.value.copy(
-                                products = products,
-                                filterProduct = filterProduct,
-                            )
+                            _products.value = _products.value.copy(products = products)
                         }
                     }
                     is Resource.Error -> {
@@ -217,6 +219,11 @@ class ProductPriceViewModel @Inject constructor(
 
 }
 
+/**
+ * Product Price State
+ * @property productPrice
+ * @property productPriceError
+ */
 data class ProductPriceState(
     val productPrice: String = "",
     val productPriceError: String? = null,

@@ -23,8 +23,8 @@ import com.niyaj.popos.features.common.ui.theme.IconSizeSmall
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.reminder.domain.util.PaymentStatus
-import com.niyaj.popos.util.Constants.NOT_PAID
-import com.niyaj.popos.util.Constants.PAID
+import com.niyaj.popos.utils.Constants.NOT_PAID
+import com.niyaj.popos.utils.Constants.PAID
 
 @Composable
 fun StandardOutlinedChip(

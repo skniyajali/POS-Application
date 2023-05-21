@@ -7,8 +7,8 @@ import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttenda
 import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceRepository
 import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceValidationRepository
 import com.niyaj.popos.features.employee_attendance.domain.util.AbsentReport
-import com.niyaj.popos.util.getSalaryDates
-import com.niyaj.popos.util.getStartTime
+import com.niyaj.popos.utils.getSalaryDates
+import com.niyaj.popos.utils.getStartTime
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query

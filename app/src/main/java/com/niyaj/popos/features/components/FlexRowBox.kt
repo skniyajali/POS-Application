@@ -1,7 +1,9 @@
 package com.niyaj.popos.features.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -30,30 +31,35 @@ import androidx.compose.ui.unit.dp
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.ui.theme.TextGray
-import com.niyaj.popos.util.randomColor
 
-@OptIn(ExperimentalMaterialApi::class)
+/**
+ *
+ */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FlexRowBox(
     modifier: Modifier = Modifier,
     title: String,
     secondaryText: String? = null,
     icon: ImageVector? = null,
-    iconColor: Color = Color(randomColor),
+    iconColor: Color = MaterialTheme.colors.secondaryVariant,
     doesSelected: Boolean = false,
+    doesAnySelected: Boolean = true,
     doesAvailable: Boolean = true,
     enabled: Boolean = true,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onSelectItem: () -> Unit = {}
 ) {
     Card(
-        onClick = {
-            onClick()
-        },
         modifier = modifier
             .fillMaxWidth()
-            .padding(SpaceMini),
+            .padding(SpaceMini)
+            .combinedClickable(
+                enabled = enabled,
+                onClick = if (!doesAnySelected) onClick else onSelectItem,
+                onLongClick = onSelectItem,
+            ),
         elevation = 2.dp,
-        enabled = enabled,
         border = if(doesSelected) BorderStroke(1.dp, MaterialTheme.colors.primary)
         else if (!doesAvailable) BorderStroke(1.dp, TextGray)
         else null

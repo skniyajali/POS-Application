@@ -40,7 +40,7 @@ class CategoryRepositoryImpl(
                     send(Resource.Loading(true))
 
                     val items: RealmResults<Category> =
-                        realm.query<Category>().sort("categoryId", Sort.DESCENDING).find()
+                        realm.query<Category>().sort("categoryId", Sort.ASCENDING).find()
 
                     // create a Flow from the Item collection, then add a listener to the Flow
                     val itemsFlow = items.asFlow()

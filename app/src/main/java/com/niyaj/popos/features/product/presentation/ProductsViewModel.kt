@@ -5,12 +5,12 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.category.domain.model.Category
-import com.niyaj.popos.features.category.domain.use_cases.CategoryUseCases
+import com.niyaj.popos.features.category.domain.use_cases.GetAllCategories
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.product.domain.use_cases.ProductUseCases
-import com.niyaj.popos.features.product.domain.util.FilterProduct
+import com.niyaj.popos.features.product.domain.repository.ProductRepository
+import com.niyaj.popos.features.product.domain.use_cases.GetAllProducts
+import com.niyaj.popos.features.product.presentation.components.ViewType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,10 +19,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ *
+ */
 @HiltViewModel
 class ProductsViewModel @Inject constructor(
-    private val productUseCases: ProductUseCases,
-    private val categoryUseCases: CategoryUseCases,
+    private val productRepository: ProductRepository,
+    private val getAllCategories : GetAllCategories,
+    private val getAllProducts : GetAllProducts,
 ): ViewModel() {
 
     private val _searchText =  MutableStateFlow("")
@@ -46,21 +50,24 @@ class ProductsViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    private val _viewType = MutableStateFlow(ViewType.COLUMN)
+    val viewType = _viewType.asStateFlow()
+
     private var count: Int = 0
 
     private var productCount = 0
 
     init {
-        getAllProducts(
-            filterProduct = FilterProduct.ByCategoryId(SortType.Ascending)
-        )
+        getAllProducts()
 
         getAllCategories()
     }
 
+    /**
+     *
+     */
     fun onProductEvent(event: ProductEvent) {
         when(event){
-
             is ProductEvent.SelectProduct -> {
                 viewModelScope.launch {
                     if(_selectedProducts.contains(event.productId)){
@@ -112,14 +119,14 @@ class ProductsViewModel @Inject constructor(
             }
 
             is ProductEvent.DeselectProducts -> {
-                _selectedProducts.removeAll(_selectedProducts.toList())
+                _selectedProducts.clear()
             }
 
             is ProductEvent.DeleteProducts -> {
                 viewModelScope.launch {
                     if (event.products.isNotEmpty()){
                         event.products.forEach { product ->
-                            when (val result = productUseCases.deleteProduct(product)){
+                            when (val result = productRepository.deleteProduct(product)){
                                 is Resource.Loading -> {}
                                 is Resource.Success -> {
                                     _eventFlow.emit(UiEvent.OnSuccess("Product Deleted Successfully"))
@@ -134,28 +141,10 @@ class ProductsViewModel @Inject constructor(
                 }
             }
 
-            is ProductEvent.OnFilterProduct -> {
-                if(products.value.filterProduct::class == event.filterProduct::class &&
-                    products.value.filterProduct.sortType == event.filterProduct.sortType
-                ){
-                    _products.value = _products.value.copy(
-                        filterProduct = FilterProduct.ByProductId(SortType.Ascending)
-                    )
-                    return
-                }
-                _products.value = _products.value.copy(
-                    filterProduct = event.filterProduct
-                )
-                getAllProducts(event.filterProduct)
-            }
-
             is ProductEvent.OnSearchProduct -> {
                 viewModelScope.launch {
                     _searchText.emit(event.searchText)
-                    getAllProducts(
-                        _products.value.filterProduct,
-                        event.searchText
-                    )
+                    getAllProducts(event.searchText)
                 }
             }
 
@@ -170,23 +159,32 @@ class ProductsViewModel @Inject constructor(
 
                     _selectedCategory.value = ""
 
-                    getAllProducts(_products.value.filterProduct, _searchText.value)
+                    getAllProducts(_searchText.value)
                 }else{
-                    getAllProducts(_products.value.filterProduct, _searchText.value, event.categoryId)
+                    getAllProducts(_searchText.value, event.categoryId)
 
                     _selectedCategory.value = event.categoryId
                 }
             }
 
             is ProductEvent.RefreshProduct -> {
-                getAllProducts(_products.value.filterProduct)
+                getAllProducts()
+            }
+
+            is ProductEvent.OnChangeViewType -> {
+                viewModelScope.launch {
+                    _viewType.value = event.viewType
+                }
             }
         }
     }
 
-    private fun getAllProducts(filterProduct: FilterProduct, searchText:String = "", selectedCategory:String =_selectedCategory.value){
+    private fun getAllProducts(
+        searchText : String = "",
+        selectedCategory : String = _selectedCategory.value
+    ){
         viewModelScope.launch {
-            productUseCases.getAllProducts(filterProduct = filterProduct, searchText, selectedCategory).collect { result ->
+            getAllProducts.invoke(searchText, selectedCategory).collect { result ->
                 when(result){
                     is Resource.Loading -> {
                         _products.value = _products.value.copy(
@@ -194,11 +192,8 @@ class ProductsViewModel @Inject constructor(
                         )
                     }
                     is Resource.Success -> {
-                        result.data?.let {products ->
-                            _products.value = _products.value.copy(
-                                products = products,
-                                filterProduct = filterProduct,
-                            )
+                        result.data?.let { products ->
+                            _products.value = _products.value.copy(products = products)
                         }
                     }
                     is Resource.Error -> {
@@ -211,6 +206,9 @@ class ProductsViewModel @Inject constructor(
         }
     }
 
+    /**
+     *
+     */
     fun onSearchBarCloseAndClearClick(){
         viewModelScope.launch {
             onSearchTextClearClick()
@@ -218,19 +216,19 @@ class ProductsViewModel @Inject constructor(
         }
     }
 
+    /**
+     *
+     */
     fun onSearchTextClearClick(){
         viewModelScope.launch {
             _searchText.emit("")
-            getAllProducts(
-                FilterProduct.ByProductId(SortType.Ascending),
-                _searchText.value
-            )
+            getAllProducts(_searchText.value)
         }
     }
 
     private fun getAllCategories(){
         viewModelScope.launch {
-            categoryUseCases.getAllCategories().collect { result ->
+            getAllCategories.invoke().collect { result ->
                 when (result){
                     is Resource.Loading -> {
 

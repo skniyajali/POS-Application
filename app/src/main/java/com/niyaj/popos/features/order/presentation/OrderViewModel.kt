@@ -8,17 +8,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
-import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.order.domain.repository.OrderRepository
 import com.niyaj.popos.features.order.domain.use_cases.OrderUseCases
-import com.niyaj.popos.features.order.domain.util.FilterOrder
-import com.niyaj.popos.util.*
+import com.niyaj.popos.utils.Constants
+import com.niyaj.popos.utils.getCalculatedEndDate
+import com.niyaj.popos.utils.getCalculatedStartDate
+import com.niyaj.popos.utils.toFormattedDate
+import com.niyaj.popos.utils.toTime
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
@@ -26,14 +31,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OrderViewModel @Inject constructor(
-    private val orderUseCases: OrderUseCases,
+    private val orderRepository: OrderRepository,
+    private val orderUseCases : OrderUseCases,
     savedStateHandle: SavedStateHandle,
 ): ViewModel() {
 
     private lateinit var escposPrinter: EscPosPrinter
 
-    private val _orders = MutableStateFlow(OrderState())
-    val orders = _orders.asStateFlow()
+    private val _dineInOrders = MutableStateFlow(DineInOrderState())
+    val dineInOrders = _dineInOrders.asStateFlow()
+
+    private val _dineOutOrders = MutableStateFlow(DineOutOrderState())
+    val dineOutOrders = _dineOutOrders.asStateFlow()
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -46,11 +55,11 @@ class OrderViewModel @Inject constructor(
 
     private val _selectedDate = mutableStateOf("")
     val selectedDate: State<String> = _selectedDate
-
-
+    
     private val getStartDate = derivedStateOf {
         getCalculatedStartDate(date = _selectedDate.value.ifEmpty { LocalDate.now().toString() })
     }
+
     private val getEndDate = derivedStateOf {
         getCalculatedEndDate(date = _selectedDate.value.ifEmpty { LocalDate.now().toString() })
     }
@@ -60,7 +69,8 @@ class OrderViewModel @Inject constructor(
             if(selectedDate.isNotEmpty() && selectedDate != LocalDate.now().toString()){
                 onOrderEvent(OrderEvent.SelectDate(selectedDate))
             }else{
-                getAllOrders()
+                getAllDineInOrders()
+                getAllDineOutOrders()
             }
         }
     }
@@ -69,14 +79,13 @@ class OrderViewModel @Inject constructor(
         when (event){
             is OrderEvent.MarkedAsDelivered -> {
                 viewModelScope.launch {
-                    orderUseCases.changeOrderStatus(event.cartOrderId, OrderStatus.Delivered.orderStatus)
-                    getAllOrders(FilterOrder.ByUpdatedDate(SortType.Descending))
+                    orderRepository.updateOrderStatus(event.cartOrderId, OrderStatus.Delivered.orderStatus)
                 }
             }
 
             is OrderEvent.MarkedAsProcessing -> {
                     viewModelScope.launch {
-                        when(val result = orderUseCases.changeOrderStatus(event.cartOrderId, OrderStatus.Processing.orderStatus)){
+                        when(val result = orderRepository.updateOrderStatus(event.cartOrderId, OrderStatus.Processing.orderStatus)){
                             is Resource.Loading -> {
 
                             }
@@ -92,7 +101,7 @@ class OrderViewModel @Inject constructor(
 
             is OrderEvent.DeleteOrder -> {
                 viewModelScope.launch {
-                    when(val result = orderUseCases.deleteOrder(event.cartOrderId)){
+                    when(val result = orderRepository.deleteOrder(event.cartOrderId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("Order Has Been Deleted successfully"))
@@ -104,30 +113,11 @@ class OrderViewModel @Inject constructor(
                 }
             }
 
-            is OrderEvent.OnFilterOrder -> {
-                if(_orders.value.filterOrder::class == event.filterOrder::class &&
-                   _orders.value.filterOrder.sortType == event.filterOrder.sortType
-                ){
-                    _orders.value = _orders.value.copy(
-                        filterOrder = FilterOrder.ByUpdatedDate(SortType.Descending),
-                    )
-                    return
-                }
-
-                _orders.value = _orders.value.copy(
-                    filterOrder = event.filterOrder,
-                )
-
-                getAllOrders(event.filterOrder)
-            }
-
             is OrderEvent.OnSearchOrder -> {
                 viewModelScope.launch {
                     _searchText.emit(event.searchText)
-                    getAllOrders(
-                        FilterOrder.ByUpdatedDate(SortType.Descending),
-                        event.searchText,
-                    )
+                    getAllDineInOrders(event.searchText)
+                    getAllDineOutOrders(event.searchText)
                 }
             }
 
@@ -140,7 +130,8 @@ class OrderViewModel @Inject constructor(
             is OrderEvent.SelectDate -> {
                 viewModelScope.launch {
                     _selectedDate.value = event.date
-                    getAllOrders()
+                    getAllDineInOrders()
+                    getAllDineOutOrders()
                 }
             }
 
@@ -150,39 +141,8 @@ class OrderViewModel @Inject constructor(
 
             is OrderEvent.RefreshOrder -> {
                 _selectedDate.value = ""
-                getAllOrders()
-            }
-        }
-    }
-
-    private fun getAllOrders(
-        filterOrder: FilterOrder = _orders.value.filterOrder,
-        searchText: String = "",
-        startDate: String = getStartDate.value,
-        endDate: String = getEndDate.value,
-    ){
-        viewModelScope.launch(Dispatchers.IO) {
-            orderUseCases.getAllOrders(filterOrder, searchText, startDate, endDate).collectLatest { result ->
-                when(result){
-                    is Resource.Loading -> {
-                        _orders.value = _orders.value.copy(
-                            isLoading = result.isLoading
-                        )
-                    }
-                    is Resource.Success -> {
-                        result.data?.let {
-                            _orders.value = _orders.value.copy(
-                                orders = it,
-                                filterOrder = filterOrder,
-                            )
-                        }
-                    }
-                    is Resource.Error -> {
-                        _orders.value = _orders.value.copy(
-                            error =  result.message
-                        )
-                    }
-                }
+                getAllDineInOrders()
+                getAllDineOutOrders()
             }
         }
     }
@@ -199,10 +159,8 @@ class OrderViewModel @Inject constructor(
     fun onSearchTextClearClick(){
         viewModelScope.launch {
             _searchText.emit("")
-            getAllOrders(
-                FilterOrder.ByUpdatedDate(SortType.Descending),
-                _searchText.value
-            )
+            getAllDineInOrders()
+            getAllDineOutOrders()
         }
     }
 
@@ -254,19 +212,15 @@ class OrderViewModel @Inject constructor(
     private fun getPrintableOrders(): String {
         var order = ""
 
-        val dineOutOrders = _orders.value.orders.filter { cart ->
-            cart.cartOrder?.orderType == CartOrderType.DineOut.orderType
-        }.asReversed()
+        val dineOutOrders = _dineOutOrders.value.dineOutOrders.asReversed()
 
         if(dineOutOrders.isNotEmpty()){
             order += "[L]ID[C]Address[R]Time[R]Price\n"
             order += "[L]-------------------------------\n"
 
             dineOutOrders.forEach { cart ->
-                if (cart.cartOrder != null){
-                    order += "[L]${cart.cartOrder.orderId.takeLast(3)}[C]${cart.cartOrder.address?.shortName}[R]${cart.cartOrder.updatedAt?.toTime}[R]${cart.orderPrice.first.minus(cart.orderPrice.second)}\n"
-                    order += "[L]-------------------------------\n"
-                }
+                order += "[L]${cart.orderId.takeLast(3)}[C]${cart.customerAddress}[R]${cart.updatedAt.toTime}[R]${cart.totalAmount}\n"
+                order += "[L]-------------------------------\n"
             }
         }else {
             order += "[C]You have not place any order.\n"
@@ -277,4 +231,51 @@ class OrderViewModel @Inject constructor(
         return order
     }
 
+    private fun getAllDineOutOrders(
+        searchText : String = "",
+        startDate : String = getStartDate.value,
+        endDate : String = getEndDate.value,
+    ) {
+        viewModelScope.launch {
+            orderUseCases.getAllDineOutOrders(searchText, startDate, endDate).collectLatest { result ->
+                when(result){
+                    is Resource.Loading -> {
+                        _dineOutOrders.value = _dineOutOrders.value.copy(isLoading = result.isLoading)
+                    }
+                    is Resource.Success -> {
+                        result.data?.let {
+                            _dineOutOrders.value = _dineOutOrders.value.copy(dineOutOrders = it)
+                        }
+                    }
+                    is Resource.Error -> {
+                        _dineOutOrders.value = _dineOutOrders.value.copy(error = result.message)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getAllDineInOrders(
+        searchText : String = "",
+        startDate : String = getStartDate.value,
+        endDate : String = getEndDate.value,
+    ) {
+        viewModelScope.launch {
+            orderUseCases.getAllDineInOrders(searchText, startDate, endDate).collectLatest { result ->
+                when(result){
+                    is Resource.Loading -> {
+                        _dineInOrders.value = _dineInOrders.value.copy(isLoading = result.isLoading)
+                    }
+                    is Resource.Success -> {
+                        result.data?.let {
+                            _dineInOrders.value = _dineInOrders.value.copy(dineInOrders = it)
+                        }
+                    }
+                    is Resource.Error -> {
+                        _dineInOrders.value = _dineInOrders.value.copy(error = result.message)
+                    }
+                }
+            }
+        }
+    }
 }

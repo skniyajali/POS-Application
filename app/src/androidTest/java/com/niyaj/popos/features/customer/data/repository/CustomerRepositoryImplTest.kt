@@ -4,7 +4,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.niyaj.popos.di.TestConfig
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.customer.domain.model.Contact
 import com.niyaj.popos.features.customer.domain.model.Customer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.onEach
@@ -289,9 +288,9 @@ class CustomerRepositoryImplTest {
 
     @Test
     fun x_import_customers_return_true() = runTest {
-        val contacts = createNewContacts()
+        val customers = getImportedCustomers()
 
-        val result = repository.importContacts(contacts)
+        val result = repository.importContacts(customers)
 
         assertThat(result.data).isNotNull()
         assertThat(result.data).isTrue()
@@ -308,7 +307,7 @@ class CustomerRepositoryImplTest {
             }
         }
 
-        val result2 = repository.importContacts(contacts)
+        val result2 = repository.importContacts(customers)
 
         assertThat(result2.data).isNotNull()
         assertThat(result2.data).isTrue()
@@ -358,20 +357,21 @@ class CustomerRepositoryImplTest {
         }
     }
 
-    private fun createNewContacts(): List<Contact> {
-        val contacts = mutableListOf<Contact>()
+    private fun getImportedCustomers(): List<Customer> {
+        val customers = mutableListOf<Customer>()
 
         ('A'..'E').forEachIndexed { index, c ->
-            contacts.add(
-                Contact(
-                    contactId = index.toString().plus("id"),
-                    email = c.plus("@gmail.com"),
-                    name = c.plus("name"),
-                    phoneNo = index.plus(9999999000).toString(),
+            customers.add(
+                Customer(
+                    customerId = index.toString().plus("id"),
+                    customerEmail = c.plus("@gmail.com"),
+                    customerName = c.plus("name"),
+                    customerPhone = index.plus(9999999000).toString(),
+                    createdAt = System.currentTimeMillis().toString()
                 )
             )
         }
 
-        return contacts
+        return customers
     }
 }

@@ -5,8 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.employee.domain.model.Employee
-import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
-import com.niyaj.popos.features.employee_attendance.domain.use_cases.AttendanceUseCases
+import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.features.employee_attendance.domain.repository.AttendanceRepository
+import com.niyaj.popos.features.employee_attendance.domain.use_cases.GetAllAttendance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,10 +16,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ *
+ */
 @HiltViewModel
 class AttendanceViewModel @Inject constructor(
-    private val attendanceUseCases: AttendanceUseCases,
-    private val employeeUseCases : EmployeeUseCases,
+    private val attendanceRepository: AttendanceRepository,
+    private val employeeRepository : EmployeeRepository,
+    private val getAllAttendance : GetAllAttendance,
 ): ViewModel() {
 
     private val _attendance = MutableStateFlow(AttendanceState())
@@ -87,7 +92,7 @@ class AttendanceViewModel @Inject constructor(
             is AttendanceEvent.DeleteAttendance -> {
                 viewModelScope.launch {
 
-                    when (val result = attendanceUseCases.deleteAttendanceById(event.attendanceId)) {
+                    when (val result = attendanceRepository.removeAttendanceById(event.attendanceId)) {
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -107,7 +112,7 @@ class AttendanceViewModel @Inject constructor(
 
     private fun getAllAttendance(searchText: String = "") {
         viewModelScope.launch {
-            attendanceUseCases.getAllAttendance(searchText).collect { result ->
+            getAllAttendance.invoke(searchText).collect { result ->
                 when(result) {
                     is Resource.Loading -> {
                         _attendance.value = _attendance.value.copy(
@@ -149,7 +154,7 @@ class AttendanceViewModel @Inject constructor(
     }
 
     fun getEmployeeById(employeeId: String): Employee? {
-        return employeeUseCases.getEmployeeById(employeeId).data
+        return employeeRepository.getEmployeeById(employeeId).data
     }
 
 }

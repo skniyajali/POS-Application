@@ -7,18 +7,19 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.address.domain.model.Address
-import com.niyaj.popos.features.address.domain.use_cases.AddressUseCases
+import com.niyaj.popos.features.address.domain.use_cases.GetAllAddress
 import com.niyaj.popos.features.address.presentation.AddressState
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
-import com.niyaj.popos.features.cart_order.domain.use_cases.CartOrderUseCases
+import com.niyaj.popos.features.cart_order.domain.repository.CartOrderRepository
+import com.niyaj.popos.features.cart_order.domain.repository.CartOrderValidationRepository
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.customer.domain.model.Customer
-import com.niyaj.popos.features.customer.domain.use_cases.CustomerUseCases
+import com.niyaj.popos.features.customer.domain.use_cases.GetAllCustomers
 import com.niyaj.popos.features.customer.presentation.CustomerState
-import com.niyaj.popos.util.capitalizeWords
-import com.niyaj.popos.util.getAllCapitalizedLetters
+import com.niyaj.popos.utils.capitalizeWords
+import com.niyaj.popos.utils.getAllCapitalizedLetters
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,9 +33,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditCartOrderViewModel @Inject constructor(
-    private val cartOrderUseCases: CartOrderUseCases,
-    private val customerUseCases: CustomerUseCases,
-    private val addressUseCases: AddressUseCases,
+    private val cartOrderRepository: CartOrderRepository,
+    private val getAllAddress: GetAllAddress,
+    private val getAllCustomers : GetAllCustomers,
+    private val validationRepository : CartOrderValidationRepository,
     savedStateHandle: SavedStateHandle,
 ): ViewModel() {
 
@@ -62,7 +64,7 @@ class AddEditCartOrderViewModel @Inject constructor(
         getAllCustomers()
     }
 
-    fun onAddEditCartOrderEvent(event: AddEditCartOrderEvent){
+    fun onEvent(event: AddEditCartOrderEvent){
         when (event){
 
             is AddEditCartOrderEvent.OrderIdChanged -> {
@@ -144,13 +146,13 @@ class AddEditCartOrderViewModel @Inject constructor(
 
     private fun createOrUpdateCartOrder(cartOrderId: String? = null) {
 
-        val orderIdResult = cartOrderUseCases.validateOrderId(state.orderId)
+        val orderIdResult = validationRepository.validateOrderId(state.orderId)
 
-        val customerPhoneResult = cartOrderUseCases.validateCustomerPhone(
+        val customerPhoneResult = validationRepository.validateCustomerPhone(
             orderType = state.orderType,
             customerPhone = state.customer?.customerPhone ?: ""
         )
-        val customerAddressResult = cartOrderUseCases.validateCustomerAddress(
+        val customerAddressResult = validationRepository.validateCustomerAddress(
             orderType = state.orderType,
             customerAddress = state.address?.addressName ?: "",
         )
@@ -174,7 +176,7 @@ class AddEditCartOrderViewModel @Inject constructor(
 
         viewModelScope.launch {
             if(cartOrderId == null){
-                val result = cartOrderUseCases.createCardOrder(
+                val result = cartOrderRepository.createNewOrder(
                     CartOrder(
                         orderId = state.orderId,
                         orderType = state.orderType,
@@ -193,7 +195,7 @@ class AddEditCartOrderViewModel @Inject constructor(
                     }
                 }
             }else {
-                val result = cartOrderUseCases.updateCartOrder(
+                val result = cartOrderRepository.updateCartOrder(
                     CartOrder(
                         orderId = state.orderId,
                         orderType = state.orderType,
@@ -222,7 +224,7 @@ class AddEditCartOrderViewModel @Inject constructor(
 
     private fun getAllCustomers(searchText: String = "") {
         viewModelScope.launch {
-            customerUseCases.getAllCustomers(searchText = searchText).collectLatest { result ->
+            getAllCustomers.invoke(searchText = searchText).collectLatest { result ->
                 when (result){
                     is Resource.Loading -> {
                         _customers.value = _customers.value.copy(
@@ -248,7 +250,7 @@ class AddEditCartOrderViewModel @Inject constructor(
 
     private fun getAllAddresses(searchText: String = "") {
         viewModelScope.launch {
-            addressUseCases.getAllAddress(searchText = searchText).collectLatest { result ->
+            getAllAddress.invoke(searchText = searchText).collectLatest { result ->
                 when (result){
                     is Resource.Loading -> {
                         _addresses.value = _addresses.value.copy(
@@ -273,7 +275,7 @@ class AddEditCartOrderViewModel @Inject constructor(
     }
 
     private fun getAndSetOrderId() {
-        val lastOrderId = cartOrderUseCases.getLastCreatedOrderId()
+        val lastOrderId = cartOrderRepository.getLastCreatedOrderId()
 
         if (state.orderId.isEmpty()){
             state = state.copy(
@@ -286,7 +288,7 @@ class AddEditCartOrderViewModel @Inject constructor(
     private fun getCartOrder(cartOrderId: String){
         viewModelScope.launch {
             val result = withContext(Dispatchers.IO){
-                cartOrderUseCases.getCartOrder(cartOrderId)
+                cartOrderRepository.getCartOrderById(cartOrderId)
             }
             when (result){
                 is Resource.Loading -> {}

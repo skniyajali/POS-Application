@@ -1,10 +1,11 @@
 package com.niyaj.popos.features.cart.presentation.dine_in
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.features.cart.domain.use_cases.CartUseCases
-import com.niyaj.popos.features.cart_order.domain.use_cases.CartOrderUseCases
+import com.niyaj.popos.features.cart.domain.repository.CartRepository
+import com.niyaj.popos.features.cart_order.domain.repository.CartOrderRepository
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,17 +18,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DineInViewModel @Inject constructor(
-    private val cartUseCases: CartUseCases,
-    private val cartOrderUseCases: CartOrderUseCases,
+    private val cartRepository: CartRepository,
+    private val cartOrderRepository: CartOrderRepository,
 ): ViewModel() {
 
     private val _dineInOrders = MutableStateFlow(DineInState())
     val dineInOrders = _dineInOrders.asStateFlow()
 
-    private val _opSelectedCarts = mutableStateListOf<String>()
-
-    private val _selectedDineInOrder = MutableStateFlow<List<String>>(listOf())
-    val selectedDineInOrder = _selectedDineInOrder.asStateFlow()
+    private val _selectedDineInOrder = mutableStateListOf<String>()
+    val selectedDineInOrder: SnapshotStateList<String> = _selectedDineInOrder
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -38,21 +37,21 @@ class DineInViewModel @Inject constructor(
         getAllDineInItems()
     }
 
-    fun onDineInEvent(event: DineInEvent) {
+    fun onEvent(event: DineInEvent) {
         when (event){
 
             is DineInEvent.GetAllDineInOrders -> {
                 getAllDineInItems()
             }
 
-            is DineInEvent.AddProductToCart -> {
+            is DineInEvent.IncreaseQuantity -> {
                 viewModelScope.launch {
                     if (event.cartOrderId.isEmpty()) {
                         _eventFlow.emit(UiEvent.OnError("Create New Order First"))
                     }else if(event.productId.isEmpty()){
                         _eventFlow.emit(UiEvent.OnError("Unable to get product"))
                     }else {
-                        when (val result = cartUseCases.addProductToCart(event.cartOrderId, event.productId)){
+                        when (val result = cartRepository.addProductToCart(event.cartOrderId, event.productId)){
                             is Resource.Loading -> {}
                             is Resource.Success -> {
 //                                _eventFlow.emit(UiEvent.OnSuccess("Item added to cart"))
@@ -65,10 +64,10 @@ class DineInViewModel @Inject constructor(
                 }
             }
 
-            is DineInEvent.RemoveProductFromCart -> {
+            is DineInEvent.DecreaseQuantity -> {
                 viewModelScope.launch {
 
-                    when (cartUseCases.removeProductFromCart(event.cartOrderId, event.productId)){
+                    when (cartRepository.removeProductFromCart(event.cartOrderId, event.productId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
 //                            _eventFlow.emit(UiEvent.OnSuccess("Item removed from cart"))
@@ -82,57 +81,49 @@ class DineInViewModel @Inject constructor(
 
             is DineInEvent.UpdateAddOnItemInCart -> {
                 viewModelScope.launch {
-                    when(cartOrderUseCases.updateAddOnItemInCart(event.addOnItemId, event.cartOrderId)){
-                        is Resource.Loading -> {}
-                        is Resource.Success -> {
-//                            _eventFlow.emit(UiEvent.OnSuccess("AddOnItem Updated Successfully"))
-                        }
+                    when(cartOrderRepository.updateAddOnItem(event.addOnItemId, event.cartOrderId)){
                         is Resource.Error -> {
                             _eventFlow.emit(UiEvent.OnError("Unable To Update AddOnItem"))
                         }
+                        else -> {}
                     }
                 }
             }
 
             is DineInEvent.SelectAllDineInOrder -> {
-
                 count += 1
 
                 _dineInOrders.value.cartItems.map { cart ->
                     if(cart.cartProducts.isNotEmpty()) {
                         if(count % 2 != 0){
-                            val cartItem = _opSelectedCarts.contains(cart.cartOrder?.cartOrderId)
+                            val cartItem = _selectedDineInOrder.contains(cart.cartOrderId)
                             if(!cartItem){
-                                _opSelectedCarts.add(
-                                    cart.cartOrder?.cartOrderId!!
+                                _selectedDineInOrder.add(
+                                    cart.cartOrderId
                                 )
                             }
                         }else{
-                            _opSelectedCarts.removeIf {
-                                it == cart.cartOrder?.cartOrderId!!
+                            _selectedDineInOrder.removeIf {
+                                it == cart.cartOrderId
                             }
                         }
                     }
                 }
-
-                _selectedDineInOrder.tryEmit(_opSelectedCarts.toList())
             }
 
             is DineInEvent.SelectDineInOrder -> {
-                val doesAlreadySelected = _opSelectedCarts.contains(event.cartOrderId)
+                val doesAlreadySelected = _selectedDineInOrder.contains(event.cartOrderId)
 
                 if(!doesAlreadySelected){
-                    _opSelectedCarts.add(event.cartOrderId)
+                    _selectedDineInOrder.add(event.cartOrderId)
                 }else{
-                    _opSelectedCarts.remove(event.cartOrderId)
+                    _selectedDineInOrder.remove(event.cartOrderId)
                 }
-
-                _selectedDineInOrder.tryEmit(_opSelectedCarts.toList())
             }
 
             is DineInEvent.PlaceDineInOrder -> {
                 viewModelScope.launch {
-                    when(cartOrderUseCases.placeOrder(event.cartOrderId)){
+                    when(cartOrderRepository.placeOrder(event.cartOrderId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("Order Placed Successfully"))
@@ -146,9 +137,9 @@ class DineInViewModel @Inject constructor(
 
             is DineInEvent.PlaceAllDineInOrder -> {
                 viewModelScope.launch {
-                    val selectedCartItem = _selectedDineInOrder.value
+                    val selectedCartItem = _selectedDineInOrder
 
-                    when(cartOrderUseCases.placeAllOrder(selectedCartItem)){
+                    when(cartOrderRepository.placeAllOrder(selectedCartItem)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(UiEvent.OnSuccess("${selectedCartItem.size} DineIn Order Placed Successfully"))
@@ -168,19 +159,14 @@ class DineInViewModel @Inject constructor(
 
     private fun getAllDineInItems() {
         viewModelScope.launch {
-            cartUseCases.getAllDineInOrders().collect { result ->
+            cartRepository.getAllDineInOrders().collect { result ->
                 when (result){
                     is Resource.Loading -> {
-                        _dineInOrders.value = _dineInOrders.value.copy(
-                            isLoading = result.isLoading
-                        )
+                        _dineInOrders.value = _dineInOrders.value.copy(isLoading = result.isLoading)
                     }
                     is Resource.Success -> {
                         result.data?.let {
-
-                            _dineInOrders.value = _dineInOrders.value.copy(
-                                cartItems = it
-                            )
+                            _dineInOrders.value = _dineInOrders.value.copy(cartItems = it)
                         }
                     }
                     is Resource.Error -> {
@@ -189,7 +175,6 @@ class DineInViewModel @Inject constructor(
                         )
                     }
                 }
-
             }
         }
     }

@@ -10,10 +10,6 @@ sealed class CartOrderEvent{
 
     data class OnSearchCartOrder(val searchText: String): CartOrderEvent()
 
-    object DeletePastSevenDaysBeforeData: CartOrderEvent()
-
-    object DeleteAllCartOrders: CartOrderEvent()
-
     object ToggleSearchBar : CartOrderEvent()
 
     object RefreshCartOrder: CartOrderEvent()

@@ -22,8 +22,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_SEARCH_PLACEHOLDER
-import com.niyaj.popos.util.Constants.SEARCH_BAR_CLEAR_BUTTON
-import com.niyaj.popos.util.Constants.STANDARD_SEARCH_BAR
+import com.niyaj.popos.utils.Constants.SEARCH_BAR_CLEAR_BUTTON
+import com.niyaj.popos.utils.Constants.STANDARD_SEARCH_BAR
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

@@ -20,7 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.niyaj.popos.R
-import com.niyaj.popos.util.Constants.STANDARD_BACK_BUTTON
+import com.niyaj.popos.utils.Constants.STANDARD_BACK_BUTTON
 
 @Composable
 fun StandardScaffold(
@@ -36,6 +36,7 @@ fun StandardScaffold(
     floatingActionButton: @Composable () -> Unit = {},
     floatingActionButtonPosition: FabPosition = FabPosition.Center,
     topAppBarBackgroundColor: Color = MaterialTheme.colors.primary,
+    showTopBar: Boolean = true,
     bottomBar: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit = {},
 ) {
@@ -43,29 +44,31 @@ fun StandardScaffold(
         modifier = Modifier.fillMaxSize(),
         scaffoldState = scaffoldState,
         topBar = {
-            TopAppBar(
-                title = title,
-                modifier = modifier,
-                navigationIcon = if(showBackArrow) {
-                    {
-                        IconButton(
-                            onClick = {
-                                onBackButtonClick()
-                            },
-                            modifier = Modifier.testTag(STANDARD_BACK_BUTTON)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = stringResource(id = R.string.back),
-                                tint = MaterialTheme.colors.onPrimary
-                            )
+            if (showTopBar) {
+                TopAppBar(
+                    title = title,
+                    modifier = modifier,
+                    navigationIcon = if(showBackArrow) {
+                        {
+                            IconButton(
+                                onClick = {
+                                    onBackButtonClick()
+                                },
+                                modifier = Modifier.testTag(STANDARD_BACK_BUTTON)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowBack,
+                                    contentDescription = stringResource(id = R.string.back),
+                                    tint = MaterialTheme.colors.onPrimary
+                                )
+                            }
                         }
-                    }
-                } else navigationIcon,
-                actions = navActions,
-                backgroundColor = topAppBarBackgroundColor,
-                elevation = 0.dp,
-            )
+                    } else navigationIcon,
+                    actions = navActions,
+                    backgroundColor = topAppBarBackgroundColor,
+                    elevation = 0.dp,
+                )
+            }
         },
         bottomBar = bottomBar,
         floatingActionButton = floatingActionButton,

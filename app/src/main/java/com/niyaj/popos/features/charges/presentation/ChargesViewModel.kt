@@ -6,15 +6,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.domain.util.safeString
 import com.niyaj.popos.features.charges.domain.model.Charges
-import com.niyaj.popos.features.charges.domain.use_cases.ChargesUseCases
-import com.niyaj.popos.features.charges.domain.util.FilterCharges
+import com.niyaj.popos.features.charges.domain.repository.ChargesRepository
+import com.niyaj.popos.features.charges.domain.repository.ChargesValidationRepository
+import com.niyaj.popos.features.charges.domain.use_cases.GetAllCharges
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
+import com.niyaj.popos.features.common.util.safeString
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -25,7 +24,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChargesViewModel @Inject constructor(
-    private val chargesUseCases: ChargesUseCases,
+    private val chargesRepository: ChargesRepository,
+    private val validationRepository : ChargesValidationRepository,
+    private val getAllCharges : GetAllCharges,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -49,7 +50,7 @@ class ChargesViewModel @Inject constructor(
     var expanded by mutableStateOf(false)
 
     init {
-        getAllCharges(FilterCharges.ByChargesId(SortType.Descending))
+        getAllCharges()
 
         savedStateHandle.get<String>("chargesId")?.let { chargesId ->
             getChargesById(chargesId)
@@ -91,7 +92,7 @@ class ChargesViewModel @Inject constructor(
 
             is ChargesEvent.DeleteCharges -> {
                 viewModelScope.launch {
-                    when (val result = chargesUseCases.deleteCharges(event.chargesId)) {
+                    when (val result = chargesRepository.deleteCharges(event.chargesId)) {
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -106,33 +107,10 @@ class ChargesViewModel @Inject constructor(
                 _selectedCharges.value = ""
             }
 
-
-            is ChargesEvent.OnFilterCharges -> {
-                if(_state.value.filterCharges::class == event.filterCharges::class &&
-                    _state.value.filterCharges.sortType == event.filterCharges.sortType
-                ){
-                    _state.value = _state.value.copy(
-                        filterCharges = FilterCharges.ByChargesId(SortType.Descending)
-                    )
-                    return
-                }
-
-                _state.value = _state.value.copy(
-                    filterCharges = event.filterCharges
-                )
-
-                getAllCharges(event.filterCharges)
-            }
-
             is ChargesEvent.OnSearchCharges -> {
                 viewModelScope.launch {
                     _searchText.emit(event.searchText)
-
-                    delay(500L)
-                    getAllCharges(
-                        _state.value.filterCharges,
-                        searchText = event.searchText
-                    )
+                    getAllCharges(searchText = event.searchText)
                 }
             }
 
@@ -143,29 +121,25 @@ class ChargesViewModel @Inject constructor(
             }
 
             is ChargesEvent.RefreshCharges -> {
-                getAllCharges(_state.value.filterCharges)
+                getAllCharges()
             }
         }
     }
 
-    private fun getAllCharges(filterCharges: FilterCharges, searchText: String = "") {
+    private fun getAllCharges(searchText: String = "") {
         viewModelScope.launch {
-            chargesUseCases.getAllCharges(filterCharges, searchText).collectLatest{ result ->
+            getAllCharges.invoke(searchText).collectLatest{ result ->
                 when(result){
                     is Resource.Loading -> {
                         _state.value = _state.value.copy(isLoading = result.isLoading)
                     }
                     is Resource.Success -> {
                         result.data?.let {
-                            _state.value = _state.value.copy(
-                                chargesItem = it,
-                                filterCharges = filterCharges
-                            )
+                            _state.value = _state.value.copy(chargesItem = it)
                         }
                     }
                     is Resource.Error -> {
                         _state.value = _state.value.copy(error = result.message)
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
                     }
                 }
             }
@@ -173,8 +147,8 @@ class ChargesViewModel @Inject constructor(
     }
 
     private fun addOrEditCharges(chargesId: String? = null){
-        val validatedChargesName = chargesUseCases.validateChargesName(addEditState.chargesName, chargesId)
-        val validatedChargesPrice = chargesUseCases.validateChargesPrice(addEditState.chargesApplicable, safeString(addEditState.chargesPrice))
+        val validatedChargesName = validationRepository.validateChargesName(addEditState.chargesName, chargesId)
+        val validatedChargesPrice = validationRepository.validateChargesPrice(addEditState.chargesApplicable, safeString(addEditState.chargesPrice))
 
         val hasError = listOf(validatedChargesName, validatedChargesPrice).any {
             !it.successful
@@ -197,7 +171,7 @@ class ChargesViewModel @Inject constructor(
 
 
                 if(chargesId.isNullOrEmpty()){
-                    when(val result = chargesUseCases.createNewCharges(charges)){
+                    when(val result = chargesRepository.createNewCharges(charges)){
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -210,7 +184,7 @@ class ChargesViewModel @Inject constructor(
                     }
 
                 }else {
-                    when(val result = chargesUseCases.updateCharges(charges, chargesId)){
+                    when(val result = chargesRepository.updateCharges(charges, chargesId)){
                         is Resource.Error -> {
                             _eventFlow.emit(UiEvent.OnError( result.message ?: "Unable to Update Charges Item"))
                         }
@@ -231,7 +205,7 @@ class ChargesViewModel @Inject constructor(
 
     private fun getChargesById(chargesId: String) {
         viewModelScope.launch {
-            when(val result = chargesUseCases.getChargesById(chargesId)) {
+            when(val result = chargesRepository.getChargesById(chargesId)) {
                 is Resource.Loading -> {}
 
                 is Resource.Success -> {
@@ -260,10 +234,7 @@ class ChargesViewModel @Inject constructor(
     fun onSearchTextClearClick(){
         viewModelScope.launch {
             _searchText.emit("")
-            getAllCharges(
-                _state.value.filterCharges,
-                _searchText.value
-            )
+            getAllCharges(_searchText.value)
         }
     }
 }

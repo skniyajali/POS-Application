@@ -12,9 +12,9 @@ import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.reports.domain.model.Reports
 import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
 import com.niyaj.popos.features.reports.domain.util.ProductWiseReport
-import com.niyaj.popos.util.Constants
-import com.niyaj.popos.util.getCalculatedStartDate
-import com.niyaj.popos.util.toSalaryDate
+import com.niyaj.popos.utils.Constants
+import com.niyaj.popos.utils.getCalculatedStartDate
+import com.niyaj.popos.utils.toSalaryDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -23,10 +23,14 @@ import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.UpdatedObject
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
@@ -46,8 +50,6 @@ class ReportsRepositoryImpl(
         return try {
             withContext(ioDispatcher){
                 val itemReport = getItemsReport(startDate, endDate)
-
-//                Timber.d("Item Report $itemReport")
 
                 val formattedDate = startDate.toSalaryDate
 

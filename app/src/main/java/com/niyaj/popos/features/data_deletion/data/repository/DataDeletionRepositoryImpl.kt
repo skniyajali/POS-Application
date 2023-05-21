@@ -19,7 +19,7 @@ import com.niyaj.popos.features.expenses.domain.model.Expenses
 import com.niyaj.popos.features.expenses_category.domain.model.ExpensesCategory
 import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.reports.domain.model.Reports
-import com.niyaj.popos.util.getCalculatedStartDate
+import com.niyaj.popos.utils.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query

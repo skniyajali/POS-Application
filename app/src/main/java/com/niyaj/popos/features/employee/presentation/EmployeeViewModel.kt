@@ -3,10 +3,9 @@ package com.niyaj.popos.features.employee.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.employee.domain.use_cases.EmployeeUseCases
-import com.niyaj.popos.features.employee.domain.util.FilterEmployee
+import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
+import com.niyaj.popos.features.employee.domain.use_cases.GetAllEmployee
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,9 +14,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel for the Employee screen
+ * @constructor [EmployeeRepository] & [GetAllEmployee]
+ */
 @HiltViewModel
 class EmployeeViewModel @Inject constructor(
-    private val employeeUseCases: EmployeeUseCases,
+    private val employeeRepository: EmployeeRepository,
+    private val getAllEmployee : GetAllEmployee,
 ): ViewModel() {
 
     private val _state = MutableStateFlow(EmployeeState())
@@ -36,9 +40,14 @@ class EmployeeViewModel @Inject constructor(
     val toggledSearchBar = _toggledSearchBar.asStateFlow()
 
     init {
-        getAllEmployees(FilterEmployee.ByEmployeeId(SortType.Descending))
+        getAllEmployees()
     }
 
+    /**
+     * Handle all the events from the screen
+     * @param event
+     * @see EmployeeEvent
+     */
     fun onEmployeeEvent(event: EmployeeEvent) {
         when (event){
 
@@ -54,7 +63,7 @@ class EmployeeViewModel @Inject constructor(
 
             is EmployeeEvent.DeleteEmployee -> {
                 viewModelScope.launch {
-                    when (val result = employeeUseCases.deleteEmployee(event.employeeId)) {
+                    when (val result = employeeRepository.deleteEmployee(event.employeeId)) {
                         is Resource.Loading -> {
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
@@ -69,31 +78,11 @@ class EmployeeViewModel @Inject constructor(
                 _selectedEmployee.value = ""
             }
 
-            is EmployeeEvent.OnFilterEmployee -> {
-                if(_state.value.filterEmployee::class == event.filterEmployee::class &&
-                    _state.value.filterEmployee.sortType == event.filterEmployee.sortType
-                ){
-                    _state.value = _state.value.copy(
-                        filterEmployee = FilterEmployee.ByEmployeeId(SortType.Descending)
-                    )
-                    return
-                }
-
-                _state.value = _state.value.copy(
-                    filterEmployee = event.filterEmployee
-                )
-
-                getAllEmployees(event.filterEmployee)
-            }
-
             is EmployeeEvent.OnSearchEmployee -> {
                 viewModelScope.launch {
                     _searchText.emit(event.searchText)
 
-                    getAllEmployees(
-                        _state.value.filterEmployee,
-                        searchText = event.searchText
-                    )
+                    getAllEmployees(searchText = event.searchText)
                 }
             }
 
@@ -104,16 +93,14 @@ class EmployeeViewModel @Inject constructor(
             }
 
             is EmployeeEvent.RefreshEmployee -> {
-                getAllEmployees(
-                    _state.value.filterEmployee
-                )
+                getAllEmployees()
             }
         }
     }
 
-    private fun getAllEmployees(filterEmployee: FilterEmployee, searchText: String = "") {
+    private fun getAllEmployees(searchText: String = "") {
         viewModelScope.launch {
-            employeeUseCases.getAllEmployee(filterEmployee, searchText).collect{ result ->
+            getAllEmployee.invoke(searchText).collect{ result ->
                 when(result){
                     is Resource.Loading -> {
                         _state.value = _state.value.copy(isLoading = result.isLoading)
@@ -121,8 +108,7 @@ class EmployeeViewModel @Inject constructor(
                     is Resource.Success -> {
                         result.data?.let {
                             _state.value = _state.value.copy(
-                                employees = it,
-                                filterEmployee = filterEmployee
+                                employees = it
                             )
                         }
                     }
@@ -135,6 +121,9 @@ class EmployeeViewModel @Inject constructor(
         }
     }
 
+    /**
+     * On click to close the search bar and clear the search text and emit empty string
+     */
     fun onSearchBarCloseAndClearClick(){
         viewModelScope.launch {
             onSearchTextClearClick()
@@ -144,13 +133,13 @@ class EmployeeViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Clear search text and emit empty string
+     *
+     */
     fun onSearchTextClearClick(){
         viewModelScope.launch {
             _searchText.emit("")
-            getAllEmployees(
-                _state.value.filterEmployee,
-                _searchText.value
-            )
-        }
+         }
     }
 }

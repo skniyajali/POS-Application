@@ -4,10 +4,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.niyaj.popos.features.address.domain.use_cases.AddressUseCases
-import com.niyaj.popos.features.address.domain.util.FilterAddress
+import com.niyaj.popos.features.address.domain.repository.AddressRepository
+import com.niyaj.popos.features.address.domain.use_cases.GetAllAddress
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.features.common.util.SortType
 import com.niyaj.popos.features.common.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddressViewModel @Inject constructor(
-    private val addressUseCases: AddressUseCases,
+    private val addressUseCases: AddressRepository,
+    private val getAllAddress : GetAllAddress,
 ): ViewModel() {
 
     private val _addresses = MutableStateFlow(AddressState())
@@ -40,7 +40,7 @@ class AddressViewModel @Inject constructor(
     private var count: Int = 0
 
     init {
-        getAllAddress(FilterAddress.ByAddressId(SortType.Descending))
+        getAllAddresses()
     }
 
     fun onAddressEvent(event: AddressEvent){
@@ -57,7 +57,7 @@ class AddressViewModel @Inject constructor(
             }
 
             is AddressEvent.DeselectAddress -> {
-                _selectedAddresses.removeAll(_selectedAddresses.toList())
+                _selectedAddresses.removeAll(_selectedAddresses.toList().toSet())
             }
 
             is AddressEvent.SelectAllAddress -> {
@@ -89,10 +89,10 @@ class AddressViewModel @Inject constructor(
                                     _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                                 }
                                 is Resource.Success -> {
-                                    _eventFlow.emit(UiEvent.OnSuccess("AddOnItem deleted successfully"))
+                                    _eventFlow.emit(UiEvent.OnSuccess("Address deleted successfully"))
                                 }
                                 is Resource.Error -> {
-                                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete item"))
+                                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete address"))
                                 }
                             }
                             _selectedAddresses.remove(address)
@@ -101,30 +101,10 @@ class AddressViewModel @Inject constructor(
                 }
             }
 
-            is AddressEvent.OnFilterAddress -> {
-                if(_addresses.value.filterAddress::class == event.filterAddress::class &&
-                    _addresses.value.filterAddress.sortType == event.filterAddress.sortType
-                ){
-                    _addresses.value = _addresses.value.copy(
-                        filterAddress = FilterAddress.ByAddressId(SortType.Ascending)
-                    )
-                    return
-                }
-
-                _addresses.value = _addresses.value.copy(
-                    filterAddress = event.filterAddress
-                )
-
-                getAllAddress(event.filterAddress)
-            }
-
             is AddressEvent.OnSearchAddress -> {
                 viewModelScope.launch {
                     _searchText.emit(event.searchText)
-                    getAllAddress(
-                        _addresses.value.filterAddress,
-                        searchText = event.searchText
-                    )
+                    getAllAddresses(searchText = event.searchText)
                 }
             }
 
@@ -135,7 +115,7 @@ class AddressViewModel @Inject constructor(
             }
 
             is AddressEvent.RefreshAddress -> {
-                getAllAddress(_addresses.value.filterAddress)
+                getAllAddresses()
             }
         }
     }
@@ -152,16 +132,13 @@ class AddressViewModel @Inject constructor(
     fun onSearchTextClearClick(){
         viewModelScope.launch {
             _searchText.emit("")
-            getAllAddress(
-                _addresses.value.filterAddress,
-                _searchText.value
-            )
+            getAllAddresses(_searchText.value)
         }
     }
 
-    private fun getAllAddress(filterAddress: FilterAddress, searchText: String = "") {
+    private fun getAllAddresses(searchText: String = "") {
         viewModelScope.launch {
-            addressUseCases.getAllAddress(filterAddress, searchText).collect { result ->
+            getAllAddress.invoke(searchText).collect { result ->
                 when(result){
                     is Resource.Loading -> {
                         _addresses.value = _addresses.value.copy(
@@ -171,8 +148,7 @@ class AddressViewModel @Inject constructor(
                     is Resource.Success -> {
                         result.data?.let {addresses ->
                             _addresses.value = _addresses.value.copy(
-                                addresses = addresses,
-                                filterAddress = filterAddress,
+                                addresses = addresses
                             )
                         }
                     }

@@ -1,8 +1,10 @@
 package com.niyaj.popos.features.cart_order.presentation
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
+import com.niyaj.popos.features.cart_order.domain.repository.CartOrderRepository
 import com.niyaj.popos.features.cart_order.domain.use_cases.CartOrderUseCases
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
@@ -18,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CartOrderViewModel @Inject constructor(
     private val cartOrderUseCases: CartOrderUseCases,
+    private val cartOrderRepository: CartOrderRepository
 ): ViewModel() {
 
     private val _cartOrders = MutableStateFlow(CartOrderState())
@@ -38,17 +41,18 @@ class CartOrderViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    private val _viewAll = mutableStateOf(false)
 
     init {
         getAllCartOrders()
         getSelectedCartOrder()
     }
 
-    fun onCartOrderEvent(event: CartOrderEvent) {
+    fun onEvent(event: CartOrderEvent) {
         when(event){
             is CartOrderEvent.DeleteCartOrder -> {
                 viewModelScope.launch {
-                    when(cartOrderUseCases.deleteCartOrder(event.cartOrderId)){
+                    when(cartOrderRepository.deleteCartOrder(event.cartOrderId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _selectedOrder.value = ""
@@ -64,7 +68,7 @@ class CartOrderViewModel @Inject constructor(
 
             is CartOrderEvent.SelectCartOrderEvent -> {
                 viewModelScope.launch {
-                    cartOrderUseCases.selectCartOrder(event.cartOrderId)
+                    cartOrderRepository.addSelectedCartOrder(event.cartOrderId)
                     _selectedOrder.emit("")
                 }
             }
@@ -92,39 +96,12 @@ class CartOrderViewModel @Inject constructor(
                 }
             }
 
-            is CartOrderEvent.DeleteAllCartOrders -> {
-                viewModelScope.launch {
-                    when(val result = cartOrderUseCases.deleteCartOrders(true)){
-                        is Resource.Loading -> {}
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("All cart orders were successfully deleted"))
-                        }
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete cart orders"))
-                        }
-                    }
-                }
-            }
-
-            is CartOrderEvent.DeletePastSevenDaysBeforeData -> {
-                viewModelScope.launch {
-                    when(val result = cartOrderUseCases.deleteCartOrders(false)){
-                        is Resource.Loading -> {}
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Last 7 Days orders were successfully deleted"))
-                        }
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete last 7 days cart orders"))
-                        }
-                    }
-                }
-            }
-
             is CartOrderEvent.RefreshCartOrder -> {
                 getAllCartOrders()
             }
 
             is CartOrderEvent.ViewAllOrders -> {
+                _viewAll.value = true
                 getAllCartOrders(viewAll = true)
             }
         }
@@ -142,7 +119,7 @@ class CartOrderViewModel @Inject constructor(
         }
     }
 
-    private fun getAllCartOrders(searchText : String = "", viewAll: Boolean = false) {
+    private fun getAllCartOrders(searchText : String = "", viewAll: Boolean = _viewAll.value) {
         viewModelScope.launch {
             cartOrderUseCases.getAllCartOrders(searchText, viewAll).collect { result ->
                 when (result) {
@@ -164,7 +141,6 @@ class CartOrderViewModel @Inject constructor(
                         )
                     }
                 }
-
             }
         }
     }

@@ -33,7 +33,7 @@ fun CategorySection(
             categories = categories,
             selectedCategory = selectedCategory,
             isLoading = isLoading,
-            onClick = {
+            onClickCategory = {
                 onCategoryClick(it)
             },
         )
