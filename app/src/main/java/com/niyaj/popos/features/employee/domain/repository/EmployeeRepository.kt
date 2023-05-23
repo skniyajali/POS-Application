@@ -14,6 +14,8 @@ interface EmployeeRepository {
 
     fun findEmployeeByPhone(employeePhone: String, employeeId: String?): Boolean
 
+    fun doesAnyEmployeeExist(): Boolean
+
     suspend fun createNewEmployee(newEmployee: Employee): Resource<Boolean>
 
     suspend fun updateEmployee(newEmployee: Employee, employeeId: String): Resource<Boolean>

@@ -2,6 +2,7 @@ package com.niyaj.popos.features.reminder.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.HighlightOff
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person4
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -161,7 +163,10 @@ fun EmployeeSelectionHeader(
                 )
 
                 Text(
-                    modifier = Modifier.clickable {
+                    modifier = Modifier.clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) {
                         onCheckedChange()
                     },
                     text = if (selectionCount != 0) "$selectionCount Selected" else "Select All",

@@ -3,7 +3,10 @@ package com.niyaj.popos.features.cart_order.presentation.add_edit
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -11,6 +14,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
@@ -19,6 +24,8 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Close
@@ -39,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -50,9 +58,10 @@ import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.cart_order.presentation.add_edit.components.MultiSelector
-import com.niyaj.popos.features.common.ui.theme.IconSizeMedium
+import com.niyaj.popos.features.common.ui.theme.Olive
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
+import com.niyaj.popos.features.common.ui.theme.TextGray
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardOutlinedTextField
@@ -196,25 +205,27 @@ fun AddEditCartOrderScreen(
                         error = viewModel.state.customerError,
                         keyboardType = KeyboardType.Phone,
                         onValueChange = {
-                            viewModel.onEvent(
-                                AddEditCartOrderEvent.CustomerPhoneChanged(it)
-                            )
+                            viewModel.onEvent(AddEditCartOrderEvent.CustomerPhoneChanged(it))
                         },
                         trailingIcon = {
-                            if (!viewModel.state.customer?.customerPhone.isNullOrEmpty()) {
-                                IconButton(
-                                    onClick = {
-                                        viewModel.onEvent(
-                                            AddEditCartOrderEvent.OnClearCustomer
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                PhoneNoCountBox(
+                                    count = viewModel.state.customer?.customerPhone?.length ?: 0
+                                )
+                                Spacer(modifier = Modifier.width(1.dp))
+                                if (!viewModel.state.customer?.customerPhone.isNullOrEmpty()) {
+                                    IconButton(
+                                        onClick = {
+                                            viewModel.onEvent(AddEditCartOrderEvent.OnClearCustomer)
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Clear Text",
                                         )
                                     }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Clear Text",
-                                        tint = Color.Blue,
-                                        modifier = Modifier.size(IconSizeMedium)
-                                    )
                                 }
                             }
                         },
@@ -241,9 +252,7 @@ fun AddEditCartOrderScreen(
                             hint = "Customer Address",
                             error = viewModel.state.addressError,
                             onValueChange = {
-                                viewModel.onEvent(
-                                    AddEditCartOrderEvent.CustomerAddressChanged(it)
-                                )
+                                viewModel.onEvent(AddEditCartOrderEvent.CustomerAddressChanged(it))
                                 addressDropdownToggled = true
                             },
                             trailingIcon = {
@@ -256,9 +265,7 @@ fun AddEditCartOrderScreen(
                                 }else if (!viewModel.state.address?.addressName.isNullOrEmpty()) {
                                     IconButton(
                                         onClick = {
-                                            viewModel.onEvent(
-                                                AddEditCartOrderEvent.OnClearAddress
-                                            )
+                                            viewModel.onEvent(AddEditCartOrderEvent.OnClearAddress)
                                         }
                                     ) {
                                         Icon(
@@ -267,9 +274,7 @@ fun AddEditCartOrderScreen(
                                         )
                                     }
                                 } else {
-                                    ExposedDropdownMenuDefaults.TrailingIcon(
-                                        expanded = addressDropdownToggled
-                                    )
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = addressDropdownToggled)
                                 }
                             },
                         )
@@ -330,9 +335,8 @@ fun AddEditCartOrderScreen(
 
                 StandardButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = if (!cartOrderId.isNullOrEmpty())
-                        stringResource(id = R.string.edit_cart_order).uppercase()
-                        else stringResource(id = R.string.create_new_order).uppercase(),
+                    text = if (!cartOrderId.isNullOrEmpty()) stringResource(id = R.string.edit_cart_order)
+                        else stringResource(id = R.string.create_new_order),
                     onClick = {
                         if (!cartOrderId.isNullOrEmpty()) {
                             viewModel.onEvent(
@@ -342,6 +346,54 @@ fun AddEditCartOrderScreen(
                             viewModel.onEvent(AddEditCartOrderEvent.CreateNewCartOrder)
                         }
                     }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PhoneNoCountBox(
+    modifier : Modifier = Modifier,
+    count: Int = 0,
+    totalCount: Int = 10,
+    backgroundColor: Color = Color.Transparent,
+    color: Color = TextGray,
+    errorColor: Color = Olive,
+) {
+    val countColor = if (count <= 10) color else errorColor
+    val textColor = if (count >= 10) color else errorColor
+
+    AnimatedVisibility(
+        visible = count != 0,
+        enter = fadeIn(),
+        exit = fadeOut(),
+        label = "Phone No Count Box",
+    ) {
+        Card(
+            modifier = modifier.background(backgroundColor),
+            shape = RoundedCornerShape(2.dp),
+            elevation = 0.dp,
+        ) {
+            Row(
+                modifier = Modifier.padding(2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text(
+                    text = count.toString(),
+                    style = MaterialTheme.typography.caption,
+                    color = countColor,
+                )
+                Text(
+                    text = "/",
+                    fontFamily = FontFamily.Cursive,
+                    color = color,
+                )
+                Text(
+                    text = totalCount.toString(),
+                    style = MaterialTheme.typography.caption,
+                    color = textColor,
                 )
             }
         }

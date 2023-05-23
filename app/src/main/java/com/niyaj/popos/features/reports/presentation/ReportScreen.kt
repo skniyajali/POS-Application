@@ -763,17 +763,21 @@ fun AddressWiseReport(
                     when {
                         state.isLoading -> LoadingIndicator()
                         state.reports.isNotEmpty() -> {
-                            state.reports.forEachIndexed { index, report ->
-                                if (report.address != null) {
-                                    AddressReportCard(
-                                        report = report,
-                                        onAddressClick = onAddressClick
-                                    )
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                state.reports.forEachIndexed { index, report ->
+                                    if (report.address != null) {
+                                        AddressReportCard(
+                                            report = report,
+                                            onAddressClick = onAddressClick
+                                        )
 
-                                    if (index != state.reports.size - 1) {
-                                        Spacer(modifier = Modifier.height(SpaceMini))
-                                        Divider(modifier = Modifier.fillMaxWidth())
-                                        Spacer(modifier = Modifier.height(SpaceMini))
+                                        if (index != state.reports.size - 1) {
+                                            Spacer(modifier = Modifier.height(SpaceMini))
+                                            Divider(modifier = Modifier.fillMaxWidth())
+                                            Spacer(modifier = Modifier.height(SpaceMini))
+                                        }
                                     }
                                 }
                             }
@@ -830,17 +834,21 @@ fun CustomerWiseReport(
                     when {
                         state.isLoading -> LoadingIndicator()
                         state.reports.isNotEmpty() -> {
-                            state.reports.forEachIndexed { index, report ->
-                                if (report.customer != null) {
-                                    CustomerReportCard(
-                                        customerReport = report,
-                                        onClickCustomer = onCustomerClick
-                                    )
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                state.reports.forEachIndexed { index, report ->
+                                    if (report.customer != null) {
+                                        CustomerReportCard(
+                                            customerReport = report,
+                                            onClickCustomer = onCustomerClick
+                                        )
 
-                                    if (index != state.reports.size - 1) {
-                                        Spacer(modifier = Modifier.height(SpaceMini))
-                                        Divider(modifier = Modifier.fillMaxWidth())
-                                        Spacer(modifier = Modifier.height(SpaceMini))
+                                        if (index != state.reports.size - 1) {
+                                            Spacer(modifier = Modifier.height(SpaceMini))
+                                            Divider(modifier = Modifier.fillMaxWidth())
+                                            Spacer(modifier = Modifier.height(SpaceMini))
+                                        }
                                     }
                                 }
                             }

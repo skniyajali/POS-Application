@@ -2,6 +2,7 @@ package com.niyaj.popos.features.main_feed.presentation.components.category
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.runtime.Composable
@@ -12,11 +13,12 @@ import com.niyaj.popos.features.main_feed.presentation.components.components.Tit
 
 @Composable
 fun CategorySection(
-    onCategoryFilterClick: () -> Unit = {},
+    lazyListState: LazyListState,
     categories: List<Category> = emptyList(),
-    onCategoryClick: (String) -> Unit = {},
     selectedCategory: String = "",
     isLoading: Boolean = false,
+    onCategoryFilterClick: () -> Unit = {},
+    onCategoryClick: (String) -> Unit = {},
 ) {
     if(categories.isNotEmpty()){
         TitleWithIcon(
@@ -31,6 +33,7 @@ fun CategorySection(
 
         CategoryItems(
             categories = categories,
+            lazyListState = lazyListState,
             selectedCategory = selectedCategory,
             isLoading = isLoading,
             onClickCategory = {

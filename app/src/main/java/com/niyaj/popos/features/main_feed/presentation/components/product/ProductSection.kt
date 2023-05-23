@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
@@ -29,9 +28,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,25 +52,22 @@ import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.LoadingIndicator
 import com.niyaj.popos.features.main_feed.domain.model.ProductWithFlowQuantity
 import com.niyaj.popos.features.main_feed.presentation.components.components.TitleWithIcon
+import com.niyaj.popos.utils.isScrolled
 import com.niyaj.popos.utils.toRupee
 import kotlinx.coroutines.launch
 
 @Composable
 fun ProductSection(
-    onProductFilterClick: () -> Unit = {},
+    modifier : Modifier = Modifier,
+    lazyListState: LazyListState,
     products: List<ProductWithFlowQuantity>,
+    isLoading: Boolean = false,
+    onProductFilterClick: () -> Unit = {},
     onProductLeftClick: (String) -> Unit = {},
     onProductRightClick: (String) -> Unit = {},
     onNavigateToProductScreen: () -> Unit = {},
-    isLoading: Boolean = false,
 ) {
     val scope = rememberCoroutineScope()
-    val lazyListState = rememberLazyListState()
-    val showScrollToTop by remember {
-        derivedStateOf {
-            lazyListState.firstVisibleItemIndex > 0
-        }
-    }
 
     if (isLoading) {
         LoadingIndicator()
@@ -82,7 +75,7 @@ fun ProductSection(
         TitleWithIcon(
             text = "Products",
             icon = Icons.Default.Dns,
-            showScrollToTop = showScrollToTop,
+            showScrollToTop = lazyListState.isScrolled,
             onClick = {
                 onProductFilterClick()
             },
@@ -96,6 +89,8 @@ fun ProductSection(
         Spacer(modifier = Modifier.height(SpaceSmall))
 
         ProductItems(
+            modifier = modifier,
+            lazyListState = lazyListState,
             cartProducts = products,
             onProductLeftClick = { product ->
                 onProductLeftClick(product)
@@ -103,7 +98,6 @@ fun ProductSection(
             onProductRightClick = { product ->
                 onProductRightClick(product)
             },
-            lazyListState = lazyListState,
         )
     }else {
         ItemNotAvailable(
@@ -117,12 +111,13 @@ fun ProductSection(
 
 @Composable
 fun ProductItems(
+    modifier : Modifier = Modifier,
+    lazyListState : LazyListState,
     cartProducts: List<ProductWithFlowQuantity>,
+    isLoading: Boolean = false,
+    backgroundColor: Color = MaterialTheme.colors.surface,
     onProductLeftClick: (String) -> Unit = {},
     onProductRightClick: (String) -> Unit = {},
-    isLoading: Boolean = false,
-    lazyListState : LazyListState,
-    backgroundColor: Color = MaterialTheme.colors.surface,
 ){
     LazyColumn(
         state = lazyListState,
@@ -136,7 +131,7 @@ fun ProductItems(
             val quantity = product.quantity.collectAsStateWithLifecycle(0).value
 
             Card(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth(),
                 elevation = 1.dp,
                 shape =  RoundedCornerShape(4.dp),

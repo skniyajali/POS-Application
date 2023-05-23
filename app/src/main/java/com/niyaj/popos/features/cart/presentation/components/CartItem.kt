@@ -2,6 +2,7 @@ package com.niyaj.popos.features.cart.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.features.addon_item.domain.model.AddOnItem
@@ -109,7 +111,12 @@ fun CartItem(
                 MaterialTheme.colors.surface,
                 RoundedCornerShape(6.dp)
             )
-            .clickable {
+            .clickable(
+                indication = null,
+                interactionSource = remember {
+                    MutableInteractionSource()
+                }
+            ) {
                 onSelectCartOrder(cartItem.cartOrderId)
             },
         elevation = 6.dp

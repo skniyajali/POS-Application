@@ -1,6 +1,7 @@
 package com.niyaj.popos.features.main_feed.presentation
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.BackdropValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ScaffoldState
@@ -20,6 +21,7 @@ import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.features.destinations.SelectedCartOrderScreenDestination
 import com.niyaj.popos.features.main_feed.presentation.components.category.MainFeedCategoryEvent
 import com.niyaj.popos.features.main_feed.presentation.components.product.MainFeedProductEvent
+import com.niyaj.popos.utils.isScrolled
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.navigate
@@ -27,6 +29,7 @@ import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
 import io.sentry.compose.SentryTraced
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
  *  Main Feed Screen
@@ -48,6 +51,8 @@ fun MainFeedScreen(
 ) {
     val backdropScaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
     val scope = rememberCoroutineScope()
+    val lazyListState = rememberLazyListState()
+    val categoryLazyListState = rememberLazyListState()
 
     val categories = mainFeedViewModel.categories.collectAsStateWithLifecycle().value.categories
     val categoriesIsLoading = mainFeedViewModel.categories.collectAsStateWithLifecycle().value.isLoading
@@ -69,6 +74,17 @@ fun MainFeedScreen(
 
     val showSearchBar by mainFeedViewModel.toggledSearchBar.collectAsStateWithLifecycle()
     val searchText = mainFeedViewModel.searchText.collectAsStateWithLifecycle().value
+
+    LaunchedEffect(key1 = selectedOrderId) {
+        scope.launch {
+            if (lazyListState.isScrolled) {
+                lazyListState.animateScrollToItem(0)
+            }
+            if (categoryLazyListState.isScrolled) {
+                categoryLazyListState.animateScrollToItem(0)
+            }
+        }
+    }
 
     LaunchedEffect(key1 = true) {
         mainFeedViewModel.eventFlow.collectLatest { event ->
@@ -147,14 +163,17 @@ fun MainFeedScreen(
                     productsIsLoading = productsIsLoading,
                     productsHasError = productsHasError,
                     categoriesHasError = categoriesHasError,
-                    onCategoryFilterClick = {},
+                    lazyListState = lazyListState,
+                    categoryLazyListState = categoryLazyListState,
                     categories = categories,
-                    onCategoryClick = {
-                        mainFeedViewModel.onCategoryEvent(MainFeedCategoryEvent.OnSelectCategory(it))
-                    },
                     selectedCategory = selectedCategory,
-                    onProductFilterClick = {},
                     products = products,
+                    onCategoryClick = {
+                        scope.launch {
+                            mainFeedViewModel.onCategoryEvent(MainFeedCategoryEvent.OnSelectCategory(it))
+                            lazyListState.animateScrollToItem(0)
+                        }
+                    },
                     onProductLeftClick = {
                         if (selectedOrder != null) {
                             mainFeedViewModel.onProductEvent(

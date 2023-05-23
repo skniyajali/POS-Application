@@ -80,7 +80,7 @@ object Constants {
     const val RESTAURANT_SECONDARY_PHONE: String = "9597185001"
     const val RESTAURANT_PRIMARY_PHONE: String = "9500825077"
     const val RESTAURANT_ADDRESS = "Chinna Seeragapadi, Salem, TamilNadu, India 636308, Opp. of VIMS Hospital"
-    const val RESTAURANT_LOGO = R.drawable.reslogo.toString()
+    val RESTAURANT_LOGO = R.drawable.reslogo.toString()
 
     //Common Constants
     const val SEARCH_ITEM_NOT_FOUND = "Searched Item Not Found"
@@ -104,10 +104,13 @@ object Constants {
 
     const val ABSENT_REMINDER_ID = "EA889977"
     const val ABSENT_REMINDER_NAME = "Employee Attendance"
+    const val ABSENT_REMINDER_TITLE = "Did You Marked Employee Attendance?"
+    const val ABSENT_REMINDER_TEXT = "Don't forget to mark absent employees."
 
     const val DAILY_SALARY_REMINDER_ID = "DAL907856"
     const val DAILY_SALARY_REMINDER_NAME = "Daily Salary Reminder"
-    const val DAILY_SALARY_REMINDER_TEXT = "Don't forget to add employee salary entries"
+    const val DAILY_SALARY_REMINDER_TITLE = "Did You Paid Employee Salary?"
+    const val DAILY_SALARY_REMINDER_TEXT = "Don't forget to add salary entries."
 
     val DISCOUNT_ITEM = listOf("Masala", "Mayonnaise")
 

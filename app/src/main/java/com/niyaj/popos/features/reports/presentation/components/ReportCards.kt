@@ -180,65 +180,69 @@ fun CategoryWiseReportCard(
 ) {
     val groupedByCategoryWiseReport = report
         .groupBy { it.product?.category?.categoryName }
-
-    groupedByCategoryWiseReport.forEach { (category, products) ->
-        if (category != null && products.isNotEmpty()){
-            val totalQuantity = products.sumOf { it.quantity }.toString()
-
-            StandardExpandable(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(SpaceSmall),
-                expanded = category == selectedCategory,
-                onExpandChanged = {
-                    onExpandChanged(category)
-                },
-                title = {
-                    TextWithIcon(
-                        text = category,
-                        icon = Icons.Default.Category,
-                        isTitle = true
-                    )
-                },
-                trailing = {
-                    CountBox(count = totalQuantity)
-                },
-                rowClickable = true,
-                expand = { modifier: Modifier ->
-                    IconButton(
-                        modifier = modifier,
-                        onClick = {
-                            onExpandChanged(category)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowDown,
-                            contentDescription = "Expand More",
-                            tint = MaterialTheme.colors.secondary
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(SpaceSmall),
+    ) {
+        groupedByCategoryWiseReport.forEach { (category, products) ->
+            if (category != null && products.isNotEmpty()) {
+                val totalQuantity = products.sumOf { it.quantity }.toString()
+                StandardExpandable(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    expanded = category == selectedCategory,
+                    onExpandChanged = {
+                        onExpandChanged(category)
+                    },
+                    title = {
+                        TextWithIcon(
+                            text = category,
+                            icon = Icons.Default.Category,
+                            isTitle = true
                         )
-                    }
-                },
-                content = {
-                    val sortedProducts = products.sortedByDescending { it.quantity}
+                    },
+                    trailing = {
+                        CountBox(count = totalQuantity)
+                    },
+                    rowClickable = true,
+                    expand = { modifier : Modifier ->
+                        IconButton(
+                            modifier = modifier,
+                            onClick = {
+                                onExpandChanged(category)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowDown,
+                                contentDescription = "Expand More",
+                                tint = MaterialTheme.colors.secondary
+                            )
+                        }
+                    },
+                    content = {
+                        val sortedProducts = products.sortedByDescending { it.quantity }
+                        Column {
+                            sortedProducts.forEachIndexed { index, productWithQty ->
+                                ProductReportCard(
+                                    report = productWithQty,
+                                    onProductClick = onProductClick
+                                )
 
-                    sortedProducts.forEachIndexed { index, productWithQty ->
-                        ProductReportCard(
-                            report = productWithQty,
-                            onProductClick = onProductClick
-                        )
-
-                        if (index != products.size - 1) {
-                            Spacer(modifier = Modifier.height(SpaceMini))
-                            Divider(modifier = Modifier.fillMaxWidth())
-                            Spacer(modifier = Modifier.height(SpaceMini))
+                                if (index != products.size - 1) {
+                                    Spacer(modifier = Modifier.height(SpaceMini))
+                                    Divider(modifier = Modifier.fillMaxWidth())
+                                    Spacer(modifier = Modifier.height(SpaceMini))
+                                }
+                            }
                         }
                     }
-                }
-            )
+                )
 
-            Spacer(modifier = Modifier.height(SpaceMini))
-            Divider(modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(SpaceMini))
+                Spacer(modifier = Modifier.height(SpaceMini))
+                Divider(modifier = Modifier.fillMaxWidth())
+                Spacer(modifier = Modifier.height(SpaceMini))
+            }
         }
     }
 }

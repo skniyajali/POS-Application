@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
@@ -30,6 +31,7 @@ import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 @Composable
 fun CategoryItems(
     modifier: Modifier = Modifier,
+    lazyListState: LazyListState,
     categories: List<Category>,
     selectedCategory: String = "",
     selectedColor: Color = MaterialTheme.colors.primary,
@@ -38,10 +40,16 @@ fun CategoryItems(
     onClickCategory: (String) -> Unit = {},
 ) {
     LazyRow(
+        state = lazyListState,
         modifier = modifier
             .fillMaxWidth()
     ){
-        items(categories){ category ->
+        items(
+            items = categories,
+            key = {
+                it.categoryId
+            }
+        ){ category ->
             CategoryItem(
                 category = category,
                 selectedCategory = selectedCategory,

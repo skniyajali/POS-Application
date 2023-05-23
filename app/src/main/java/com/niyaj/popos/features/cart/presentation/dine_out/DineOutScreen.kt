@@ -44,6 +44,7 @@ import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
 import io.sentry.compose.SentryTraced
+import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
 
 /**
@@ -154,10 +155,9 @@ fun DineOutScreen(
     val countSelectedDineOutItem = selectedDineOutOrder.size
 
     val addOnItems = addOnItemViewModel.state.collectAsStateWithLifecycle().value.addOnItems
-    val events = dineOutViewModel.eventFlow.collectAsStateWithLifecycle(initialValue = null).value
 
-    LaunchedEffect(key1 = events){
-        events?.let { event ->
+    LaunchedEffect(key1 = true){
+        dineOutViewModel.eventFlow.collectLatest { event ->
             when(event){
                 is UiEvent.OnSuccess -> {
                     val result = scaffoldState.snackbarHostState.showSnackbar(

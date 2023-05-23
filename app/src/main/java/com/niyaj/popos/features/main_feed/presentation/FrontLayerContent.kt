@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -29,6 +30,8 @@ import com.ramcosta.composedestinations.navigation.navigate
 @Composable
 fun FrontLayerContent(
     navController : NavController,
+    lazyListState: LazyListState,
+    categoryLazyListState: LazyListState,
     categoriesIsLoading: Boolean = false,
     productsIsLoading: Boolean = false,
     productsHasError: String? = null,
@@ -69,17 +72,19 @@ fun FrontLayerContent(
                 )
             } else {
                 CategorySection(
+                    lazyListState = categoryLazyListState,
                     categories = categories,
-                    onCategoryFilterClick = onCategoryFilterClick,
-                    onCategoryClick = onCategoryClick,
                     selectedCategory = selectedCategory,
                     isLoading = categoriesIsLoading || productsIsLoading,
+                    onCategoryClick = onCategoryClick,
+                    onCategoryFilterClick = onCategoryFilterClick,
                 )
 
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
                 ProductSection(
                     products = products,
+                    lazyListState = lazyListState,
                     onProductFilterClick = onProductFilterClick,
                     onProductLeftClick = onProductLeftClick,
                     onProductRightClick = onProductRightClick,

@@ -349,6 +349,7 @@ fun ProductScreen(
                         }
                     } else {
                         CategoryItems(
+                            lazyListState = lazyListState,
                             categories = productsViewModel.categories.collectAsStateWithLifecycle().value,
                             selectedCategory = selectedCategory,
                             onClickCategory = {

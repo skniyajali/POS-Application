@@ -65,6 +65,10 @@ class EmployeeRepositoryImpl(
         }
     }
 
+    override fun doesAnyEmployeeExist() : Boolean {
+        return realm.query<Employee>().find().isNotEmpty()
+    }
+
     override fun getEmployeeById(employeeId: String): Resource<Employee?> {
         return try {
             val employee = realm.query<Employee>("employeeId == $0", employeeId).first().find()

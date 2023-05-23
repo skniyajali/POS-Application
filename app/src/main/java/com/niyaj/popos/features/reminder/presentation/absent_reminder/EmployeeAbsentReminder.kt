@@ -13,6 +13,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.niyaj.popos.features.MainActivity
+import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
 import com.niyaj.popos.features.reminder.domain.model.AbsentReminder
 import com.niyaj.popos.features.reminder.domain.model.toReminder
 import com.niyaj.popos.features.reminder.domain.repository.ReminderRepository
@@ -30,12 +31,15 @@ import javax.inject.Inject
 @HiltViewModel
 class EmployeeAbsentReminder @Inject constructor(
     private val reminderRepository: ReminderRepository,
+    private val employeeRepository : EmployeeRepository,
     application: Application,
 ) : ViewModel() {
     private val workManager = WorkManager.getInstance(application.applicationContext)
 
     private val _reminder = mutableStateOf(AbsentReminder())
     val reminder: State<AbsentReminder> = _reminder
+
+    private val doesEmployeeExist = employeeRepository.doesAnyEmployeeExist()
 
     private val currentTime = System.currentTimeMillis().toString()
 
@@ -51,12 +55,21 @@ class EmployeeAbsentReminder @Inject constructor(
         MainActivity::class.java
     )
 
-    private val pendingIntent: PendingIntent = PendingIntent.getActivity(
-        /* context = */ application.applicationContext,
-        /* requestCode = */ 0,
-        /* intent = */ absentReminderIntent,
-        /* flags = */ PendingIntent.FLAG_IMMUTABLE
-    )
+    private val pendingIntent: PendingIntent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        PendingIntent.getActivity(
+            /* context = */ application.applicationContext,
+            /* requestCode = */ 0,
+            /* intent = */ absentReminderIntent,
+            /* flags = */ PendingIntent.FLAG_IMMUTABLE
+        )
+    }else {
+        PendingIntent.getActivity(
+            /* context = */ application.applicationContext,
+            /* requestCode = */ 0,
+            /* intent = */ absentReminderIntent,
+            /* flags = */ PendingIntent.FLAG_UPDATE_CURRENT
+        )
+    }
 
     init {
         getAbsentReminderOnCurrentDate(application.applicationContext)
@@ -64,25 +77,19 @@ class EmployeeAbsentReminder @Inject constructor(
 
     private fun getAbsentReminderOnCurrentDate(context : Context) {
         viewModelScope.launch {
-            val reminder = reminderRepository.getAbsentReminder()
+            if (doesEmployeeExist) {
+                val reminder = reminderRepository.getAbsentReminder()
 
-            if (reminder == null || reminder.reminderStartTime != _reminder.value.reminderStartTime) {
-                Timber.d("Reminder on empty ${_reminder.value.notificationId}")
-
-                withContext(Dispatchers.IO) {
-                    reminderRepository.createOrUpdateReminder(AbsentReminder().toReminder())
+                if (reminder == null || reminder.reminderStartTime != _reminder.value.reminderStartTime) {
+                    withContext(Dispatchers.IO) {
+                        reminderRepository.createOrUpdateReminder(AbsentReminder().toReminder())
+                    }
                 }
+
+                _reminder.value = reminderRepository.getAbsentReminder()!!
+
+                enqueueAbsentReminder(context)
             }
-
-            Timber.d("Reminder after empty ${AbsentReminder().notificationId}")
-
-
-            _reminder.value = reminderRepository.getAbsentReminder()!!
-
-            Timber.d("Reminder after update ${_reminder.value.notificationId}")
-
-
-            enqueueAbsentReminder(context)
         }
     }
 

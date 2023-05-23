@@ -13,6 +13,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat.getSystemService
 import com.niyaj.popos.R
 import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_ID
+import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_TEXT
+import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_TITLE
 import com.niyaj.popos.utils.Constants.PRODUCT_NAME_LENGTH
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -298,8 +300,8 @@ fun showPendingIntentNotification(
     notificationId : Int,
     pendingIntent : PendingIntent,
     channelId : String = ABSENT_REMINDER_ID,
-    title: String = "Mark Absent Employee",
-    text: String = "Click to open and mark absent employee.",
+    title: String = ABSENT_REMINDER_TITLE,
+    text: String = ABSENT_REMINDER_TEXT,
     @DrawableRes
     icon: Int = R.drawable.baseline_calendar,
     setOnGoing: Boolean = isOngoing,
