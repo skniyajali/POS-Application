@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
  *  Main Feed Screen
  *  @author Sk Niyaj Ali
  *  @param navController
- *  @param mainFeedViewModel
+ *  @param viewModel
  *  @param resultRecipient
  *  @see MainFeedViewModel
  */
@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 fun MainFeedScreen(
     navController : NavController,
     scaffoldState : ScaffoldState,
-    mainFeedViewModel : MainFeedViewModel = hiltViewModel(),
+    viewModel : MainFeedViewModel = hiltViewModel(),
     resultRecipient : ResultRecipient<AddEditCartOrderScreenDestination, String>,
 ) {
     val backdropScaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
@@ -54,16 +54,16 @@ fun MainFeedScreen(
     val lazyListState = rememberLazyListState()
     val categoryLazyListState = rememberLazyListState()
 
-    val categories = mainFeedViewModel.categories.collectAsStateWithLifecycle().value.categories
-    val categoriesIsLoading = mainFeedViewModel.categories.collectAsStateWithLifecycle().value.isLoading
-    val categoriesHasError = mainFeedViewModel.categories.collectAsStateWithLifecycle().value.error
-    val selectedCategory = mainFeedViewModel.selectedCategory.value
+    val categories = viewModel.categories.collectAsStateWithLifecycle().value.categories
+    val categoriesIsLoading = viewModel.categories.collectAsStateWithLifecycle().value.isLoading
+    val categoriesHasError = viewModel.categories.collectAsStateWithLifecycle().value.error
+    val selectedCategory = viewModel.selectedCategory.value
 
-    val products = mainFeedViewModel.products.collectAsStateWithLifecycle().value.products
-    val productsIsLoading = mainFeedViewModel.products.collectAsStateWithLifecycle().value.isLoading
-    val productsHasError = mainFeedViewModel.products.collectAsStateWithLifecycle().value.error
+    val products = viewModel.products.collectAsStateWithLifecycle().value.products
+    val productsIsLoading = viewModel.products.collectAsStateWithLifecycle().value.isLoading
+    val productsHasError = viewModel.products.collectAsStateWithLifecycle().value.error
 
-    val selectedOrder = mainFeedViewModel.selectedCartOrder.collectAsStateWithLifecycle().value
+    val selectedOrder = viewModel.selectedCartOrder.collectAsStateWithLifecycle().value
     val selectedOrderId = if (selectedOrder != null) {
         if (!selectedOrder.address?.addressName.isNullOrEmpty()) {
             selectedOrder.address?.shortName?.uppercase().plus(" -").plus(selectedOrder.orderId)
@@ -72,8 +72,8 @@ fun MainFeedScreen(
         }
     } else null
 
-    val showSearchBar by mainFeedViewModel.toggledSearchBar.collectAsStateWithLifecycle()
-    val searchText = mainFeedViewModel.searchText.collectAsStateWithLifecycle().value
+    val showSearchBar by viewModel.toggledSearchBar.collectAsStateWithLifecycle()
+    val searchText = viewModel.searchText.collectAsStateWithLifecycle().value
 
     LaunchedEffect(key1 = selectedOrderId) {
         scope.launch {
@@ -86,8 +86,14 @@ fun MainFeedScreen(
         }
     }
 
+    LaunchedEffect(key1 = selectedCategory) {
+        scope.launch {
+            lazyListState.animateScrollToItem(0)
+        }
+    }
+
     LaunchedEffect(key1 = true) {
-        mainFeedViewModel.eventFlow.collectLatest { event ->
+        viewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is UiEvent.OnSuccess -> {
                     scaffoldState.snackbarHostState.showSnackbar(message = event.successMessage)
@@ -107,9 +113,9 @@ fun MainFeedScreen(
 
     BackHandler(true) {
         if (showSearchBar) {
-            mainFeedViewModel.onSearchBarCloseAndClearClick()
+            viewModel.onSearchBarCloseAndClearClick()
         } else if (selectedCategory.isNotEmpty()) {
-            mainFeedViewModel.onCategoryEvent(MainFeedCategoryEvent.OnSelectCategory(selectedCategory))
+            viewModel.onCategoryEvent(MainFeedCategoryEvent.OnSelectCategory(selectedCategory))
         } else {
             navController.popBackStack()
         }
@@ -119,7 +125,7 @@ fun MainFeedScreen(
         when (result) {
             is NavResult.Canceled -> {}
             is NavResult.Value -> {
-                mainFeedViewModel.onEvent(MainFeedEvent.RefreshMainFeed)
+                viewModel.onEvent(MainFeedEvent.RefreshMainFeed)
             }
         }
     }
@@ -138,17 +144,17 @@ fun MainFeedScreen(
                 navController.navigate(SelectedCartOrderScreenDestination)
             },
             onSearchButtonClick = {
-                mainFeedViewModel.onProductEvent(MainFeedProductEvent.ToggleSearchBar)
+                viewModel.onProductEvent(MainFeedProductEvent.ToggleSearchBar)
             },
             onSearchTextChanged = {
-                mainFeedViewModel.onProductEvent(MainFeedProductEvent.SearchProduct(it))
+                viewModel.onProductEvent(MainFeedProductEvent.SearchProduct(it))
             },
             onClearClick = {
-                mainFeedViewModel.onSearchTextClearClick()
+                viewModel.onSearchTextClearClick()
             },
             onBackButtonClick = {
                 if (showSearchBar) {
-                    mainFeedViewModel.onSearchBarCloseAndClearClick()
+                    viewModel.onSearchBarCloseAndClearClick()
                 } else {
                     navController.navigateUp()
                 }
@@ -169,14 +175,11 @@ fun MainFeedScreen(
                     selectedCategory = selectedCategory,
                     products = products,
                     onCategoryClick = {
-                        scope.launch {
-                            mainFeedViewModel.onCategoryEvent(MainFeedCategoryEvent.OnSelectCategory(it))
-                            lazyListState.animateScrollToItem(0)
-                        }
+                        viewModel.onCategoryEvent(MainFeedCategoryEvent.OnSelectCategory(it))
                     },
                     onProductLeftClick = {
                         if (selectedOrder != null) {
-                            mainFeedViewModel.onProductEvent(
+                            viewModel.onProductEvent(
                                 MainFeedProductEvent.RemoveProductFromCart(selectedOrder.cartOrderId, it)
                             )
                         }
@@ -185,13 +188,13 @@ fun MainFeedScreen(
                         if (selectedOrder == null) {
                             navController.navigate(AddEditCartOrderScreenDestination())
                         } else {
-                            mainFeedViewModel.onProductEvent(
+                            viewModel.onProductEvent(
                                 MainFeedProductEvent.AddProductToCart(selectedOrder.cartOrderId, it)
                             )
                         }
                     },
                     onRefreshFrontLayer = {
-                        mainFeedViewModel.onEvent(MainFeedEvent.RefreshMainFeed)
+                        viewModel.onEvent(MainFeedEvent.RefreshMainFeed)
                     }
                 )
             },

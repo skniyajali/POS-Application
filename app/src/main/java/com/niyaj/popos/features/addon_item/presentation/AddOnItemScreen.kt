@@ -66,10 +66,10 @@ import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.NO_ITEMS_I
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.ItemNotAvailable
-import com.niyaj.popos.features.components.NiaLoadingWheel
+import com.niyaj.popos.features.components.LoadingIndicator
 import com.niyaj.popos.features.components.ScaffoldNavActions
+import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardIconButton
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.destinations.AddEditAddOnItemScreenDestination
@@ -306,7 +306,7 @@ fun AddOnItemScreen(
                 modifier = Modifier.testTag(ADDON_ITEM_REFRESH)
             ) {
                 if (isLoading) {
-                    NiaLoadingWheel(contentDesc = "Add On Item Loading")
+                    LoadingIndicator()
                 }else if (addOnItems.isEmpty() || hasError != null) {
                     ItemNotAvailable(
                         modifier = Modifier.testTag(ADDON_NOT_AVAIlABLE),
@@ -328,7 +328,11 @@ fun AddOnItemScreen(
                         itemsIndexed(addOnItems){ _, addOnItem ->
                             Card(
                                 modifier = Modifier
-                                    .testTag(ADDON_ITEM_TAG.plus(addOnItem.itemName).plus(addOnItem.itemPrice.toString()))
+                                    .testTag(
+                                        ADDON_ITEM_TAG
+                                            .plus(addOnItem.itemName)
+                                            .plus(addOnItem.itemPrice.toString())
+                                    )
                                     .fillMaxWidth()
                                     .padding(SpaceMini)
                                     .combinedClickable(

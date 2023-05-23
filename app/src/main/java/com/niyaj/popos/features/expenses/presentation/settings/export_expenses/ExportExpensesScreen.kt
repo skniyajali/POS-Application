@@ -197,7 +197,7 @@ fun ExportExpensesScreen(
                         }
 
                         ExportedFooter(
-                            text = "Export Customers",
+                            text = "Export Expenses",
                             showFileSelector = showFileSelector,
                             onExportClick = {
                                 scope.launch {
@@ -213,7 +213,7 @@ fun ExportExpensesScreen(
                         )
                     }
                 }
-                else -> ItemNotAvailable(text = state.error ?: "Customers not available")
+                else -> ItemNotAvailable(text = state.error ?: "Expenses not available")
             }
         }
     }

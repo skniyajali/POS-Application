@@ -11,7 +11,6 @@ import com.niyaj.popos.features.order.domain.model.DineInOrder
 import com.niyaj.popos.features.order.domain.model.DineOutOrder
 import com.niyaj.popos.features.order.domain.model.OrderDetail
 import com.niyaj.popos.features.order.domain.repository.OrderRepository
-import com.niyaj.popos.utils.Constants.DISCOUNT_ITEM
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -133,8 +132,7 @@ class OrderRepositoryImpl(
 
                     totalPrice += addOnItem.itemPrice
 
-                    // Todo: use dynamic fields for discount calculation.
-                    if (DISCOUNT_ITEM.any { it == addOnItem.itemName }) {
+                    if (!addOnItem.isApplicable) {
                         discountPrice += addOnItem.itemPrice
                     }
                 }

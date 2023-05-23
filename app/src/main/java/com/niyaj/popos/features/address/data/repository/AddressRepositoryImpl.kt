@@ -10,7 +10,6 @@ import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.charges.domain.model.Charges
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.ValidationResult
-import com.niyaj.popos.utils.Constants
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -340,8 +339,7 @@ class AddressRepositoryImpl(
 
                     totalPrice += addOnItem.itemPrice
 
-                    // Todo: use dynamic fields for discount calculation.
-                    if (addOnItem.itemName == Constants.ADD_ON_EXCLUDE_ITEM_ONE || addOnItem.itemName == Constants.ADD_ON_EXCLUDE_ITEM_TWO) {
+                    if (!addOnItem.isApplicable) {
                         discountPrice += addOnItem.itemPrice
                     }
                 }

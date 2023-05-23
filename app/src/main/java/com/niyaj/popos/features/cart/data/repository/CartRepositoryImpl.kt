@@ -11,8 +11,6 @@ import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.charges.domain.model.Charges
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.product.domain.model.Product
-import com.niyaj.popos.utils.Constants.ADD_ON_EXCLUDE_ITEM_ONE
-import com.niyaj.popos.utils.Constants.ADD_ON_EXCLUDE_ITEM_TWO
 import com.niyaj.popos.utils.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
@@ -214,8 +212,7 @@ class CartRepositoryImpl(
 
                     totalPrice += addOnItem.itemPrice
 
-                    // Todo: use dynamic fields for discount calculation.
-                    if (addOnItem.itemName == ADD_ON_EXCLUDE_ITEM_ONE || addOnItem.itemName == ADD_ON_EXCLUDE_ITEM_TWO) {
+                    if (!addOnItem.isApplicable) {
                         discountPrice += addOnItem.itemPrice
                     }
                 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.niyaj.popos.features.common.util.Resource
+import com.niyaj.popos.features.reports.domain.model.Reports
 import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
 import com.niyaj.popos.features.reports.domain.use_cases.ReportsUseCases
 import com.niyaj.popos.utils.Constants
@@ -297,28 +298,24 @@ class ReportsViewModel @Inject constructor(
         }
     }
 
-    private fun getReport(startDate: String) {
-        reportsRepository.getReport(startDate).onEach { result ->
-            when(result){
-                is Resource.Loading -> {
-                    _reportState.value = _reportState.value.copy(
-                        isLoading = result.isLoading
-                    )
-                }
-                is Resource.Success -> {
-                    result.data?.let {
-                        _reportState.value = _reportState.value.copy(
-                            report = it
-                        )
+    private fun getReport(startDate: String = date) {
+        viewModelScope.launch {
+            reportsRepository.getReport(startDate).collectLatest { result ->
+                when(result){
+                    is Resource.Loading -> {
+                        _reportState.value = _reportState.value.copy(isLoading = result.isLoading)
+                    }
+                    is Resource.Success -> {
+                        val data = result.data ?: Reports()
+
+                        _reportState.value = _reportState.value.copy(report = data)
+                    }
+                    is Resource.Error -> {
+                        _reportState.value = _reportState.value.copy(hasError = result.message)
                     }
                 }
-                is Resource.Error -> {
-                    _reportState.value = _reportState.value.copy(
-                        hasError = result.message
-                    )
-                }
             }
-        }.launchIn(viewModelScope)
+        }
     }
 
     private fun connectPrinter(): Boolean {
@@ -397,7 +394,7 @@ class ReportsViewModel @Inject constructor(
                 barReport += "[L]${data.yValue}[R]${data.xValue.toString().substringBefore(".")}\n"
             }
         } else {
-            barReport += "[C]There is no data available."
+            barReport += "[C]Reports not available. \n"
         }
 
         barReport += "[L]-------------------------------\n\n"
@@ -464,7 +461,7 @@ class ReportsViewModel @Inject constructor(
                 }
             }
         } else{
-            report += "[C]Product report is not available"
+            report += "[C]Product Report Not Available \n"
         }
 
         report += "[L]-------------------------------\n\n"
@@ -490,7 +487,7 @@ class ReportsViewModel @Inject constructor(
             }
 
         }else {
-            report += "[C]Address reports is not available"
+            report += "[C]Address Report Not Available \n"
         }
 
         report += "[L]-------------------------------\n\n"
@@ -516,7 +513,7 @@ class ReportsViewModel @Inject constructor(
 //                }
             }
         }else{
-            report += "[C]Customer reports is not available"
+            report += "[C]Customer Report Not Available \n"
         }
 
         report += "[L]-------------------------------\n\n"

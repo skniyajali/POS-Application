@@ -11,7 +11,6 @@ import com.niyaj.popos.features.customer.domain.model.Customer
 import com.niyaj.popos.features.customer.domain.model.CustomerWiseOrder
 import com.niyaj.popos.features.customer.domain.repository.CustomerRepository
 import com.niyaj.popos.features.customer.domain.repository.CustomerValidationRepository
-import com.niyaj.popos.utils.Constants
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -386,8 +385,7 @@ class CustomerRepositoryImpl(
 
                     totalPrice += addOnItem.itemPrice
 
-                    // Todo: use dynamic fields for discount calculation.
-                    if (addOnItem.itemName == Constants.ADD_ON_EXCLUDE_ITEM_ONE || addOnItem.itemName == Constants.ADD_ON_EXCLUDE_ITEM_TWO) {
+                    if (!addOnItem.isApplicable) {
                         discountPrice += addOnItem.itemPrice
                     }
                 }

@@ -2,12 +2,48 @@ package com.niyaj.popos.features.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.AllInbox
+import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.BreakfastDining
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.EventBusy
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.InsertLink
+import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PeopleAlt
+import androidx.compose.material.icons.filled.Print
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.StickyNote2
+import androidx.compose.material.icons.filled.SwitchAccount
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -23,8 +59,31 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.*
-import com.niyaj.popos.features.destinations.*
+import com.niyaj.popos.features.common.ui.theme.IconSizeLarge
+import com.niyaj.popos.features.common.ui.theme.LightColor12
+import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeSmall
+import com.niyaj.popos.features.common.ui.theme.SpaceLarge
+import com.niyaj.popos.features.common.ui.theme.SpaceMedium
+import com.niyaj.popos.features.common.ui.theme.SpaceSmall
+import com.niyaj.popos.features.destinations.AddOnItemScreenDestination
+import com.niyaj.popos.features.destinations.AddressScreenDestination
+import com.niyaj.popos.features.destinations.AttendanceScreenDestination
+import com.niyaj.popos.features.destinations.CartOrderScreenDestination
+import com.niyaj.popos.features.destinations.CategoryScreenDestination
+import com.niyaj.popos.features.destinations.ChargesScreenDestination
+import com.niyaj.popos.features.destinations.CustomerScreenDestination
+import com.niyaj.popos.features.destinations.EmployeeScreenDestination
+import com.niyaj.popos.features.destinations.ExpensesCategoryScreenDestination
+import com.niyaj.popos.features.destinations.ExpensesScreenDestination
+import com.niyaj.popos.features.destinations.MainFeedScreenDestination
+import com.niyaj.popos.features.destinations.OrderScreenDestination
+import com.niyaj.popos.features.destinations.PrintSettingsScreenDestination
+import com.niyaj.popos.features.destinations.ProductScreenDestination
+import com.niyaj.popos.features.destinations.ProfileScreenDestination
+import com.niyaj.popos.features.destinations.ReminderScreenDestination
+import com.niyaj.popos.features.destinations.ReportScreenDestination
+import com.niyaj.popos.features.destinations.SalaryScreenDestination
+import com.niyaj.popos.features.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.navigate
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -141,10 +200,13 @@ fun StandardDrawer(
                         )
                         Spacer(modifier = Modifier.width(SpaceSmall))
                     },
-                    expand = {
-                        IconButton(onClick = {
-                            ordersExpanded.value = !ordersExpanded.value
-                        }) {
+                    expand = {modifier: Modifier ->
+                        IconButton(
+                            modifier = modifier,
+                            onClick = {
+                                ordersExpanded.value = !ordersExpanded.value
+                            }
+                        ) {
                             Icon(
                                 imageVector = Icons.Filled.KeyboardArrowDown,
                                 contentDescription = null
@@ -199,10 +261,13 @@ fun StandardDrawer(
                         )
                         Spacer(modifier = Modifier.width(SpaceSmall))
                     },
-                    expand = {
-                        IconButton(onClick = {
+                    expand = {modifier: Modifier ->
+                        IconButton(
+                            modifier = modifier,
+                            onClick = {
                             expensesExpanded.value = !expensesExpanded.value
-                        }) {
+                        }
+                        ) {
                             Icon(imageVector = Icons.Filled.KeyboardArrowDown,
                                 contentDescription = null)
                         }
@@ -256,10 +321,13 @@ fun StandardDrawer(
                         )
                         Spacer(modifier = Modifier.width(SpaceSmall))
                     },
-                    expand = {
-                        IconButton(onClick = {
+                    expand = {modifier: Modifier ->
+                        IconButton(
+                            modifier = modifier,
+                            onClick = {
                             customersExpanded.value = !customersExpanded.value
-                        }) {
+                        }
+                        ) {
                             Icon(imageVector = Icons.Filled.KeyboardArrowDown,
                                 contentDescription = null)
                         }
@@ -314,10 +382,13 @@ fun StandardDrawer(
                         )
                         Spacer(modifier = Modifier.width(SpaceSmall))
                     },
-                    expand = {
-                        IconButton(onClick = {
+                    expand = {modifier: Modifier ->
+                        IconButton(
+                            modifier = modifier,
+                            onClick = {
                             partnersExpanded.value = !partnersExpanded.value
-                        }) {
+                        }
+                        ) {
                             Icon(imageVector = Icons.Filled.KeyboardArrowDown,
                                 contentDescription = null)
                         }
@@ -470,10 +541,13 @@ fun StandardDrawer(
                             tint = MaterialTheme.colors.secondaryVariant)
                         Spacer(modifier = Modifier.width(SpaceSmall))
                     },
-                    expand = {
-                        IconButton(onClick = {
+                    expand = {modifier: Modifier ->
+                        IconButton(
+                            modifier = modifier,
+                            onClick = {
                             settingsExpanded.value = !settingsExpanded.value
-                        }) {
+                        }
+                        ) {
                             Icon(imageVector = Icons.Filled.KeyboardArrowDown,
                                 contentDescription = null)
                         }

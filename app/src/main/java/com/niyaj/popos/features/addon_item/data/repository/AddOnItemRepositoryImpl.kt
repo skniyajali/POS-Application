@@ -99,6 +99,7 @@ class AddOnItemRepositoryImpl(
                     addOnItem.addOnItemId = newAddOnItem.addOnItemId.ifEmpty { BsonObjectId().toHexString() }
                     addOnItem.itemName = newAddOnItem.itemName
                     addOnItem.itemPrice = newAddOnItem.itemPrice
+                    addOnItem.isApplicable = newAddOnItem.isApplicable
                     addOnItem.createdAt = newAddOnItem.createdAt.ifEmpty { System.currentTimeMillis().toString() }
 
                     realm.write {
@@ -132,6 +133,7 @@ class AddOnItemRepositoryImpl(
                             findLatest(addOnItem)?.apply {
                                 this.itemName = newAddOnItem.itemName
                                 this.itemPrice = newAddOnItem.itemPrice
+                                this.isApplicable = newAddOnItem.isApplicable
                                 this.updatedAt = System.currentTimeMillis().toString()
                             }
                         }

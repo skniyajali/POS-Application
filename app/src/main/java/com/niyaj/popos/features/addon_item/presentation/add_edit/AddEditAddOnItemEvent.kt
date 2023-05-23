@@ -6,6 +6,8 @@ sealed class AddEditAddOnItemEvent {
 
     data class ItemPriceChanged(val itemPrice: String) : AddEditAddOnItemEvent()
 
+    object ItemApplicableChanged: AddEditAddOnItemEvent()
+
     object CreateNewAddOnItem : AddEditAddOnItemEvent()
 
     data class UpdateAddOnItem(val addOnItemId: String) : AddEditAddOnItemEvent()

@@ -5,5 +5,5 @@ data class AddEditAddOnItemState(
     val itemNameError: String? = null,
     val itemPrice: String = "",
     val itemPriceError: String? = null,
-    val serverError: String? = null
+    val isApplicable: Boolean = true,
 )

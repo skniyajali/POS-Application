@@ -248,35 +248,41 @@ fun ProductScreen(
                         navController.navigate(ProductSettingScreenDestination())
                     },
                     content = {
-                        if (viewType == COLUMN) {
-                            IconButton(
-                                onClick = {
-                                    productsViewModel.onProductEvent(ProductEvent.OnChangeViewType(
-                                        ROW
-                                    ))
-                                },
-                                modifier = Modifier.testTag("ViewTypeRow")
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.GridView,
-                                    contentDescription = stringResource(id = R.string.setting_icon),
-                                    tint = MaterialTheme.colors.onPrimary,
-                                )
-                            }
-                        }else {
-                            IconButton(
-                                onClick = {
-                                    productsViewModel.onProductEvent(ProductEvent.OnChangeViewType(
-                                        COLUMN
-                                    ))
-                                },
-                                modifier = Modifier.testTag("ViewTypeColumn")
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.List,
-                                    contentDescription = stringResource(id = R.string.setting_icon),
-                                    tint = MaterialTheme.colors.onPrimary,
-                                )
+                        if (products.isNotEmpty()) {
+                            if (viewType == COLUMN) {
+                                IconButton(
+                                    onClick = {
+                                        productsViewModel.onProductEvent(
+                                            ProductEvent.OnChangeViewType(
+                                                ROW
+                                            )
+                                        )
+                                    },
+                                    modifier = Modifier.testTag("ViewTypeRow")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.GridView,
+                                        contentDescription = stringResource(id = R.string.setting_icon),
+                                        tint = MaterialTheme.colors.onPrimary,
+                                    )
+                                }
+                            } else {
+                                IconButton(
+                                    onClick = {
+                                        productsViewModel.onProductEvent(
+                                            ProductEvent.OnChangeViewType(
+                                                COLUMN
+                                            )
+                                        )
+                                    },
+                                    modifier = Modifier.testTag("ViewTypeColumn")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.List,
+                                        contentDescription = stringResource(id = R.string.setting_icon),
+                                        tint = MaterialTheme.colors.onPrimary,
+                                    )
+                                }
                             }
                         }
                     }

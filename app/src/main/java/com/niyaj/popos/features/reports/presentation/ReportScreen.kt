@@ -45,6 +45,7 @@ import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -99,8 +100,8 @@ import com.niyaj.popos.features.reports.presentation.components.CustomerReportCa
 import com.niyaj.popos.features.reports.presentation.components.OrderTypeDropdown
 import com.niyaj.popos.features.reports.presentation.components.ReportBox
 import com.niyaj.popos.utils.getCalculatedStartDate
-import com.niyaj.popos.utils.toFormattedDate
 import com.niyaj.popos.utils.toMilliSecond
+import com.niyaj.popos.utils.toPrettyDate
 import com.niyaj.popos.utils.toRupee
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
@@ -222,6 +223,11 @@ fun ReportScreen(
         mutableStateOf("")
     }
 
+    LaunchedEffect(key1 = selectedDate) {
+        selectedBarData = ""
+        selectedProductData = ""
+    }
+
     val showScrollToTop = remember {
         derivedStateOf {
             lazyListState.firstVisibleItemIndex > 0
@@ -239,7 +245,7 @@ fun ReportScreen(
             navActions = {
                 if (selectedDate.isNotEmpty() && selectedDate != LocalDate.now().toString()) {
                     RoundedBox(
-                        text = selectedDate.toFormattedDate,
+                        text = selectedDate.toPrettyDate(),
                         onClick = {
                             dialogState.show()
                         }
@@ -555,6 +561,7 @@ fun ReportBarData(
 
                 else -> {
                     ItemNotAvailable(
+                        modifier = Modifier.padding(SpaceSmall),
                         text = state.error ?: "Reports are not available",
                         showImage = false,
                     )

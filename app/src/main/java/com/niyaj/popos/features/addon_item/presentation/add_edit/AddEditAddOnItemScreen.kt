@@ -1,9 +1,14 @@
 package com.niyaj.popos.features.addon_item.presentation.add_edit
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Switch
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Badge
@@ -12,6 +17,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -27,6 +33,7 @@ import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADD_EDIT_A
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADD_EDIT_SCREEN_CLOSE_BUTTON
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.CREATE_NEW_ADD_ON
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.EDIT_ADD_ON_ITEM
+import com.niyaj.popos.features.charges.domain.util.ChargesTestTags
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
@@ -47,11 +54,11 @@ import kotlinx.coroutines.flow.collectLatest
 fun AddEditAddOnItemScreen(
     addOnItemId: String? = "",
     navController: NavController,
-    addEditAddOnItemViewModel: AddEditAddOnItemViewModel = hiltViewModel(),
+    viewModel: AddEditAddOnItemViewModel = hiltViewModel(),
     resultNavigator: ResultBackNavigator<String>
 ) {
     LaunchedEffect(key1 = true) {
-        addEditAddOnItemViewModel.eventFlow.collectLatest { event ->
+        viewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is UiEvent.OnSuccess -> {
                     resultNavigator.navigateBack(result = event.successMessage)
@@ -84,13 +91,13 @@ fun AddEditAddOnItemScreen(
             ) {
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(ADDON_NAME_FIELD),
-                    text = addEditAddOnItemViewModel.addEditState.itemName,
+                    text = viewModel.addEditState.itemName,
                     hint = ADDON_NAME_FIELD,
                     leadingIcon = Icons.Default.Badge,
-                    error = addEditAddOnItemViewModel.addEditState.itemNameError,
+                    error = viewModel.addEditState.itemNameError,
                     errorTag = ADDON_NAME_ERROR_TAG,
                     onValueChange = {
-                        addEditAddOnItemViewModel.onEvent(AddEditAddOnItemEvent.ItemNameChanged(it))
+                        viewModel.onEvent(AddEditAddOnItemEvent.ItemNameChanged(it))
                     },
                 )
 
@@ -98,18 +105,41 @@ fun AddEditAddOnItemScreen(
 
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(ADDON_PRICE_FIELD),
-                    text = addEditAddOnItemViewModel.addEditState.itemPrice,
+                    text = viewModel.addEditState.itemPrice,
                     hint = ADDON_PRICE_FIELD,
                     errorTag = ADDON_PRICE_ERROR_TAG,
                     leadingIcon = Icons.Default.CurrencyRupee,
                     keyboardType = KeyboardType.Number,
-                    error = addEditAddOnItemViewModel.addEditState.itemPriceError,
+                    error = viewModel.addEditState.itemPriceError,
                     onValueChange = {
-                        addEditAddOnItemViewModel.onEvent(
+                        viewModel.onEvent(
                             AddEditAddOnItemEvent.ItemPriceChanged(safeString(it).toString())
                         )
                     },
                 )
+
+                Spacer(modifier = Modifier.height(SpaceSmall))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Switch(
+                        modifier = Modifier.testTag(ChargesTestTags.CHARGES_APPLIED_SWITCH),
+                        checked = viewModel.addEditState.isApplicable,
+                        onCheckedChange = {
+                            viewModel.onEvent(AddEditAddOnItemEvent.ItemApplicableChanged)
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(SpaceSmall))
+                    Text(
+                        text = if(viewModel.addEditState.isApplicable)
+                            "Marked as applied"
+                        else
+                            "Marked as not applied",
+                        style = MaterialTheme.typography.overline
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(SpaceMedium))
 
@@ -122,11 +152,11 @@ fun AddEditAddOnItemScreen(
                     icon = if(!addOnItemId.isNullOrEmpty()) Icons.Default.Edit else Icons.Default.Add,
                     onClick = {
                         if (!addOnItemId.isNullOrEmpty()) {
-                            addEditAddOnItemViewModel.onEvent(
+                            viewModel.onEvent(
                                 AddEditAddOnItemEvent.UpdateAddOnItem(addOnItemId)
                             )
                         } else {
-                            addEditAddOnItemViewModel.onEvent(AddEditAddOnItemEvent.CreateNewAddOnItem)
+                            viewModel.onEvent(AddEditAddOnItemEvent.CreateNewAddOnItem)
                         }
                     },
                 )

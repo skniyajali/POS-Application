@@ -46,6 +46,10 @@ class AddEditAddOnItemViewModel @Inject constructor(
                 addEditState = addEditState.copy(itemPrice = event.itemPrice)
             }
 
+            is AddEditAddOnItemEvent.ItemApplicableChanged -> {
+                addEditState = addEditState.copy(isApplicable = !addEditState.isApplicable)
+            }
+
             is AddEditAddOnItemEvent.CreateNewAddOnItem -> {
                 addOrEditAddOnItem()
             }
@@ -76,6 +80,7 @@ class AddEditAddOnItemViewModel @Inject constructor(
                 val addOnItem = AddOnItem()
                 addOnItem.itemName = addEditState.itemName
                 addOnItem.itemPrice = safeString(addEditState.itemPrice)
+                addOnItem.isApplicable = addEditState.isApplicable
 
                 if(addOnItemId.isNullOrEmpty()){
                     when(val result = addOnItemRepository.createNewAddOnItem(addOnItem)){
@@ -117,6 +122,7 @@ class AddEditAddOnItemViewModel @Inject constructor(
                         addEditState = addEditState.copy(
                             itemName = result.data.itemName,
                             itemPrice = result.data.itemPrice.toString(),
+                            isApplicable = result.data.isApplicable
                         )
                     }
                 }

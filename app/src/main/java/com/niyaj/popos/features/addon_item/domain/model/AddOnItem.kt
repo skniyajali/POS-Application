@@ -11,6 +11,8 @@ class AddOnItem() : RealmObject {
 
     var itemPrice: Int = 0
 
+    var isApplicable: Boolean = true
+
     var createdAt: String = ""
 
     var updatedAt: String? = null
@@ -19,18 +21,18 @@ class AddOnItem() : RealmObject {
         addOnItemId: String = "",
         itemName: String = "",
         itemPrice: Int = 0,
+        isApplicable: Boolean = true,
         createdAt: String = "",
         updatedAt: String? = null
     ): this() {
         this.addOnItemId = addOnItemId
         this.itemName = itemName
         this.itemPrice = itemPrice
+        this.isApplicable = isApplicable
         this.createdAt = createdAt
         this.updatedAt = updatedAt
     }
 }
-
-class InvalidAddOnItemException(message: String): Exception(message)
 
 fun AddOnItem.searchAddOnItem(searchText: String): Boolean {
     return this.itemName.contains(searchText, true) ||
