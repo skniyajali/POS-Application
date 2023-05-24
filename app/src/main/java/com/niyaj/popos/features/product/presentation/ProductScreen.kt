@@ -3,16 +3,13 @@ package com.niyaj.popos.features.product.presentation
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -31,7 +28,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -46,6 +42,7 @@ import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.ItemNotAvailable
+import com.niyaj.popos.features.components.LoadingIndicator
 import com.niyaj.popos.features.components.ScaffoldNavActions
 import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardScaffold
@@ -84,6 +81,7 @@ fun ProductScreen(
     productsViewModel: ProductsViewModel = hiltViewModel(),
     resultRecipient: ResultRecipient<AddEditProductScreenDestination, String>
 ) {
+    val categoryState = rememberLazyListState()
     val lazyListState = rememberLazyListState()
     val lazyGridState = rememberLazyGridState()
 
@@ -176,6 +174,12 @@ fun ProductScreen(
 
                 is UiEvent.IsLoading -> {}
             }
+        }
+    }
+
+    LaunchedEffect(key1 = selectedCategory) {
+        scope.launch {
+            lazyListState.animateScrollToItem(0)
         }
     }
 
@@ -346,16 +350,10 @@ fun ProductScreen(
                             }
                         )
                     }  else if(isLoading){
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ){
-                            CircularProgressIndicator()
-                        }
+                        LoadingIndicator()
                     } else {
                         CategoryItems(
-                            lazyListState = lazyListState,
+                            lazyListState = categoryState,
                             categories = productsViewModel.categories.collectAsStateWithLifecycle().value,
                             selectedCategory = selectedCategory,
                             onClickCategory = {
