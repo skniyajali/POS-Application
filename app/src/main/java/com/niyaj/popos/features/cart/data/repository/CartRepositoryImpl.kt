@@ -200,6 +200,7 @@ class CartRepositoryImpl(
         if (cartOrder != null && cartOrders.isNotEmpty()) {
             if (cartOrder.doesChargesIncluded) {
                 val charges = realm.query<Charges>().find()
+
                 for (charge in charges) {
                     if (charge.isApplicable && cartOrder.orderType != CartOrderType.DineIn.orderType) {
                         totalPrice += charge.chargesPrice

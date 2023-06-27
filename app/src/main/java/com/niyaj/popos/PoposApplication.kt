@@ -75,8 +75,6 @@ class PoposApplication : Application(), Configuration.Provider {
             deleteUnapprovedReportsOnApplicationStart = true
             buildConfigClass = BuildConfig::class.java
             reportFormat = StringFormat.JSON
-            //each plugin you chose above can be configured in a block like this:
-//            Toast.makeText(this@PoposApplication, getString(R.string.toast_), Toast.LENGTH_SHORT).show()
             toast {
                 //required
                 text = getString(R.string.toast_text)
@@ -96,37 +94,17 @@ class PoposApplication : Application(), Configuration.Provider {
                 //defaults to empty
                 body = getString(R.string.mail_body)
             }
-
-//            notification {
-//                //required
-//                title = getString(R.string.notification_title)
-//                //required
-//                text = getString(R.string.notification_text)
-//                //required
-//                channelName = getString(R.string.notification_channel)
-//                //optional channel description
-//                channelDescription = getString(R.string.notification_channel_desc)
-//                //defaults to NotificationManager.IMPORTANCE_HIGH
-////                resChannelImportance = NotificationManager.IMPORTANCE_MAX
-//                //optional, enables ticker text
-////                tickerText = getString(R.string.notification_ticker)
-//                //defaults to android.R.drawable.stat_sys_warning
-//                resIcon = R.drawable.ic_clear
-//                //defaults to android.R.string.ok
-//                sendButtonText = getString(R.string.notification_send)
-//                //defaults to android.R.drawable.ic_menu_send
-//                //defaults to android.R.string.cancel
-//                discardButtonText = getString(R.string.notification_discard)
-//                //defaults to android.R.drawable.ic_menu_delete
-//                //optional, enables inline comment button
-////                sendWithCommentButtonText = getString(R.string.notification_send_with_comment)
-//                //required if above is set
-////                resSendWithCommentButtonIcon = R.drawable.notification_send_with_comment
-//                //optional inline comment hint
-////                commentPrompt = getString(R.string.notification_comment)
-//                //defaults to false
-//                sendOnClick = true
-//            }
         }
     }
 }
+
+/*
+
+ A cutting-edge POS application designed specifically for restaurants!
+ This innovative software streamlines the ordering process, allowing for multiple types of orders,
+ whether it be dine-in or take-out. Not only that, but it also assists in managing daily expenses,
+  generating bills, and keeping track of employee and their salaries.
+  With its advanced reporting capabilities, this application provides
+  valuable insights into different types of sales,
+  giving restaurant owners the tools they need to make informed decisions and drive success.
+ */

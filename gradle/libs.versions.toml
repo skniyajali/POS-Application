@@ -48,6 +48,9 @@ benchmark-macro = "1.2.0-alpha14"
 androidx-baselineprofile = "1.2.0-alpha13"
 androidx-benchmark = "1.1.1"
 benchmark-junit4 = "1.1.1"
+
+play-integrity = '1.1.0'
+
 # App Version
 namespace = "com.niyaj.popos"
 minSdk = "26"
@@ -201,6 +204,9 @@ kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref 
 uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 benchmark-macro = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark-macro" }
 benchmark-junit4 = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "benchmark-junit4" }
+
+#Google Play integrity
+integrity = { group = "com.google.android.play", name = "integrity", version.ref = "play-integrity"}
 
 
 [plugins]

@@ -88,7 +88,7 @@ import java.time.LocalDate
  * @author Sk Niyaj Ali
  * @param employeeId
  * @param navController
- * @param addEditEmployeeViewModel
+ * @param viewModel
  * @param resultBackNavigator
  * @see AddEditEmployeeViewModel
  */
@@ -96,10 +96,10 @@ import java.time.LocalDate
 @Destination
 @Composable
 fun AddEditEmployeeScreen(
-    employeeId: String = "",
-    navController: NavController,
-    addEditEmployeeViewModel: AddEditEmployeeViewModel = hiltViewModel(),
-    resultBackNavigator: ResultBackNavigator<String>
+    employeeId : String = "",
+    navController : NavController,
+    viewModel : AddEditEmployeeViewModel = hiltViewModel(),
+    resultBackNavigator : ResultBackNavigator<String>
 ) {
     val scaffoldState = rememberScaffoldState()
     val systemUiController = rememberSystemUiController()
@@ -121,13 +121,12 @@ fun AddEditEmployeeScreen(
 
     SideEffect {
         systemUiController.setStatusBarColor(
-            color = Primary,
-            darkIcons = false
+            color = Primary, darkIcons = false
         )
     }
 
     LaunchedEffect(key1 = true) {
-        addEditEmployeeViewModel.eventFlow.collectLatest { event ->
+        viewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is UiEvent.OnSuccess -> {
                     resultBackNavigator.navigateBack(event.successMessage)
@@ -150,45 +149,32 @@ fun AddEditEmployeeScreen(
                 Text(text = if (employeeId.isEmpty()) "Create New Employee" else "Update Employee")
             },
             showBackArrow = true,
-        ){
-            MaterialDialog(
-                dialogState = dialogState,
-                buttons = {
-                    positiveButton("Ok")
-                    negativeButton("Cancel")
-                }
-            ) {
-                datepicker(
-                    allowedDateValidator = { date ->
-                        date <= LocalDate.now()
-                    }
-                ) { date ->
-                    addEditEmployeeViewModel.onAddEditEmployeeEvent(
-                        AddEditEmployeeEvent.EmployeeJoinedDateChanged(date.toMilliSecond)
-                    )
+        ) {
+            MaterialDialog(dialogState = dialogState, buttons = {
+                positiveButton("Ok")
+                negativeButton("Cancel")
+            }) {
+                datepicker(allowedDateValidator = { date ->
+                    date <= LocalDate.now()
+                }) { date ->
+                    viewModel.onEvent(AddEditEmployeeEvent.EmployeeJoinedDateChanged(date.toMilliSecond))
                 }
             }
 
 
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(SpaceSmall),
-            ){
+                modifier = Modifier.fillMaxWidth().padding(SpaceSmall),
+            ) {
                 item {
                     StandardOutlinedTextField(
                         modifier = Modifier.testTag(EMPLOYEE_NAME_FIELD),
-                        text = addEditEmployeeViewModel.addEditState.employeeName,
+                        text = viewModel.addEditState.employeeName,
                         hint = "Employee Name",
                         errorTag = EMPLOYEE_NAME_ERROR,
                         leadingIcon = Icons.Default.Person4,
-                        error = addEditEmployeeViewModel.addEditState.employeeNameError,
+                        error = viewModel.addEditState.employeeNameError,
                         onValueChange = {
-                            addEditEmployeeViewModel.onAddEditEmployeeEvent(
-                                AddEditEmployeeEvent.EmployeeNameChanged(
-                                    it
-                                )
-                            )
+                            viewModel.onEvent(AddEditEmployeeEvent.EmployeeNameChanged(it))
                         },
                     )
                 }
@@ -198,18 +184,14 @@ fun AddEditEmployeeScreen(
 
                     StandardOutlinedTextField(
                         modifier = Modifier.testTag(EMPLOYEE_PHONE_FIELD),
-                        text = addEditEmployeeViewModel.addEditState.employeePhone,
+                        text = viewModel.addEditState.employeePhone,
                         hint = "Employee Phone",
                         leadingIcon = Icons.Default.PhoneAndroid,
                         keyboardType = KeyboardType.Number,
-                        error = addEditEmployeeViewModel.addEditState.employeePhoneError,
+                        error = viewModel.addEditState.employeePhoneError,
                         errorTag = EMPLOYEE_PHONE_ERROR,
                         onValueChange = {
-                            addEditEmployeeViewModel.onAddEditEmployeeEvent(
-                                AddEditEmployeeEvent.EmployeePhoneChanged(
-                                    it
-                                )
-                            )
+                            viewModel.onEvent(AddEditEmployeeEvent.EmployeePhoneChanged(it))
                         },
                     )
                 }
@@ -218,18 +200,14 @@ fun AddEditEmployeeScreen(
                     Spacer(modifier = Modifier.height(SpaceSmall))
                     StandardOutlinedTextField(
                         modifier = Modifier.testTag(EMPLOYEE_MONTHLY_SALARY_FIELD),
-                        text = addEditEmployeeViewModel.addEditState.employeeSalary,
+                        text = viewModel.addEditState.employeeSalary,
                         hint = "Employee Monthly Salary",
                         leadingIcon = Icons.Default.Money,
                         keyboardType = KeyboardType.Number,
-                        error = addEditEmployeeViewModel.addEditState.employeeSalaryError,
+                        error = viewModel.addEditState.employeeSalaryError,
                         errorTag = EMPLOYEE_MONTHLY_SALARY_ERROR,
                         onValueChange = {
-                            addEditEmployeeViewModel.onAddEditEmployeeEvent(
-                                AddEditEmployeeEvent.EmployeeSalaryChanged(
-                                    it
-                                )
-                            )
+                            viewModel.onEvent(AddEditEmployeeEvent.EmployeeSalaryChanged(it))
                         },
                     )
                 }
@@ -245,13 +223,11 @@ fun AddEditEmployeeScreen(
                         modifier = Modifier.testTag(EMPLOYEE_SALARY_TYPE_FIELD),
                     ) {
                         StandardOutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .onGloballyPositioned { coordinates ->
+                            modifier = Modifier.fillMaxWidth().onGloballyPositioned { coordinates ->
                                     //This value is used to assign to the DropDown the same width
                                     textFieldSize = coordinates.size.toSize()
                                 },
-                            text = addEditEmployeeViewModel.addEditState.employeeSalaryType,
+                            text = viewModel.addEditState.employeeSalaryType,
                             hint = "Employee Salary Type",
                             leadingIcon = Icons.Default.MergeType,
                             onValueChange = {},
@@ -268,59 +244,56 @@ fun AddEditEmployeeScreen(
                             onDismissRequest = {
                                 salaryTypeToggled = false
                             },
-                            modifier = Modifier
-                                .width(with(LocalDensity.current){textFieldSize.width.toDp()}),
+                            modifier = Modifier.width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                         ) {
-                            DropdownMenuItem(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                onClick = {
-                                    addEditEmployeeViewModel.onAddEditEmployeeEvent(
-                                        AddEditEmployeeEvent.EmployeeSalaryTypeChanged(
-                                            EmployeeSalaryType.Monthly.salaryType
-                                        )
+                            DropdownMenuItem(modifier = Modifier.fillMaxWidth(), onClick = {
+                                viewModel.onEvent(
+                                    AddEditEmployeeEvent.EmployeeSalaryTypeChanged(
+                                        EmployeeSalaryType.Monthly.salaryType
                                     )
-                                    salaryTypeToggled = false
-                                }
-                            ) {
+                                )
+                                salaryTypeToggled = false
+                            }) {
                                 Text(
                                     text = EmployeeSalaryType.Monthly.salaryType,
                                     style = MaterialTheme.typography.body1,
                                 )
                             }
 
-                            Divider(modifier = Modifier.fillMaxWidth(), color = Color.Gray, thickness = 0.8.dp)
-
-                            DropdownMenuItem(
+                            Divider(
                                 modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    addEditEmployeeViewModel.onAddEditEmployeeEvent(
-                                        AddEditEmployeeEvent.EmployeeSalaryTypeChanged(
-                                            EmployeeSalaryType.Daily.salaryType
-                                        )
+                                color = Color.Gray,
+                                thickness = 0.8.dp
+                            )
+
+                            DropdownMenuItem(modifier = Modifier.fillMaxWidth(), onClick = {
+                                viewModel.onEvent(
+                                    AddEditEmployeeEvent.EmployeeSalaryTypeChanged(
+                                        EmployeeSalaryType.Daily.salaryType
                                     )
-                                    salaryTypeToggled = false
-                                }
-                            ) {
+                                )
+                                salaryTypeToggled = false
+                            }) {
                                 Text(
                                     text = EmployeeSalaryType.Daily.salaryType,
                                     style = MaterialTheme.typography.body1,
                                 )
                             }
 
-                            Divider(modifier = Modifier.fillMaxWidth(), color = Color.Gray, thickness = 0.8.dp)
-
-                            DropdownMenuItem(
+                            Divider(
                                 modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    addEditEmployeeViewModel.onAddEditEmployeeEvent(
-                                        AddEditEmployeeEvent.EmployeeSalaryTypeChanged(
-                                            EmployeeSalaryType.Weekly.salaryType
-                                        )
+                                color = Color.Gray,
+                                thickness = 0.8.dp
+                            )
+
+                            DropdownMenuItem(modifier = Modifier.fillMaxWidth(), onClick = {
+                                viewModel.onEvent(
+                                    AddEditEmployeeEvent.EmployeeSalaryTypeChanged(
+                                        EmployeeSalaryType.Weekly.salaryType
                                     )
-                                    salaryTypeToggled = false
-                                }
-                            ) {
+                                )
+                                salaryTypeToggled = false
+                            }) {
                                 Text(
                                     text = EmployeeSalaryType.Weekly.salaryType,
                                     style = MaterialTheme.typography.body1,
@@ -334,68 +307,63 @@ fun AddEditEmployeeScreen(
                     Spacer(modifier = Modifier.height(SpaceSmall))
 
                     ExposedDropdownMenuBox(
-                        expanded = addEditEmployeeViewModel.expanded,
+                        expanded = viewModel.expanded,
                         onExpandedChange = {
-                            addEditEmployeeViewModel.expanded = !addEditEmployeeViewModel.expanded
+                            viewModel.expanded = !viewModel.expanded
                         },
                         modifier = Modifier.testTag(EMPLOYEE_TYPE_FIELD),
                     ) {
                         StandardOutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .onGloballyPositioned { coordinates ->
+                            modifier = Modifier.fillMaxWidth().onGloballyPositioned { coordinates ->
                                     //This value is used to assign to the DropDown the same width
                                     textFieldSize = coordinates.size.toSize()
                                 },
-                            text = addEditEmployeeViewModel.addEditState.employeeType,
+                            text = viewModel.addEditState.employeeType,
                             hint = "Employee Type",
                             leadingIcon = Icons.Default.Accessibility,
                             onValueChange = {},
                             readOnly = true,
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(
-                                    expanded = addEditEmployeeViewModel.expanded
+                                    expanded = viewModel.expanded
                                 )
                             },
                         )
                         DropdownMenu(
-                            expanded = addEditEmployeeViewModel.expanded,
+                            expanded = viewModel.expanded,
                             onDismissRequest = {
-                                addEditEmployeeViewModel.expanded = false
+                                viewModel.expanded = false
                             },
-                            modifier = Modifier
-                                .width(with(LocalDensity.current){textFieldSize.width.toDp()}),
+                            modifier = Modifier.width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                         ) {
-                            DropdownMenuItem(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    addEditEmployeeViewModel.onAddEditEmployeeEvent(
-                                        AddEditEmployeeEvent.EmployeeTypeChanged(
-                                            EmployeeType.FullTime.employeeType
-                                        )
+                            DropdownMenuItem(modifier = Modifier.fillMaxWidth(), onClick = {
+                                viewModel.onEvent(
+                                    AddEditEmployeeEvent.EmployeeTypeChanged(
+                                        EmployeeType.FullTime.employeeType
                                     )
-                                    addEditEmployeeViewModel.expanded = false
-                                }
-                            ) {
+                                )
+                                viewModel.expanded = false
+                            }) {
                                 Text(
                                     text = EmployeeType.FullTime.employeeType,
                                     style = MaterialTheme.typography.body1,
                                 )
                             }
 
-                            Divider(modifier = Modifier.fillMaxWidth(), color = Color.Gray, thickness = 0.8.dp)
-
-                            DropdownMenuItem(
+                            Divider(
                                 modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    addEditEmployeeViewModel.onAddEditEmployeeEvent(
-                                        AddEditEmployeeEvent.EmployeeTypeChanged(
-                                            EmployeeType.PartTime.employeeType
-                                        )
+                                color = Color.Gray,
+                                thickness = 0.8.dp
+                            )
+
+                            DropdownMenuItem(modifier = Modifier.fillMaxWidth(), onClick = {
+                                viewModel.onEvent(
+                                    AddEditEmployeeEvent.EmployeeTypeChanged(
+                                        EmployeeType.PartTime.employeeType
                                     )
-                                    addEditEmployeeViewModel.expanded = false
-                                }
-                            ) {
+                                )
+                                viewModel.expanded = false
+                            }) {
                                 Text(
                                     text = EmployeeType.PartTime.employeeType,
                                     style = MaterialTheme.typography.body1,
@@ -416,25 +384,24 @@ fun AddEditEmployeeScreen(
                         modifier = Modifier.testTag(EMPLOYEE_POSITION_FIELD),
                     ) {
                         StandardOutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .onGloballyPositioned { coordinates ->
+                            modifier = Modifier.fillMaxWidth().onGloballyPositioned { coordinates ->
                                     //This value is used to assign to the DropDown the same width
                                     textFieldSize = coordinates.size.toSize()
                                 },
-                            text = addEditEmployeeViewModel.addEditState.employeePosition,
+                            text = viewModel.addEditState.employeePosition,
                             hint = "Employee Position",
                             readOnly = true,
                             leadingIcon = Icons.Default.Star,
-                            error = addEditEmployeeViewModel.addEditState.employeePositionError,
+                            error = viewModel.addEditState.employeePositionError,
                             errorTag = EMPLOYEE_POSITION_ERROR,
                             onValueChange = {
-                                addEditEmployeeViewModel.onAddEditEmployeeEvent(
+                                viewModel.onEvent(
                                     AddEditEmployeeEvent.EmployeePositionChanged(
                                         it
                                     )
                                 )
-                                employeePositions.value = positions.filter { position ->  position.contains(it, true) }
+                                employeePositions.value =
+                                    positions.filter { position -> position.contains(it, true) }
                                 positionDropdownToggled = true //
                             },
                             trailingIcon = {
@@ -453,27 +420,29 @@ fun AddEditEmployeeScreen(
                             onDismissRequest = {
                                 positionDropdownToggled = false
                             },
-                            modifier = Modifier
-                                .width(with(LocalDensity.current){textFieldSize.width.toDp()}),
+                            modifier = Modifier.width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                         ) {
-                            employeePositions.value.forEachIndexed{ index, positionName ->
-                                DropdownMenuItem(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    onClick = {
-                                        addEditEmployeeViewModel.onAddEditEmployeeEvent(
-                                            AddEditEmployeeEvent.EmployeePositionChanged(positionName)
+                            employeePositions.value.forEachIndexed { index, positionName ->
+                                DropdownMenuItem(modifier = Modifier.fillMaxWidth(), onClick = {
+                                    viewModel.onEvent(
+                                        AddEditEmployeeEvent.EmployeePositionChanged(
+                                            positionName
                                         )
-                                        positionDropdownToggled = false
-                                    }
-                                ) {
+                                    )
+                                    positionDropdownToggled = false
+                                }) {
                                     Text(
                                         text = positionName,
                                         style = MaterialTheme.typography.body1,
                                     )
                                 }
 
-                                if(index != employeePositions.value.size - 1) {
-                                    Divider(modifier = Modifier.fillMaxWidth(), color = Color.Gray, thickness = 0.8.dp)
+                                if (index != employeePositions.value.size - 1) {
+                                    Divider(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        color = Color.Gray,
+                                        thickness = 0.8.dp
+                                    )
                                 }
                             }
                         }
@@ -483,8 +452,7 @@ fun AddEditEmployeeScreen(
                 item {
                     Spacer(modifier = Modifier.height(SpaceSmall))
 
-                    StandardOutlinedTextField(
-                        text = addEditEmployeeViewModel.addEditState.employeeJoinedDate.toSalaryDate,
+                    StandardOutlinedTextField(text = viewModel.addEditState.employeeJoinedDate.toSalaryDate,
                         hint = "Employee Joined Date",
                         leadingIcon = Icons.Default.CalendarMonth,
                         error = null,
@@ -494,31 +462,31 @@ fun AddEditEmployeeScreen(
                                 onClick = { dialogState.show() },
                                 modifier = Modifier.testTag(EMPLOYEE_JOINED_DATE_FIELD)
                             ) {
-                                Icon(imageVector = Icons.Default.CalendarToday, contentDescription = "Choose Date")
+                                Icon(
+                                    imageVector = Icons.Default.CalendarToday,
+                                    contentDescription = "Choose Date"
+                                )
                             }
-                        }
-                    )
+                        })
                 }
 
                 item {
                     Spacer(modifier = Modifier.height(SpaceMedium))
 
                     StandardButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag(ADD_EDIT_EMPLOYEE_BUTTON),
+                        modifier = Modifier.fillMaxWidth().testTag(ADD_EDIT_EMPLOYEE_BUTTON),
                         text = if (employeeId.isNotEmpty()) stringResource(id = R.string.update_employee)
                         else stringResource(id = R.string.create_new_employee),
                         icon = if (employeeId.isNotEmpty()) Icons.Default.Edit else Icons.Default.Add,
                         onClick = {
                             if (employeeId.isNotEmpty()) {
-                                addEditEmployeeViewModel.onAddEditEmployeeEvent(
+                                viewModel.onEvent(
                                     AddEditEmployeeEvent.UpdateEmployee(
                                         employeeId
                                     )
                                 )
                             } else {
-                                addEditEmployeeViewModel.onAddEditEmployeeEvent(AddEditEmployeeEvent.CreateNewEmployee)
+                                viewModel.onEvent(AddEditEmployeeEvent.CreateNewEmployee)
                             }
                         },
                     )

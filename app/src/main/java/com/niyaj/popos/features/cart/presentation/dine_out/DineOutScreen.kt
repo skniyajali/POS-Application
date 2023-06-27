@@ -151,7 +151,7 @@ fun DineOutScreen(
     val hasError = dineOutViewModel.dineOutOrders.collectAsStateWithLifecycle().value.error
 
     val countTotalDineOutItems = dineOutViewModel.dineOutOrders.collectAsStateWithLifecycle().value.cartItems.size
-    val selectedDineOutOrder = dineOutViewModel.selectedDineOutOrder.collectAsStateWithLifecycle().value
+    val selectedDineOutOrder = dineOutViewModel.selectedDineOutOrder.toList()
     val countSelectedDineOutItem = selectedDineOutOrder.size
 
     val addOnItems = addOnItemViewModel.state.collectAsStateWithLifecycle().value.addOnItems

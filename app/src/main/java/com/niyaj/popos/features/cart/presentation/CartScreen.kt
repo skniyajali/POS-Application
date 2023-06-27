@@ -10,6 +10,7 @@ import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -51,7 +52,7 @@ fun CartScreen(
     SentryTraced(tag = CartScreenDestination.route) {
         StandardScaffold(
             navController = navController,
-            scaffoldState = scaffoldState,
+            scaffoldState = rememberScaffoldState(),
             navigationIcon = {},
             showBackArrow = true,
             navActions = {

@@ -44,7 +44,7 @@ class AddEditEmployeeViewModel @Inject constructor(
     /**
      * This function is called when any event is triggered from the UI
      */
-    fun onAddEditEmployeeEvent(event: AddEditEmployeeEvent) {
+    fun onEvent(event: AddEditEmployeeEvent) {
         when (event){
 
             is AddEditEmployeeEvent.EmployeeNameChanged -> {

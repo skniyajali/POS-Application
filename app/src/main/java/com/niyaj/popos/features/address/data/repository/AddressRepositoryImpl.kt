@@ -147,7 +147,7 @@ class AddressRepositoryImpl(
         }
     }
 
-    override suspend fun deleteAddress(addressId: String): Resource<Boolean> {
+    override suspend fun deleteAddress( addressId: String): Resource<Boolean> {
         return try {
             val address = realm.query<Address>("addressId == $0", addressId).first().find()
 

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -65,11 +64,11 @@ import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.IconBox
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.ScaffoldNavActions
 import com.niyaj.popos.features.components.StandardExpandable
+import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardOutlinedChip
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.TextWithIcon
@@ -78,8 +77,8 @@ import com.niyaj.popos.features.destinations.AddEditSalaryScreenDestination
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.util.PaymentType
 import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
+import com.niyaj.popos.utils.toBarDate
 import com.niyaj.popos.utils.toRupee
-import com.niyaj.popos.utils.toSalaryDate
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
@@ -312,82 +311,79 @@ fun SalaryScreen(
                     salaryViewModel.onEvent(SalaryEvent.RefreshSalary)
                 }
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(SpaceSmall),
-                ) {
-                    if (salaries.isEmpty() || hasError != null) {
-                        ItemNotAvailable(
-                            text = hasError
-                                ?: if (showSearchBar)
-                                    stringResource(id = R.string.search_item_not_found)
-                                else stringResource(id = R.string.no_items_in_salary),
-                            buttonText = stringResource(id = R.string.create_salary_entry).uppercase(),
-                            onClick = {
-                                navController.navigate(AddEditSalaryScreenDestination())
-                            }
-                        )
-                    } else {
-                        LazyColumn(
-                            state = lazyListState,
-                        ) {
+                if (salaries.isEmpty() || hasError != null) {
+                    ItemNotAvailable(
+                        text = hasError
+                            ?: if (showSearchBar)
+                                stringResource(id = R.string.search_item_not_found)
+                            else stringResource(id = R.string.no_items_in_salary),
+                        buttonText = stringResource(id = R.string.create_salary_entry).uppercase(),
+                        onClick = {
+                            navController.navigate(AddEditSalaryScreenDestination())
+                        }
+                    )
+                } else {
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier.padding(SpaceSmall)
+                    ) {
 
-                            item(key = "totalPayments") {
-                                TotalPayment(
-                                    totalAmount = totalAmount,
-                                    paymentsCount = paymentsCount,
-                                    employeesCount = employeeCount,
-                                    onClickEmployeeCount = {
-                                        scope.launch {
-                                            lazyListState.animateScrollToItem(1)
-                                        }
-                                    },
-                                    onClickTotalPayments = {
-                                        scope.launch {
-                                            lazyListState.animateScrollToItem(1)
-                                        }
-                                    },
-                                    onClickAbsentEntry = {
-                                        navController.navigate(AddEditAbsentScreenDestination())
+                        item(key = "totalPayments") {
+                            TotalPayment(
+                                totalAmount = totalAmount,
+                                paymentsCount = paymentsCount,
+                                employeesCount = employeeCount,
+                                onClickEmployeeCount = {
+                                    scope.launch {
+                                        lazyListState.animateScrollToItem(1)
                                     }
-                                )
-                            }
-
-                            item(key = "employeePayments") {
-                                groupedByEmployeeSalaries.forEach { (employeeId, employeeSalaries) ->
-                                    employeeId?.let { empId ->
-                                        val data = salaryViewModel.getEmployeeById(empId)
-
-                                        data?.let { employee ->
-                                            EmployeePayments(
-                                                employee = employee,
-                                                employeeSalaries = employeeSalaries,
-                                                selectedSalary = selectedSalary,
-                                                isExpanded = selectedEmployee == empId,
-                                                onSelectSalary = {
-                                                    salaryViewModel.onEvent(
-                                                        SalaryEvent.SelectSalary(it)
-                                                    )
-                                                },
-                                                onSelectEmployee = {
-                                                    salaryViewModel.onEvent(
-                                                        SalaryEvent.SelectEmployee(it)
-                                                    )
-                                                } ,
-                                                onExpandChanged = {
-                                                    salaryViewModel.onEvent(
-                                                        SalaryEvent.SelectEmployee(it)
-                                                    )
-                                                },
-                                                onClickAddSalaryBtn = {
-                                                    navController.navigate(
-                                                        AddEditSalaryScreenDestination(employeeId = it)
-                                                    )
-                                                },
-                                            )
-                                        }
+                                },
+                                onClickTotalPayments = {
+                                    scope.launch {
+                                        lazyListState.animateScrollToItem(1)
                                     }
+                                },
+                                onClickAbsentEntry = {
+                                    navController.navigate(AddEditAbsentScreenDestination())
+                                }
+                            )
+                        }
+
+                        item(key = "employeePayments") {
+                            groupedByEmployeeSalaries.forEach { (employeeId, employeeSalaries) ->
+                                employeeId?.let { empId ->
+                                    val data = salaryViewModel.getEmployeeById(empId)
+
+                                    data?.let { employee ->
+                                        EmployeePayments(
+                                            employee = employee,
+                                            employeeSalaries = employeeSalaries,
+                                            selectedSalary = selectedSalary,
+                                            isExpanded = selectedEmployee == empId,
+                                            onSelectSalary = {
+                                                salaryViewModel.onEvent(
+                                                    SalaryEvent.SelectSalary(it)
+                                                )
+                                            },
+                                            onSelectEmployee = {
+                                                salaryViewModel.onEvent(
+                                                    SalaryEvent.SelectEmployee(it)
+                                                )
+                                            } ,
+                                            onExpandChanged = {
+                                                salaryViewModel.onEvent(
+                                                    SalaryEvent.SelectEmployee(it)
+                                                )
+                                            },
+                                            onClickAddSalaryBtn = {
+                                                navController.navigate(
+                                                    AddEditSalaryScreenDestination(employeeId = it)
+                                                )
+                                            },
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(SpaceSmall))
                                 }
                             }
                         }
@@ -637,7 +633,7 @@ fun EmployeePaymentsData(
                 )
 
                 Text(
-                    text = salary.salaryGivenDate.toSalaryDate,
+                    text = salary.salaryGivenDate.toBarDate,
                     textAlign = TextAlign.Start,
                     style = MaterialTheme.typography.body1,
                     modifier = Modifier.weight(0.8F),

@@ -98,7 +98,7 @@ import java.time.LocalDate
  * @param settingRecipient
  * @see ExpensesViewModel
  */
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Destination
 @Composable
 fun ExpensesScreen(

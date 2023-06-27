@@ -56,11 +56,11 @@ import com.niyaj.popos.features.common.ui.theme.LightColor6
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.IconBox
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.ScaffoldNavActions
 import com.niyaj.popos.features.components.StandardExpandable
+import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.TextWithBorderCount
 import com.niyaj.popos.features.components.TextWithIcon
@@ -314,59 +314,58 @@ fun AttendanceScreen(
                     attendanceViewModel.onEvent(AttendanceEvent.RefreshAttendance)
                 }
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(SpaceSmall),
-                ) {
-                    if (attendances.isEmpty() || hasError != null) {
-                        ItemNotAvailable(
-                            text = hasError
-                                ?: if (showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(
-                                    id = R.string.no_items_in_absent),
-                            buttonText = stringResource(id = R.string.create_absent_entry).uppercase(),
-                            onClick = {
-                                navController.navigate(AddEditAbsentScreenDestination())
-                            }
-                        )
-                    } else {
-                        LazyColumn(
-                            state = lazyListState,
-                        ) {
-                            item(key = "employeeAbsents") {
-                                groupedEmployeeAbsent.forEach { (employeeId, employeeAttendances) ->
-                                    employeeId?.let { empId ->
-                                        val data = attendanceViewModel.getEmployeeById(empId)
-                                        data?.let { employee ->
-                                            AbsentEmployees(
-                                                employee = employee,
-                                                groupedAttendances = employeeAttendances.groupBy { toMonthAndYear(it.absentDate) },
-                                                isExpanded = selectedEmployee == empId,
-                                                selectedAttendance = selectedAttendance,
-                                                onClickAttendance = {
-                                                    attendanceViewModel.onEvent(
-                                                        AttendanceEvent.SelectAttendance(it)
-                                                    )
-                                                },
-                                                onSelectEmployee = {
-                                                    attendanceViewModel.onEvent(
-                                                        AttendanceEvent.SelectEmployee(it)
-                                                    )
-                                                } ,
-                                                onExpandChange = {
-                                                    attendanceViewModel.onEvent(
-                                                        AttendanceEvent.SelectEmployee(it)
-                                                    )
-                                                },
-                                                onAbsentEntry = {
-                                                    navController.navigate(
-                                                        AddEditAbsentScreenDestination(employeeId = it)
-                                                    )
-                                                },
-                                            )
-                                        }
+                if (attendances.isEmpty() || hasError != null) {
+                    ItemNotAvailable(
+                        text = hasError
+                            ?: if (showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(
+                                id = R.string.no_items_in_absent),
+                        buttonText = stringResource(id = R.string.create_absent_entry).uppercase(),
+                        onClick = {
+                            navController.navigate(AddEditAbsentScreenDestination())
+                        }
+                    )
+                } else {
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(SpaceSmall),
+                    ) {
+                        item(key = "employeeAbsents") {
+                            groupedEmployeeAbsent.forEach { (employeeId, employeeAttendances) ->
+                                employeeId?.let { empId ->
+                                    val data = attendanceViewModel.getEmployeeById(empId)
+                                    data?.let { employee ->
+                                        AbsentEmployees(
+                                            employee = employee,
+                                            groupedAttendances = employeeAttendances.groupBy { toMonthAndYear(it.absentDate) },
+                                            isExpanded = selectedEmployee == empId,
+                                            selectedAttendance = selectedAttendance,
+                                            onClickAttendance = {
+                                                attendanceViewModel.onEvent(
+                                                    AttendanceEvent.SelectAttendance(it)
+                                                )
+                                            },
+                                            onSelectEmployee = {
+                                                attendanceViewModel.onEvent(
+                                                    AttendanceEvent.SelectEmployee(it)
+                                                )
+                                            } ,
+                                            onExpandChange = {
+                                                attendanceViewModel.onEvent(
+                                                    AttendanceEvent.SelectEmployee(it)
+                                                )
+                                            },
+                                            onAbsentEntry = {
+                                                navController.navigate(
+                                                    AddEditAbsentScreenDestination(employeeId = it)
+                                                )
+                                            },
+                                        )
                                     }
                                 }
+
+                                Spacer(modifier = Modifier.height(SpaceSmall))
                             }
                         }
                     }

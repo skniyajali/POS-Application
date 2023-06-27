@@ -439,6 +439,7 @@ fun RecentOrders(
                             )
 
                             val groupByCustomer = orders.groupBy { it.customerPhone }
+
                             groupByCustomer.forEach { (t, u) ->
                                 if (u.size > 1) {
                                     Column(
