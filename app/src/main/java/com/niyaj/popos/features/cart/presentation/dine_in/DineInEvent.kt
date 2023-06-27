@@ -12,11 +12,12 @@ sealed class DineInEvent {
 
     data class SelectDineInOrder(val cartOrderId: String): DineInEvent()
 
+    object SelectAllDineInOrder: DineInEvent()
+
     data class PlaceDineInOrder(val cartOrderId: String): DineInEvent()
 
     object PlaceAllDineInOrder: DineInEvent()
 
-    object SelectAllDineInOrder: DineInEvent()
 
     object RefreshDineInOrder: DineInEvent()
 }

@@ -1,6 +1,7 @@
 package com.niyaj.popos.features.cart.presentation.dine_out
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.cart.domain.repository.CartRepository
@@ -24,10 +25,8 @@ class DineOutViewModel @Inject constructor(
     private val _dineOutOrders = MutableStateFlow(DineOutState())
     val dineOutOrders = _dineOutOrders.asStateFlow()
 
-    private val _opSelectedCarts = mutableStateListOf<String>()
-
-    private val _selectedDineOutOrder = MutableStateFlow<List<String>>(listOf())
-    val selectedDineOutOrder = _selectedDineOutOrder.asStateFlow()
+    private val _selectedDineOutOrder = mutableStateListOf<String>()
+    val selectedDineOutOrder: SnapshotStateList<String> = _selectedDineOutOrder
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -101,33 +100,27 @@ class DineOutViewModel @Inject constructor(
                 _dineOutOrders.value.cartItems.map { cart ->
                     if(cart.cartProducts.isNotEmpty()) {
                         if(count % 2 != 0){
-                            val cartItem = _opSelectedCarts.contains(cart.cartOrderId)
+                            val cartItem = _selectedDineOutOrder.contains(cart.cartOrderId)
                             if(!cartItem){
-                                _opSelectedCarts.add(
-                                    cart.cartOrderId
-                                )
+                                _selectedDineOutOrder.add(cart.cartOrderId)
                             }
                         }else{
-                            _opSelectedCarts.removeIf {
+                            _selectedDineOutOrder.removeIf {
                                 it == cart.cartOrderId
                             }
                         }
                     }
                 }
-
-                _selectedDineOutOrder.tryEmit(_opSelectedCarts.toList())
             }
 
             is DineOutEvent.SelectDineOutOrder -> {
-                val doesAlreadySelected = _opSelectedCarts.contains(event.cartId)
+                val doesAlreadySelected = _selectedDineOutOrder.contains(event.cartId)
 
                 if(!doesAlreadySelected){
-                    _opSelectedCarts.add(event.cartId)
+                    _selectedDineOutOrder.add(event.cartId)
                 }else{
-                    _opSelectedCarts.remove(event.cartId)
+                    _selectedDineOutOrder.remove(event.cartId)
                 }
-
-                _selectedDineOutOrder.tryEmit(_opSelectedCarts.toList())
             }
 
             is DineOutEvent.PlaceDineOutOrder -> {
@@ -146,12 +139,11 @@ class DineOutViewModel @Inject constructor(
 
             is DineOutEvent.PlaceAllDineOutOrder -> {
                 viewModelScope.launch {
-                    val selectedCartItem = _selectedDineOutOrder.value
-
-                    when(cartOrderRepository.placeAllOrder(selectedCartItem)){
+                    when(cartOrderRepository.placeAllOrder(_selectedDineOutOrder)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("${selectedCartItem.size} DineOut Order Placed Successfully"))
+                            _eventFlow.emit(UiEvent.OnSuccess("${_selectedDineOutOrder.size} DineOut Order Placed Successfully"))
+                            _selectedDineOutOrder.clear()
                         }
                         is Resource.Error -> {
                             _eventFlow.emit(UiEvent.OnError("Unable To Place All DineOut Order"))

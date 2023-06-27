@@ -6,8 +6,8 @@ plugins {
     id(libs.plugins.realm.get().pluginId)
     alias(libs.plugins.appsweep)
     alias(libs.plugins.ksp)
-    id(libs.plugins.kotlin.kapt.get().pluginId)
     alias(libs.plugins.androidx.baselineprofile)
+    id(libs.plugins.kotlin.kapt.get().pluginId)
 }
 
 android {
@@ -222,6 +222,9 @@ dependencies {
 
     //Baseline Profile
     "baselineProfile"(project(mapOf("path" to ":benchmark")))
+
+    //Google Play Play Integrity API
+    implementation(libs.integrity)
 }
 
 kapt {

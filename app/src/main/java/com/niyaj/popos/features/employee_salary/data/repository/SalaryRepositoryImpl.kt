@@ -397,7 +397,6 @@ class SalaryRepositoryImpl(
             )
         }
 
-
         return ValidationResult(
             successful = true,
         )

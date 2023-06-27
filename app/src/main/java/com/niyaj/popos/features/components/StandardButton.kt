@@ -38,7 +38,6 @@ fun StandardButton(
         shape = shape,
         colors = colors,
         modifier = modifier
-//            .pressClickEffect()
             .fillMaxWidth()
             .heightIn(ButtonSize),
     ) {

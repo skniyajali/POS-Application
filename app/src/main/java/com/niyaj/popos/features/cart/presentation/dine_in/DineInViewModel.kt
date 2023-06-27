@@ -137,12 +137,11 @@ class DineInViewModel @Inject constructor(
 
             is DineInEvent.PlaceAllDineInOrder -> {
                 viewModelScope.launch {
-                    val selectedCartItem = _selectedDineInOrder
-
-                    when(cartOrderRepository.placeAllOrder(selectedCartItem)){
+                    when(cartOrderRepository.placeAllOrder(_selectedDineInOrder)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("${selectedCartItem.size} DineIn Order Placed Successfully"))
+                            _eventFlow.emit(UiEvent.OnSuccess("${_selectedDineInOrder.size} DineIn Order Placed Successfully"))
+                            _selectedDineInOrder.clear()
                         }
                         is Resource.Error -> {
                             _eventFlow.emit(UiEvent.OnError("Unable To Place All DineIn Order"))

@@ -212,10 +212,7 @@ fun CartOrderBox(
                 onClickEdit(cartOrder.cartOrderId)
             },
             modifier = Modifier
-                .background(
-                    MaterialTheme.colors.primary,
-                    RoundedCornerShape(4.dp)
-                )
+                .background(MaterialTheme.colors.primary, RoundedCornerShape(4.dp))
         ) {
             Icon(
                 contentDescription = stringResource(
@@ -231,10 +228,7 @@ fun CartOrderBox(
                 onClickDelete(cartOrder.cartOrderId)
             },
             modifier = Modifier
-                .background(
-                    MaterialTheme.colors.error,
-                    RoundedCornerShape(4.dp)
-                )
+                .background(MaterialTheme.colors.error, RoundedCornerShape(4.dp))
         ) {
             Icon(
                 contentDescription = stringResource(
