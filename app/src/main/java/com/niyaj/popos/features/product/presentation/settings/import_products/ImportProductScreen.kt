@@ -1,9 +1,7 @@
 package com.niyaj.popos.features.product.presentation.settings.import_products
 
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -48,7 +46,6 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
-@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ImportProductScreen(
     navController : NavController = rememberNavController(),

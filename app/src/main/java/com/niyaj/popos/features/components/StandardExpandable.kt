@@ -47,6 +47,7 @@ fun StandardExpandable(
     rowClickable: Boolean = true,
     expand: @Composable (RowScope.(Modifier) -> Unit)? = null,
     content: @Composable () -> Unit,
+    contentDesc: String = "Item",
     contentAnimation: FiniteAnimationSpec<IntSize> = spring(
         dampingRatio = Spring.DampingRatioLowBouncy,
         stiffness = Spring.StiffnessVeryLow
@@ -110,7 +111,7 @@ fun StandardExpandable(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Expand Less",
+                            contentDescription = contentDesc.plus("Expand Less"),
                             tint = MaterialTheme.colors.primary,
                         )
                     }

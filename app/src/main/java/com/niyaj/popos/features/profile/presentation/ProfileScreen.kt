@@ -3,8 +3,10 @@ package com.niyaj.popos.features.profile.presentation
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,11 +24,17 @@ import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.InsertLink
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.PeopleAlt
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,30 +45,44 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
+import com.google.accompanist.flowlayout.FlowMainAxisAlignment
+import com.google.accompanist.flowlayout.FlowRow
+import com.google.accompanist.flowlayout.SizeMode
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.niyaj.popos.BuildConfig
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeLarge
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeMedium
-import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardScaffold
+import com.niyaj.popos.features.destinations.AddOnItemScreenDestination
+import com.niyaj.popos.features.destinations.AddressScreenDestination
+import com.niyaj.popos.features.destinations.AttendanceScreenDestination
 import com.niyaj.popos.features.destinations.CartScreenDestination
+import com.niyaj.popos.features.destinations.ChargesScreenDestination
+import com.niyaj.popos.features.destinations.CustomerScreenDestination
 import com.niyaj.popos.features.destinations.EmployeeScreenDestination
 import com.niyaj.popos.features.destinations.ExpensesScreenDestination
 import com.niyaj.popos.features.destinations.OrderScreenDestination
 import com.niyaj.popos.features.destinations.ProductScreenDestination
+import com.niyaj.popos.features.destinations.ReminderScreenDestination
 import com.niyaj.popos.features.destinations.ReportScreenDestination
 import com.niyaj.popos.features.destinations.UpdateProfileScreenDestination
 import com.niyaj.popos.features.main_feed.presentation.components.IconBox
+import com.niyaj.popos.features.order.presentation.components.TwoGridText
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
@@ -73,14 +95,14 @@ import kotlinx.coroutines.launch
  * @author Sk Niyaj Ali
  *
  */
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalLayoutApi::class)
 @Destination
 @Composable
 fun ProfileScreen(
-    navController: NavController,
-    scaffoldState: ScaffoldState,
-    profileViewModel: ProfileViewModel = hiltViewModel(),
-    resultRecipient: ResultRecipient<UpdateProfileScreenDestination, String>
+    navController : NavController,
+    scaffoldState : ScaffoldState,
+    profileViewModel : ProfileViewModel = hiltViewModel(),
+    resultRecipient : ResultRecipient<UpdateProfileScreenDestination, String>
 ) {
 
     val lazyListState = rememberLazyListState()
@@ -115,9 +137,9 @@ fun ProfileScreen(
         }
     }
 
-    resultRecipient.onNavResult {result ->
-        when(result){
-            is NavResult.Canceled -> { }
+    resultRecipient.onNavResult { result ->
+        when (result) {
+            is NavResult.Canceled -> {}
             is NavResult.Value -> {
                 profileViewModel.onEvent(ProfileEvent.RefreshEvent)
 
@@ -134,7 +156,7 @@ fun ProfileScreen(
             scaffoldState = scaffoldState,
             showBackArrow = true,
             title = {
-                Text(text = info.name)
+                Text(text = "Restaurant Details")
             },
             navActions = {
                 IconButton(
@@ -169,13 +191,16 @@ fun ProfileScreen(
             ) {
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
                         .padding(SpaceSmall),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    item {
+                    item("RestaurantDetails") {
                         Card(
                             modifier = Modifier
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .padding(SpaceSmall),
                             elevation = 4.dp,
                         ) {
                             Column(
@@ -256,100 +281,185 @@ fun ProfileScreen(
                                 }
                             }
                         }
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(SpaceMedium))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            IconBox(
-                                modifier = Modifier.width(148.dp),
-                                iconName = Icons.Default.ShoppingCart,
-                                text = "My Carts",
-                                elevation = 2.dp,
-                                backgroundColor = MaterialTheme.colors.onPrimary,
-                                iconColor = MaterialTheme.colors.secondaryVariant,
-                                textColor = MaterialTheme.colors.onBackground,
-                                onClick = { navController.navigate(CartScreenDestination) }
-                            )
-                            Spacer(modifier = Modifier.width(SpaceMedium))
-                            IconBox(
-                                modifier = Modifier.width(148.dp),
-                                iconName = Icons.Default.Inventory,
-                                text = "My Orders",
-                                elevation = 2.dp,
-                                backgroundColor = MaterialTheme.colors.onPrimary,
-                                iconColor = MaterialTheme.colors.secondaryVariant,
-                                textColor = MaterialTheme.colors.onBackground,
-                                onClick = { navController.navigate(OrderScreenDestination()) }
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(SpaceMedium))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            IconBox(
-                                modifier = Modifier.width(148.dp),
-                                iconName = Icons.Default.Assessment,
-                                text = "Reports",
-                                elevation = 2.dp,
-                                backgroundColor = MaterialTheme.colors.onPrimary,
-                                iconColor = MaterialTheme.colors.secondaryVariant,
-                                textColor = MaterialTheme.colors.onBackground,
-                                onClick = { navController.navigate(ReportScreenDestination()) }
-                            )
-                            Spacer(modifier = Modifier.width(SpaceMedium))
-                            IconBox(
-                                modifier = Modifier.width(148.dp),
-                                iconName = Icons.Default.People,
-                                text = "Employee",
-                                elevation = 2.dp,
-                                backgroundColor = MaterialTheme.colors.onPrimary,
-                                iconColor = MaterialTheme.colors.secondaryVariant,
-                                textColor = MaterialTheme.colors.onBackground,
-                                onClick = { navController.navigate(EmployeeScreenDestination) }
-                            )
-                        }
 
-                        Spacer(modifier = Modifier.height(SpaceMedium))
-                        Row(
+                        Spacer(modifier = Modifier.height(SpaceSmall))
+
+                        FlowRow(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                                .fillMaxWidth()
+                                .padding(SpaceSmall),
+                            mainAxisSize = SizeMode.Expand,
+                            mainAxisAlignment = FlowMainAxisAlignment.SpaceBetween,
+                            crossAxisAlignment = FlowCrossAxisAlignment.Center,
+                            mainAxisSpacing = SpaceSmall,
+                            crossAxisSpacing = SpaceSmall
                         ) {
-                            IconBox(
-                                modifier = Modifier.width(148.dp),
-                                iconName = Icons.Default.Money,
-                                text = "Expenses",
-                                elevation = 2.dp,
-                                backgroundColor = MaterialTheme.colors.onPrimary,
-                                iconColor = MaterialTheme.colors.secondaryVariant,
-                                textColor = MaterialTheme.colors.onBackground,
-                                onClick = { navController.navigate(ExpensesScreenDestination()) }
+                            QuickLink(
+                                text = "Cart",
+                                icon = Icons.Default.ShoppingCart,
+                                onClick = {
+                                    navController.navigate(CartScreenDestination())
+                                }
                             )
-                            Spacer(modifier = Modifier.width(SpaceMedium))
-                            IconBox(
-                                modifier = Modifier.width(148.dp),
-                                iconName = Icons.Default.Dns,
+                            QuickLink(
+                                text = "Orders",
+                                icon = Icons.Default.Inventory,
+                                onClick = {
+                                    navController.navigate(OrderScreenDestination())
+                                }
+                            )
+                            QuickLink(
+                                text = "Expenses",
+                                icon = Icons.Default.Money,
+                                onClick = {
+                                    navController.navigate(ExpensesScreenDestination())
+                                }
+                            )
+                            QuickLink(
+                                text = "Reports",
+                                icon = Icons.Default.Assessment,
+                                onClick = {
+                                    navController.navigate(ReportScreenDestination())
+                                }
+                            )
+                            QuickLink(
+                                text = "Employee",
+                                icon = Icons.Default.People,
+                                onClick = {
+                                    navController.navigate(EmployeeScreenDestination())
+                                }
+                            )
+                            QuickLink(
+                                text = "Attendance",
+                                icon = Icons.Default.CalendarMonth,
+                                onClick = {
+                                    navController.navigate(AttendanceScreenDestination())
+                                }
+                            )
+                            QuickLink(
+                                text = "Payments",
+                                icon = Icons.Default.Money,
+                                onClick = {
+                                    navController.navigate(AttendanceScreenDestination())
+                                }
+                            )
+                            QuickLink(
+                                text = "Category",
+                                icon = Icons.Default.Dns,
+                                onClick = {
+                                    navController.navigate(ProductScreenDestination())
+                                }
+                            )
+                            QuickLink(
                                 text = "Products",
-                                elevation = 2.dp,
-                                backgroundColor = MaterialTheme.colors.onPrimary,
-                                iconColor = MaterialTheme.colors.secondaryVariant,
-                                textColor = MaterialTheme.colors.onBackground,
-                                onClick = { navController.navigate(ProductScreenDestination) }
+                                icon = Icons.Default.Dns,
+                                onClick = {
+                                    navController.navigate(ProductScreenDestination())
+                                }
+                            )
+                            QuickLink(
+                                text = "AddOn",
+                                icon = Icons.Default.InsertLink,
+                                onClick = {
+                                    navController.navigate(AddOnItemScreenDestination())
+                                }
+                            )
+
+                            QuickLink(
+                                text = "Charges",
+                                icon = Icons.Default.Sell,
+                                onClick = {
+                                    navController.navigate(ChargesScreenDestination())
+                                }
+                            )
+                            QuickLink(
+                                text = "Address",
+                                icon = Icons.Default.Business,
+                                onClick = {
+                                    navController.navigate(AddressScreenDestination())
+                                }
+                            )
+
+
+                            QuickLink(
+                                text = "Customer",
+                                icon = Icons.Default.PeopleAlt,
+                                onClick = {
+                                    navController.navigate(CustomerScreenDestination())
+                                }
+                            )
+                            QuickLink(
+                                text = "Reminder",
+                                icon = Icons.Default.Notifications,
+                                onClick = {
+                                    navController.navigate(ReminderScreenDestination())
+                                }
                             )
                         }
-                        Spacer(modifier = Modifier.height(SpaceMedium))
+                    }
+
+                    item("App Details") {
+                        Spacer(modifier = Modifier.height(SpaceSmall))
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(SpaceSmall)
+                        ) {
+                            Spacer(modifier = Modifier.height(SpaceSmall))
+                            Divider(modifier = Modifier.fillMaxWidth())
+                            Spacer(modifier = Modifier.height(SpaceSmall))
+
+                            TwoGridText(
+                                textOne = "Application ID",
+                                textTwo = BuildConfig.APPLICATION_ID
+                            )
+
+                            Spacer(modifier = Modifier.height(SpaceMini))
+                            Divider(modifier = Modifier.fillMaxWidth())
+                            Spacer(modifier = Modifier.height(SpaceMini))
+
+                            TwoGridText(
+                                textOne = "Version Name",
+                                textTwo = BuildConfig.VERSION_NAME
+                            )
+
+                            Spacer(modifier = Modifier.height(SpaceMini))
+                            Divider(modifier = Modifier.fillMaxWidth())
+                            Spacer(modifier = Modifier.height(SpaceMini))
+
+                            TwoGridText(
+                                textOne = "Version Code",
+                                textTwo = BuildConfig.VERSION_CODE.toString()
+                            )
+                        }
                     }
                 }
             }
         }
     }
+}
+
+
+@Composable
+fun QuickLink(
+    text : String,
+    icon : ImageVector,
+    onClick : () -> Unit,
+    width : Dp = 164.dp,
+    elevation : Dp = 2.dp,
+    backgroundColor : Color = MaterialTheme.colors.onPrimary,
+    iconColor : Color = MaterialTheme.colors.secondaryVariant,
+    textColor : Color = MaterialTheme.colors.onBackground,
+) {
+    IconBox(
+        modifier = Modifier.width(width),
+        iconName = icon,
+        text = text,
+        elevation = elevation,
+        backgroundColor = backgroundColor,
+        iconColor = iconColor,
+        textColor = textColor,
+        onClick = onClick
+    )
 }

@@ -1,7 +1,6 @@
 package com.niyaj.popos.features.product.presentation.settings
 
 import android.Manifest
-import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -48,34 +47,23 @@ import kotlinx.coroutines.launch
 @Destination
 @Composable
 fun ProductSettingScreen(
-    navController: NavController,
-    scaffoldState: ScaffoldState,
-    resultRecipient: ResultRecipient<ProductPriceScreenDestination, String>,
-    exportResultRecipient: ResultRecipient<ExportProductScreenDestination, String>,
-    importResultRecipient: ResultRecipient<ImportProductScreenDestination, String>,
+    navController : NavController,
+    scaffoldState : ScaffoldState,
+    resultRecipient : ResultRecipient<ProductPriceScreenDestination, String>,
+    exportResultRecipient : ResultRecipient<ExportProductScreenDestination, String>,
+    importResultRecipient : ResultRecipient<ImportProductScreenDestination, String>,
 ) {
-    val hasStoragePermission =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            rememberMultiplePermissionsState(
-                permissions = listOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.MANAGE_EXTERNAL_STORAGE,
-                )
-            )
-        } else {
-            rememberMultiplePermissionsState(
-                permissions = listOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                )
-            )
-        }
+    val hasStoragePermission = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        )
+    )
 
     val scope = rememberCoroutineScope()
 
     resultRecipient.onNavResult { result ->
-        when(result) {
+        when (result) {
             is NavResult.Canceled -> {}
             is NavResult.Value -> {
                 scope.launch {
@@ -86,7 +74,7 @@ fun ProductSettingScreen(
     }
 
     exportResultRecipient.onNavResult { result ->
-        when(result) {
+        when (result) {
             is NavResult.Canceled -> {}
             is NavResult.Value -> {
                 scope.launch {
@@ -97,7 +85,7 @@ fun ProductSettingScreen(
     }
 
     importResultRecipient.onNavResult { result ->
-        when(result) {
+        when (result) {
             is NavResult.Canceled -> {}
             is NavResult.Value -> {
                 scope.launch {

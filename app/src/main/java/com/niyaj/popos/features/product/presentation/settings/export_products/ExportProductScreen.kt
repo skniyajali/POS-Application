@@ -1,10 +1,8 @@
 package com.niyaj.popos.features.product.presentation.settings.export_products
 
 import android.Manifest
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -50,13 +48,12 @@ import kotlinx.coroutines.launch
  * Export products to file
  */
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalPermissionsApi::class)
-@RequiresApi(Build.VERSION_CODES.Q)
 @Destination(style = DestinationStyle.BottomSheet::class)
 @Composable
 fun ExportProductScreen(
-    navController: NavController = rememberNavController(),
-    exportProductViewModel: ExportProductViewModel = hiltViewModel(),
-    resultBackNavigator: ResultBackNavigator<String>,
+    navController : NavController = rememberNavController(),
+    exportProductViewModel : ExportProductViewModel = hiltViewModel(),
+    resultBackNavigator : ResultBackNavigator<String>,
 ) {
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -64,23 +61,12 @@ fun ExportProductScreen(
 
     val context = LocalContext.current
 
-    val hasStoragePermission =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            rememberMultiplePermissionsState(
-                permissions = listOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.MANAGE_EXTERNAL_STORAGE,
-                )
-            )
-        } else {
-            rememberMultiplePermissionsState(
-                permissions = listOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                )
-            )
-        }
+    val hasStoragePermission = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        )
+    )
 
     val isChoose = exportProductViewModel.onChoose
 
@@ -93,7 +79,7 @@ fun ExportProductScreen(
 
     val exportedData = exportProductViewModel.exportedProducts.collectAsStateWithLifecycle().value
 
-    val showFileSelector = if(isChoose) selectedProducts.isNotEmpty() else products.isNotEmpty()
+    val showFileSelector = if (isChoose) selectedProducts.isNotEmpty() else products.isNotEmpty()
 
     var productsExpanded by remember {
         mutableStateOf(false)
@@ -119,7 +105,7 @@ fun ExportProductScreen(
                 scope.launch {
                     val result = writeData(context, it, exportedData)
 
-                    if(result){
+                    if (result) {
                         resultBackNavigator.navigateBack("${exportedData.size} Products has been exported")
                     } else {
                         resultBackNavigator.navigateBack("Unable to export products")
@@ -158,7 +144,7 @@ fun ExportProductScreen(
                     .padding(SpaceSmall)
             ) {
                 ImportExportHeader(
-                    text = "Export " + if(isChoose) "${selectedProducts.size} Selected Products" else " All Products",
+                    text = "Export " + if (isChoose) "${selectedProducts.size} Selected Products" else " All Products",
                     isChosen = isChoose,
                     onClickChoose = {
                         exportProductViewModel.onEvent(ExportProductEvent.OnChooseProduct)

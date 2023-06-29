@@ -16,22 +16,22 @@ import com.niyaj.popos.R
 
 @Composable
 fun StandardToolbar(
-    modifier: Modifier = Modifier,
-    navigationIcon: @Composable () -> Unit =  {},
-    showBackArrow: Boolean = false,
-    onBackButtonClick: () -> Unit = {},
-    navActions: @Composable RowScope.() -> Unit = {},
-    title: @Composable () -> Unit = {},
+    modifier : Modifier = Modifier,
+    navigationIcon : @Composable () -> Unit = {},
+    showBackArrow : Boolean = false,
+    onBackButtonClick : () -> Unit = {},
+    navActions : @Composable RowScope.() -> Unit = {},
+    title : @Composable () -> Unit = {},
 ) {
 
     TopAppBar(
         title = title,
         modifier = modifier,
-        navigationIcon = if(showBackArrow) {
+        navigationIcon = if (showBackArrow) {
             {
-                IconButton(onClick = {
-                    onBackButtonClick()
-                }) {
+                IconButton(
+                    onClick = onBackButtonClick
+                ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = stringResource(id = R.string.back),

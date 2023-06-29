@@ -17,6 +17,7 @@ import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
 import com.niyaj.popos.features.reminder.domain.model.AbsentReminder
 import com.niyaj.popos.features.reminder.domain.model.toReminder
 import com.niyaj.popos.features.reminder.domain.repository.ReminderRepository
+import com.niyaj.popos.utils.Constants.ABSENT_HOST
 import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_ID
 import com.niyaj.popos.utils.showPendingIntentNotification
 import com.niyaj.popos.utils.stopPendingIntentNotification
@@ -50,7 +51,7 @@ class EmployeeAbsentReminder @Inject constructor(
 
     private val absentReminderIntent = Intent(
         Intent.ACTION_VIEW,
-        "https://popos.com/reminder/reminder_id=${ABSENT_REMINDER_ID}".toUri(),
+        ABSENT_HOST.toUri(),
         application.applicationContext,
         MainActivity::class.java
     )

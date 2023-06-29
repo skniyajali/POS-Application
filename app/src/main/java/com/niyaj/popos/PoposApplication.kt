@@ -108,3 +108,7 @@ class PoposApplication : Application(), Configuration.Provider {
   valuable insights into different types of sales,
   giving restaurant owners the tools they need to make informed decisions and drive success.
  */
+
+/*
+    Name Cheeap - RppQZ4Ms2q
+ */

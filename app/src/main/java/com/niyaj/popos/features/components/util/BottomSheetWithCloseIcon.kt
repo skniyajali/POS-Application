@@ -23,7 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.LightColor6
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
@@ -94,7 +96,7 @@ fun BottomSheetWithCloseDialog(
                 Icon(
                     Icons.Filled.Close,
                     tint = color,
-                    contentDescription = null
+                    contentDescription = stringResource(id = R.string.close_icon)
                 )
             }
         }

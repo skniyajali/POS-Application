@@ -175,7 +175,7 @@ fun AddEditProductScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.AddBox,
-                        contentDescription = null,
+                        contentDescription = "Add New Category",
                         tint = MaterialTheme.colors.primary,
                         modifier = Modifier
                             .size(IconSizeExtraLarge)

@@ -85,6 +85,15 @@ object Constants {
     const val DAILY_SALARY_REMINDER_TITLE = "Did You Paid Employee Salary?"
     const val DAILY_SALARY_REMINDER_TEXT = "Don't forget to add salary entries."
 
+    private const val HOST = "http://skniyajali.me/"
+    private const val HOST_SECURE = "https://skniyajali.me/"
+
+    const val SALARY_HOST = "${HOST}reminder/reminder_id=$DAILY_SALARY_REMINDER_ID"
+    const val SALARY_HOST_SECURE = "${HOST_SECURE}reminder/reminder_id=$DAILY_SALARY_REMINDER_ID"
+
+    const val ABSENT_HOST = "${HOST}reminder/reminder_id=$ABSENT_REMINDER_ID"
+    const val ABSENT_HOST_SECURE = "${HOST_SECURE}reminder/reminder_id=$ABSENT_REMINDER_ID"
+
     enum class ImportExportType {
         IMPORT,
         EXPORT

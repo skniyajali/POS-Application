@@ -32,11 +32,11 @@ import com.niyaj.popos.utils.toRupee
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ReportBox(
-    title: String,
-    amount: String,
-    icon: ImageVector,
-    enabled: Boolean = true,
-    onClick: () -> Unit
+    title : String,
+    amount : String,
+    icon : ImageVector,
+    enabled : Boolean = true,
+    onClick : () -> Unit
 ) {
 
     val configuration = LocalConfiguration.current
