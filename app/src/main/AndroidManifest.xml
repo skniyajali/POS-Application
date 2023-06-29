@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:dist="http://schemas.android.com/apk/distribution"
     xmlns:tools="http://schemas.android.com/tools">
-
-    <dist:module dist:instant="true" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -11,13 +8,14 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
-    <uses-permission
-        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
+<!--    <uses-permission-->
+<!--        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"-->
+<!--        tools:ignore="ScopedStorage" />-->
 
     <application
         android:name=".PoposApplication"
@@ -35,25 +33,46 @@
         tools:replace="android:name"
         tools:targetApi="31">
 
-
         <!-- Required: set your sentry.io project identifier (DSN) -->
-        <meta-data android:name="io.sentry.dsn" android:value="https://09c662d873604b2eac7554651e9703cc@o4504689913692160.ingest.sentry.io/4504689921163264" />
+        <meta-data
+            android:name="io.sentry.dsn"
+            android:value="https://09c662d873604b2eac7554651e9703cc@o4504689913692160.ingest.sentry.io/4504689921163264" />
         <!-- enable automatic breadcrumbs for user interactions (clicks, swipes, scrolls) -->
-        <meta-data android:name="io.sentry.traces.user-interaction.enable" android:value="true" />
+        <meta-data
+            android:name="io.sentry.traces.user-interaction.enable"
+            android:value="true" />
         <!-- enable screenshot for crashes -->
-        <meta-data android:name="io.sentry.attach-screenshot" android:value="true" />
+        <meta-data
+            android:name="io.sentry.attach-screenshot"
+            android:value="true" />
         <!-- enable view hierarchy for crashes -->
-        <meta-data android:name="io.sentry.attach-view-hierarchy" android:value="true" />
+        <meta-data
+            android:name="io.sentry.attach-view-hierarchy"
+            android:value="true" />
         <!-- enable the performance API by setting a sample-rate, adjust in production env -->
-        <meta-data android:name="io.sentry.traces.sample-rate" android:value="1.0" />
+        <meta-data
+            android:name="io.sentry.traces.sample-rate"
+            android:value="1.0" />
         <!-- enable profiling when starting transactions, adjust in production env -->
-        <meta-data android:name="io.sentry.traces.profiling.sample-rate" android:value="1.0" />
-        <meta-data android:name="io.sentry.breadcrumbs.user-interaction" android:value="true" />
-        <meta-data android:name="io.sentry.session-tracking.enable" android:value="true" />
+        <meta-data
+            android:name="io.sentry.traces.profiling.sample-rate"
+            android:value="1.0" />
+        <meta-data
+            android:name="io.sentry.breadcrumbs.user-interaction"
+            android:value="true" />
+        <meta-data
+            android:name="io.sentry.session-tracking.enable"
+            android:value="true" />
         <!-- https://developer.android.com/studio/build/manifest-build-variables -->
-        <meta-data android:name="io.sentry.environment" android:value="${sentryEnvironment}" />
-        <meta-data android:name="io.sentry.anr.enable" android:value="true" />
-        <meta-data android:name="io.sentry.release" android:value="io.popos@1.0.4" />
+        <meta-data
+            android:name="io.sentry.environment"
+            android:value="${sentryEnvironment}" />
+        <meta-data
+            android:name="io.sentry.anr.enable"
+            android:value="true" />
+        <meta-data
+            android:name="io.sentry.release"
+            android:value="io.popos@1.0.4" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -81,16 +100,14 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:host="reminder" android:scheme="popos"/>
-            </intent-filter>
 
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:host="popos.com" android:pathPrefix="/place" android:scheme="https" />
+
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="skniyajali.me" />
+                <data android:pathPrefix="/reminder" />
             </intent-filter>
         </activity>
 
@@ -111,8 +128,6 @@
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="location|microphone"
             tools:node="merge" />
-
-
     </application>
 
 </manifest>

@@ -58,6 +58,8 @@ import com.niyaj.popos.features.reminder.presentation.components.EmployeeSelecti
 import com.niyaj.popos.features.reminder.presentation.components.EmployeeSelectionHeader
 import com.niyaj.popos.features.reminder.presentation.components.InfoCard
 import com.niyaj.popos.utils.Constants
+import com.niyaj.popos.utils.Constants.SALARY_HOST
+import com.niyaj.popos.utils.Constants.SALARY_HOST_SECURE
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
@@ -65,15 +67,13 @@ import com.ramcosta.composedestinations.result.ResultBackNavigator
 import io.sentry.compose.SentryTraced
 
 /**
- * Dalily Salary Reminder Screen
+ * Daily Salary Reminder Screen
  * @author SK Niyaj Ali
  */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Destination(
     deepLinks = [
-        DeepLink(
-            uriPattern = "https://popos.com/reminder/reminder_id=${Constants.DAILY_SALARY_REMINDER_ID}"
-        )
+        DeepLink(uriPattern = SALARY_HOST_SECURE)
     ]
 )
 @Composable

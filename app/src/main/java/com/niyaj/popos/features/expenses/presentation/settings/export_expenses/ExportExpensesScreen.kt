@@ -69,23 +69,12 @@ fun ExportExpensesScreen(
         }
     }
 
-    val hasStoragePermission =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            rememberMultiplePermissionsState(
-                permissions = listOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.MANAGE_EXTERNAL_STORAGE,
-                )
-            )
-        } else {
-            rememberMultiplePermissionsState(
-                permissions = listOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                )
-            )
-        }
+    val hasStoragePermission = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        )
+    )
 
     val isChoose = viewModel.onChoose
 
@@ -113,7 +102,7 @@ fun ExportExpensesScreen(
                 scope.launch {
                     val result = ImportExport.writeData(context, it, exportedData)
 
-                    if(result){
+                    if (result) {
                         resultBackNavigator.navigateBack("${exportedData.size} Expenses has been exported")
                     } else {
                         resultBackNavigator.navigateBack("Unable to export expenses")
@@ -181,7 +170,7 @@ fun ExportExpensesScreen(
                         ) {
                             ImportExportExpensesBody(
                                 lazyListState = lazyListState,
-                                groupedExpenses = state.expenses.groupBy { it.createdAt.toPrettyDate()},
+                                groupedExpenses = state.expenses.groupBy { it.createdAt.toPrettyDate() },
                                 selectedExpenses = selectedExpenses,
                                 expanded = expanded,
                                 onExpandChanged = {
@@ -213,6 +202,7 @@ fun ExportExpensesScreen(
                         )
                     }
                 }
+
                 else -> ItemNotAvailable(text = state.error ?: "Expenses not available")
             }
         }

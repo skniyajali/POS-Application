@@ -26,9 +26,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.ButtonSize
+import com.niyaj.popos.features.common.ui.theme.HintGray
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.features.common.ui.theme.TextGray
 
 @Composable
 fun ItemNotAvailable(
@@ -51,6 +51,7 @@ fun ItemNotAvailable(
                 painter = image,
                 contentDescription = "No data available"
             )
+
             Spacer(modifier = Modifier.height(SpaceMedium))
         }
 
@@ -59,15 +60,13 @@ fun ItemNotAvailable(
             fontWeight = FontWeight.Normal,
             style = MaterialTheme.typography.body2,
             textAlign = TextAlign.Center,
-            color = TextGray
+            color = HintGray
         )
 
         if(buttonText.isNotEmpty()){
             Spacer(modifier = Modifier.height(SpaceMedium))
             Button(
-                onClick = {
-                    onClick()
-                },
+                onClick = onClick,
                 shape= CutCornerShape(4.dp),
                 modifier = btnModifier.heightIn(ButtonSize)
             ) {

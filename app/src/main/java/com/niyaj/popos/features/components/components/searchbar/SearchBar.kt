@@ -1,4 +1,3 @@
-
 package com.niyaj.popos.features.components.components.searchbar
 
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,13 +19,13 @@ import androidx.compose.ui.text.input.KeyboardType
 
 @Composable
 fun TextSearchBar(
-    modifier: Modifier = Modifier,
-    value: String,
-    label: String,
-    onDoneActionClick: () -> Unit = {},
-    onClearClick: () -> Unit = {},
-    onFocusChanged: (FocusState) -> Unit = {},
-    onValueChanged: (String) -> Unit
+    modifier : Modifier = Modifier,
+    value : String,
+    label : String,
+    onDoneActionClick : () -> Unit = {},
+    onClearClick : () -> Unit = {},
+    onFocusChanged : (FocusState) -> Unit = {},
+    onValueChanged : (String) -> Unit
 ) {
     OutlinedTextField(
         modifier = modifier
@@ -40,8 +39,13 @@ fun TextSearchBar(
         textStyle = MaterialTheme.typography.subtitle1,
         singleLine = true,
         trailingIcon = {
-            IconButton(onClick = { onClearClick() }) {
-                Icon(imageVector = Icons.Filled.Clear, contentDescription = "Clear")
+            IconButton(
+                onClick = onClearClick
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Clear,
+                    contentDescription = "Clear Icon"
+                )
             }
         },
         keyboardActions = KeyboardActions(onDone = { onDoneActionClick() }),

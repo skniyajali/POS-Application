@@ -21,6 +21,7 @@ import com.niyaj.popos.features.reminder.presentation.absent_reminder.EmployeeAb
 import com.niyaj.popos.utils.Constants.DAILY_SALARY_REMINDER_ID
 import com.niyaj.popos.utils.Constants.DAILY_SALARY_REMINDER_TEXT
 import com.niyaj.popos.utils.Constants.DAILY_SALARY_REMINDER_TITLE
+import com.niyaj.popos.utils.Constants.SALARY_HOST
 import com.niyaj.popos.utils.showPendingIntentNotification
 import com.niyaj.popos.utils.stopPendingIntentNotification
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -54,7 +55,7 @@ class DailySalaryReminderWorkerViewModel @Inject constructor(
 
     private val dailyReminderIntent = Intent(
         Intent.ACTION_VIEW,
-        "https://popos.com/reminder/reminder_id=${DAILY_SALARY_REMINDER_ID}".toUri(),
+        SALARY_HOST.toUri(),
         application.applicationContext,
         MainActivity::class.java
     )

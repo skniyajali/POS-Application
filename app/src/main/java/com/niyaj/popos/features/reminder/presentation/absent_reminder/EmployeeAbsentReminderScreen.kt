@@ -58,6 +58,7 @@ import com.niyaj.popos.features.reminder.presentation.components.EmployeeSelecti
 import com.niyaj.popos.features.reminder.presentation.components.EmployeeSelectionHeader
 import com.niyaj.popos.features.reminder.presentation.components.InfoCard
 import com.niyaj.popos.utils.Constants
+import com.niyaj.popos.utils.Constants.ABSENT_HOST_SECURE
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
@@ -71,9 +72,7 @@ import io.sentry.compose.SentryTraced
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Destination(
     deepLinks = [
-        DeepLink(
-            uriPattern = "https://popos.com/reminder/reminder_id=${Constants.ABSENT_REMINDER_ID}"
-        )
+        DeepLink(uriPattern = ABSENT_HOST_SECURE)
     ]
 )
 @Composable

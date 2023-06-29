@@ -631,7 +631,8 @@ fun CategoryWiseReport(
                         }
                     }
                 }
-            }
+            },
+            contentDesc = "Category wise report"
         )
     }
 }
@@ -726,7 +727,8 @@ fun ProductWiseReport(
                         }
                     }
                 }
-            }
+            },
+            contentDesc = "Product wise report"
         )
     }
 }
@@ -797,7 +799,8 @@ fun AddressWiseReport(
                         }
                     }
                 }
-            }
+            },
+            contentDesc = "Address wise report"
         )
     }
 }
@@ -868,7 +871,8 @@ fun CustomerWiseReport(
                         }
                     }
                 }
-            }
+            },
+            contentDesc = "Customer wise report"
         )
     }
 }

@@ -91,7 +91,7 @@ fun StandardSearchBar(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Close,
-                            contentDescription = null,
+                            contentDescription = "Clear Search Text",
                             tint = MaterialTheme.colors.onPrimary,
                         )
                     }

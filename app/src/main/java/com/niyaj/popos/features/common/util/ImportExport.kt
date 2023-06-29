@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import androidx.annotation.RequiresApi
 import com.niyaj.popos.utils.Constants.JSON_FILE_EXTENSION
 import com.niyaj.popos.utils.Constants.JSON_FILE_TYPE
 import com.niyaj.popos.utils.Constants.SAVEABLE_FILE_NAME
@@ -18,7 +17,6 @@ import java.io.IOException
 
 object ImportExport {
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     internal fun openFile(
         context: Context,
         pickerInitialUri: Uri = getUri(context),
@@ -36,7 +34,6 @@ object ImportExport {
         return intent
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     internal fun createFile(context: Context, fileName: String = SAVEABLE_FILE_NAME): Intent {
         val intent = Intent(
             Intent.ACTION_CREATE_DOCUMENT,

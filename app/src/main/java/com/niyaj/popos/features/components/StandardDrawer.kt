@@ -89,13 +89,13 @@ import com.ramcosta.composedestinations.navigation.navigate
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun StandardDrawer(
-    navController: NavController,
+    navController : NavController,
 ) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
     val expanded = remember { mutableStateOf(false) }
     val settingsExpanded = remember { mutableStateOf(false) }
     val expensesExpanded = remember { mutableStateOf(false) }
-    val partnersExpanded = remember { mutableStateOf(false) }
+    val employeeExpanded = remember { mutableStateOf(false) }
     val customersExpanded = remember { mutableStateOf(false) }
     val ordersExpanded = remember { mutableStateOf(false) }
 
@@ -136,7 +136,7 @@ fun StandardDrawer(
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
                 DrawerItem(
-                    text = "Orders",
+                    text = "View Orders",
                     icon = Icons.Default.Inventory,
                     selected = currentRoute == OrderScreenDestination.route,
                     onClick = {
@@ -149,7 +149,7 @@ fun StandardDrawer(
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
                 DrawerItem(
-                    text = "Reports",
+                    text = "View Reports",
                     icon = Icons.Default.Assessment,
                     selected = currentRoute == ReportScreenDestination.route,
                     onClick = {
@@ -162,7 +162,7 @@ fun StandardDrawer(
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
                 DrawerItem(
-                    text = "Expenses",
+                    text = "View Expenses",
                     icon = Icons.Default.StickyNote2,
                     selected = currentRoute == ExpensesScreenDestination.route,
                     onClick = {
@@ -195,12 +195,12 @@ fun StandardDrawer(
                     leading = {
                         Icon(
                             imageVector = Icons.Default.AllInbox,
-                            contentDescription = null,
+                            contentDescription = "Cart Order Icon",
                             tint = MaterialTheme.colors.secondaryVariant
                         )
                         Spacer(modifier = Modifier.width(SpaceSmall))
                     },
-                    expand = {modifier: Modifier ->
+                    expand = { modifier : Modifier ->
                         IconButton(
                             modifier = modifier,
                             onClick = {
@@ -209,7 +209,7 @@ fun StandardDrawer(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.KeyboardArrowDown,
-                                contentDescription = null
+                                contentDescription = "Expand Cart Order"
                             )
                         }
                     },
@@ -256,20 +256,22 @@ fun StandardDrawer(
                     leading = {
                         Icon(
                             imageVector = Icons.Default.StickyNote2,
-                            contentDescription = null,
+                            contentDescription = "Expenses Icon",
                             tint = MaterialTheme.colors.secondaryVariant
                         )
                         Spacer(modifier = Modifier.width(SpaceSmall))
                     },
-                    expand = {modifier: Modifier ->
+                    expand = { modifier : Modifier ->
                         IconButton(
                             modifier = modifier,
                             onClick = {
-                            expensesExpanded.value = !expensesExpanded.value
-                        }
+                                expensesExpanded.value = !expensesExpanded.value
+                            }
                         ) {
-                            Icon(imageVector = Icons.Filled.KeyboardArrowDown,
-                                contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowDown,
+                                contentDescription = "Expand Expenses",
+                            )
                         }
                     },
                     content = {
@@ -316,20 +318,22 @@ fun StandardDrawer(
                     leading = {
                         Icon(
                             imageVector = Icons.Default.Badge,
-                            contentDescription = null,
+                            contentDescription = "Customers, Addresses Icon",
                             tint = MaterialTheme.colors.secondaryVariant
                         )
                         Spacer(modifier = Modifier.width(SpaceSmall))
                     },
-                    expand = {modifier: Modifier ->
+                    expand = { modifier : Modifier ->
                         IconButton(
                             modifier = modifier,
                             onClick = {
-                            customersExpanded.value = !customersExpanded.value
-                        }
+                                customersExpanded.value = !customersExpanded.value
+                            }
                         ) {
-                            Icon(imageVector = Icons.Filled.KeyboardArrowDown,
-                                contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowDown,
+                                contentDescription = "Expand Customer, Addresses"
+                            )
                         }
                     },
                     content = {
@@ -367,30 +371,32 @@ fun StandardDrawer(
 
                 StandardExpandable(
                     modifier = Modifier.fillMaxWidth(),
-                    expanded = partnersExpanded.value,
+                    expanded = employeeExpanded.value,
                     onExpandChanged = {
-                        partnersExpanded.value = it
+                        employeeExpanded.value = it
                     },
                     title = {
                         Text(text = "Employee, Salary, Advance")
                     },
                     leading = {
                         Icon(
-                            imageVector = Icons.Default.AllInbox,
-                            contentDescription = null,
+                            imageVector = Icons.Default.PeopleAlt,
+                            contentDescription = "Employee, Salary, Advance Icon",
                             tint = MaterialTheme.colors.secondaryVariant
                         )
                         Spacer(modifier = Modifier.width(SpaceSmall))
                     },
-                    expand = {modifier: Modifier ->
+                    expand = { modifier : Modifier ->
                         IconButton(
                             modifier = modifier,
                             onClick = {
-                            partnersExpanded.value = !partnersExpanded.value
-                        }
+                                employeeExpanded.value = !employeeExpanded.value
+                            }
                         ) {
-                            Icon(imageVector = Icons.Filled.KeyboardArrowDown,
-                                contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowDown,
+                                contentDescription = "Expand Employee"
+                            )
                         }
                     },
                     content = {
@@ -450,7 +456,7 @@ fun StandardDrawer(
                     leading = {
                         Icon(
                             imageVector = Icons.Default.Widgets,
-                            contentDescription = null,
+                            contentDescription = "Products, Categories Icon",
                             tint = MaterialTheme.colors.secondaryVariant
                         )
 
@@ -463,8 +469,10 @@ fun StandardDrawer(
                                 expanded.value = !expanded.value
                             }
                         ) {
-                            Icon(imageVector = Icons.Filled.KeyboardArrowDown,
-                                contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowDown,
+                                contentDescription = "Expand Product/Category",
+                            )
                         }
                     },
                     content = {
@@ -536,20 +544,24 @@ fun StandardDrawer(
                         Text(text = "App Settings, Reminders")
                     },
                     leading = {
-                        Icon(imageVector = Icons.Default.Settings,
-                            contentDescription = null,
-                            tint = MaterialTheme.colors.secondaryVariant)
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings Icon",
+                            tint = MaterialTheme.colors.secondaryVariant
+                        )
                         Spacer(modifier = Modifier.width(SpaceSmall))
                     },
-                    expand = {modifier: Modifier ->
+                    expand = { modifier : Modifier ->
                         IconButton(
                             modifier = modifier,
                             onClick = {
-                            settingsExpanded.value = !settingsExpanded.value
-                        }
+                                settingsExpanded.value = !settingsExpanded.value
+                            }
                         ) {
-                            Icon(imageVector = Icons.Filled.KeyboardArrowDown,
-                                contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowDown,
+                                contentDescription = "Expand Settings"
+                            )
                         }
                     },
                     content = {
@@ -615,7 +627,7 @@ fun StandardDrawer(
 
 @Composable
 fun DrawerHeader(
-    navController: NavController,
+    navController : NavController,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -652,10 +664,10 @@ fun DrawerHeader(
             }
         }
 
-        
+
         IconButton(
             onClick = {
-               navController.navigate(ProfileScreenDestination)
+                navController.navigate(ProfileScreenDestination)
             },
         ) {
             Icon(
@@ -671,14 +683,14 @@ fun DrawerHeader(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun DrawerItem(
-    text: String = "",
-    icon: ImageVector? = null,
-    selected: Boolean = false,
-    selectedColor: Color = MaterialTheme.colors.secondary,
-    unselectedColor: Color = MaterialTheme.colors.surface,
-    iconColor: Color = MaterialTheme.colors.secondaryVariant,
-    cardElevation: Dp = 0.dp,
-    onClick: () -> Unit = {},
+    text : String = "",
+    icon : ImageVector? = null,
+    selected : Boolean = false,
+    selectedColor : Color = MaterialTheme.colors.secondary,
+    unselectedColor : Color = MaterialTheme.colors.surface,
+    iconColor : Color = MaterialTheme.colors.secondaryVariant,
+    cardElevation : Dp = 0.dp,
+    onClick : () -> Unit = {},
 ) {
     Card(
         onClick = {
@@ -698,12 +710,14 @@ fun DrawerItem(
             horizontalArrangement = Arrangement.Start,
         ) {
             if (icon != null) {
-                Icon(imageVector = icon,
-                    contentDescription = null,
+                Icon(
+                    imageVector = icon,
+                    contentDescription = text.plus("Icon"),
                     tint = if (selected) MaterialTheme.colors.onPrimary else iconColor
                 )
                 Spacer(modifier = Modifier.width(SpaceSmall))
             }
+
             Text(
                 text = text,
                 style = MaterialTheme.typography.body1,
