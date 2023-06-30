@@ -74,7 +74,7 @@ android {
     }
 
     appsweep {
-        apiKey = "gs_appsweep_83ofXxg_qCVtI5igS4M0wofGmACUaMSdESX1c5m6"
+        apiKey = "gs_appsweep_2sU1w2D_VgxRVNNmlBhWdMawvtcd6wZHHZkcsUSz"
     }
 
     hilt {
