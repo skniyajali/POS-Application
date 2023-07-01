@@ -38,13 +38,13 @@ SK NIYAJ ALI</a></div>
 <br>
 
 <div align="center">
-    <a href="https://twitter.com/skniyajali1" target="blank">
+    <a href="https://twitter.com/skniyajali" target="blank">
         <img src="https://img.shields.io/twitter/follow/skniyajali1?logo=twitter&style=for-the-badge" alt="twitter" />
     </a>
-    <a href="https://linkedin.com/skniyajali1" target="blank">
+    <a href="https://www.linkedin.com/in/skniyajali/" target="blank">
         <img src="https://img.shields.io/badge/linkedin-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white"  alt="linkedin"/>
     </a>
-    <a href="https://twitter.com/skniyajali1" target="blank">
+    <a href="https://facebook.com/skniyajali7" target="blank">
         <img src="https://img.shields.io/badge/facebook-%2320A1F1.svg?&style=for-the-badge&logo=facebook&logoColor=white"  alt="linkedin"/>
     </a>
 </div>
