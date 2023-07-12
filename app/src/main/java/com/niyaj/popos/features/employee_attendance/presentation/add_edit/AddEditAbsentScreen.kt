@@ -47,7 +47,7 @@ import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardButton
+import com.niyaj.popos.features.components.StandardButtonFW
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.employee_attendance.domain.util.AbsentScreenTestTags.ABSENT_DATE_FIELD
@@ -101,11 +101,11 @@ fun AddEditAbsentScreen(
     LaunchedEffect(key1 = true) {
         absentViewModel.eventFlow.collect { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     resultBackNavigator.navigateBack(event.successMessage)
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     resultBackNavigator.navigateBack(event.errorMessage)
                 }
 
@@ -246,7 +246,7 @@ fun AddEditAbsentScreen(
 
                 Spacer(modifier = Modifier.height(SpaceMedium))
 
-                StandardButton(
+                StandardButtonFW(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag(ADD_EDIT_ABSENT_ENTRY_BTN),

@@ -127,10 +127,10 @@ class AddEditExpensesViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess(result.message ?: "Expenses created successfully"))
+                            _eventFlow.emit(UiEvent.Success(result.message ?: "Expenses created successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create new expenses"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to create new expenses"))
                         }
                     }
 
@@ -146,13 +146,13 @@ class AddEditExpensesViewModel @Inject constructor(
                     )
                     when(result){
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError( "Unable to Update Expenses"))
+                            _eventFlow.emit(UiEvent.Error( "Unable to Update Expenses"))
                         }
                         is Resource.Loading -> {
 
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Expenses updated successfully"))
+                            _eventFlow.emit(UiEvent.Success("Expenses updated successfully"))
                         }
                     }
                 }
@@ -201,7 +201,7 @@ class AddEditExpensesViewModel @Inject constructor(
                     }
                     is Resource.Error -> {
                         _expensesCategories.value = _expensesCategories.value.copy(error = "Unable to load resources")
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to load resources"))
                     }
                 }
             }

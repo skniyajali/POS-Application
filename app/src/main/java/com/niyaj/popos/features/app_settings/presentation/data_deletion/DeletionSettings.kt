@@ -24,7 +24,7 @@ import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.ui.theme.TextGray
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardButton
+import com.niyaj.popos.features.components.StandardButtonFW
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.destinations.DeletionSettingsDestination
@@ -52,11 +52,11 @@ fun DeletionSettings(
     LaunchedEffect(key1 = true) {
         deletionSettingsViewModel.eventFlow.collect { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     resultBackNavigator.navigateBack(event.successMessage)
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     resultBackNavigator.navigateBack(event.errorMessage)
                 }
 
@@ -149,7 +149,7 @@ fun DeletionSettings(
 
                 Spacer(modifier = Modifier.height(SpaceMedium))
 
-                StandardButton(
+                StandardButtonFW(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(id = R.string.update_deletion_settings),
                     icon = Icons.Default.Save,

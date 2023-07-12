@@ -211,13 +211,13 @@ fun CartOrderScreen(
     LaunchedEffect(key1 = true) {
         cartOrderViewModel.eventFlow.collect { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     scaffoldState.snackbarHostState.showSnackbar(
                         message = event.successMessage
                     )
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     scaffoldState.snackbarHostState.showSnackbar(
                         message = event.errorMessage
                     )

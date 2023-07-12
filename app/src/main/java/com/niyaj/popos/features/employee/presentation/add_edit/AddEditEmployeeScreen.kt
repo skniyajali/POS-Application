@@ -55,7 +55,7 @@ import com.niyaj.popos.features.common.ui.theme.Primary
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardButton
+import com.niyaj.popos.features.components.StandardButtonFW
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.employee.domain.util.EmployeeSalaryType
@@ -128,11 +128,11 @@ fun AddEditEmployeeScreen(
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     resultBackNavigator.navigateBack(event.successMessage)
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     resultBackNavigator.navigateBack(event.errorMessage)
                 }
 
@@ -473,7 +473,7 @@ fun AddEditEmployeeScreen(
                 item {
                     Spacer(modifier = Modifier.height(SpaceMedium))
 
-                    StandardButton(
+                    StandardButtonFW(
                         modifier = Modifier.fillMaxWidth().testTag(ADD_EDIT_EMPLOYEE_BUTTON),
                         text = if (employeeId.isNotEmpty()) stringResource(id = R.string.update_employee)
                         else stringResource(id = R.string.create_new_employee),

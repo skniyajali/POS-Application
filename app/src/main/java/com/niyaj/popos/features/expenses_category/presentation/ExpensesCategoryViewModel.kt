@@ -90,10 +90,10 @@ class ExpensesCategoryViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Expenses Category deleted successfully"))
+                            _eventFlow.emit(UiEvent.Success("Expenses Category deleted successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete Expenses Category"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete Expenses Category"))
                         }
                     }
                 }
@@ -135,7 +135,7 @@ class ExpensesCategoryViewModel @Inject constructor(
                     }
                     is Resource.Error -> {
                         _expensesCategories.value = _expensesCategories.value.copy(error = "Unable to load resources")
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to load resources"))
                     }
                 }
             }
@@ -168,10 +168,10 @@ class ExpensesCategoryViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess(result.message ?: "Expenses Category created successfully"))
+                            _eventFlow.emit(UiEvent.Success(result.message ?: "Expenses Category created successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create new Expenses Category"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to create new Expenses Category"))
                         }
                     }
 
@@ -185,13 +185,13 @@ class ExpensesCategoryViewModel @Inject constructor(
                     )
                     when(result){
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError( "Unable to Update Expenses Category"))
+                            _eventFlow.emit(UiEvent.Error( "Unable to Update Expenses Category"))
                         }
                         is Resource.Loading -> {
 
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Expenses Category updated successfully"))
+                            _eventFlow.emit(UiEvent.Success("Expenses Category updated successfully"))
                         }
                     }
                 }

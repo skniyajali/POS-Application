@@ -27,7 +27,7 @@ import com.niyaj.popos.features.address.domain.util.AddressTestTags.CREATE_UPDAT
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardButton
+import com.niyaj.popos.features.components.StandardButtonFW
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.destinations.AddEditAddressScreenDestination
@@ -58,11 +58,11 @@ fun AddEditAddressScreen(
     LaunchedEffect(key1 = true) {
         addEditAddressViewModel.eventFlow.collect { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     resultNavigator.navigateBack(event.successMessage)
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     resultNavigator.navigateBack(event.errorMessage)
                 }
 
@@ -115,7 +115,7 @@ fun AddEditAddressScreen(
 
                 Spacer(modifier = Modifier.height(SpaceMedium))
 
-                StandardButton(
+                StandardButtonFW(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag(CREATE_UPDATE_ADDRESS_BUTTON),

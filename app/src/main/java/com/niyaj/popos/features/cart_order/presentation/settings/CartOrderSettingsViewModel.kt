@@ -27,10 +27,10 @@ class CartOrderSettingsViewModel @Inject constructor(
                     when(val result = cartOrderRepository.deleteCartOrders(true)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("All cart orders were successfully deleted"))
+                            _eventFlow.emit(UiEvent.Success("All cart orders were successfully deleted"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete cart orders"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete cart orders"))
                         }
                     }
                 }
@@ -41,10 +41,10 @@ class CartOrderSettingsViewModel @Inject constructor(
                     when(val result = cartOrderRepository.deleteCartOrders(false)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Last 7 Days orders were successfully deleted"))
+                            _eventFlow.emit(UiEvent.Success("Last 7 Days orders were successfully deleted"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete last 7 days cart orders"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete last 7 days cart orders"))
                         }
                     }
                 }

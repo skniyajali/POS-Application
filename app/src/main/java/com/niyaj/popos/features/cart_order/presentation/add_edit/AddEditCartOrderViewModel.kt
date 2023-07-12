@@ -188,10 +188,10 @@ class AddEditCartOrderViewModel @Inject constructor(
                 when(result){
                     is Resource.Loading -> {}
                     is Resource.Success -> {
-                        _eventFlow.emit(UiEvent.OnSuccess("Order created successfully"))
+                        _eventFlow.emit(UiEvent.Success("Order created successfully"))
                     }
                     is Resource.Error -> {
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create new order"))
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to create new order"))
                     }
                 }
             }else {
@@ -208,11 +208,11 @@ class AddEditCartOrderViewModel @Inject constructor(
                 when(result){
                     is Resource.Loading -> {}
                     is Resource.Success -> {
-                        _eventFlow.emit(UiEvent.OnSuccess("Order updated successfully"))
+                        _eventFlow.emit(UiEvent.Success("Order updated successfully"))
 
                     }
                     is Resource.Error -> {
-                        _eventFlow.emit(UiEvent.OnError( result.message ?: "Unable to update order"))
+                        _eventFlow.emit(UiEvent.Error( result.message ?: "Unable to update order"))
 
                     }
                 }
@@ -303,7 +303,7 @@ class AddEditCartOrderViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get cart order"))
+                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to get cart order"))
                 }
             }
         }

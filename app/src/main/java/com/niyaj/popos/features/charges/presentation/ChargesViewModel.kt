@@ -97,10 +97,10 @@ class ChargesViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Charges deleted successfully"))
+                            _eventFlow.emit(UiEvent.Success("Charges deleted successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete charges item"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete charges item"))
                         }
                     }
                 }
@@ -176,23 +176,23 @@ class ChargesViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess(result.message ?: "Charges created successfully"))
+                            _eventFlow.emit(UiEvent.Success(result.message ?: "Charges created successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create Charges Item"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to create Charges Item"))
                         }
                     }
 
                 }else {
                     when(val result = chargesRepository.updateCharges(charges, chargesId)){
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError( result.message ?: "Unable to Update Charges Item"))
+                            _eventFlow.emit(UiEvent.Error( result.message ?: "Unable to Update Charges Item"))
                         }
                         is Resource.Loading -> {
 
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Charges Item updated successfully"))
+                            _eventFlow.emit(UiEvent.Success("Charges Item updated successfully"))
                         }
                     }
                 }

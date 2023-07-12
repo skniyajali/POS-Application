@@ -1,5 +1,6 @@
 package com.niyaj.popos.features.profile.presentation
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,23 +11,27 @@ import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoRepository
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
+import com.niyaj.popos.features.qrcode_scanner.domain.repository.QRCodeEncoder
+import com.niyaj.popos.features.qrcode_scanner.domain.repository.QRCodeScanner
+import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO_NAME
+import com.niyaj.popos.utils.Constants.RESTAURANT_PRINT_LOGO_NAME
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val restaurantInfoUseCases: RestaurantInfoRepository,
-    private val validationRepository : RestaurantInfoValidationRepository,
+    private val repository : RestaurantInfoRepository,
+    private val validation : RestaurantInfoValidationRepository,
+    private val scanner : QRCodeScanner
 ) : ViewModel() {
 
     var updateState by mutableStateOf(UpdateProfileState())
-
-    var isLoading by mutableStateOf(false)
 
     private val _info = MutableStateFlow(RestaurantInfo())
     val info = _info.asStateFlow()
@@ -34,11 +39,14 @@ class ProfileViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    private val _scannedBitmap = MutableStateFlow<Bitmap?>(null)
+    val scannedBitmap = _scannedBitmap.asStateFlow()
+
     init {
         getProfileInfo()
     }
 
-    fun onEvent(event: ProfileEvent) {
+    fun onEvent(event : ProfileEvent) {
         when (event) {
             is ProfileEvent.NameChanged -> {
                 updateState = updateState.copy(
@@ -82,12 +90,6 @@ class ProfileViewModel @Inject constructor(
                 )
             }
 
-            is ProfileEvent.LogoChanged -> {
-                updateState = updateState.copy(
-                    logo = event.logo
-                )
-            }
-
             is ProfileEvent.PaymentQrCodeChanged -> {
                 updateState = updateState.copy(
                     paymentQrCode = event.paymentQrCode
@@ -105,17 +107,52 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.SetProfileInfo -> {
                 setProfileInfo()
             }
+
+            is ProfileEvent.LogoChanged -> {
+                viewModelScope.launch {
+                    when (repository.updateRestaurantLogo(RESTAURANT_LOGO_NAME)) {
+                        is Resource.Loading -> {}
+                        is Resource.Success -> {
+                            _eventFlow.emit(UiEvent.Success("Profile photo has been updated"))
+                        }
+                        is Resource.Error -> {
+                            _eventFlow.emit(UiEvent.Error("Unable to update profile photo"))
+                        }
+                    }
+                }
+            }
+
+            is ProfileEvent.PrintLogoChanged -> {
+                viewModelScope.launch {
+                    when (repository.updatePrintLogo(RESTAURANT_PRINT_LOGO_NAME)) {
+                        is Resource.Loading -> {}
+                        is Resource.Success -> {
+                            _eventFlow.emit(UiEvent.Success("Print photo has been updated"))
+                        }
+                        is Resource.Error -> {
+                            _eventFlow.emit(UiEvent.Error("Unable to update print photo"))
+                        }
+                    }
+                }
+            }
+
+            is ProfileEvent.StartScanning -> {
+                startScanning()
+            }
         }
     }
 
     private fun updateProfile() {
-        val validatedName = validationRepository.validateRestaurantName(updateState.name)
-        val validatedTagLine = validationRepository.validateRestaurantTagline(updateState.tagline)
-        val validatedEmail = validationRepository.validateRestaurantEmail(updateState.email)
-        val validatedPrimaryPhone = validationRepository.validatePrimaryPhone(updateState.primaryPhone)
-        val validatedSecondaryPhone = validationRepository.validateSecondaryPhone(updateState.secondaryPhone)
-        val validatedAddress = validationRepository.validateRestaurantAddress(updateState.address)
-        val validatedPaymentQrCode = validationRepository.validatePaymentQrCode(updateState.paymentQrCode)
+        val validatedName = validation.validateRestaurantName(updateState.name)
+        val validatedTagLine = validation.validateRestaurantTagline(updateState.tagline)
+        val validatedEmail = validation.validateRestaurantEmail(updateState.email)
+        val validatedPrimaryPhone =
+            validation.validatePrimaryPhone(updateState.primaryPhone)
+        val validatedSecondaryPhone =
+            validation.validateSecondaryPhone(updateState.secondaryPhone)
+        val validatedAddress = validation.validateRestaurantAddress(updateState.address)
+        val validatedPaymentQrCode =
+            validation.validatePaymentQrCode(updateState.paymentQrCode)
 
 
         val hasError = listOf(
@@ -142,7 +179,7 @@ class ProfileViewModel @Inject constructor(
             return
         } else {
             viewModelScope.launch {
-                val result = restaurantInfoUseCases.updateRestaurantInfo(
+                val result = repository.updateRestaurantInfo(
                     RestaurantInfo(
                         name = updateState.name,
                         tagline = updateState.tagline,
@@ -152,19 +189,24 @@ class ProfileViewModel @Inject constructor(
                         description = updateState.description,
                         address = updateState.address,
                         paymentQrCode = updateState.paymentQrCode,
-                        logo = updateState.logo,
                     )
                 )
 
-                when(result){
+                when (result) {
                     is Resource.Loading -> {
                         _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                     }
+
                     is Resource.Success -> {
-                        _eventFlow.emit(UiEvent.OnSuccess("Restaurant Info Updated."))
+                        _eventFlow.emit(UiEvent.Success("Restaurant Info Updated."))
                     }
+
                     is Resource.Error -> {
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to update restaurant info."))
+                        _eventFlow.emit(
+                            UiEvent.Error(
+                                result.message ?: "Unable to update restaurant info."
+                            )
+                        )
                     }
                 }
             }
@@ -173,48 +215,80 @@ class ProfileViewModel @Inject constructor(
 
     private fun getProfileInfo() {
         viewModelScope.launch {
-            isLoading = true
-            when (val result = restaurantInfoUseCases.getRestaurantInfo()) {
-                is Resource.Loading -> {
-                    _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
-                }
-                is Resource.Success -> {
-                    result.data?.let {
-                        _info.value = it
+            repository.getRestaurantInfo().collectLatest { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
+                    }
+
+                    is Resource.Success -> {
+                        result.data?.let {
+                            _info.value = it
+                        }
+                    }
+
+                    is Resource.Error -> {
+                        _eventFlow.emit(
+                            UiEvent.Error(
+                                result.message ?: "Unable to get restaurant info"
+                            )
+                        )
                     }
                 }
-                is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get restaurant info"))
-                }
             }
-            isLoading = false
         }
     }
 
     private fun setProfileInfo() {
         viewModelScope.launch {
-            when (val result = restaurantInfoUseCases.getRestaurantInfo()) {
-                is Resource.Loading -> {
-                    _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
-                }
-                is Resource.Success -> {
-                    result.data?.let { info ->
-                        updateState = updateState.copy(
-                            name = info.name,
-                            tagline = info.tagline,
-                            email = info.email,
-                            primaryPhone = info.primaryPhone,
-                            secondaryPhone = info.secondaryPhone,
-                            description = info.description,
-                            address = info.address,
-                            paymentQrCode = info.paymentQrCode,
-                            logo = info.logo,
+            repository.getRestaurantInfo().collectLatest { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
+                    }
+
+                    is Resource.Success -> {
+                        result.data?.let { info ->
+                            if (info.paymentQrCode.isNotEmpty()) {
+                                _scannedBitmap.value = QRCodeEncoder().encodeBitmap(info.paymentQrCode)
+                            }
+
+                            updateState = updateState.copy(
+                                name = info.name,
+                                tagline = info.tagline,
+                                email = info.email,
+                                primaryPhone = info.primaryPhone,
+                                secondaryPhone = info.secondaryPhone,
+                                description = info.description,
+                                address = info.address,
+                                paymentQrCode = info.paymentQrCode,
+                            )
+                        }
+                    }
+
+                    is Resource.Error -> {
+                        _eventFlow.emit(
+                            UiEvent.Error(
+                                result.message ?: "Unable to get restaurant info"
+                            )
                         )
                     }
                 }
-                is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get restaurant info"))
+            }
+        }
+    }
+
+    private fun startScanning() {
+        viewModelScope.launch {
+            scanner.startScanning().collectLatest {
+                if (!it.isNullOrEmpty()) {
+                    _scannedBitmap.value = QRCodeEncoder().encodeBitmap(it)
+
+                    updateState = updateState.copy(
+                        paymentQrCode = it
+                    )
                 }
+
             }
         }
     }

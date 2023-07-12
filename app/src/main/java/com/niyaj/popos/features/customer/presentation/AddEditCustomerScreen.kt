@@ -25,7 +25,7 @@ import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardButton
+import com.niyaj.popos.features.components.StandardButtonFW
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.customer.domain.util.CustomerTestTags.ADD_EDIT_CUSTOMER_BUTTON
@@ -58,11 +58,11 @@ fun AddEditCustomerScreen(
     LaunchedEffect(key1 = true) {
         customerViewModel.eventFlow.collect { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     resultBackNavigator.navigateBack(event.successMessage)
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     resultBackNavigator.navigateBack(event.errorMessage)
                 }
 
@@ -130,7 +130,7 @@ fun AddEditCustomerScreen(
 
                 Spacer(modifier = Modifier.height(SpaceMedium))
 
-                StandardButton(
+                StandardButtonFW(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag(ADD_EDIT_CUSTOMER_BUTTON),

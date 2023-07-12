@@ -17,6 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardBackdropScaffold
+import com.niyaj.popos.features.components.isScrollingUp
 import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.features.destinations.SelectedCartOrderScreenDestination
 import com.niyaj.popos.features.main_feed.presentation.components.category.MainFeedCategoryEvent
@@ -95,11 +96,11 @@ fun MainFeedScreen(
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     scaffoldState.snackbarHostState.showSnackbar(message = event.successMessage)
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     scaffoldState.snackbarHostState.showSnackbar(
                         message = event.errorMessage,
                         duration = SnackbarDuration.Short
@@ -139,7 +140,8 @@ fun MainFeedScreen(
             selectedOrderId = selectedOrderId,
             showSearchBar = showSearchBar,
             searchText = searchText,
-            showFloatingActionButton = !showSearchBar && products.isNotEmpty(),
+            showFloatingActionButton = !showSearchBar && products.isNotEmpty() && lazyListState.isScrollingUp(),
+            showBottomBar = lazyListState.isScrollingUp(),
             onSelectedOrderClick = {
                 navController.navigate(SelectedCartOrderScreenDestination)
             },

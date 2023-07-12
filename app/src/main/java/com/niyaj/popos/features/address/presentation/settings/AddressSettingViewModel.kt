@@ -100,10 +100,10 @@ class AddressSettingViewModel @Inject constructor(
                     when (val result = addressRepository.importAddresses(addresses.toList())){
                         is Resource.Loading -> { }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("${addresses.toList().size} addresses imported successfully"))
+                            _eventFlow.emit(UiEvent.Success("${addresses.toList().size} addresses imported successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to import addresses"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to import addresses"))
                         }
                     }
                 }
@@ -156,10 +156,10 @@ class AddressSettingViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("All addresses has been deleted"))
+                            _eventFlow.emit(UiEvent.Success("All addresses has been deleted"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete all addresses"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete all addresses"))
                         }
                     }
                 }

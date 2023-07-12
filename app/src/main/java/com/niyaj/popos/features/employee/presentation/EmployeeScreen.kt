@@ -141,12 +141,12 @@ fun EmployeeScreen(
     LaunchedEffect(key1 = true) {
         employeeViewModel.eventFlow.collect { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     Timber.d(event.successMessage)
 
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     Timber.d(event.errorMessage)
                 }
 

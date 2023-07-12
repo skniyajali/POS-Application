@@ -125,10 +125,10 @@ class AddEditEmployeeViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess(result.message ?: "Employee created successfully"))
+                            _eventFlow.emit(UiEvent.Success(result.message ?: "Employee created successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create new employee"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to create new employee"))
                         }
                     }
 
@@ -148,13 +148,13 @@ class AddEditEmployeeViewModel @Inject constructor(
                     )
                     when(result){
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError( "Unable to Update Employee"))
+                            _eventFlow.emit(UiEvent.Error( "Unable to Update Employee"))
                         }
                         is Resource.Loading -> {
 
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Employee updated successfully"))
+                            _eventFlow.emit(UiEvent.Success("Employee updated successfully"))
                         }
                     }
                 }

@@ -3,21 +3,22 @@ package com.niyaj.popos.features.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.BackdropScaffold
 import androidx.compose.material.BackdropScaffoldState
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.FabPosition
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.ScaffoldState
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -39,21 +40,23 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun StandardBackdropScaffold(
-    navController: NavController,
-    backdropScaffoldState: BackdropScaffoldState,
-    scaffoldState: ScaffoldState,
-    scope: CoroutineScope,
-    selectedOrderId: String? = null,
-    showSearchBar: Boolean = false,
-    searchText: String = "",
-    showFloatingActionButton: Boolean = true,
-    onSelectedOrderClick: () -> Unit,
-    onSearchButtonClick: () -> Unit = {},
-    onSearchTextChanged: (String) -> Unit = {},
-    onClearClick: () -> Unit = {},
-    onBackButtonClick: () -> Unit = {},
-    backLayerContent: @Composable () -> Unit,
-    frontLayerContent: @Composable () -> Unit,
+    navController : NavController,
+    backdropScaffoldState : BackdropScaffoldState,
+    scaffoldState : ScaffoldState,
+    scope : CoroutineScope,
+    selectedOrderId : String? = null,
+    showSearchBar : Boolean = false,
+    searchText : String = "",
+    showFloatingActionButton : Boolean = true,
+    showBottomBar: Boolean = true,
+    bottomBar : @Composable () -> Unit = { StandardBottomNavigation(navController = navController, true) },
+    onSelectedOrderClick : () -> Unit,
+    onSearchButtonClick : () -> Unit = {},
+    onSearchTextChanged : (String) -> Unit = {},
+    onClearClick : () -> Unit = {},
+    onBackButtonClick : () -> Unit = {},
+    backLayerContent : @Composable () -> Unit,
+    frontLayerContent : @Composable () -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -65,42 +68,51 @@ fun StandardBackdropScaffold(
         drawerGesturesEnabled = true,
         floatingActionButton = {
             AnimatedVisibility(
-                visible = !backdropScaffoldState.isRevealed && showFloatingActionButton,
+                visible = !backdropScaffoldState.isRevealed && showFloatingActionButton && showBottomBar,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
-                ExtendedFloatingActionButton(
-                    text = {
-                        Text(
-                            text = "Create New Order".uppercase(),
-                            style = MaterialTheme.typography.button,
-                        )
-                    },
+                FloatingActionButton(
                     backgroundColor = MaterialTheme.colors.primary,
                     onClick = {
                         navController.navigate(AddEditCartOrderScreenDestination())
                     },
-                    shape = CutCornerShape(4.dp),
+                    shape = CircleShape,
                     modifier = Modifier,
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = stringResource(id = R.string.create_order)
-                        )
-                    },
                     contentColor = MaterialTheme.colors.onPrimary,
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(id = R.string.create_order)
+                    )
+                }
             }
         },
         isFloatingActionButtonDocked = true,
         floatingActionButtonPosition = FabPosition.Center,
+        bottomBar = {
+            AnimatedVisibility(
+                visible = !backdropScaffoldState.isRevealed && showFloatingActionButton,
+                enter = fadeIn() + slideInVertically(
+                    initialOffsetY = { fullHeight ->
+                        fullHeight / 4
+                    }
+                ),
+                exit = fadeOut() + slideOutVertically(
+                    targetOffsetY = { fullHeight ->
+                        fullHeight / 4
+                    }
+                ),
+            ) {
+                bottomBar()
+            }
+        },
     ) { paddingValues ->
         BackdropScaffold(
             appBar = {
                 StandardToolbar(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(paddingValues),
+                        .fillMaxWidth(),
                     navigationIcon = {
                         IconButton(
                             onClick = {
@@ -119,7 +131,7 @@ fun StandardBackdropScaffold(
                     showBackArrow = showSearchBar,
                     onBackButtonClick = onBackButtonClick,
                     navActions = {
-                        if(showSearchBar){
+                        if (showSearchBar) {
                             StandardSearchBar(
                                 searchText = searchText,
                                 placeholderText = "Search for products...",
@@ -128,7 +140,7 @@ fun StandardBackdropScaffold(
                                 },
                                 onClearClick = onClearClick,
                             )
-                        }else{
+                        } else {
                             IconButton(
                                 onClick = onSearchButtonClick
                             ) {
@@ -168,7 +180,9 @@ fun StandardBackdropScaffold(
             },
             headerHeight = 0.dp,
             frontLayerBackgroundColor = MaterialTheme.colors.background,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
             scaffoldState = backdropScaffoldState,
         )
     }

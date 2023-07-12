@@ -63,7 +63,7 @@ import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.ui.theme.TextGray
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardButton
+import com.niyaj.popos.features.components.StandardButtonFW
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
@@ -124,10 +124,10 @@ fun AddEditCartOrderScreen(
         events?.let {event ->
             when (event) {
                 is UiEvent.IsLoading -> {}
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     resultNavigator.navigateBack(event.successMessage)
                 }
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     resultNavigator.navigateBack(event.errorMessage)
                 }
             }
@@ -333,7 +333,7 @@ fun AddEditCartOrderScreen(
 
                 Spacer(modifier = Modifier.height(SpaceMedium))
 
-                StandardButton(
+                StandardButtonFW(
                     modifier = Modifier.fillMaxWidth(),
                     text = if (!cartOrderId.isNullOrEmpty()) stringResource(id = R.string.edit_cart_order)
                         else stringResource(id = R.string.create_new_order),

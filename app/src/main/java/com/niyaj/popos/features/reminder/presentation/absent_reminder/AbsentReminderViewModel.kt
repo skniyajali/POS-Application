@@ -115,15 +115,15 @@ class AbsentReminderViewModel @Inject constructor(
                                     _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                                 }
                                 is Resource.Success -> {
-                                    _eventFlow.emit(UiEvent.OnSuccess("${employeeWithStatus.employee.employeeName} Marked as absent."))
+                                    _eventFlow.emit(UiEvent.Success("${employeeWithStatus.employee.employeeName} Marked as absent."))
 
                                 }
                                 is Resource.Error -> {
-                                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to mark ${employeeWithStatus.employee.employeeName} as absent."))
+                                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to mark ${employeeWithStatus.employee.employeeName} as absent."))
                                 }
                             }
                         } else {
-                            _eventFlow.emit(UiEvent.OnError("Unable to find employee"))
+                            _eventFlow.emit(UiEvent.Error("Unable to find employee"))
                         }
                     }
 
@@ -132,7 +132,7 @@ class AbsentReminderViewModel @Inject constructor(
                     val result = reminderRepository.createOrUpdateReminder(AbsentReminder(isCompleted = markAsCompleted).toReminder())
 
                     if (result) {
-                        _eventFlow.emit(UiEvent.OnSuccess("Selected employee marked as absent on selected date."))
+                        _eventFlow.emit(UiEvent.Success("Selected employee marked as absent on selected date."))
                         val reminder = reminderRepository.getAbsentReminder()!!
                         stopPendingIntentNotification(application.applicationContext, reminder.notificationId)
                     }

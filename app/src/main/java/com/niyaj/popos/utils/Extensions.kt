@@ -5,7 +5,12 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.text.format.DateUtils
 import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationCompat
@@ -16,7 +21,9 @@ import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_ID
 import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_TEXT
 import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_TITLE
 import com.niyaj.popos.utils.Constants.PRODUCT_NAME_LENGTH
+import java.io.ByteArrayOutputStream
 import java.math.RoundingMode
+import java.nio.ByteBuffer
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -31,13 +38,13 @@ import java.util.Locale
 import kotlin.collections.List as KotlinCollectionsList
 
 
-val randomColor: Int
+val randomColor : Int
     get() {
-        return Color.rgb((30..200).random(),(30..200).random(),(30..200).random())
+        return Color.rgb((30..200).random(), (30..200).random(), (30..200).random())
     }
 
 
-val String.isContainsArithmeticCharacter: Boolean
+val String.isContainsArithmeticCharacter : Boolean
     get() = this.any { str ->
         (str == '%' || str == '/' || str == '*' || str == '+' || str == '-')
     }
@@ -49,7 +56,7 @@ val String.capitalizeWords
         }
     }
 
-fun getAllCapitalizedLetters(string: String): String {
+fun getAllCapitalizedLetters(string : String) : String {
     var capitalizeLetters = ""
 
     string.capitalizeWords.forEach {
@@ -98,16 +105,16 @@ val String.toTime
     get() = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(this.toLong()).toString()
 
 
-val zoneId: ZoneId = ZoneId.of("Asia/Kolkata")
+val zoneId : ZoneId = ZoneId.of("Asia/Kolkata")
 
-val LocalDate.toMilliSecond: String
+val LocalDate.toMilliSecond : String
     get() = this.atStartOfDay(zoneId)
         .toLocalDateTime()
         .atZone(zoneId)
         .toInstant().toEpochMilli()
         .toString()
 
-val LocalDate.toCurrentMilliSecond: String
+val LocalDate.toCurrentMilliSecond : String
     get() = this.atTime(LocalTime.now().hour, LocalTime.now().minute)
         .atZone(zoneId)
         .toInstant()
@@ -120,7 +127,7 @@ val String.toSalaryDate
         Locale.getDefault()
     ).format(this.toLong()).toString()
 
-fun startTime(): Calendar {
+fun startTime() : Calendar {
     val startTime = Calendar.getInstance()
     startTime[Calendar.HOUR_OF_DAY] = 0
     startTime[Calendar.MINUTE] = 0
@@ -130,7 +137,7 @@ fun startTime(): Calendar {
     return startTime
 }
 
-fun endTime(): Calendar {
+fun endTime() : Calendar {
     val endTime = startTime().clone() as Calendar
     endTime[Calendar.HOUR_OF_DAY] = 23
     endTime[Calendar.MINUTE] = 59
@@ -140,8 +147,8 @@ fun endTime(): Calendar {
     return endTime
 }
 
-val getStartTime: String = startTime().timeInMillis.toString()
-val getEndTime: String = endTime().timeInMillis.toString()
+val getStartTime : String = startTime().timeInMillis.toString()
+val getEndTime : String = endTime().timeInMillis.toString()
 
 val String.toRupee
     get() = DecimalFormat
@@ -149,20 +156,20 @@ val String.toRupee
         .format(this.toLong())
         .substringBefore(".")
 
-fun getCalculatedStartDate(days: String = "", date: String = ""): String {
+fun getCalculatedStartDate(days : String = "", date : String = "") : String {
     val calendar = Calendar.getInstance()
     val s = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     try {
         if (date.isNotEmpty()) {
             calendar.time = s.parse(date) as Date
         }
-    } catch (e: Exception) {
+    } catch (e : Exception) {
         calendar.timeInMillis = date.toLong()
     }
 
     val day = try {
         if (days.isNotEmpty()) days.toInt() else 0
-    } catch (e: Exception) {
+    } catch (e : Exception) {
         0
     }
     calendar.add(Calendar.DAY_OF_YEAR, day)
@@ -174,20 +181,20 @@ fun getCalculatedStartDate(days: String = "", date: String = ""): String {
     return calendar.timeInMillis.toString()
 }
 
-fun getCalculatedEndDate(days: String = "", date: String = ""): String {
+fun getCalculatedEndDate(days : String = "", date : String = "") : String {
     val calendar = Calendar.getInstance()
     val s = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     try {
         if (date.isNotEmpty()) {
             calendar.time = s.parse(date) as Date
         }
-    } catch (e: Exception) {
+    } catch (e : Exception) {
         calendar.timeInMillis = date.toLong()
     }
 
     val day = try {
         if (days.isNotEmpty()) days.toInt() else 0
-    } catch (e: Exception) {
+    } catch (e : Exception) {
         0
     }
     calendar.add(Calendar.DAY_OF_YEAR, day)
@@ -199,7 +206,7 @@ fun getCalculatedEndDate(days: String = "", date: String = ""): String {
     return calendar.timeInMillis.toString()
 }
 
-fun getSalaryDates(joinedDate: String): KotlinCollectionsList<Pair<String, String>> {
+fun getSalaryDates(joinedDate : String) : KotlinCollectionsList<Pair<String, String>> {
 
     val currentYearAndMonth = YearMonth.now()
 
@@ -249,7 +256,7 @@ private fun getStartAndEndDate(
     currentYear : Int,
     previousMonth : Int,
     previousYear : Int
-): Pair<String, String> {
+) : Pair<String, String> {
     val startCalender = Calendar.getInstance()
     startCalender[Calendar.DATE] = date
     startCalender[Calendar.YEAR] = previousYear
@@ -271,7 +278,7 @@ private fun getStartAndEndDate(
     return Pair(startCalender.timeInMillis.toString(), endCalender.timeInMillis.toString())
 }
 
-private fun getStartDate(date : Int, currentMonth : Int, currentYear : Int): String {
+private fun getStartDate(date : Int, currentMonth : Int, currentYear : Int) : String {
     val startCalender = Calendar.getInstance()
     startCalender[Calendar.DATE] = date
     startCalender[Calendar.YEAR] = currentYear
@@ -284,7 +291,7 @@ private fun getStartDate(date : Int, currentMonth : Int, currentYear : Int): Str
     return startCalender.timeInMillis.toString()
 }
 
-fun createNotificationChannel(context: Context, channelId: String, channelName: String) {
+fun createNotificationChannel(context : Context, channelId : String, channelName : String) {
     val channel = NotificationChannel(
         channelId,
         channelName,
@@ -300,12 +307,12 @@ fun showPendingIntentNotification(
     notificationId : Int,
     pendingIntent : PendingIntent,
     channelId : String = ABSENT_REMINDER_ID,
-    title: String = ABSENT_REMINDER_TITLE,
-    text: String = ABSENT_REMINDER_TEXT,
+    title : String = ABSENT_REMINDER_TITLE,
+    text : String = ABSENT_REMINDER_TEXT,
     @DrawableRes
-    icon: Int = R.drawable.baseline_calendar,
-    setOnGoing: Boolean = isOngoing,
-    setAutoCancel: Boolean = false,
+    icon : Int = R.drawable.baseline_calendar,
+    setOnGoing : Boolean = isOngoing,
+    setAutoCancel : Boolean = false,
 ) {
     val notification = NotificationCompat.Builder(context, channelId)
         .setSmallIcon(icon)
@@ -323,19 +330,19 @@ fun showPendingIntentNotification(
     NotificationManagerCompat.from(context).notify(notificationId, notification)
 }
 
-fun stopPendingIntentNotification(context : Context, notificationId: Int) {
+fun stopPendingIntentNotification(context : Context, notificationId : Int) {
     NotificationManagerCompat.from(context).cancel(notificationId)
 }
 
-fun formattedDateToStartMillis(formattedDate: String): String {
-    val s = SimpleDateFormat("dd-MM-yyyy",Locale.getDefault())
+fun formattedDateToStartMillis(formattedDate : String) : String {
+    val s = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     val calendar = Calendar.getInstance()
 
     try {
         if (formattedDate.isNotEmpty()) {
             calendar.time = s.parse(formattedDate) as Date
         }
-    } catch (e: Exception) {
+    } catch (e : Exception) {
         calendar.timeInMillis = formattedDate.toLong()
     }
 
@@ -347,7 +354,7 @@ fun formattedDateToStartMillis(formattedDate: String): String {
     return calendar.timeInMillis.toString()
 }
 
-fun compareSalaryDates(joinedDate: String, comparableDate: String): Boolean {
+fun compareSalaryDates(joinedDate : String, comparableDate : String) : Boolean {
     val calendar = Calendar.getInstance()
 
     calendar.timeInMillis = joinedDate.toLong()
@@ -365,18 +372,18 @@ fun compareSalaryDates(joinedDate: String, comparableDate: String): Boolean {
     }
 }
 
-fun toMonthAndYear(date: String): String {
+fun toMonthAndYear(date : String) : String {
     val currentYear = Year.now().value.toString()
     val format = SimpleDateFormat("yyyy", Locale.getDefault()).format(date.toLong()).toString()
 
     return if (currentYear == format) {
         SimpleDateFormat("MMMM", Locale.getDefault()).format(date.toLong()).toString()
-    }else {
+    } else {
         SimpleDateFormat("MMMM yy", Locale.getDefault()).format(date.toLong()).toString()
     }
 }
 
-fun setTodayStartTime(time: Int = 11): Calendar {
+fun setTodayStartTime(time : Int = 11) : Calendar {
     val startTime = Calendar.getInstance()
     startTime[Calendar.HOUR_OF_DAY] = time
     startTime[Calendar.MINUTE] = 0
@@ -386,7 +393,7 @@ fun setTodayStartTime(time: Int = 11): Calendar {
     return startTime
 }
 
-private fun setTodayEndTime(time: Int = 23): Calendar {
+private fun setTodayEndTime(time : Int = 23) : Calendar {
     val endTime = Calendar.getInstance()
     endTime[Calendar.HOUR_OF_DAY] = time
     endTime[Calendar.MINUTE] = 0
@@ -396,12 +403,12 @@ private fun setTodayEndTime(time: Int = 23): Calendar {
     return endTime
 }
 
-val openingTime: String = setTodayStartTime().timeInMillis.toString()
-val closingTime: String = setTodayEndTime().timeInMillis.toString()
+val openingTime : String = setTodayStartTime().timeInMillis.toString()
+val closingTime : String = setTodayEndTime().timeInMillis.toString()
 val dailySalaryStartTime = setTodayStartTime().timeInMillis.toString()
-val isOngoing = LocalDate.now().toCurrentMilliSecond in openingTime .. closingTime
+val isOngoing = LocalDate.now().toCurrentMilliSecond in openingTime..closingTime
 
-fun createDottedString(name: String): String {
+fun createDottedString(name : String) : String {
     if (name.length > PRODUCT_NAME_LENGTH) {
         var wordLength = 0
         var firstWordLength = 0
@@ -410,7 +417,7 @@ fun createDottedString(name: String): String {
         splitName.forEachIndexed { index, word ->
             if (index != 0) {
                 wordLength += word.length.plus(1)
-            }else {
+            } else {
                 firstWordLength = word.length
             }
         }
@@ -419,16 +426,19 @@ fun createDottedString(name: String): String {
 
         val whiteSpace = splitName.size - 1
 
-        val remLength = wordLength.plus(whiteSpace).minus(remainingLength).div(splitName.size.minus(1))
+        val remLength =
+            wordLength.plus(whiteSpace).minus(remainingLength).div(splitName.size.minus(1))
 
         var newName = ""
 
         splitName.forEachIndexed { index, name1 ->
             if (index != 0) {
                 val wordLen = name1.length.minus(remLength.plus(1))
-                val dottedName = if (wordLen <= 0) name1.substring(0, 1) else name1.substring(0, wordLen).plus(".")
+                val dottedName =
+                    if (wordLen <= 0) name1.substring(0, 1) else name1.substring(0, wordLen)
+                        .plus(".")
                 newName += " $dottedName"
-            }else {
+            } else {
                 newName = name1
             }
         }
@@ -437,7 +447,7 @@ fun createDottedString(name: String): String {
     } else return name
 }
 
-fun String.toPrettyDate(): String {
+fun String.toPrettyDate() : String {
     val nowTime = Calendar.getInstance()
     val neededTime = Calendar.getInstance()
     neededTime.timeInMillis = this.toLong()
@@ -449,14 +459,17 @@ fun String.toPrettyDate(): String {
                     //here return like "Tomorrow at 12:00"
                     "Tomorrow"
                 }
+
                 nowTime[Calendar.DATE] == neededTime[Calendar.DATE] -> {
                     //here return like "Today at 12:00"
                     "Today"
                 }
+
                 nowTime[Calendar.DATE] - neededTime[Calendar.DATE] == 1 -> {
                     //here return like "Yesterday at 12:00"
                     "Yesterday"
                 }
+
                 else -> {
                     //here return like "May 31, 12:00"
                     SimpleDateFormat("MMMM dd", Locale.getDefault()).format(Date(this.toLong()))
@@ -475,7 +488,7 @@ fun String.toPrettyDate(): String {
 val String.toStartDate
     get() = getCalculatedStartDate(date = this)
 
-fun String.toDailySalaryAmount(): String {
+fun String.toDailySalaryAmount() : String {
     val dailyAmount = this.toLong().div(30).toInt()
     val numberFormat = NumberFormat.getInstance()
     numberFormat.roundingMode = RoundingMode.CEILING
@@ -484,12 +497,86 @@ fun String.toDailySalaryAmount(): String {
     return dailyAmount.toString().toRupee
 }
 
-fun Pair<String, String>.isSameDay(): Boolean {
+fun Pair<String, String>.isSameDay() : Boolean {
     val checkFirst = DateUtils.isToday(this.first.toLong())
     val checkSecond = DateUtils.isToday(this.second.toLong())
 
     return checkFirst && checkSecond
 }
 
-val String.isToday: Boolean
+val String.isToday : Boolean
     get() = DateUtils.isToday(this.toLong())
+
+
+fun Uri.toBitmap(context : Context): Bitmap? {
+    val inputStream = context.contentResolver.openInputStream(this)
+
+    val bitmap: Bitmap? = BitmapFactory.decodeStream(inputStream)
+
+    inputStream?.close()
+
+    return bitmap
+}
+
+
+fun drawableToByteArray(context : Context, imageRes : Int) : ByteArray {
+    // Get the drawable from the resources
+    val drawable : Drawable? = context.getDrawable(imageRes)
+
+    // Convert the drawable to a Bitmap
+    val bitmap = Bitmap.createBitmap(
+        drawable?.intrinsicWidth ?: 0,
+        drawable?.intrinsicHeight ?: 0,
+        Bitmap.Config.ARGB_8888
+    )
+    val canvas = Canvas(bitmap)
+    drawable?.setBounds(0, 0, canvas.width, canvas.height)
+    drawable?.draw(canvas)
+
+    // Convert the Bitmap to a byte array
+    val stream = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+    val byteArray = stream.toByteArray()
+
+    // Clean up resources
+    stream.close()
+    bitmap.recycle()
+
+    // Now you have the byte array representing the drawable
+
+    return byteArray
+}
+
+/**
+ * Convert bitmap to byte array using ByteBuffer.
+ */
+fun Bitmap.convertToByteArray(): ByteArray {
+    //minimum number of bytes that can be used to store this bitmap's pixels
+    val size = this.byteCount
+
+    //allocate new instances which will hold bitmap
+    val buffer = ByteBuffer.allocate(size)
+    val bytes = ByteArray(size)
+
+    //copy the bitmap's pixels into the specified buffer
+    this.copyPixelsToBuffer(buffer)
+
+    //rewinds buffer (buffer position is set to zero and the mark is discarded)
+    buffer.rewind()
+
+    //transfer bytes from buffer into the given destination array
+    buffer.get(bytes)
+
+    //return bitmap's pixels
+    return bytes
+}
+
+fun Bitmap.toByteArray(): ByteArray {
+    val stream = ByteArrayOutputStream()
+    this.compress(Bitmap.CompressFormat.PNG, 100, stream)
+    return stream.toByteArray()
+}
+
+fun ByteArray.toBitmap(): Bitmap {
+    return BitmapFactory.decodeByteArray(this, 0, this.size)
+}

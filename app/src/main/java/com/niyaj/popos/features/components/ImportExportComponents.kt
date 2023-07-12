@@ -109,7 +109,7 @@ fun ImportFooter(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            StandardOutlinedButton(
+            StandardOutlinedButtonFW(
                 text = "Cancel",
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colors.error
@@ -119,7 +119,7 @@ fun ImportFooter(
 
             Spacer(modifier = Modifier.height(SpaceSmall))
 
-            StandardButton(
+            StandardButtonFW(
                 text = text,
                 icon = Icons.Default.SaveAlt,
                 colors = ButtonDefaults.buttonColors(
@@ -132,7 +132,7 @@ fun ImportFooter(
     } else {
         Spacer(modifier = Modifier.height(SpaceMedium))
 
-        StandardButton(
+        StandardButtonFW(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(id = R.string.open_file),
             icon = Icons.Default.UploadFile,
@@ -153,7 +153,7 @@ fun ExportedFooter(
 ) {
     Spacer(modifier = Modifier.height(SpaceMedium))
 
-    StandardButton(
+    StandardButtonFW(
         text = text.uppercase(),
         icon = Icons.Default.SaveAlt,
         iconModifier = Modifier.rotate(180F),

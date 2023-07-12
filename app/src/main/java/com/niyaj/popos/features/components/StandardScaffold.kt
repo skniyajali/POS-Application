@@ -24,21 +24,27 @@ import com.niyaj.popos.utils.Constants.STANDARD_BACK_BUTTON
 
 @Composable
 fun StandardScaffold(
-    navController: NavController,
-    scaffoldState: ScaffoldState,
-    modifier: Modifier = Modifier,
-    navigationIcon: @Composable () -> Unit =  {},
-    showBackArrow: Boolean = false,
-    onBackButtonClick: () -> Unit = {navController.navigateUp()},
-    navActions: @Composable RowScope.() -> Unit = {},
-    title: @Composable () -> Unit = {},
+    navController : NavController,
+    scaffoldState : ScaffoldState,
+    modifier : Modifier = Modifier,
+    navigationIcon : @Composable () -> Unit = {},
+    showBackArrow : Boolean = false,
+    showBottomBar : Boolean = false,
+    onBackButtonClick : () -> Unit = { navController.navigateUp() },
+    navActions : @Composable RowScope.() -> Unit = {},
+    title : @Composable () -> Unit = {},
     isFloatingActionButtonDocked : Boolean = false,
-    floatingActionButton: @Composable () -> Unit = {},
-    floatingActionButtonPosition: FabPosition = FabPosition.Center,
-    topAppBarBackgroundColor: Color = MaterialTheme.colors.primary,
-    showTopBar: Boolean = true,
-    bottomBar: @Composable () -> Unit = {},
-    content: @Composable (PaddingValues) -> Unit = {},
+    floatingActionButton : @Composable () -> Unit = {},
+    floatingActionButtonPosition : FabPosition = FabPosition.Center,
+    topAppBarBackgroundColor : Color = MaterialTheme.colors.primary,
+    showTopBar : Boolean = true,
+    bottomBar : @Composable () -> Unit = {
+        StandardBottomNavigation(
+            navController,
+            isFloatingActionButtonDocked
+        )
+    },
+    content : @Composable (PaddingValues) -> Unit = {},
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -48,7 +54,7 @@ fun StandardScaffold(
                 TopAppBar(
                     title = title,
                     modifier = modifier,
-                    navigationIcon = if(showBackArrow) {
+                    navigationIcon = if (showBackArrow) {
                         {
                             IconButton(
                                 onClick = {
@@ -70,7 +76,11 @@ fun StandardScaffold(
                 )
             }
         },
-        bottomBar = bottomBar,
+        bottomBar = {
+            if (showBottomBar) {
+                bottomBar()
+            }
+        },
         floatingActionButton = floatingActionButton,
         isFloatingActionButtonDocked = isFloatingActionButtonDocked,
         floatingActionButtonPosition = floatingActionButtonPosition,

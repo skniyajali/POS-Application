@@ -89,10 +89,10 @@ class AddressViewModel @Inject constructor(
                                     _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                                 }
                                 is Resource.Success -> {
-                                    _eventFlow.emit(UiEvent.OnSuccess("Address deleted successfully"))
+                                    _eventFlow.emit(UiEvent.Success("Address deleted successfully"))
                                 }
                                 is Resource.Error -> {
-                                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete address"))
+                                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete address"))
                                 }
                             }
                             _selectedAddresses.remove(address)

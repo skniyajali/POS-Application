@@ -24,7 +24,6 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -46,11 +45,9 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -77,9 +74,8 @@ import com.niyaj.popos.features.components.CountBox
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.LoadingIndicator
 import com.niyaj.popos.features.components.RoundedBox
-import com.niyaj.popos.features.components.StandardButton
+import com.niyaj.popos.features.components.StandardButtonFW
 import com.niyaj.popos.features.components.StandardExpandable
-import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.components.chart.common.dimens.ChartDimens
@@ -109,7 +105,6 @@ import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import io.sentry.compose.SentryTraced
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
 
@@ -188,7 +183,6 @@ fun ReportScreen(
 
     val lazyListState = rememberLazyListState()
     val dialogState = rememberMaterialDialogState()
-    val scope = rememberCoroutineScope()
 
     val report = reportsViewModel.reportState.collectAsStateWithLifecycle().value.report
 
@@ -228,17 +222,12 @@ fun ReportScreen(
         selectedProductData = ""
     }
 
-    val showScrollToTop = remember {
-        derivedStateOf {
-            lazyListState.firstVisibleItemIndex > 0
-        }
-    }
-
     SentryTraced(tag = "ReportScreen") {
         StandardScaffold(
             navController = navController,
             scaffoldState = scaffoldState,
             showBackArrow = true,
+            showBottomBar = true,
             title = {
                 Text(text = "Reports")
             },
@@ -266,23 +255,22 @@ fun ReportScreen(
                 }
 
             },
-            isFloatingActionButtonDocked = true,
-            floatingActionButton = {
-                StandardFabButton(
-                    text = "",
-                    showScrollToTop = showScrollToTop.value,
-                    visible = false,
-                    onScrollToTopClick = {
-                        scope.launch {
-                            lazyListState.animateScrollToItem(index = 0)
-                        }
-                    },
-                    onClick = {},
-                )
-            },
-            floatingActionButtonPosition = if(showScrollToTop.value) FabPosition.End else FabPosition.Center,
+//            isFloatingActionButtonDocked = true,
+//            floatingActionButton = {
+//                StandardFabButton(
+//                    text = "",
+//                    showScrollToTop = showScrollToTop.value,
+//                    visible = false,
+//                    onScrollToTopClick = {
+//                        scope.launch {
+//                            lazyListState.animateScrollToItem(index = 0)
+//                        }
+//                    },
+//                    onClick = {},
+//                )
+//            },
+//            floatingActionButtonPosition = if(showScrollToTop.value) FabPosition.End else FabPosition.Center,
         ) {
-
             MaterialDialog(
                 dialogState = dialogState,
                 buttons = {
@@ -301,7 +289,9 @@ fun ReportScreen(
 
             LazyColumn(
                 state = lazyListState,
-                modifier = Modifier.padding(SpaceSmall)
+                modifier = Modifier
+                    .padding(it)
+                    .padding(SpaceSmall)
             ) {
                 item("reportBoxData") {
                     Spacer(modifier = Modifier.height(SpaceMini))
@@ -460,7 +450,7 @@ fun ReportBoxData(
 
     Spacer(modifier = Modifier.height(SpaceSmall))
 
-    StandardButton(
+    StandardButtonFW(
         modifier = Modifier.fillMaxWidth(),
         text = "Re-Generate Report",
         icon = Icons.Default.Sync,

@@ -22,12 +22,12 @@ private val DarkColorPalette = darkColors(
 private val LightColorPalette = lightColors(
 //    primary = Purple500,
 //    primary = newColor,
-    primary = Primary,
-    primaryVariant = PrimaryVariant,
+    primary = PrimaryVariant,
+    primaryVariant = Primary,
     onPrimary = Color.White,
 
 //    secondary = Olive,
-    secondary = PrimaryVariant,
+    secondary = Primary,
     secondaryVariant = Olive,
     onSecondary = Color.White,
 

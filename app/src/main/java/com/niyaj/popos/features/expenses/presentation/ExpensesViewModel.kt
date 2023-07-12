@@ -74,10 +74,10 @@ class ExpensesViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Expenses deleted successfully"))
+                            _eventFlow.emit(UiEvent.Success("Expenses deleted successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete employee"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete employee"))
                         }
                     }
                 }
@@ -171,7 +171,7 @@ class ExpensesViewModel @Inject constructor(
                     is Resource.Error -> {
                         withContext(Dispatchers.Main){
                             _state.value = _state.value.copy(error = "Unable to load resources")
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to load resources"))
                         }
                     }
                 }

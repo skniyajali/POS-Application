@@ -4,6 +4,8 @@ import com.niyaj.popos.R
 
 object Constants {
 
+    const val MY_REQUEST_CODE = 123
+
     // github login token - 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
 
     const val SPLASH_SCREEN_DURATION = 100
@@ -53,7 +55,12 @@ object Constants {
     const val RESTAURANT_SECONDARY_PHONE: String = "9597185001"
     const val RESTAURANT_PRIMARY_PHONE: String = "9500825077"
     const val RESTAURANT_ADDRESS = "Chinna Seeragapadi, Salem, TamilNadu, India 636308, Opp. of VIMS Hospital"
-    const val RESTAURANT_LOGO = R.drawable.reslogo.toString()
+
+    const val RESTAURANT_LOGO_NAME = "reslogo.png"
+    const val RESTAURANT_PRINT_LOGO_NAME = "printlogo.png"
+
+    const val RESTAURANT_LOGO = R.drawable.logo_new.toString()
+    const val PRINT_LOGO = R.drawable.reslogo.toString()
 
     //Common Constants
     const val SEARCH_ITEM_NOT_FOUND = "Searched Item Not Found"

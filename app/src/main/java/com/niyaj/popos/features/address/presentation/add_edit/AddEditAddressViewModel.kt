@@ -80,7 +80,7 @@ class AddEditAddressViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get address by ID"))
+                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to get address by ID"))
                 }
             }
         }
@@ -110,10 +110,10 @@ class AddEditAddressViewModel @Inject constructor(
                     when(val result = addressRepository.addNewAddress(address)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Address created successfully"))
+                            _eventFlow.emit(UiEvent.Success("Address created successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create address"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to create address"))
                         }
                     }
                     addEditAddressState = AddEditAddressState()
@@ -122,10 +122,10 @@ class AddEditAddressViewModel @Inject constructor(
                     when(val result = addressRepository.updateAddress(address, addressId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Address updated successfully"))
+                            _eventFlow.emit(UiEvent.Success("Address updated successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to update address"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to update address"))
                         }
                     }
 

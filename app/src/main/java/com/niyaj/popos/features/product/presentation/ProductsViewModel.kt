@@ -129,10 +129,10 @@ class ProductsViewModel @Inject constructor(
                             when (val result = productRepository.deleteProduct(product)){
                                 is Resource.Loading -> {}
                                 is Resource.Success -> {
-                                    _eventFlow.emit(UiEvent.OnSuccess("Product Deleted Successfully"))
+                                    _eventFlow.emit(UiEvent.Success("Product Deleted Successfully"))
                                 }
                                 is Resource.Error -> {
-                                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete product"))
+                                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete product"))
                                 }
                             }
                             _selectedProducts.remove(product)
@@ -239,7 +239,7 @@ class ProductsViewModel @Inject constructor(
                         }
                     }
                     is Resource.Error -> {
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load category"))
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to load category"))
                     }
                 }
             }

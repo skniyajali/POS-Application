@@ -142,11 +142,11 @@ fun AttendanceScreen(
     LaunchedEffect(key1 = true) {
         attendanceViewModel.eventFlow.collect { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     scaffoldState.snackbarHostState.showSnackbar(event.successMessage)
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     scaffoldState.snackbarHostState.showSnackbar(event.errorMessage)
                 }
 

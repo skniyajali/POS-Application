@@ -110,7 +110,7 @@ class ProductDetailsViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get product details"))
+                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to get product details"))
                 }
             }
         }

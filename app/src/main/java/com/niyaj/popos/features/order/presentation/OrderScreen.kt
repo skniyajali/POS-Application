@@ -8,11 +8,14 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -38,8 +41,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -88,17 +89,18 @@ import java.time.LocalDate
  * @see PrintViewModel
  */
 @OptIn(
-    ExperimentalPagerApi::class, ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class
+    ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class,
+    ExperimentalFoundationApi::class
 )
 @Destination
 @Composable
 fun OrderScreen(
-    selectedDate: String = "",
-    navController: NavController,
-    scaffoldState: ScaffoldState,
-    orderViewModel: OrderViewModel = hiltViewModel(),
-    printViewModel: PrintViewModel = hiltViewModel(),
-    resultRecipient: ResultRecipient<AddEditCartOrderScreenDestination, String>
+    selectedDate : String = "",
+    navController : NavController,
+    scaffoldState : ScaffoldState,
+    orderViewModel : OrderViewModel = hiltViewModel(),
+    printViewModel : PrintViewModel = hiltViewModel(),
+    resultRecipient : ResultRecipient<AddEditCartOrderScreenDestination, String>
 ) {
     val context = LocalContext.current
 
@@ -139,11 +141,11 @@ fun OrderScreen(
         context.getSystemService(BluetoothManager::class.java)
     }
 
-    val bluetoothAdapter: BluetoothAdapter? = remember {
+    val bluetoothAdapter : BluetoothAdapter? = remember {
         bluetoothManager.adapter
     }
 
-    val printDeliveryReport: () -> Unit = {
+    val printDeliveryReport : () -> Unit = {
         if (bluetoothPermissions.allPermissionsGranted) {
             if (bluetoothAdapter?.isEnabled == true) {
                 // Bluetooth is on print the receipt
@@ -158,7 +160,7 @@ fun OrderScreen(
         }
     }
 
-    val printOrder: (String) -> Unit = {
+    val printOrder : (String) -> Unit = {
         if (bluetoothPermissions.allPermissionsGranted) {
             if (bluetoothAdapter?.isEnabled == true) {
                 // Bluetooth is on print the receipt
@@ -173,39 +175,42 @@ fun OrderScreen(
         }
     }
 
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(0)
     val dialogState = rememberMaterialDialogState()
     val deleteOrderState = rememberMaterialDialogState()
 
     val showSearchBar by orderViewModel.toggledSearchBar.collectAsStateWithLifecycle()
 
     val dineInOrders = orderViewModel.dineInOrders.collectAsStateWithLifecycle().value.dineInOrders
-    val dineInLoading: Boolean = orderViewModel.dineInOrders.collectAsStateWithLifecycle().value.isLoading
+    val dineInLoading : Boolean =
+        orderViewModel.dineInOrders.collectAsStateWithLifecycle().value.isLoading
     val dineInError = orderViewModel.dineInOrders.collectAsStateWithLifecycle().value.error
 
-    val dineOutOrders = orderViewModel.dineOutOrders.collectAsStateWithLifecycle().value.dineOutOrders
-    val dineOutLoading: Boolean = orderViewModel.dineOutOrders.collectAsStateWithLifecycle().value.isLoading
+    val dineOutOrders =
+        orderViewModel.dineOutOrders.collectAsStateWithLifecycle().value.dineOutOrders
+    val dineOutLoading : Boolean =
+        orderViewModel.dineOutOrders.collectAsStateWithLifecycle().value.isLoading
     val dineOutError = orderViewModel.dineOutOrders.collectAsStateWithLifecycle().value.error
 
     val selectedDate1 = orderViewModel.selectedDate.value
 
     var deletableOrder by remember { mutableStateOf("") }
 
-    LaunchedEffect(key1 = true){
+    LaunchedEffect(key1 = true) {
         orderViewModel.eventFlow.collectLatest { event ->
-            when(event){
-                is UiEvent.OnSuccess -> {
+            when (event) {
+                is UiEvent.Success -> {
                     val result = scaffoldState.snackbarHostState.showSnackbar(
                         message = event.successMessage,
                         actionLabel = "View",
                         duration = SnackbarDuration.Short
                     )
-                    if(result == SnackbarResult.ActionPerformed){
+                    if (result == SnackbarResult.ActionPerformed) {
                         navController.navigate(CartScreenDestination())
                     }
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     scaffoldState.snackbarHostState.showSnackbar(
                         message = event.errorMessage,
                         duration = SnackbarDuration.Short
@@ -218,15 +223,15 @@ fun OrderScreen(
     }
 
     BackHandler(true) {
-        if (showSearchBar){
+        if (showSearchBar) {
             orderViewModel.onSearchBarCloseAndClearClick()
-        } else{
+        } else {
             navController.navigateUp()
         }
     }
 
     resultRecipient.onNavResult { result ->
-        when(result) {
+        when (result) {
             is NavResult.Canceled -> {}
             is NavResult.Value -> {
                 orderViewModel.onOrderEvent(OrderEvent.RefreshOrder)
@@ -239,10 +244,11 @@ fun OrderScreen(
             navController = navController,
             scaffoldState = scaffoldState,
             showBackArrow = true,
+            showBottomBar = dineInOrders.isNotEmpty() || dineOutOrders.isNotEmpty(),
             onBackButtonClick = {
-                if (showSearchBar){
+                if (showSearchBar) {
                     orderViewModel.onSearchBarCloseAndClearClick()
-                }else{
+                } else {
                     navController.navigateUp()
                 }
             },
@@ -251,7 +257,7 @@ fun OrderScreen(
                 Text(text = "Orders")
             },
             navActions = {
-                if(showSearchBar){
+                if (showSearchBar) {
                     StandardSearchBar(
                         searchText = orderViewModel.searchText.collectAsState().value,
                         placeholderText = "Search for orders...",
@@ -262,9 +268,9 @@ fun OrderScreen(
                             orderViewModel.onSearchTextClearClick()
                         },
                     )
-                }
-                else {
-                    val showIcon = if(pagerState.currentPage == 1) dineInOrders.isNotEmpty() else dineOutOrders.isNotEmpty()
+                } else {
+                    val showIcon =
+                        if (pagerState.currentPage == 1) dineInOrders.isNotEmpty() else dineOutOrders.isNotEmpty()
 
                     if (selectedDate1.isNotEmpty()) {
                         RoundedBox(
@@ -274,15 +280,18 @@ fun OrderScreen(
                             }
                         )
                         Spacer(modifier = Modifier.width(SpaceMini))
-                    }else{
+                    } else {
                         IconButton(
                             onClick = { dialogState.show() }
                         ) {
-                            Icon(imageVector = Icons.Default.Today, contentDescription = "Choose Date")
+                            Icon(
+                                imageVector = Icons.Default.Today,
+                                contentDescription = "Choose Date"
+                            )
                         }
                     }
 
-                    if (showIcon){
+                    if (showIcon) {
                         IconButton(
                             onClick = {
                                 orderViewModel.onOrderEvent(OrderEvent.ToggleSearchBar)
@@ -295,7 +304,7 @@ fun OrderScreen(
                             )
                         }
 
-                        if(pagerState.currentPage == 0){
+                        if (pagerState.currentPage == 0) {
                             IconButton(
                                 onClick = {
                                     printDeliveryReport()
@@ -311,7 +320,7 @@ fun OrderScreen(
                     }
                 }
             }
-        ){
+        ) {
             MaterialDialog(
                 dialogState = deleteOrderState,
                 buttons = {
@@ -406,7 +415,8 @@ fun OrderScreen(
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize(),
+                        .fillMaxSize()
+                        .padding(it),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     Tabs(tabs = tabs, pagerState = pagerState)
