@@ -108,10 +108,10 @@ class CustomerSettingsViewModel @Inject constructor(
                     when (val result = customerRepository.importContacts(customers.toList())){
                         is Resource.Loading -> { }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("${customers.toList().size} customers imported successfully"))
+                            _eventFlow.emit(UiEvent.Success("${customers.toList().size} customers imported successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to import customers"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to import customers"))
                         }
                     }
                 }
@@ -163,10 +163,10 @@ class CustomerSettingsViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("All Customers Deleted Successfully."))
+                            _eventFlow.emit(UiEvent.Success("All Customers Deleted Successfully."))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete all customers"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete all customers"))
                         }
                     }
                 }

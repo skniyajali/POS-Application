@@ -57,10 +57,10 @@ class CartOrderViewModel @Inject constructor(
                         is Resource.Success -> {
                             _selectedOrder.value = ""
                             getSelectedCartOrder()
-                            _eventFlow.emit(UiEvent.OnSuccess("CartOrder Deleted Successfully"))
+                            _eventFlow.emit(UiEvent.Success("CartOrder Deleted Successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError("Unable to delete CartOrder"))
+                            _eventFlow.emit(UiEvent.Error("Unable to delete CartOrder"))
                         }
                     }
                 }

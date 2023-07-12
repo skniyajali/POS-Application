@@ -128,10 +128,10 @@ class ImportProductViewModel @Inject constructor(
                     when (val result = productRepository.importProducts(products.toList())){
                         is Resource.Loading -> { }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("${products.toList().size} products imported successfully"))
+                            _eventFlow.emit(UiEvent.Success("${products.toList().size} products imported successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to import products"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to import products"))
                         }
                     }
                 }

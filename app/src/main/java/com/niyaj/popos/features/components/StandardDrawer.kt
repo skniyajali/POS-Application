@@ -50,20 +50,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.IconSizeLarge
 import com.niyaj.popos.features.common.ui.theme.LightColor12
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeSmall
 import com.niyaj.popos.features.common.ui.theme.SpaceLarge
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
+import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.destinations.AddOnItemScreenDestination
 import com.niyaj.popos.features.destinations.AddressScreenDestination
@@ -84,14 +87,20 @@ import com.niyaj.popos.features.destinations.ReminderScreenDestination
 import com.niyaj.popos.features.destinations.ReportScreenDestination
 import com.niyaj.popos.features.destinations.SalaryScreenDestination
 import com.niyaj.popos.features.destinations.SettingsScreenDestination
+import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
+import com.niyaj.popos.features.profile.presentation.ProfileViewModel
 import com.ramcosta.composedestinations.navigation.navigate
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun StandardDrawer(
     navController : NavController,
+    viewModel: ProfileViewModel = hiltViewModel(),
 ) {
+    val info = viewModel.info.collectAsStateWithLifecycle().value
+
     val currentRoute = navController.currentBackStackEntry?.destination?.route
+
     val expanded = remember { mutableStateOf(false) }
     val settingsExpanded = remember { mutableStateOf(false) }
     val expensesExpanded = remember { mutableStateOf(false) }
@@ -108,7 +117,7 @@ fun StandardDrawer(
         Column(
             modifier = Modifier.weight(0.3f)
         ) {
-            DrawerHeader(navController)
+            DrawerHeader(navController, info)
 
             Spacer(modifier = Modifier.height(SpaceLarge))
 
@@ -118,7 +127,6 @@ fun StandardDrawer(
         LazyColumn(
             modifier = Modifier.weight(2.5f)
         ) {
-
             item {
                 Spacer(modifier = Modifier.height(SpaceMedium))
 
@@ -628,7 +636,12 @@ fun StandardDrawer(
 @Composable
 fun DrawerHeader(
     navController : NavController,
+    info: RestaurantInfo,
 ) {
+    val context = LocalContext.current
+
+    val resImage = info.getRestaurantLogo(context)
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -636,11 +649,15 @@ fun DrawerHeader(
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Image(
-                painterResource(id = R.drawable.only_logo),
-                contentDescription = null,
-                modifier = Modifier.size(ProfilePictureSizeSmall)
-            )
+            if (resImage != null) {
+                Image(
+                    bitmap = resImage.asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(ProfilePictureSizeSmall)
+                        .clip(RoundedCornerShape(SpaceMini))
+                )
+            }
 
             Spacer(modifier = Modifier.width(SpaceMedium))
 
@@ -649,7 +666,7 @@ fun DrawerHeader(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = stringResource(id = R.string.popos_highlight),
+                    text = info.name,
                     style = MaterialTheme.typography.h6,
                     fontWeight = FontWeight.Bold,
                 )
@@ -657,7 +674,7 @@ fun DrawerHeader(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "- Pure And Tasty -",
+                    text = info.tagline,
                     style = MaterialTheme.typography.body2,
                     fontWeight = FontWeight.Medium
                 )
@@ -667,7 +684,7 @@ fun DrawerHeader(
 
         IconButton(
             onClick = {
-                navController.navigate(ProfileScreenDestination)
+                navController.navigate(ProfileScreenDestination())
             },
         ) {
             Icon(

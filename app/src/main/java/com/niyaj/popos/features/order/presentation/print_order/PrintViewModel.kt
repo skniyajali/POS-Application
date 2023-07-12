@@ -22,10 +22,12 @@ import com.niyaj.popos.features.order.domain.repository.OrderRepository
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoRepository
 import com.niyaj.popos.utils.Constants
+import com.niyaj.popos.utils.Constants.PRINT_LOGO
 import com.niyaj.popos.utils.createDottedString
 import com.niyaj.popos.utils.toFormattedTime
 import com.niyaj.popos.utils.toRupee
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -35,7 +37,7 @@ import javax.inject.Inject
 class PrintViewModel @Inject constructor(
     private val orderUseCases: OrderRepository,
     private val getAllCharges : GetAllCharges,
-    private val restaurantInfoUseCases: RestaurantInfoRepository,
+    private val repository: RestaurantInfoRepository,
     application : Application,
 ) : ViewModel() {
 
@@ -44,7 +46,7 @@ class PrintViewModel @Inject constructor(
 
 
     private var resInfo by mutableStateOf(RestaurantInfo())
-    private val resLogo = application.applicationContext.getDrawable(resInfo.logo.toInt())
+    private val resLogo = application.applicationContext.getDrawable(PRINT_LOGO.toInt())
 
     init {
         getAllCharges()
@@ -250,8 +252,15 @@ class PrintViewModel @Inject constructor(
 
     private fun getProfileInfo() {
         viewModelScope.launch {
-            restaurantInfoUseCases.getRestaurantInfo().data?.let {
-                resInfo = it
+            repository.getRestaurantInfo().collectLatest { result ->
+                when (result){
+                    is Resource.Success -> {
+                        result.data?.let {
+                            resInfo = it
+                        }
+                    }
+                    else -> {}
+                }
             }
         }
     }

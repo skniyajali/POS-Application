@@ -58,7 +58,6 @@ import com.niyaj.popos.features.reminder.presentation.components.EmployeeSelecti
 import com.niyaj.popos.features.reminder.presentation.components.EmployeeSelectionHeader
 import com.niyaj.popos.features.reminder.presentation.components.InfoCard
 import com.niyaj.popos.utils.Constants
-import com.niyaj.popos.utils.Constants.SALARY_HOST
 import com.niyaj.popos.utils.Constants.SALARY_HOST_SECURE
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
@@ -102,11 +101,11 @@ fun EmployeeDailySalaryReminderScreen(
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     resultBackNavigator.navigateBack(event.successMessage)
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     resultBackNavigator.navigateBack(event.errorMessage)
                 }
 

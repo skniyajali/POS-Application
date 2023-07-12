@@ -23,5 +23,4 @@ data class UpdateProfileState(
     val paymentQrCodeError: String? = null,
 
     val description: String = "",
-    val logo: String = "",
 )

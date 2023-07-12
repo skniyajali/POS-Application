@@ -88,22 +88,22 @@ class AddEditAddOnItemViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess(result.message ?: "AddOnItem created successfully"))
+                            _eventFlow.emit(UiEvent.Success(result.message ?: "AddOnItem created successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create AddOnItem"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to create AddOnItem"))
                         }
                     }
                 }else {
                     when(addOnItemRepository.updateAddOnItem(addOnItem, addOnItemId)){
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError( "Unable to Update AddOnItems"))
+                            _eventFlow.emit(UiEvent.Error( "Unable to Update AddOnItems"))
                         }
                         is Resource.Loading -> {
 
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("AddOnItem updated successfully"))
+                            _eventFlow.emit(UiEvent.Success("AddOnItem updated successfully"))
                         }
                     }
                 }

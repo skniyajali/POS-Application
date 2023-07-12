@@ -131,11 +131,11 @@ class AbsentViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Employee absent entry has been added."))
+                            _eventFlow.emit(UiEvent.Success("Employee absent entry has been added."))
                         }
                         is Resource.Error -> {
                             _eventFlow.emit(
-                                UiEvent.OnError(result.message?: "Unable to add absent entry.")
+                                UiEvent.Error(result.message?: "Unable to add absent entry.")
                             )
                         }
                     }
@@ -146,10 +146,10 @@ class AbsentViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Employee absent entry has been updated."))
+                            _eventFlow.emit(UiEvent.Success("Employee absent entry has been updated."))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(
+                            _eventFlow.emit(UiEvent.Error(
                                 result.message ?: "Unable to update absent entry.")
                             )
                         }
@@ -176,7 +176,7 @@ class AbsentViewModel @Inject constructor(
                     is Resource.Error -> {
                         _employeeState.value = _employeeState.value.copy(error = "Unable to load resources")
                         _eventFlow.emit(
-                            UiEvent.OnError(result.message
+                            UiEvent.Error(result.message
                             ?: "Unable to load resources"))
                     }
                 }
@@ -206,7 +206,7 @@ class AbsentViewModel @Inject constructor(
                         }
                     }
                     is Resource.Error -> {
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to find employee"))
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to find employee"))
                     }
                 }
             }
@@ -230,7 +230,7 @@ class AbsentViewModel @Inject constructor(
                         }
                     }
                     is Resource.Error -> {
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to find absent report"))
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to find absent report"))
                     }
                     is Resource.Loading -> {}
                 }

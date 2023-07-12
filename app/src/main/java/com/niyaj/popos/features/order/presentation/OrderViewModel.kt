@@ -90,10 +90,10 @@ class OrderViewModel @Inject constructor(
 
                             }
                             is Resource.Success -> {
-                                _eventFlow.emit(UiEvent.OnSuccess("Order Marked As Processing"))
+                                _eventFlow.emit(UiEvent.Success("Order Marked As Processing"))
                             }
                             is Resource.Error -> {
-                                _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable To Mark Order As Processing"))
+                                _eventFlow.emit(UiEvent.Error(result.message ?: "Unable To Mark Order As Processing"))
                             }
                         }
                     }
@@ -104,10 +104,10 @@ class OrderViewModel @Inject constructor(
                     when(val result = orderRepository.deleteOrder(event.cartOrderId)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Order Has Been Deleted successfully"))
+                            _eventFlow.emit(UiEvent.Success("Order Has Been Deleted successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable To Delete Order"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable To Delete Order"))
                         }
                     }
                 }

@@ -1,8 +1,10 @@
 package com.niyaj.popos.features.cart.presentation
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -15,8 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.rememberPagerState
 import com.niyaj.popos.features.cart.presentation.dine_in.DineInScreen
 import com.niyaj.popos.features.cart.presentation.dine_out.DineOutScreen
 import com.niyaj.popos.features.components.StandardScaffold
@@ -40,14 +40,14 @@ import io.sentry.compose.SentryTraced
  * @see DineInScreen
  */
 @Destination
-@OptIn(ExperimentalPagerApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun CartScreen(
     navController: NavController,
     scaffoldState: ScaffoldState,
     resultRecipient: ResultRecipient<AddEditCartOrderScreenDestination, String>
 ) {
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(0)
 
     SentryTraced(tag = CartScreenDestination.route) {
         StandardScaffold(

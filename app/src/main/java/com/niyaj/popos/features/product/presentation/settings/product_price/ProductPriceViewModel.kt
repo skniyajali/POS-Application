@@ -145,12 +145,12 @@ class ProductPriceViewModel @Inject constructor(
                             is Resource.Loading -> {}
                             is Resource.Success -> {
                                 _eventFlow.emit(
-                                    UiEvent.OnSuccess(
+                                    UiEvent.Success(
                                     if (_selectedProducts.isEmpty()) "All Products Price Has Been Increased" else "${_selectedProducts.size} Products Price Has Been Increased"
                                 ))
                             }
                             is Resource.Error -> {
-                                _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to Increase Product Price"))
+                                _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to Increase Product Price"))
                             }
                         }
                     }
@@ -176,12 +176,12 @@ class ProductPriceViewModel @Inject constructor(
                             is Resource.Loading -> {}
                             is Resource.Success -> {
                                 _eventFlow.emit(
-                                    UiEvent.OnSuccess(
+                                    UiEvent.Success(
                                     if (_selectedProducts.isEmpty()) "All Products Price Has Been Decreased" else "${_selectedProducts.size} Products Price Has Been Decreased"
                                 ))
                             }
                             is Resource.Error -> {
-                                _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to Decrease Product Price"))
+                                _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to Decrease Product Price"))
                             }
                         }
                     }

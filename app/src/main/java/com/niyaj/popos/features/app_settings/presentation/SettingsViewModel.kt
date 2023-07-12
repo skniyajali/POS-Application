@@ -47,10 +47,10 @@ class SettingsViewModel @Inject constructor(
                     _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                 }
                 is Resource.Success -> {
-                    _eventFlow.emit(UiEvent.OnSuccess("All records were successfully deleted"))
+                    _eventFlow.emit(UiEvent.Success("All records were successfully deleted"))
                 }
                 is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError("Unable to delete all records"))
+                    _eventFlow.emit(UiEvent.Error("Unable to delete all records"))
                 }
             }
         }
@@ -63,10 +63,10 @@ class SettingsViewModel @Inject constructor(
                     _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                 }
                 is Resource.Success -> {
-                    _eventFlow.emit(UiEvent.OnSuccess("Past records were successfully deleted"))
+                    _eventFlow.emit(UiEvent.Success("Past records were successfully deleted"))
                 }
                 is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError("Unable to delete past records"))
+                    _eventFlow.emit(UiEvent.Error("Unable to delete past records"))
                 }
             }
         }

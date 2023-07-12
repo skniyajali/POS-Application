@@ -74,10 +74,10 @@ class SalaryViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Salary deleted successfully"))
+                            _eventFlow.emit(UiEvent.Success("Salary deleted successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete salary"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete salary"))
                         }
                     }
                 }

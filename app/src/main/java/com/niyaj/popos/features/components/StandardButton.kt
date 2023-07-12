@@ -20,9 +20,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.features.common.ui.theme.ButtonSize
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
+import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 
 @Composable
-fun StandardButton(
+fun StandardButtonFW(
     modifier: Modifier = Modifier,
     iconModifier : Modifier = Modifier,
     text: String,
@@ -58,7 +59,7 @@ fun StandardButton(
 
 
 @Composable
-fun StandardOutlinedButton(
+fun StandardOutlinedButtonFW(
     modifier: Modifier = Modifier,
     iconModifier : Modifier = Modifier,
     text: String,
@@ -86,6 +87,78 @@ fun StandardOutlinedButton(
                 modifier = iconModifier
             )
             Spacer(modifier = Modifier.width(SpaceMini))
+        }
+        Text(
+            text = text.uppercase(),
+            style = MaterialTheme.typography.button,
+        )
+    }
+}
+
+
+@Composable
+fun StandardButton(
+    modifier: Modifier = Modifier,
+    iconModifier : Modifier = Modifier,
+    text: String,
+    icon: ImageVector? = null,
+    enabled: Boolean = true,
+    shape: Shape = RoundedCornerShape(SpaceMini),
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    onClick: () -> Unit,
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        shape = shape,
+        colors = colors,
+        modifier = modifier,
+    ) {
+        icon?.let {
+            Icon(
+                imageVector = icon,
+                contentDescription = text,
+                modifier = iconModifier
+            )
+            Spacer(modifier = Modifier.width(SpaceSmall))
+        }
+        Text(
+            text = text.uppercase(),
+            style = MaterialTheme.typography.button,
+        )
+    }
+}
+
+
+@Composable
+fun StandardOutlinedButton(
+    modifier: Modifier = Modifier,
+    iconModifier : Modifier = Modifier,
+    text: String,
+    icon: ImageVector? = null,
+    enabled: Boolean = true,
+    shape: Shape = RoundedCornerShape(SpaceMini),
+    colors: ButtonColors = ButtonDefaults.outlinedButtonColors(
+        contentColor = MaterialTheme.colors.secondaryVariant
+    ),
+    border: BorderStroke = BorderStroke(1.dp, MaterialTheme.colors.error),
+    onClick: () -> Unit,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        shape = shape,
+        colors = colors,
+        border = border,
+        modifier = modifier,
+    ) {
+        icon?.let {
+            Icon(
+                imageVector = icon,
+                contentDescription = text,
+                modifier = iconModifier
+            )
+            Spacer(modifier = Modifier.width(SpaceSmall))
         }
         Text(
             text = text.uppercase(),

@@ -108,10 +108,10 @@ class ExpensesSettingViewModel @Inject constructor(
                     when (val result = expensesRepository.importExpenses(expenses.toList())){
                         is Resource.Loading -> { }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("${expenses.toList().size} expenses imported successfully"))
+                            _eventFlow.emit(UiEvent.Success("${expenses.toList().size} expenses imported successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to import expenses"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to import expenses"))
                         }
                     }
                 }
@@ -161,10 +161,10 @@ class ExpensesSettingViewModel @Inject constructor(
                     when(val result = expensesRepository.deletePastExpenses(deleteAll = true)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("All Expenses has been deleted successfully"))
+                            _eventFlow.emit(UiEvent.Success("All Expenses has been deleted successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete expenses"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete expenses"))
                         }
                     }
                 }
@@ -175,10 +175,10 @@ class ExpensesSettingViewModel @Inject constructor(
                     when(val result = expensesRepository.deletePastExpenses(deleteAll = false)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Expenses has been deleted successfully"))
+                            _eventFlow.emit(UiEvent.Success("Expenses has been deleted successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete expenses"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete expenses"))
                         }
                     }
                 }
@@ -203,7 +203,7 @@ class ExpensesSettingViewModel @Inject constructor(
                     is Resource.Error -> {
                         withContext(Dispatchers.Main){
                             _state.value = _state.value.copy(error = "Unable to load resources")
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to load resources"))
                         }
                     }
                 }

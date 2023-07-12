@@ -124,10 +124,10 @@ class AddEditProductViewModel @Inject constructor(
 
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess(successMessage = "Product created successfully"))
+                            _eventFlow.emit(UiEvent.Success(successMessage = "Product created successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create new product"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to create new product"))
                         }
                     }
                 }else{
@@ -146,10 +146,10 @@ class AddEditProductViewModel @Inject constructor(
 
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Product updated successfully"))
+                            _eventFlow.emit(UiEvent.Success("Product updated successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(errorMessage = result.message ?: "Unable to update product"))
+                            _eventFlow.emit(UiEvent.Error(errorMessage = result.message ?: "Unable to update product"))
                         }
                     }
                 }
@@ -178,7 +178,7 @@ class AddEditProductViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to find product"))
+                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to find product"))
                 }
             }
         }
@@ -197,7 +197,7 @@ class AddEditProductViewModel @Inject constructor(
                         }
                     }
                     is Resource.Error -> {
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load category"))
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to load category"))
                     }
                 }
             }

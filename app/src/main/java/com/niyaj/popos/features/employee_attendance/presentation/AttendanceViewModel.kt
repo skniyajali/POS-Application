@@ -97,10 +97,10 @@ class AttendanceViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Employee Absent deleted successfully"))
+                            _eventFlow.emit(UiEvent.Success("Employee Absent deleted successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete employee absent"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete employee absent"))
                         }
                     }
 

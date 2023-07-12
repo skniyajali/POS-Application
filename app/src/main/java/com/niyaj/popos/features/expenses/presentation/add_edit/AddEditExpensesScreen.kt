@@ -55,7 +55,7 @@ import com.niyaj.popos.features.common.ui.theme.IconSizeExtraLarge
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardButton
+import com.niyaj.popos.features.components.StandardButtonFW
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.destinations.AddEditExpensesCategoryScreenDestination
@@ -107,11 +107,11 @@ fun AddEditExpensesScreen(
     LaunchedEffect(key1 = true) {
         addEditExpensesViewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     resultBackNavigator.navigateBack(event.successMessage)
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     resultBackNavigator.navigateBack(event.errorMessage)
                 }
 
@@ -288,7 +288,7 @@ fun AddEditExpensesScreen(
 
                 Spacer(modifier = Modifier.height(SpaceMedium))
 
-                StandardButton(
+                StandardButtonFW(
                     modifier = Modifier.fillMaxWidth(),
                     text = if (!expensesId.isNullOrEmpty()) stringResource(id = R.string.update_expense)
                     else stringResource(id = R.string.add_new_expense),

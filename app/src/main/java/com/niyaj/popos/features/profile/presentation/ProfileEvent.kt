@@ -18,7 +18,11 @@ sealed class ProfileEvent {
 
     data class PaymentQrCodeChanged(val paymentQrCode: String) : ProfileEvent()
 
-    data class LogoChanged(val logo: String) : ProfileEvent()
+    object StartScanning : ProfileEvent()
+
+    object LogoChanged : ProfileEvent()
+
+    object PrintLogoChanged : ProfileEvent()
 
     object RefreshEvent : ProfileEvent()
 

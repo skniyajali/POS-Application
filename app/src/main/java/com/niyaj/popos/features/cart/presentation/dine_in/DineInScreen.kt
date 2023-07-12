@@ -73,7 +73,7 @@ fun DineInScreen(
     LaunchedEffect(key1 = true){
         dineInViewModel.eventFlow.collectLatest { event ->
             when(event){
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     val result = scaffoldState.snackbarHostState.showSnackbar(
                         message = event.successMessage,
                         actionLabel = "View",
@@ -84,7 +84,7 @@ fun DineInScreen(
                     }
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     scaffoldState.snackbarHostState.showSnackbar(
                         message = event.errorMessage,
                         duration = SnackbarDuration.Short

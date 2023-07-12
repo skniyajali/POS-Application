@@ -38,7 +38,7 @@ import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.common.util.safeString
-import com.niyaj.popos.features.components.StandardButton
+import com.niyaj.popos.features.components.StandardButtonFW
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.destinations.AddEditAddOnItemScreenDestination
@@ -60,11 +60,11 @@ fun AddEditAddOnItemScreen(
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     resultNavigator.navigateBack(result = event.successMessage)
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     resultNavigator.navigateBack(result = event.errorMessage)
                 }
 
@@ -143,7 +143,7 @@ fun AddEditAddOnItemScreen(
 
                 Spacer(modifier = Modifier.height(SpaceMedium))
 
-                StandardButton(
+                StandardButtonFW(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag(ADDON_ADD_EDIT_BUTTON),

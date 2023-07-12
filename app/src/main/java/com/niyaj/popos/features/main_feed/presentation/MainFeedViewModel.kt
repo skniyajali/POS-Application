@@ -92,8 +92,8 @@ class MainFeedViewModel @Inject constructor(
                 viewModelScope.launch {
                     when(val result = cartRepository.addProductToCart(event.cartOrderId, event.productId)) {
                         is Resource.Loading -> _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
-                        is Resource.Success -> _eventFlow.emit(UiEvent.OnSuccess(successMessage = "Item added to cart"))
-                        is Resource.Error -> _eventFlow.emit(UiEvent.OnError(errorMessage = result.message ?: "Error adding product to cart"))
+                        is Resource.Success -> _eventFlow.emit(UiEvent.Success(successMessage = "Item added to cart"))
+                        is Resource.Error -> _eventFlow.emit(UiEvent.Error(errorMessage = result.message ?: "Error adding product to cart"))
                     }
                 }
             }
@@ -103,10 +103,10 @@ class MainFeedViewModel @Inject constructor(
                     when (val result = cartRepository.removeProductFromCart(event.cartOrderId, event.productId)){
                         is Resource.Loading -> _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess(successMessage = "Item removed from cart"))
+                            _eventFlow.emit(UiEvent.Success(successMessage = "Item removed from cart"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(errorMessage = result.message ?: "Error removing product from cart"))
+                            _eventFlow.emit(UiEvent.Error(errorMessage = result.message ?: "Error removing product from cart"))
                         }
                     }
                 }

@@ -1,9 +1,19 @@
 package com.niyaj.popos.features.components.util
 
 import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.material.Icon
+import androidx.compose.material.LeadingIconTab
+import androidx.compose.material.TabPosition
+import androidx.compose.material.TabRow
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -13,15 +23,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.PagerState
 import com.niyaj.popos.features.cart.presentation.CartTabItem
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Tabs(tabs: List<CartTabItem>, pagerState: PagerState) {
+fun Tabs(tabs : List<CartTabItem>, pagerState : PagerState) {
     val scope = rememberCoroutineScope()
 
     // OR ScrollableTabRow()
@@ -29,7 +36,7 @@ fun Tabs(tabs: List<CartTabItem>, pagerState: PagerState) {
         // Our selected tab is our current page
         selectedTabIndex = pagerState.currentPage,
         // Override the indicator, using the provided pagerTabIndicatorOffset modifier
-        indicator = { tabPositions: List<TabPosition> ->
+        indicator = { tabPositions : List<TabPosition> ->
             FancyAnimatedIndicator(tabPositions, pagerState)
         }
     ) {
@@ -51,11 +58,11 @@ fun Tabs(tabs: List<CartTabItem>, pagerState: PagerState) {
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FancyAnimatedIndicator(
-    tabPositions: List<TabPosition>,
-    pagerState: PagerState
+    tabPositions : List<TabPosition>,
+    pagerState : PagerState
 ) {
     val colors = listOf(Color.Yellow, Color.Red, Color.Green)
 
@@ -115,12 +122,12 @@ fun FancyAnimatedIndicator(
     )
 }
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TabsContent(tabs: List<CartTabItem>, pagerState: PagerState) {
+fun TabsContent(tabs : List<CartTabItem>, pagerState : PagerState) {
     HorizontalPager(
-        state = pagerState,
-        count = tabs.size,
+        pageCount = tabs.size,
+        state = pagerState
     ) { page ->
         tabs[page].screen()
     }

@@ -121,10 +121,10 @@ class DailySalaryReminderViewModel @Inject constructor(
                                     _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                                 }
                                 is Resource.Success -> {
-                                    _eventFlow.emit(UiEvent.OnSuccess("${employeeWithStatus.employee.employeeName} Marked as paid."))
+                                    _eventFlow.emit(UiEvent.Success("${employeeWithStatus.employee.employeeName} Marked as paid."))
                                 }
                                 is Resource.Error -> {
-                                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to mark ${employeeWithStatus.employee.employeeName} as paid."))
+                                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to mark ${employeeWithStatus.employee.employeeName} as paid."))
                                 }
                             }
                         }
@@ -135,7 +135,7 @@ class DailySalaryReminderViewModel @Inject constructor(
                     val result = reminderRepository.createOrUpdateReminder(DailySalaryReminder(isCompleted = markAsCompleted).toReminder())
 
                     if (result) {
-                        _eventFlow.emit(UiEvent.OnSuccess("Selected employee marked as paid on selected Date."))
+                        _eventFlow.emit(UiEvent.Success("Selected employee marked as paid on selected Date."))
                         val reminder = reminderRepository.getDailySalaryReminder()!!
                         stopPendingIntentNotification(application.applicationContext, reminder.notificationId)
                     }

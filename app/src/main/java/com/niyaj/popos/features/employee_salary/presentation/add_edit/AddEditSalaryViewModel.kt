@@ -153,10 +153,10 @@ class AddEditSalaryViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Salary has been added"))
+                            _eventFlow.emit(UiEvent.Success("Salary has been added"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to add salary entry"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to add salary entry"))
                         }
                     }
                 }else {
@@ -177,10 +177,10 @@ class AddEditSalaryViewModel @Inject constructor(
                             _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                         }
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Salary has been updated successfully"))
+                            _eventFlow.emit(UiEvent.Success("Salary has been updated successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to update salary entry"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to update salary entry"))
                         }
                     }
                 }
@@ -207,7 +207,7 @@ class AddEditSalaryViewModel @Inject constructor(
                     }
                     is Resource.Error -> {
                         _employeeState.value = _employeeState.value.copy(error = "Unable to load resources")
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to load resources"))
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to load resources"))
                     }
                 }
             }
@@ -261,7 +261,7 @@ class AddEditSalaryViewModel @Inject constructor(
                 }
                 is Resource.Error -> {
                     viewModelScope.launch {
-                        _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get salary information"))
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to get salary information"))
                     }
                 }
             }

@@ -137,11 +137,11 @@ class CustomerViewModel @Inject constructor(
                             when (val result = customerRepository.deleteCustomer(customer)) {
                                 is Resource.Loading -> {}
                                 is Resource.Success -> {
-                                    _eventFlow.emit(UiEvent.OnSuccess("Customer deleted successfully"))
+                                    _eventFlow.emit(UiEvent.Success("Customer deleted successfully"))
                                     _selectedCustomer.remove(customer)
                                 }
                                 is Resource.Error -> {
-                                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete customer"))
+                                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete customer"))
                                 }
                             }
                         }
@@ -200,7 +200,7 @@ class CustomerViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get customer"))
+                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to get customer"))
                 }
             }
 
@@ -235,10 +235,10 @@ class CustomerViewModel @Inject constructor(
                     when(val result = customerRepository.createNewCustomer(customer)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Customer Created Successfully"))
+                            _eventFlow.emit(UiEvent.Success("Customer Created Successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create new customer"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to create new customer"))
                         }
                     }
                 }else{
@@ -251,12 +251,12 @@ class CustomerViewModel @Inject constructor(
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(
-                                UiEvent.OnSuccess(
+                                UiEvent.Success(
                                 successMessage = "Customer Updated Successfully"
                             ))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError( result.message ?: "Unable to update new customer"))
+                            _eventFlow.emit(UiEvent.Error( result.message ?: "Unable to update new customer"))
                         }
                     }
                 }

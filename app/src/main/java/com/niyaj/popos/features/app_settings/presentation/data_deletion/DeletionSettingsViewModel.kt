@@ -92,10 +92,10 @@ class DeletionSettingsViewModel @Inject constructor(
                     _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                 }
                 is Resource.Success -> {
-                    _eventFlow.emit(UiEvent.OnSuccess("Deletion Settings Updated"))
+                    _eventFlow.emit(UiEvent.Success("Deletion Settings Updated"))
                 }
                 is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to update settings"))
+                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to update settings"))
                 }
             }
         }
@@ -118,7 +118,7 @@ class DeletionSettingsViewModel @Inject constructor(
                     )
                 }
                 is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get data deletion settings"))
+                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to get data deletion settings"))
                 }
             }
         }

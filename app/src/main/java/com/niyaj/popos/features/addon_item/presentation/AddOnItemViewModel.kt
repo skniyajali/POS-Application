@@ -95,10 +95,10 @@ class AddOnItemViewModel @Inject constructor(
                                     _eventFlow.emit(UiEvent.IsLoading(result.isLoading))
                                 }
                                 is Resource.Success -> {
-                                    _eventFlow.emit(UiEvent.OnSuccess("AddOnItem deleted successfully"))
+                                    _eventFlow.emit(UiEvent.Success("AddOnItem deleted successfully"))
                                 }
                                 is Resource.Error -> {
-                                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to delete item"))
+                                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete item"))
                                 }
                             }
                             _selectedAddOnItems.remove(addOnItem)

@@ -1,6 +1,11 @@
 package com.niyaj.popos.features.profile.domain.model
 
+import android.content.Context
+import android.graphics.Bitmap
+import androidx.core.graphics.drawable.toBitmap
+import com.niyaj.popos.features.common.util.ImageStorageManager
 import com.niyaj.popos.utils.Constants.PAYMENT_QR_DATA
+import com.niyaj.popos.utils.Constants.PRINT_LOGO
 import com.niyaj.popos.utils.Constants.RESTAURANT_ADDRESS
 import com.niyaj.popos.utils.Constants.RESTAURANT_DESCRIPTION
 import com.niyaj.popos.utils.Constants.RESTAURANT_EMAIL
@@ -32,7 +37,9 @@ class RestaurantInfo(): RealmObject {
 
     var address: String = RESTAURANT_ADDRESS
 
-    var logo: String = RESTAURANT_LOGO
+    var logo: String = ""
+
+    var printLogo: String = ""
 
     var paymentQrCode: String = PAYMENT_QR_DATA
 
@@ -49,7 +56,8 @@ class RestaurantInfo(): RealmObject {
         description: String = RESTAURANT_DESCRIPTION,
         address: String = RESTAURANT_ADDRESS,
         paymentQrCode: String = PAYMENT_QR_DATA,
-        logo: String = RESTAURANT_LOGO,
+        logo: String = "",
+        printLogo: String = "",
         createdAt: String = System.currentTimeMillis().toString(),
         updatedAt: String? = null
     ): this() {
@@ -61,8 +69,25 @@ class RestaurantInfo(): RealmObject {
         this.description = description
         this.address = address
         this.paymentQrCode = paymentQrCode
+        this.printLogo = printLogo
         this.logo = logo
         this.createdAt = createdAt
         this.updatedAt = updatedAt
+    }
+
+    fun getRestaurantLogo(context : Context): Bitmap? {
+        return if (logo.isEmpty()) {
+            context.getDrawable(RESTAURANT_LOGO.toInt())?.toBitmap()!!
+        }else {
+            ImageStorageManager.getImageFromInternalStorage(context, logo)
+        }
+    }
+
+    fun getRestaurantPrintLogo(context : Context): Bitmap? {
+        return if (printLogo.isEmpty()) {
+            context.getDrawable(PRINT_LOGO.toInt())?.toBitmap()
+        }else {
+            ImageStorageManager.getImageFromInternalStorage(context, printLogo)
+        }
     }
 }

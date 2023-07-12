@@ -142,7 +142,6 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     kapt(libs.hilt.android)
 
-
     // Dagger & Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.dagger.compiler)
@@ -225,6 +224,20 @@ dependencies {
 
     //Google Play Play Integrity API
     implementation(libs.integrity)
+
+    // Google Play In-App Updates API
+    implementation(libs.app.update)
+    implementation(libs.app.update.ktx)
+
+    // Coil Library
+    implementation(libs.coil)
+
+    // zxing QR code library
+    implementation(libs.zxing.core)
+
+    // Play GMS Scanner library
+    implementation(libs.play.gms.scanner)
+
 }
 
 kapt {

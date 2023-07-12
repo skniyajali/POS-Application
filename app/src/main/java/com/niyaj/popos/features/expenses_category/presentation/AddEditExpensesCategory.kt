@@ -19,7 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardButton
+import com.niyaj.popos.features.components.StandardButtonFW
 import com.niyaj.popos.features.components.StandardOutlinedTextField
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.ramcosta.composedestinations.annotation.Destination
@@ -50,11 +50,11 @@ fun AddEditExpensesCategoryScreen(
     LaunchedEffect(key1 = expensesCategoryId) {
         expensesCategoryViewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is UiEvent.OnSuccess -> {
+                is UiEvent.Success -> {
                     resultBackNavigator.navigateBack(event.successMessage)
                 }
 
-                is UiEvent.OnError -> {
+                is UiEvent.Error -> {
                     resultBackNavigator.navigateBack(event.errorMessage)
                 }
 
@@ -94,7 +94,7 @@ fun AddEditExpensesCategoryScreen(
 
                 Spacer(modifier = Modifier.height(SpaceMedium))
 
-                StandardButton(
+                StandardButtonFW(
                     modifier = Modifier.fillMaxWidth(),
                     text = if (!expensesCategoryId.isNullOrEmpty()) stringResource(id = R.string.update_expenses_category)
                     else stringResource(id = R.string.create_new_expenses_category),

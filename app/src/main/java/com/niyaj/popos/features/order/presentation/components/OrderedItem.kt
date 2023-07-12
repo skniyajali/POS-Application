@@ -219,7 +219,7 @@ fun OrderedItem(
     RevealSwipe(
         modifier = Modifier
             .fillMaxWidth(),
-        onContentClick = {},
+        onContentClick = onClickViewDetails,
         maxRevealDp = 150.dp,
         hiddenContentStart = {
             IconButton(

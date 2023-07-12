@@ -7,12 +7,16 @@ import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoRepository
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
 import com.niyaj.popos.utils.Constants.RESTAURANT_ID
-import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
+import io.realm.kotlin.notifications.InitialObject
+import io.realm.kotlin.notifications.UpdatedObject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -24,21 +28,80 @@ class RestaurantInfoRepositoryImpl(
     val realm = Realm.open(config)
 
     init {
-        Timber.d("Product Session")
+        Timber.d("Profile Session")
     }
 
-    override fun getRestaurantInfo(): Resource<RestaurantInfo> {
-        return try {
-            val info = realm.query<RestaurantInfo>("restaurantId == $0", RESTAURANT_ID).first().find()
+    override fun getRestaurantInfo() : Flow<Resource<RestaurantInfo>> {
+        return channelFlow {
+            try {
+                val info = realm.query<RestaurantInfo>("restaurantId == $0", RESTAURANT_ID).first().asFlow()
 
-            if (info != null) {
-                Resource.Success(info)
-            }else {
-                Resource.Success(RestaurantInfo())
+                info.collectLatest { result ->
+                    when(result) {
+                        is InitialObject -> {
+                            send(Resource.Success(result.obj))
+                        }
+                        is UpdatedObject -> {
+                            send(Resource.Success(result.obj))
+                        }
+                        else -> {}
+                    }
+                }
+            }catch (e: Exception){
+                send(Resource.Error(e.message ?: "Unable to get restaurant info", RestaurantInfo()))
+            }
+        }
+    }
+
+    override suspend fun updateRestaurantLogo(imageName : String) : Resource<Boolean> {
+        return try {
+            withContext(ioDispatcher) {
+                realm.write {
+                    val restaurant = this.query<RestaurantInfo>("restaurantId == $0", RESTAURANT_ID).first().find()
+
+                    if (restaurant != null) {
+                        restaurant.logo = imageName
+                        restaurant.updatedAt = System.currentTimeMillis().toString()
+                    }else {
+                        val newRestaurant = RestaurantInfo()
+                        newRestaurant.restaurantId = RESTAURANT_ID
+                        newRestaurant.logo = imageName
+                        newRestaurant.createdAt = System.currentTimeMillis().toString()
+
+                        this.copyToRealm(newRestaurant)
+                    }
+                }
             }
 
-        }catch (e: Exception){
-            Resource.Error(e.message ?: "Unable to get restaurant info", RestaurantInfo())
+            Resource.Success(true)
+        }catch (e: Exception) {
+            Resource.Error(e.message ?: "Unable to update restaurant image")
+        }
+    }
+
+    override suspend fun updatePrintLogo(imageName : String) : Resource<Boolean> {
+        return try {
+            withContext(ioDispatcher) {
+                realm.write {
+                    val restaurant = this.query<RestaurantInfo>("restaurantId == $0", RESTAURANT_ID).first().find()
+
+                    if (restaurant != null) {
+                        restaurant.printLogo = imageName
+                        restaurant.updatedAt = System.currentTimeMillis().toString()
+                    }else {
+                        val newRestaurant = RestaurantInfo()
+                        newRestaurant.restaurantId = RESTAURANT_ID
+                        newRestaurant.printLogo = imageName
+                        newRestaurant.createdAt = System.currentTimeMillis().toString()
+
+                        this.copyToRealm(newRestaurant)
+                    }
+                }
+            }
+
+            Resource.Success(true)
+        }catch (e: Exception) {
+            Resource.Error(e.message ?: "Unable to update restaurant print image")
         }
     }
 
@@ -75,7 +138,6 @@ class RestaurantInfoRepositoryImpl(
                             restaurant.secondaryPhone = restaurantInfo.secondaryPhone
                             restaurant.description = restaurantInfo.description
                             restaurant.paymentQrCode = restaurantInfo.paymentQrCode
-                            restaurant.logo = restaurantInfo.logo.ifEmpty { RESTAURANT_LOGO }
                             restaurant.updatedAt = restaurantInfo.updatedAt
                         }else {
                             val newRestaurant = RestaurantInfo()
@@ -87,7 +149,6 @@ class RestaurantInfoRepositoryImpl(
                             newRestaurant.secondaryPhone = restaurantInfo.secondaryPhone
                             newRestaurant.description = restaurantInfo.description
                             newRestaurant.paymentQrCode = restaurantInfo.paymentQrCode
-                            newRestaurant.logo = restaurantInfo.logo.ifEmpty { RESTAURANT_LOGO }
                             newRestaurant.createdAt = System.currentTimeMillis().toString()
 
                             this.copyToRealm(newRestaurant)

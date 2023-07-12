@@ -131,10 +131,10 @@ class CategoryViewModel @Inject constructor(
                             when(result) {
                                 is Resource.Loading -> {}
                                 is Resource.Success -> {
-                                    _eventFlow.emit(UiEvent.OnSuccess("Category Deleted Successfully"))
+                                    _eventFlow.emit(UiEvent.Success("Category Deleted Successfully"))
                                 }
                                 is Resource.Error -> {
-                                    _eventFlow.emit(UiEvent.OnError("Unable to delete category"))
+                                    _eventFlow.emit(UiEvent.Error("Unable to delete category"))
                                 }
                             }
                         }
@@ -174,7 +174,7 @@ class CategoryViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to get category"))
+                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to get category"))
                 }
             }
         }
@@ -219,10 +219,10 @@ class CategoryViewModel @Inject constructor(
                     when(val result = categoryUseCases.createNewCategory(category)){
                         is Resource.Loading -> {}
                         is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.OnSuccess("Category Created Successfully"))
+                            _eventFlow.emit(UiEvent.Success("Category Created Successfully"))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError(result.message ?: "Unable to create new order"))
+                            _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to create new order"))
                         }
                     }
                 }else{
@@ -235,12 +235,12 @@ class CategoryViewModel @Inject constructor(
                         is Resource.Loading -> {}
                         is Resource.Success -> {
                             _eventFlow.emit(
-                                UiEvent.OnSuccess(
+                                UiEvent.Success(
                                 successMessage = "Category Updated Successfully"
                             ))
                         }
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.OnError( result.message ?: "Unable to update new order"))
+                            _eventFlow.emit(UiEvent.Error( result.message ?: "Unable to update new order"))
                         }
                     }
                 }
