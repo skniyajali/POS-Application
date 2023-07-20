@@ -92,11 +92,13 @@ object Constants {
     const val ABSENT_REMINDER_NAME = "Employee Attendance"
     const val ABSENT_REMINDER_TITLE = "Did You Marked Employee Attendance?"
     const val ABSENT_REMINDER_TEXT = "Don't forget to mark absent employees."
+    const val ABSENT_REMINDER_REQ_CODE = 9977
 
     const val DAILY_SALARY_REMINDER_ID = "DAL907856"
     const val DAILY_SALARY_REMINDER_NAME = "Daily Salary Reminder"
     const val DAILY_SALARY_REMINDER_TITLE = "Did You Paid Employee Salary?"
     const val DAILY_SALARY_REMINDER_TEXT = "Don't forget to add salary entries."
+    const val DAILY_SALARY_REQ_CODE = 9078
 
     private const val HOST = "http://skniyajali.me/"
     private const val HOST_SECURE = "https://skniyajali.me/"

@@ -58,6 +58,7 @@ import com.niyaj.popos.features.reminder.presentation.components.EmployeeSelecti
 import com.niyaj.popos.features.reminder.presentation.components.EmployeeSelectionHeader
 import com.niyaj.popos.features.reminder.presentation.components.InfoCard
 import com.niyaj.popos.utils.Constants
+import com.niyaj.popos.utils.Constants.SALARY_HOST
 import com.niyaj.popos.utils.Constants.SALARY_HOST_SECURE
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
@@ -72,7 +73,8 @@ import io.sentry.compose.SentryTraced
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Destination(
     deepLinks = [
-        DeepLink(uriPattern = SALARY_HOST_SECURE)
+        DeepLink(uriPattern = SALARY_HOST_SECURE),
+        DeepLink(uriPattern = SALARY_HOST)
     ]
 )
 @Composable
@@ -119,6 +121,7 @@ fun EmployeeDailySalaryReminderScreen(
             navController = navController,
             scaffoldState = scaffoldState,
             showBackArrow = true,
+            showBottomBar = true,
             navActions = {
                 StandardIconButton(
                     onClick = {

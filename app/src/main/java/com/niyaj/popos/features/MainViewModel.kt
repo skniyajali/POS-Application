@@ -1,14 +1,26 @@
 package com.niyaj.popos.features
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.niyaj.popos.features.account.domain.repository.AccountRepository
+import com.niyaj.popos.features.network_connectivity.domain.model.ConnectivityStatus
+import com.niyaj.popos.features.network_connectivity.domain.provider.ConnectivityObserver
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val accountRepository : AccountRepository
+    accountRepository : AccountRepository,
+    connectivityObserver : ConnectivityObserver,
 ): ViewModel(){
 
     val isLoggedIn = accountRepository.checkIsLoggedIn()
+
+    val networkStatus = connectivityObserver.observeConnectivity().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        ConnectivityStatus.Unavailable
+    )
 }
