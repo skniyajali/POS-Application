@@ -1,6 +1,7 @@
 package com.niyaj.popos.features.main_feed.presentation
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.BackdropValue
 import androidx.compose.material.ExperimentalMaterialApi
@@ -12,19 +13,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardBackdropScaffold
-import com.niyaj.popos.features.components.isScrollingUp
 import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
+import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import com.niyaj.popos.features.destinations.SelectedCartOrderScreenDestination
 import com.niyaj.popos.features.main_feed.presentation.components.category.MainFeedCategoryEvent
 import com.niyaj.popos.features.main_feed.presentation.components.product.MainFeedProductEvent
 import com.niyaj.popos.utils.isScrolled
 import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
@@ -33,14 +34,15 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
- *  Main Feed Screen
- *  @author Sk Niyaj Ali
- *  @param navController
- *  @param viewModel
- *  @param resultRecipient
- *  @see MainFeedViewModel
+ * Displays the main feed of the app.
+ * @author Sk Niyaj Ali
+ *
+ * @param navController A reference to the NavController, which is used to navigate to other screens in the app.
+ * @param scaffoldState A reference to the ScaffoldState, which is used to manage the app's top-level UI.
+ * @param viewModel A reference to the MainFeedViewModel, which is the view model for the MainFeedScreen.
+ * @param resultRecipient A reference to the ResultRecipient, which is used to receive the result of the AddEditCartOrderScreen composable.
+ * @see MainFeedViewModel
  */
-@RootNavGraph(start = true)
 @Destination
 @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -130,8 +132,8 @@ fun MainFeedScreen(
             }
         }
     }
-    
-    SentryTraced("main_feed_screen") {
+
+    SentryTraced(MainFeedScreenDestination.route) {
         StandardBackdropScaffold(
             navController = navController,
             backdropScaffoldState = backdropScaffoldState,
@@ -140,8 +142,8 @@ fun MainFeedScreen(
             selectedOrderId = selectedOrderId,
             showSearchBar = showSearchBar,
             searchText = searchText,
-            showFloatingActionButton = !showSearchBar && products.isNotEmpty() && lazyListState.isScrollingUp(),
-            showBottomBar = lazyListState.isScrollingUp(),
+            showBottomBar = false,
+            showFloatingActionButton = !showSearchBar && products.isNotEmpty(),
             onSelectedOrderClick = {
                 navController.navigate(SelectedCartOrderScreenDestination)
             },
@@ -164,8 +166,9 @@ fun MainFeedScreen(
             backLayerContent = {
                 BackLayerContent(navController = navController)
             },
-            frontLayerContent = {
+            frontLayerContent = { paddingValues ->
                 FrontLayerContent(
+                    modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding()),
                     navController = navController,
                     categoriesIsLoading = categoriesIsLoading,
                     productsIsLoading = productsIsLoading,
@@ -182,7 +185,10 @@ fun MainFeedScreen(
                     onProductLeftClick = {
                         if (selectedOrder != null) {
                             viewModel.onProductEvent(
-                                MainFeedProductEvent.RemoveProductFromCart(selectedOrder.cartOrderId, it)
+                                MainFeedProductEvent.RemoveProductFromCart(
+                                    selectedOrder.cartOrderId,
+                                    it
+                                )
                             )
                         }
                     },

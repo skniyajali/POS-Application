@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.niyaj.popos.features.common.ui.theme.MediumGray
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 
 @Composable
@@ -26,8 +27,8 @@ fun RowScope.StandardBottomNavItem(
     deselectedIcon: ImageVector? = null,
     contentDescription: String,
     selected: Boolean = false,
-    selectedColor: Color = MaterialTheme.colors.onPrimary,
-    unselectedColor: Color = Color.Cyan,
+    selectedColor: Color = MaterialTheme.colors.primary,
+    unselectedColor: Color = MediumGray,
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {

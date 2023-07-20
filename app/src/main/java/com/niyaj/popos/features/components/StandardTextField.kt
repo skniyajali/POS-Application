@@ -1,9 +1,13 @@
 package com.niyaj.popos.features.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Checkbox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -14,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -27,29 +32,31 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.R
+import com.niyaj.popos.features.common.ui.theme.HintGray
+import com.niyaj.popos.features.common.ui.theme.SpaceMini
 
 @Composable
 fun StandardOutlinedTextField(
-    modifier: Modifier = Modifier,
-    text: String = "",
-    hint: String = "",
-    maxLength: Int = 40,
-    error: String? = null,
-    style: TextStyle = TextStyle(
+    modifier : Modifier = Modifier,
+    text : String,
+    label : String,
+    error : String? = null,
+    style : TextStyle = TextStyle(
         color = MaterialTheme.colors.onBackground
     ),
-    singleLine: Boolean = true,
-    maxLines: Int = 1,
-    leadingIcon: ImageVector? = null,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    isPasswordToggleDisplayed: Boolean = keyboardType == KeyboardType.Password,
-    isPasswordVisible: Boolean = false,
-    onPasswordToggleClick: (Boolean) -> Unit = {},
-    onValueChange: (String) -> Unit,
-    trailingIcon: @Composable () -> Unit = {},
-    readOnly: Boolean = false,
-    message: String? = null,
-    errorTag: String = "",
+    singleLine : Boolean = true,
+    minLines: Int = 1,
+    maxLines : Int = 1,
+    leadingIcon : ImageVector? = null,
+    keyboardType : KeyboardType = KeyboardType.Text,
+    isPasswordToggleDisplayed : Boolean = keyboardType == KeyboardType.Password,
+    isPasswordVisible : Boolean = false,
+    onPasswordToggleClick : (Boolean) -> Unit = {},
+    onValueChange : (String) -> Unit,
+    trailingIcon : @Composable () -> Unit = {},
+    readOnly : Boolean = false,
+    message : String? = null,
+    errorTag : String = "",
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -58,18 +65,17 @@ fun StandardOutlinedTextField(
             value = text,
             readOnly = readOnly,
             label = {
-                Text(text = hint)
+                Text(text = label)
             },
             onValueChange = {
-                if (it.length <= maxLength) {
-                    onValueChange(it)
-                }
+                onValueChange(it)
             },
             maxLines = maxLines,
+            minLines = minLines,
             textStyle = style,
             placeholder = {
                 Text(
-                    text = hint,
+                    text = label,
                     style = MaterialTheme.typography.body1
                 )
             },
@@ -85,7 +91,7 @@ fun StandardOutlinedTextField(
             },
             singleLine = singleLine,
             leadingIcon = if (leadingIcon != null) {
-                val icon: @Composable () -> Unit = {
+                val icon : @Composable () -> Unit = {
                     Icon(
                         imageVector = leadingIcon,
                         contentDescription = null,
@@ -93,8 +99,8 @@ fun StandardOutlinedTextField(
                 }
                 icon
             } else null,
-            trailingIcon = if(isPasswordToggleDisplayed) {
-                val icon: @Composable () -> Unit = {
+            trailingIcon = if (isPasswordToggleDisplayed) {
+                val icon : @Composable () -> Unit = {
                     IconButton(
                         onClick = {
                             onPasswordToggleClick(!isPasswordVisible)
@@ -131,12 +137,13 @@ fun StandardOutlinedTextField(
                 modifier = Modifier
                     .testTag(errorTag)
                     .fillMaxWidth()
+                    .padding(top = SpaceMini)
             )
         } else if (message != null) {
             Text(
                 text = message,
                 style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.error,
+                color = HintGray,
                 textAlign = TextAlign.Start,
                 modifier = Modifier
                     .testTag(errorTag)
@@ -149,25 +156,25 @@ fun StandardOutlinedTextField(
 
 @Composable
 fun StandardTextField(
-    modifier: Modifier = Modifier,
-    text: String = "",
-    hint: String = "",
-    maxLength: Int = 40,
-    error: String? = null,
-    style: TextStyle = TextStyle(
+    modifier : Modifier = Modifier,
+    text : String = "",
+    hint : String = "",
+    maxLength : Int = 40,
+    error : String? = null,
+    style : TextStyle = TextStyle(
         color = MaterialTheme.colors.onBackground
     ),
-    singleLine: Boolean = true,
-    maxLines: Int = 1,
-    leadingIcon: ImageVector? = null,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    isPasswordToggleDisplayed: Boolean = keyboardType == KeyboardType.Password,
-    isPasswordVisible: Boolean = false,
-    onPasswordToggleClick: (Boolean) -> Unit = {},
-    onValueChange: (String) -> Unit,
-    trailingIcon: @Composable () -> Unit = {},
-    readOnly: Boolean = false,
-    message: String? = null,
+    singleLine : Boolean = true,
+    maxLines : Int = 1,
+    leadingIcon : ImageVector? = null,
+    keyboardType : KeyboardType = KeyboardType.Text,
+    isPasswordToggleDisplayed : Boolean = keyboardType == KeyboardType.Password,
+    isPasswordVisible : Boolean = false,
+    onPasswordToggleClick : (Boolean) -> Unit = {},
+    onValueChange : (String) -> Unit,
+    trailingIcon : @Composable () -> Unit = {},
+    readOnly : Boolean = false,
+    message : String? = null,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -202,7 +209,7 @@ fun StandardTextField(
             },
             singleLine = singleLine,
             leadingIcon = if (leadingIcon != null) {
-                val icon: @Composable () -> Unit = {
+                val icon : @Composable () -> Unit = {
                     Icon(
                         imageVector = leadingIcon,
                         contentDescription = null,
@@ -211,8 +218,8 @@ fun StandardTextField(
                 }
                 icon
             } else null,
-            trailingIcon = if(isPasswordToggleDisplayed) {
-                val icon: @Composable () -> Unit = {
+            trailingIcon = if (isPasswordToggleDisplayed) {
+                val icon : @Composable () -> Unit = {
                     IconButton(
                         onClick = {
                             onPasswordToggleClick(!isPasswordVisible)
@@ -263,14 +270,14 @@ fun StandardTextField(
 
 @Composable
 fun DropdownTextField(
-    modifier: Modifier = Modifier,
-    value: String = "",
-    onValueChange: (String) -> Unit = {},
-    label: String = "",
-    readOnly: Boolean = true,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    error: String? = null,
-    message: String? = null
+    modifier : Modifier = Modifier,
+    value : String = "",
+    onValueChange : (String) -> Unit = {},
+    label : String = "",
+    readOnly : Boolean = true,
+    trailingIcon : @Composable (() -> Unit)? = null,
+    error : String? = null,
+    message : String? = null
 ) {
     Column {
         TextField(
@@ -311,5 +318,27 @@ fun DropdownTextField(
                     .fillMaxWidth()
             )
         }
+    }
+}
+
+@Composable
+fun StandardCheckboxWithText(
+    modifier : Modifier = Modifier,
+    text : String,
+    checked : Boolean,
+    onCheckedChange : () -> Unit,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start,
+    ) {
+        Checkbox(checked = checked, onCheckedChange = { onCheckedChange() })
+
+        Text(
+            text = text,
+            style = MaterialTheme.typography.overline
+        )
     }
 }

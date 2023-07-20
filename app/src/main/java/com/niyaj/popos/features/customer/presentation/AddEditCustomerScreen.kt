@@ -90,7 +90,7 @@ fun AddEditCustomerScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(CUSTOMER_PHONE_FIELD),
                     text = customerViewModel.addEditCustomerState.customerPhone,
-                    hint = "Customer Phone",
+                    label = "Customer Phone",
                     leadingIcon = Icons.Default.PhoneAndroid,
                     error = customerViewModel.addEditCustomerState.customerPhoneError,
                     errorTag = CUSTOMER_PHONE_ERROR,
@@ -105,7 +105,7 @@ fun AddEditCustomerScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(CUSTOMER_NAME_FIELD),
                     text = customerViewModel.addEditCustomerState.customerName ?: "",
-                    hint = "Customer Name",
+                    label = "Customer Name",
                     leadingIcon = Icons.Default.Badge,
                     error = customerViewModel.addEditCustomerState.customerNameError,
                     errorTag = CUSTOMER_NAME_ERROR,
@@ -119,7 +119,7 @@ fun AddEditCustomerScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(CUSTOMER_EMAIL_FIELD),
                     text = customerViewModel.addEditCustomerState.customerEmail ?: "",
-                    hint = "Customer Email",
+                    label = "Customer Email",
                     leadingIcon = Icons.Default.Mail,
                     error = customerViewModel.addEditCustomerState.customerEmailError,
                     errorTag = CUSTOMER_EMAIL_ERROR,

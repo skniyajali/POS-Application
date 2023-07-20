@@ -93,7 +93,7 @@ fun AddEditCategoryScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(CATEGORY_NAME_FIELD),
                     text = categoryViewModel.addEditCategoryState.categoryName,
-                    hint = "Category Name",
+                    label = "Category Name",
                     leadingIcon = Icons.Default.Badge,
                     error = categoryViewModel.addEditCategoryState.categoryNameError,
                     errorTag = CATEGORY_NAME_ERROR,

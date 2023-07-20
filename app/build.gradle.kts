@@ -80,6 +80,25 @@ android {
     hilt {
         enableAggregatingTask = true
     }
+
+    subprojects {
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+            kotlinOptions {
+                if (project.findProperty("composeCompilerReports") == "true") {
+                    freeCompilerArgs += listOf(
+                        "-P",
+                        "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=${project.buildDir.absolutePath}/compose_compiler"
+                    )
+                }
+                if (project.findProperty("composeCompilerMetrics") == "true") {
+                    freeCompilerArgs += listOf(
+                        "-P",
+                        "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=${project.buildDir.absolutePath}/compose_compiler"
+                    )
+                }
+            }
+        }
+    }
 }
 
 dependencies {
@@ -237,6 +256,9 @@ dependencies {
 
     // Play GMS Scanner library
     implementation(libs.play.gms.scanner)
+
+    // Play Service Base
+    implementation(libs.play.service)
 
 }
 

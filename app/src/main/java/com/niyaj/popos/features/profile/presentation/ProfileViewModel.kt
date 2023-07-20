@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.niyaj.popos.features.account.domain.model.Account
+import com.niyaj.popos.features.account.domain.repository.AccountRepository
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
@@ -18,9 +20,11 @@ import com.niyaj.popos.utils.Constants.RESTAURANT_PRINT_LOGO_NAME
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,6 +32,7 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val repository : RestaurantInfoRepository,
     private val validation : RestaurantInfoValidationRepository,
+    private val accountRepository : AccountRepository,
     private val scanner : QRCodeScanner
 ) : ViewModel() {
 
@@ -41,6 +46,12 @@ class ProfileViewModel @Inject constructor(
 
     private val _scannedBitmap = MutableStateFlow<Bitmap?>(null)
     val scannedBitmap = _scannedBitmap.asStateFlow()
+
+    val accountInfo = accountRepository.getAccountInfo().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = Account()
+    )
 
     init {
         getProfileInfo()
@@ -138,6 +149,12 @@ class ProfileViewModel @Inject constructor(
 
             is ProfileEvent.StartScanning -> {
                 startScanning()
+            }
+
+            is ProfileEvent.LogoutProfile -> {
+                viewModelScope.launch {
+                    accountRepository.logOut()
+                }
             }
         }
     }
@@ -290,6 +307,12 @@ class ProfileViewModel @Inject constructor(
                 }
 
             }
+        }
+    }
+
+    private fun getAccountInfo() {
+        viewModelScope.launch {
+
         }
     }
 }

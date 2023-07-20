@@ -187,7 +187,7 @@ fun AddEditSalaryScreen(
                                     textFieldSize = coordinates.size.toSize()
                                 },
                             text = addEditSalaryViewModel.addEditSalaryState.employee.employeeName,
-                            hint = "Employee Name",
+                            label = "Employee Name",
                             leadingIcon = Icons.Default.Person4,
                             error = addEditSalaryViewModel.addEditSalaryState.employeeError,
                             errorTag = SALARY_EMPLOYEE_NAME_ERROR,
@@ -256,7 +256,7 @@ fun AddEditSalaryScreen(
                             text = addEditSalaryViewModel.addEditSalaryState.salaryType,
                             error = addEditSalaryViewModel.addEditSalaryState.salaryTypeError,
                             errorTag = SALARY_TYPE_ERROR,
-                            hint = "Salary Type",
+                            label = "Salary Type",
                             leadingIcon = Icons.Default.MergeType,
                             onValueChange = {},
                             readOnly = true,
@@ -323,7 +323,7 @@ fun AddEditSalaryScreen(
                     StandardOutlinedTextField(
                         modifier = Modifier,
                         text = addEditSalaryViewModel.addEditSalaryState.salaryDate.toSalaryDate,
-                        hint = "Given Date",
+                        label = "Given Date",
                         leadingIcon = Icons.Default.CalendarToday,
                         error = addEditSalaryViewModel.addEditSalaryState.salaryDateError,
                         onValueChange = {},
@@ -359,7 +359,7 @@ fun AddEditSalaryScreen(
                             text = addEditSalaryViewModel.addEditSalaryState.salaryPaymentType,
                             error = addEditSalaryViewModel.addEditSalaryState.salaryPaymentTypeError,
                             errorTag = PAYMENT_TYPE_ERROR,
-                            hint = "Payment Type",
+                            label = "Payment Type",
                             leadingIcon = Icons.Default.Payments,
                             onValueChange = {},
                             readOnly = true,
@@ -441,7 +441,7 @@ fun AddEditSalaryScreen(
                     StandardOutlinedTextField(
                         modifier = Modifier.testTag(GIVEN_AMOUNT_FIELD),
                         text = addEditSalaryViewModel.addEditSalaryState.salary,
-                        hint = "Given Amount",
+                        label = "Given Amount",
                         leadingIcon = Icons.Default.Money,
                         error = addEditSalaryViewModel.addEditSalaryState.salaryError,
                         errorTag = GIVEN_AMOUNT_ERROR,
@@ -458,7 +458,7 @@ fun AddEditSalaryScreen(
                     StandardOutlinedTextField(
                         modifier = Modifier.testTag(SALARY_NOTE_FIELD),
                         text = addEditSalaryViewModel.addEditSalaryState.salaryNote,
-                        hint = "Salary Note",
+                        label = "Salary Note",
                         leadingIcon = Icons.Default.Description,
                         error = addEditSalaryViewModel.addEditSalaryState.salaryNoteError,
                         errorTag = SALARY_NOTE_ERROR,

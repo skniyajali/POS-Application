@@ -16,16 +16,8 @@ private val fontFamily = FontFamily(
     Font(R.font.panton_narrow_bold, FontWeight.Bold),
     Font(R.font.panton_narrow_black, FontWeight.Black),
     Font(R.font.panton_narrow_semi_bold, FontWeight.SemiBold),
-    Font(R.font.panton_narrow_extra_bold, FontWeight.ExtraBold)
-)
-
-//val fontFamily = FontFamily(
-//    Font(R.font.quicksand_light, FontWeight.Light),
-//    Font(R.font.quicksand_regular, FontWeight.Normal),
-//    Font(R.font.quicksand_medium, FontWeight.Medium),
-//    Font(R.font.quicksand_semibold, FontWeight.SemiBold),
-//    Font(R.font.quicksand_bold, FontWeight.Bold),
-//)
+    Font(R.font.panton_narrow_extra_bold, FontWeight.ExtraBold),
+    )
 
 // Set of Material typography styles to start with
 val Typography = Typography(
@@ -55,15 +47,15 @@ val Typography = Typography(
     ),
     h5 = TextStyle(
         fontFamily = fontFamily,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Medium,
         fontSize = 24.sp,
-        letterSpacing = 0.90.sp
+        letterSpacing = 0.15.sp
     ),
     h6 = TextStyle(
         fontFamily = fontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp,
-        letterSpacing = 0.25.sp
+        letterSpacing = 0.15.sp
     ),
     subtitle1 = TextStyle(
         fontFamily = fontFamily,

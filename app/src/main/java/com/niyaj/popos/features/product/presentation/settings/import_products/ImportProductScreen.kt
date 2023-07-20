@@ -177,7 +177,8 @@ fun ImportProductScreen(
                 }
 
                 ImportFooter(
-                    text = "Import ${if (isChosen) selectedProducts.size else "All"} Product",
+                    importButtonText = "Import ${if (isChosen) selectedProducts.size else "All"} Product",
+                    noteText = stringResource(id = R.string.product_import_note),
                     onClearImportedData = {
                         importProductViewModel.onEvent(ImportProductEvent.ClearImportedProducts)
                     },

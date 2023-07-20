@@ -154,7 +154,8 @@ fun ImportExpensesScreen(
             }
 
             ImportFooter(
-                text = "Import ${if (isChosen) selectedExpenses.size else "All"} Expenses",
+                importButtonText = "Import ${if (isChosen) selectedExpenses.size else "All"} Expenses",
+                noteText = stringResource(id = R.string.expenses_import_note),
                 importedDataIsEmpty = importedData.isNotEmpty(),
                 showImportedBtn = showImportedBtn,
                 onClearImportedData = {

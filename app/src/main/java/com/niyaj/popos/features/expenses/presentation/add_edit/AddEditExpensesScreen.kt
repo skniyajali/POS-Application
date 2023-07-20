@@ -173,7 +173,7 @@ fun AddEditExpensesScreen(
                                 },
                             text = expensesCategoryName,
                             leadingIcon = Icons.Default.Group,
-                            hint = "Expenses Name",
+                            label = "Expenses Name",
                             error = expensesCategoryError,
                             onValueChange = {},
                             readOnly = true,
@@ -240,7 +240,7 @@ fun AddEditExpensesScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     text = addEditExpensesViewModel.addEditState.value.expensesPrice,
-                    hint = "Expenses Amount",
+                    label = "Expenses Amount",
                     leadingIcon = Icons.Default.Money,
                     keyboardType = KeyboardType.Number,
                     error = addEditExpensesViewModel.addEditState.value.expensesPriceError,
@@ -256,7 +256,7 @@ fun AddEditExpensesScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     text = addEditExpensesViewModel.addEditState.value.expensesRemarks,
-                    hint = "Payment Notes",
+                    label = "Payment Notes",
                     leadingIcon = Icons.Default.SpeakerNotes,
                     error = null,
                     onValueChange = {
@@ -271,7 +271,7 @@ fun AddEditExpensesScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = addEditExpensesViewModel.addEditState.value.expensesGivenDate.toSalaryDate,
-                    hint = "Given Date",
+                    label = "Given Date",
                     leadingIcon = Icons.Default.CalendarToday,
                     error = null,
                     onValueChange = {},

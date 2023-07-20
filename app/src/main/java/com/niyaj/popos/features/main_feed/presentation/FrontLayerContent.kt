@@ -29,6 +29,7 @@ import com.ramcosta.composedestinations.navigation.navigate
  */
 @Composable
 fun FrontLayerContent(
+    modifier : Modifier = Modifier,
     navController : NavController,
     lazyListState: LazyListState,
     categoryLazyListState: LazyListState,
@@ -57,7 +58,7 @@ fun FrontLayerContent(
         },
     ) {
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .padding(SpaceSmall))
         {

@@ -20,12 +20,13 @@ object ImportExport {
     internal fun openFile(
         context: Context,
         pickerInitialUri: Uri = getUri(context),
+        mimeType: String = JSON_FILE_TYPE
     ): Intent {
         val intent = Intent(
             Intent.ACTION_OPEN_DOCUMENT,
             pickerInitialUri
         ).apply {
-            type = JSON_FILE_TYPE
+            type = mimeType
             addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addCategory(Intent.CATEGORY_OPENABLE)
@@ -33,6 +34,7 @@ object ImportExport {
 
         return intent
     }
+
 
     internal fun createFile(context: Context, fileName: String = SAVEABLE_FILE_NAME): Intent {
         val intent = Intent(
@@ -71,7 +73,6 @@ object ImportExport {
             return false
         }
     }
-
 
     @OptIn(ExperimentalStdlibApi::class)
     internal suspend inline fun <reified T> readData(context: Context, uri: Uri): List<T> {

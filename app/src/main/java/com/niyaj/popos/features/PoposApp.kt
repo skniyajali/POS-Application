@@ -1,6 +1,5 @@
 package com.niyaj.popos.features
 
-import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -12,7 +11,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -20,10 +18,10 @@ import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.features.common.util.Navigation
+import com.niyaj.popos.features.destinations.LoginScreenDestination
 import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import io.sentry.compose.withSentryObservableEffect
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.util.UUID
 
 @OptIn(
@@ -37,9 +35,9 @@ fun PoposApp(
     dataDeletionId: UUID,
     generateReportId: UUID,
     absentReminderId: UUID,
-    dailySalaryReminderId: UUID
+    dailySalaryReminderId: UUID,
+    isLoggedIn: Boolean,
 ) {
-    // A surface container using the 'background' color from the theme
     val scaffoldState = rememberScaffoldState()
     val navController = rememberAnimatedNavController()
         .withSentryObservableEffect(
@@ -52,7 +50,6 @@ fun PoposApp(
     )
     val bottomSheetNavigator = remember { BottomSheetNavigator(sheetState) }
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     val systemUiController = rememberSystemUiController()
 
     val deletionState = workManager
@@ -62,21 +59,8 @@ fun PoposApp(
     LaunchedEffect(key1 = deletionState) {
         deletionState.value?.let { workInfo ->
             when (workInfo.state) {
-                WorkInfo.State.FAILED -> {
-                    Toast.makeText(
-                        context,
-                        "Unable to perform data deletion",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-                WorkInfo.State.RUNNING -> {
-                    Toast.makeText(
-                        context,
-                        "Data Deletion Running",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+                WorkInfo.State.FAILED -> {}
+                WorkInfo.State.RUNNING -> {}
                 else -> {}
             }
         }
@@ -107,8 +91,6 @@ fun PoposApp(
             }
         }
     }
-
-    Timber.d("Reminders - $absentReminderId & $dailySalaryReminderId")
 
 //    val absentReminderWorker = workManager
 //        .getWorkInfoByIdLiveData(absentReminderId)
@@ -162,10 +144,12 @@ fun PoposApp(
         darkIcons = false
     )
 
+    val destination = if (isLoggedIn) MainFeedScreenDestination else LoginScreenDestination
+
     Navigation(
         scaffoldState = scaffoldState,
         navController = navController,
         bottomSheetNavigator = bottomSheetNavigator,
-        startRoute = MainFeedScreenDestination,
+        startRoute = destination,
     )
 }

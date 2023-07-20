@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,24 +40,15 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.AddToPhotos
-import androidx.compose.material.icons.filled.Assessment
-import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ImageSearch
-import androidx.compose.material.icons.filled.InsertLink
-import androidx.compose.material.icons.filled.Inventory
-import androidx.compose.material.icons.filled.Money
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.PeopleAlt
-import androidx.compose.material.icons.filled.Sell
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.ManageAccounts
+import androidx.compose.material.icons.filled.Password
+import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -77,43 +66,33 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.niyaj.popos.BuildConfig
 import com.niyaj.popos.R
+import com.niyaj.popos.features.account.domain.model.Account
 import com.niyaj.popos.features.common.ui.theme.LightColor6
+import com.niyaj.popos.features.common.ui.theme.LightColor7
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeLarge
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.ImageStorageManager
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.NoteText
+import com.niyaj.popos.features.components.SettingsCard
 import com.niyaj.popos.features.components.StandardButton
 import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardOutlinedButton
 import com.niyaj.popos.features.components.StandardScaffold
-import com.niyaj.popos.features.destinations.AddOnItemScreenDestination
-import com.niyaj.popos.features.destinations.AddressScreenDestination
-import com.niyaj.popos.features.destinations.AttendanceScreenDestination
-import com.niyaj.popos.features.destinations.CartScreenDestination
-import com.niyaj.popos.features.destinations.ChargesScreenDestination
-import com.niyaj.popos.features.destinations.CustomerScreenDestination
-import com.niyaj.popos.features.destinations.EmployeeScreenDestination
-import com.niyaj.popos.features.destinations.ExpensesScreenDestination
-import com.niyaj.popos.features.destinations.OrderScreenDestination
-import com.niyaj.popos.features.destinations.ProductScreenDestination
-import com.niyaj.popos.features.destinations.ReminderScreenDestination
-import com.niyaj.popos.features.destinations.ReportScreenDestination
+import com.niyaj.popos.features.destinations.ChangePasswordScreenDestination
 import com.niyaj.popos.features.destinations.UpdateProfileScreenDestination
-import com.niyaj.popos.features.main_feed.presentation.components.IconBox
-import com.niyaj.popos.features.order.presentation.components.TwoGridText
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
 import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO
 import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO_NAME
@@ -138,13 +117,16 @@ fun ProfileScreen(
     navController : NavController,
     scaffoldState : ScaffoldState,
     viewModel : ProfileViewModel = hiltViewModel(),
-    resultRecipient : ResultRecipient<UpdateProfileScreenDestination, String>
+    resultRecipient : ResultRecipient<UpdateProfileScreenDestination, String>,
+    changePasswordRecipient : ResultRecipient<ChangePasswordScreenDestination, String>
 ) {
     val context = LocalContext.current
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
-    val info = viewModel.info.collectAsState().value
+    val info = viewModel.info.collectAsStateWithLifecycle().value
+    val accountInfo = viewModel.accountInfo.collectAsStateWithLifecycle().value
+
     val reslogo = info.getRestaurantLogo(context)
     val printLogo = info.getRestaurantPrintLogo(context)
 
@@ -169,6 +151,19 @@ fun ProfileScreen(
     }
 
     resultRecipient.onNavResult { result ->
+        when (result) {
+            is NavResult.Canceled -> {}
+            is NavResult.Value -> {
+                viewModel.onEvent(ProfileEvent.RefreshEvent)
+
+                scope.launch {
+                    scaffoldState.snackbarHostState.showSnackbar(result.value)
+                }
+            }
+        }
+    }
+
+    changePasswordRecipient.onNavResult { result ->
         when (result) {
             is NavResult.Canceled -> {}
             is NavResult.Value -> {
@@ -218,7 +213,7 @@ fun ProfileScreen(
 
             scope.launch {
                 if (result) {
-                    scaffoldState.snackbarHostState.showSnackbar("Images saved successfully.")
+                    scaffoldState.snackbarHostState.showSnackbar("Profile image saved successfully.")
                     viewModel.onEvent(ProfileEvent.LogoChanged)
                 }else {
                     scaffoldState.snackbarHostState.showSnackbar("Unable save image into storage.")
@@ -247,6 +242,7 @@ fun ProfileScreen(
             }
         }
     }
+
 
     StandardScaffold(
         navController = navController,
@@ -278,11 +274,12 @@ fun ProfileScreen(
                 onClick = {},
             )
         },
-        floatingActionButtonPosition = if (lazyListState.isScrolled) FabPosition.End else FabPosition.Center,
+        floatingActionButtonPosition = FabPosition.End,
     ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(SpaceSmall)
                 .background(LightColor6),
             state = lazyListState,
             verticalArrangement = Arrangement.spacedBy(SpaceSmall)
@@ -306,19 +303,24 @@ fun ProfileScreen(
                         )
                     },
                     onClickViewPrintLogo = {
-                        showPrintLogo = true
+                        showPrintLogo = !showPrintLogo
                     }
                 )
             }
 
-            item("Quick Links") {
-                QuickLinks(navController = navController)
+            item("Account Info") {
+                AccountInfo(account = accountInfo)
             }
 
-            item("App Details") {
+            item("Change Password") {
+                SettingsCard(
+                    text = "Change Password",
+                    icon = Icons.Default.Password
+                ) {
+                    navController.navigate(ChangePasswordScreenDestination())
+                }
+                
                 Spacer(modifier = Modifier.height(SpaceSmall))
-
-                AppDetails()
             }
         }
     }
@@ -343,7 +345,6 @@ fun RestaurantCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(SpaceSmall)
             .background(MaterialTheme.colors.onPrimary),
         shape = RoundedCornerShape(SpaceSmall),
         backgroundColor = MaterialTheme.colors.onPrimary,
@@ -455,7 +456,6 @@ fun RestaurantDetails(
             style = MaterialTheme.typography.body1,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
-            minLines = 2,
             modifier = Modifier.padding(horizontal = SpaceMini)
         )
         Spacer(modifier = Modifier.height(SpaceSmall))
@@ -609,271 +609,112 @@ fun ProfileImage(
 }
 
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun QuickLinks(
+fun AccountInfo(
     modifier : Modifier = Modifier,
-    navController : NavController
+    account: Account,
 ) {
-    FlowRow(
+    Card(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(SpaceSmall),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        maxItemsInEachRow = 2,
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(SpaceSmall)
     ) {
-        QuickLink(
+        Column(
             modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Cart",
-            icon = Icons.Default.ShoppingCart,
-            onClick = {
-                navController.navigate(CartScreenDestination())
+                .fillMaxWidth()
+                .padding(SpaceSmall),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(SpaceSmall),
+                horizontalArrangement = Arrangement.spacedBy(SpaceSmall, Alignment.Start),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ManageAccounts,
+                    contentDescription = "Account info icon",
+                    tint = MaterialTheme.colors.primary
+                )
+                Text(
+                    text = "Account Info",
+                    style = MaterialTheme.typography.subtitle1,
+                    fontWeight = FontWeight.SemiBold,
+                )
             }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Orders",
-            icon = Icons.Default.Inventory,
-            onClick = {
-                navController.navigate(OrderScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Expenses",
-            icon = Icons.Default.Money,
-            onClick = {
-                navController.navigate(ExpensesScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Reports",
-            icon = Icons.Default.Assessment,
-            onClick = {
-                navController.navigate(ReportScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Employee",
-            icon = Icons.Default.People,
-            onClick = {
-                navController.navigate(EmployeeScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Attendance",
-            icon = Icons.Default.CalendarMonth,
-            onClick = {
-                navController.navigate(AttendanceScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Payments",
-            icon = Icons.Default.Money,
-            onClick = {
-                navController.navigate(AttendanceScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Category",
-            icon = Icons.Default.Dns,
-            onClick = {
-                navController.navigate(ProductScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Products",
-            icon = Icons.Default.Dns,
-            onClick = {
-                navController.navigate(ProductScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "AddOn",
-            icon = Icons.Default.InsertLink,
-            onClick = {
-                navController.navigate(AddOnItemScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Charges",
-            icon = Icons.Default.Sell,
-            onClick = {
-                navController.navigate(ChargesScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Address",
-            icon = Icons.Default.Business,
-            onClick = {
-                navController.navigate(AddressScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Customer",
-            icon = Icons.Default.PeopleAlt,
-            onClick = {
-                navController.navigate(CustomerScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Reminder",
-            icon = Icons.Default.Notifications,
-            onClick = {
-                navController.navigate(ReminderScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "AddOn",
-            icon = Icons.Default.InsertLink,
-            onClick = {
-                navController.navigate(AddOnItemScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Charges",
-            icon = Icons.Default.Sell,
-            onClick = {
-                navController.navigate(ChargesScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Address",
-            icon = Icons.Default.Business,
-            onClick = {
-                navController.navigate(AddressScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Customer",
-            icon = Icons.Default.PeopleAlt,
-            onClick = {
-                navController.navigate(CustomerScreenDestination())
-            }
-        )
-        QuickLink(
-            modifier = Modifier
-                .weight(1.5f)
-                .padding(SpaceMini),
-            text = "Reminder",
-            icon = Icons.Default.Notifications,
-            onClick = {
-                navController.navigate(ReminderScreenDestination())
-            }
-        )
+
+            Divider(modifier = Modifier.fillMaxWidth())
+
+            AccountInfoBox(
+                title = "Email",
+                icon = Icons.Default.Email,
+                value = account.email
+            )
+
+            AccountInfoBox(
+                title = "Phone",
+                icon = Icons.Default.PhoneAndroid,
+                value = account.phone
+            )
+
+            AccountInfoBox(
+                title = "Password",
+                icon = Icons.Default.Password,
+                value = account.password
+            )
+
+            Spacer(modifier = Modifier.height(SpaceSmall))
+        }
     }
 }
 
 @Composable
-fun QuickLink(
+fun AccountInfoBox(
     modifier : Modifier = Modifier,
-    text : String,
+    title: String,
     icon : ImageVector,
-    onClick : () -> Unit,
-    elevation : Dp = 1.dp,
-    backgroundColor : Color = MaterialTheme.colors.onPrimary,
-    iconColor : Color = MaterialTheme.colors.secondaryVariant,
-    textColor : Color = MaterialTheme.colors.onBackground,
+    value: String
 ) {
-    IconBox(
-        modifier = modifier.fillMaxWidth(),
-        iconName = icon,
-        text = text,
-        elevation = elevation,
-        backgroundColor = backgroundColor,
-        iconColor = iconColor,
-        textColor = textColor,
-        onClick = onClick
-    )
-}
-
-
-@Composable
-fun AppDetails(
-    modifier : Modifier = Modifier,
-) {
-    Column(
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(SpaceSmall)
+            .padding(SpaceSmall),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Spacer(modifier = Modifier.height(SpaceSmall))
-        Divider(modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(SpaceSmall))
+        Row(
+            modifier = Modifier
+                .weight(1.5f)
+                .padding(SpaceSmall),
+            horizontalArrangement = Arrangement.spacedBy(SpaceSmall, Alignment.Start),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = Color.Black
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.body1,
+                fontWeight = FontWeight.Normal,
+            )
+        }
 
-        TwoGridText(
-            textOne = "Application ID",
-            textTwo = BuildConfig.APPLICATION_ID,
-        )
-
-        Spacer(modifier = Modifier.height(SpaceMini))
-        Divider(modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(SpaceMini))
-
-        TwoGridText(
-            textOne = "Version Name",
-            textTwo = BuildConfig.VERSION_NAME
-        )
-
-        Spacer(modifier = Modifier.height(SpaceMini))
-        Divider(modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(SpaceMini))
-
-        TwoGridText(
-            textOne = "Version Code",
-            textTwo = BuildConfig.VERSION_CODE.toString()
-        )
+        Box(
+            modifier = Modifier
+                .weight(1.5f)
+                .background(LightColor7, RoundedCornerShape(SpaceMini)),
+            contentAlignment = Alignment.CenterEnd,
+        ){
+            Text(
+                text = value,
+                style = MaterialTheme.typography.body2,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier.padding(SpaceSmall)
+            )
+        }
     }
 }

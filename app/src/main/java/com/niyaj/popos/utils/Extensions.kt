@@ -20,7 +20,6 @@ import com.niyaj.popos.R
 import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_ID
 import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_TEXT
 import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_TITLE
-import com.niyaj.popos.utils.Constants.PRODUCT_NAME_LENGTH
 import java.io.ByteArrayOutputStream
 import java.math.RoundingMode
 import java.nio.ByteBuffer
@@ -37,6 +36,13 @@ import java.util.Date
 import java.util.Locale
 import kotlin.collections.List as KotlinCollectionsList
 
+
+internal fun isValidPassword(password: String): Boolean {
+    if (password.length < 8) return false
+    if (password.firstOrNull { it.isDigit() } == null) return false
+    if (password.firstOrNull { it.isLetter() } == null) return false
+    return password.firstOrNull { !it.isLetterOrDigit() } != null
+}
 
 val randomColor : Int
     get() {
@@ -408,8 +414,8 @@ val closingTime : String = setTodayEndTime().timeInMillis.toString()
 val dailySalaryStartTime = setTodayStartTime().timeInMillis.toString()
 val isOngoing = LocalDate.now().toCurrentMilliSecond in openingTime..closingTime
 
-fun createDottedString(name : String) : String {
-    if (name.length > PRODUCT_NAME_LENGTH) {
+fun createDottedString(name : String, limit: Int) : String {
+    if (name.length > limit) {
         var wordLength = 0
         var firstWordLength = 0
         val splitName = name.split(' ')
@@ -422,7 +428,7 @@ fun createDottedString(name : String) : String {
             }
         }
 
-        val remainingLength = PRODUCT_NAME_LENGTH.minus(firstWordLength)
+        val remainingLength = limit.minus(firstWordLength)
 
         val whiteSpace = splitName.size - 1
 
@@ -580,3 +586,6 @@ fun Bitmap.toByteArray(): ByteArray {
 fun ByteArray.toBitmap(): Bitmap {
     return BitmapFactory.decodeByteArray(this, 0, this.size)
 }
+
+val Boolean.toSafeString: String
+    get() = if (this) "Yes" else "No"

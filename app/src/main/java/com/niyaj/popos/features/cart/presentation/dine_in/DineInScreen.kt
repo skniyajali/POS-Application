@@ -110,6 +110,7 @@ fun DineInScreen(
             navController = navController,
             scaffoldState = scaffoldState,
             showTopBar = false,
+            showBottomBar = true,
             bottomBar = {
                 if (dineInOrders.isNotEmpty()) {
                     CartFooterPlaceOrder(

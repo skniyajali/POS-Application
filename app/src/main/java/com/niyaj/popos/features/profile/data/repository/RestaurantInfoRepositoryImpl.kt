@@ -7,6 +7,7 @@ import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoRepository
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
 import com.niyaj.popos.utils.Constants.RESTAURANT_ID
+import com.niyaj.popos.utils.isValidPassword
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -138,6 +139,9 @@ class RestaurantInfoRepositoryImpl(
                             restaurant.secondaryPhone = restaurantInfo.secondaryPhone
                             restaurant.description = restaurantInfo.description
                             restaurant.paymentQrCode = restaurantInfo.paymentQrCode
+                            restaurant.address = restaurantInfo.address
+                            restaurant.logo = restaurantInfo.logo
+                            restaurant.printLogo = restaurantInfo.printLogo
                             restaurant.updatedAt = restaurantInfo.updatedAt
                         }else {
                             val newRestaurant = RestaurantInfo()
@@ -149,6 +153,9 @@ class RestaurantInfoRepositoryImpl(
                             newRestaurant.secondaryPhone = restaurantInfo.secondaryPhone
                             newRestaurant.description = restaurantInfo.description
                             newRestaurant.paymentQrCode = restaurantInfo.paymentQrCode
+                            newRestaurant.address = restaurantInfo.address
+                            newRestaurant.logo = restaurantInfo.logo
+                            newRestaurant.printLogo = restaurantInfo.printLogo
                             newRestaurant.createdAt = System.currentTimeMillis().toString()
 
                             this.copyToRealm(newRestaurant)
@@ -195,6 +202,17 @@ class RestaurantInfoRepositoryImpl(
             return ValidationResult(
                 successful = false,
                 errorMessage = "Restaurant primary phone must be 10 digits"
+            )
+        }
+
+        return ValidationResult(true)
+    }
+
+    override fun validateRestaurantDesc(description : String) : ValidationResult {
+        if (description.isEmpty()){
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Restaurant address must not be empty"
             )
         }
 
@@ -273,6 +291,25 @@ class RestaurantInfoRepositoryImpl(
                 errorMessage = "Restaurant secondary phone must be 10 digits"
             )
         }
+
+        return ValidationResult(true)
+    }
+
+    override fun validatePassword(password : String) : ValidationResult {
+        if (password.isEmpty()){
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Password must not be empty."
+            )
+        }
+
+        if (!isValidPassword(password)) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Password must be 8 digits long, and must be contain one digit and one special character."
+            )
+        }
+
 
         return ValidationResult(true)
     }

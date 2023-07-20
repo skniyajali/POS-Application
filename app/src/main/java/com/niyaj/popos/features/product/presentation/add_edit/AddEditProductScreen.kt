@@ -124,7 +124,7 @@ fun AddEditProductScreen(
                                 textFieldSize = coordinates.size.toSize()
                             },
                         text = addEditProductViewModel.addEditProductState.category.categoryName,
-                        hint = "Category Name",
+                        label = "Category Name",
                         leadingIcon = Icons.Default.Category,
                         error = addEditProductViewModel.addEditProductState.categoryError,
                         onValueChange = {},
@@ -188,7 +188,7 @@ fun AddEditProductScreen(
             StandardOutlinedTextField(
                 modifier = Modifier,
                 text = addEditProductViewModel.addEditProductState.productName,
-                hint = "Product Name",
+                label = "Product Name",
                 leadingIcon = Icons.Default.Badge,
                 error = addEditProductViewModel.addEditProductState.productNameError,
                 onValueChange = {
@@ -201,7 +201,7 @@ fun AddEditProductScreen(
             StandardOutlinedTextField(
                 modifier = Modifier,
                 text = addEditProductViewModel.addEditProductState.productPrice,
-                hint = "Product Price",
+                label = "Product Price",
                 leadingIcon = Icons.Default.CurrencyRupee,
                 keyboardType = KeyboardType.Number,
                 error = addEditProductViewModel.addEditProductState.productPriceError,

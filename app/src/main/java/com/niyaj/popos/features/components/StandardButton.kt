@@ -48,7 +48,7 @@ fun StandardButtonFW(
                 contentDescription = text,
                 modifier = iconModifier
             )
-            Spacer(modifier = Modifier.width(SpaceMini))
+            Spacer(modifier = Modifier.width(SpaceSmall))
         }
         Text(
             text = text.uppercase(),
@@ -66,7 +66,9 @@ fun StandardOutlinedButtonFW(
     icon: ImageVector? = null,
     enabled: Boolean = true,
     shape: Shape = RoundedCornerShape(SpaceMini),
-    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    colors: ButtonColors = ButtonDefaults.outlinedButtonColors(
+        contentColor = MaterialTheme.colors.error
+    ),
     border: BorderStroke = BorderStroke(1.dp, MaterialTheme.colors.error),
     onClick: () -> Unit,
 ) {
@@ -86,7 +88,7 @@ fun StandardOutlinedButtonFW(
                 contentDescription = text,
                 modifier = iconModifier
             )
-            Spacer(modifier = Modifier.width(SpaceMini))
+            Spacer(modifier = Modifier.width(SpaceSmall))
         }
         Text(
             text = text.uppercase(),

@@ -157,7 +157,8 @@ fun ImportAddressScreen(
             Spacer(modifier = Modifier.height(SpaceMedium))
 
             ImportFooter(
-                text = "Import ${if (isChosen) selectedAddresses.size else "All"} Address",
+                importButtonText = "Import ${if (isChosen) selectedAddresses.size else "All"} Address",
+                noteText = stringResource(id = R.string.address_import_note),
                 onClearImportedData = {
                     viewModel.onEvent(AddressSettingEvent.ClearImportedAddresses)
                 },

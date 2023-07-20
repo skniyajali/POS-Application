@@ -1,7 +1,9 @@
 package com.niyaj.popos.features.reports.di
 
 import com.niyaj.popos.features.address.domain.repository.AddressRepository
+import com.niyaj.popos.features.cart.domain.repository.CartRepository
 import com.niyaj.popos.features.customer.domain.repository.CustomerRepository
+import com.niyaj.popos.features.reports.data.repository.ReportsRepositoryImpl
 import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
 import com.niyaj.popos.features.reports.domain.use_cases.GetAddressWiseReport
 import com.niyaj.popos.features.reports.domain.use_cases.GetCustomerWiseReport
@@ -12,6 +14,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.realm.kotlin.RealmConfiguration
 import javax.inject.Singleton
 
 @Module
@@ -19,8 +22,20 @@ import javax.inject.Singleton
 object ReportsModule {
 
     @Provides
+    fun provideReportsRepositoryImpl(
+        config : RealmConfiguration,
+        cartRepository : CartRepository
+    ) : ReportsRepository {
+        return ReportsRepositoryImpl(config, cartRepository)
+    }
+
+    @Provides
     @Singleton
-    fun provideReportsUseCases(reportsRepository: ReportsRepository, addressRepository: AddressRepository, customerRepository: CustomerRepository): ReportsUseCases {
+    fun provideReportsUseCases(
+        reportsRepository : ReportsRepository,
+        addressRepository : AddressRepository,
+        customerRepository : CustomerRepository
+    ) : ReportsUseCases {
         return ReportsUseCases(
             getReportsBarData = GetReportsBarData(reportsRepository),
             getProductWiseReport = GetProductWiseReport(reportsRepository),

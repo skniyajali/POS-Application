@@ -51,7 +51,7 @@ fun TextWithIcon(
 
             Text(
                 text = text,
-                fontFamily = if (text.startsWith("Email") || text.startsWith("Password")) FontFamily.Monospace else null,
+                fontFamily = if (text.startsWith("Email") || text.startsWith("Password") || text.startsWith("Phone")) FontFamily.Monospace else null,
                 style = MaterialTheme.typography.body1,
                 fontWeight = if (isTitle) FontWeight.SemiBold else fontWeight,
                 maxLines = 1,

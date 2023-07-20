@@ -1,6 +1,5 @@
 package com.niyaj.popos.features.profile.presentation
 
-import android.Manifest
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -31,9 +30,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 import com.niyaj.popos.R
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
@@ -44,7 +40,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Destination(style = DestinationStyle.BottomSheet::class)
 @Composable
 fun UpdateProfileScreen(
@@ -53,16 +48,6 @@ fun UpdateProfileScreen(
     resultBackNavigator : ResultBackNavigator<String>
 ) {
     val scannedBitmap = profileViewModel.scannedBitmap.collectAsStateWithLifecycle().value
-
-    val hasCameraPermission = rememberPermissionState(
-        permission = Manifest.permission.CAMERA
-    )
-
-    fun requestCameraPermission() {
-        if (!hasCameraPermission.status.isGranted) {
-            hasCameraPermission.launchPermissionRequest()
-        }
-    }
 
     LaunchedEffect(key1 = true) {
         profileViewModel.eventFlow.collect { event ->
@@ -99,7 +84,7 @@ fun UpdateProfileScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = profileViewModel.updateState.name,
-                    hint = "Restaurant Name",
+                    label = "Restaurant Name",
                     leadingIcon = Icons.Default.Restaurant,
                     error = profileViewModel.updateState.nameError,
                     onValueChange = {
@@ -114,7 +99,7 @@ fun UpdateProfileScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = profileViewModel.updateState.email,
-                    hint = "Restaurant Email",
+                    label = "Restaurant Email",
                     leadingIcon = Icons.Default.Email,
                     error = profileViewModel.updateState.emailError,
                     onValueChange = {
@@ -129,7 +114,7 @@ fun UpdateProfileScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = profileViewModel.updateState.primaryPhone,
-                    hint = "Restaurant Primary Phone",
+                    label = "Restaurant Primary Phone",
                     leadingIcon = Icons.Default.PhoneAndroid,
                     error = profileViewModel.updateState.primaryPhoneError,
                     onValueChange = {
@@ -144,7 +129,7 @@ fun UpdateProfileScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = profileViewModel.updateState.secondaryPhone,
-                    hint = "Restaurant Secondary Phone",
+                    label = "Restaurant Secondary Phone",
                     leadingIcon = Icons.Default.Phone,
                     error = profileViewModel.updateState.secondaryPhoneError,
                     onValueChange = {
@@ -159,7 +144,7 @@ fun UpdateProfileScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = profileViewModel.updateState.tagline,
-                    hint = "Restaurant Tagline",
+                    label = "Restaurant Tagline",
                     leadingIcon = Icons.Default.StarHalf,
                     error = profileViewModel.updateState.taglineError,
                     onValueChange = {
@@ -174,7 +159,8 @@ fun UpdateProfileScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = profileViewModel.updateState.address,
-                    hint = "Restaurant Address",
+                    label = "Restaurant Address",
+                    maxLines = 2,
                     leadingIcon = Icons.Default.LocationOn,
                     error = profileViewModel.updateState.addressError,
                     onValueChange = {
@@ -189,7 +175,7 @@ fun UpdateProfileScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = profileViewModel.updateState.description,
-                    hint = "Restaurant Description",
+                    label = "Restaurant Description",
                     singleLine = false,
                     maxLines = 2,
                     leadingIcon = Icons.Default.Notes,
@@ -206,12 +192,11 @@ fun UpdateProfileScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = profileViewModel.updateState.paymentQrCode,
-                    hint = "Restaurant Payment QR Code",
+                    label = "Restaurant Payment QR Code",
                     leadingIcon = Icons.Default.QrCode,
                     trailingIcon = {
                         IconButton(
                             onClick = {
-                                requestCameraPermission()
                                 profileViewModel.onEvent(ProfileEvent.StartScanning)
                             }
                         ) {
@@ -223,7 +208,7 @@ fun UpdateProfileScreen(
                     },
                     error = profileViewModel.updateState.paymentQrCodeError,
                     singleLine = false,
-                    maxLines = 2,
+                    maxLines = 4,
                     onValueChange = {
                         profileViewModel.onEvent(ProfileEvent.PaymentQrCodeChanged(it))
                     },

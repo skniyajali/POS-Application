@@ -90,7 +90,7 @@ fun AddEditAddressScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(ADDRESS_FULL_NAME_FIELD),
                     text = addEditAddressViewModel.addEditAddressState.address,
-                    hint = ADDRESS_FULL_NAME_FIELD,
+                    label = ADDRESS_FULL_NAME_FIELD,
                     leadingIcon = Icons.Default.Business,
                     error = addEditAddressViewModel.addEditAddressState.addressError,
                     errorTag = ADDRESS_FULL_NAME_ERROR,
@@ -104,7 +104,7 @@ fun AddEditAddressScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(ADDRESS_SHORT_NAME_FIELD),
                     text = addEditAddressViewModel.addEditAddressState.shortName,
-                    hint = ADDRESS_SHORT_NAME_FIELD,
+                    label = ADDRESS_SHORT_NAME_FIELD,
                     leadingIcon = Icons.Default.ShortText,
                     error = addEditAddressViewModel.addEditAddressState.shortNameError,
                     errorTag = ADDRESS_SHORT_NAME_ERROR,

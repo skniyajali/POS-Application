@@ -51,7 +51,6 @@ fun TwoGridText(
     textTwo: String = "",
     textColor: Color = HintGray
 ) {
-
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,

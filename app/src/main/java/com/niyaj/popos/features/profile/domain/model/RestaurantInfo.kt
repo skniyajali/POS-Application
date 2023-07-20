@@ -4,17 +4,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import androidx.core.graphics.drawable.toBitmap
 import com.niyaj.popos.features.common.util.ImageStorageManager
-import com.niyaj.popos.utils.Constants.PAYMENT_QR_DATA
 import com.niyaj.popos.utils.Constants.PRINT_LOGO
-import com.niyaj.popos.utils.Constants.RESTAURANT_ADDRESS
-import com.niyaj.popos.utils.Constants.RESTAURANT_DESCRIPTION
-import com.niyaj.popos.utils.Constants.RESTAURANT_EMAIL
 import com.niyaj.popos.utils.Constants.RESTAURANT_ID
 import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO
-import com.niyaj.popos.utils.Constants.RESTAURANT_NAME
-import com.niyaj.popos.utils.Constants.RESTAURANT_PRIMARY_PHONE
-import com.niyaj.popos.utils.Constants.RESTAURANT_SECONDARY_PHONE
-import com.niyaj.popos.utils.Constants.RESTAURANT_TAGLINE
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 
@@ -23,39 +15,39 @@ class RestaurantInfo(): RealmObject {
     @PrimaryKey
     var restaurantId = RESTAURANT_ID
 
-    var name: String = RESTAURANT_NAME
+    var name: String = ""
 
-    var email: String = RESTAURANT_EMAIL
+    var email: String = ""
 
-    var primaryPhone: String = RESTAURANT_PRIMARY_PHONE
+    var primaryPhone: String = ""
 
-    var secondaryPhone: String = RESTAURANT_SECONDARY_PHONE
+    var secondaryPhone: String = ""
 
-    var tagline: String = RESTAURANT_TAGLINE
+    var tagline: String = ""
 
-    var description: String = RESTAURANT_DESCRIPTION
+    var description: String = ""
 
-    var address: String = RESTAURANT_ADDRESS
+    var address: String = ""
 
     var logo: String = ""
 
     var printLogo: String = ""
 
-    var paymentQrCode: String = PAYMENT_QR_DATA
+    var paymentQrCode: String = ""
 
     var createdAt: String = System.currentTimeMillis().toString()
 
     var updatedAt: String? = null
 
     constructor(
-        name: String = RESTAURANT_NAME,
-        tagline: String = RESTAURANT_TAGLINE,
-        email: String = RESTAURANT_EMAIL,
-        primaryPhone: String = RESTAURANT_PRIMARY_PHONE,
-        secondaryPhone: String = RESTAURANT_SECONDARY_PHONE,
-        description: String = RESTAURANT_DESCRIPTION,
-        address: String = RESTAURANT_ADDRESS,
-        paymentQrCode: String = PAYMENT_QR_DATA,
+        name: String,
+        tagline: String,
+        email: String,
+        primaryPhone: String,
+        secondaryPhone: String,
+        description: String,
+        address: String,
+        paymentQrCode: String,
         logo: String = "",
         printLogo: String = "",
         createdAt: String = System.currentTimeMillis().toString(),

@@ -1,11 +1,14 @@
 package com.niyaj.popos.features.customer.di
 
+import com.niyaj.popos.features.customer.data.repository.CustomerRepositoryImpl
 import com.niyaj.popos.features.customer.domain.repository.CustomerRepository
+import com.niyaj.popos.features.customer.domain.repository.CustomerValidationRepository
 import com.niyaj.popos.features.customer.domain.use_cases.GetAllCustomers
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.realm.kotlin.RealmConfiguration
 import javax.inject.Singleton
 
 /**
@@ -16,6 +19,17 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object CustomerModule {
+
+    @Provides
+    fun provideCustomerRepositoryImpl(config: RealmConfiguration): CustomerRepository {
+        return CustomerRepositoryImpl(config)
+    }
+
+    @Provides
+    fun provideCustomerValidationRepositoryImpl(config: RealmConfiguration): CustomerValidationRepository {
+        return CustomerRepositoryImpl(config)
+    }
+
     /**
      * Providing methods for getting customers from the repository
      * @param customerRepository the repository to get the customers from the database

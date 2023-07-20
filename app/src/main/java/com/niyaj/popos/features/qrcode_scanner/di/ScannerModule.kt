@@ -2,6 +2,8 @@ package com.niyaj.popos.features.qrcode_scanner.di
 
 import android.app.Application
 import android.content.Context
+import com.google.android.gms.common.moduleinstall.ModuleInstall
+import com.google.android.gms.common.moduleinstall.ModuleInstallClient
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
@@ -30,12 +32,17 @@ object ScannerModule {
     }
 
     @Provides
+    fun provideGooglePlayModule(context: Context) : ModuleInstallClient {
+        return ModuleInstall.getClient(context)
+    }
+
+    @Provides
     fun provideBarCodeScanner(context: Context, options: GmsBarcodeScannerOptions): GmsBarcodeScanner {
         return GmsBarcodeScanning.getClient(context, options)
     }
 
     @Provides
-    fun provideBarCodeScannerRepository(scanner : GmsBarcodeScanner): QRCodeScanner {
-        return QRCodeScannerImpl(scanner)
+    fun provideBarCodeScannerRepository(scanner : GmsBarcodeScanner, playModule : ModuleInstallClient): QRCodeScanner {
+        return QRCodeScannerImpl(scanner, playModule)
     }
 }

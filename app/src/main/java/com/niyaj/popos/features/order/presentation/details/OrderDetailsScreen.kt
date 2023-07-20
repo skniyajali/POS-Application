@@ -88,8 +88,8 @@ import com.niyaj.popos.features.destinations.CustomerDetailsScreenDestination
 import com.niyaj.popos.features.order.presentation.components.TextDivider
 import com.niyaj.popos.features.order.presentation.components.ThreeGridTexts
 import com.niyaj.popos.features.order.presentation.components.TwoGridTexts
+import com.niyaj.popos.features.order.presentation.print_order.OrderPrintViewModel
 import com.niyaj.popos.features.order.presentation.print_order.PrintEvent
-import com.niyaj.popos.features.order.presentation.print_order.PrintViewModel
 import com.niyaj.popos.utils.toFormattedDateAndTime
 import com.niyaj.popos.utils.toRupee
 import com.ramcosta.composedestinations.annotation.Destination
@@ -103,11 +103,11 @@ import timber.log.Timber
  * @param navController is the navController that handles the navigation
  * @param orderDetailsViewModel is the viewModel that handles the business logic of the screen
  * @param chargesViewModel is the viewModel that handles the business logic of the screen
- * @param printViewModel is the viewModel that handles the business logic of the screen
+ * @param orderPrintViewModel is the viewModel that handles the business logic of the screen
  * @author Sk Niyaj Ali
  * @see OrderDetailsViewModel
  * @see ChargesViewModel
- * @see PrintViewModel
+ * @see OrderPrintViewModel
  */
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
 @Destination
@@ -117,7 +117,7 @@ fun OrderDetailsScreen(
     navController: NavController,
     orderDetailsViewModel: OrderDetailsViewModel = hiltViewModel(),
     chargesViewModel: ChargesViewModel = hiltViewModel(),
-    printViewModel: PrintViewModel = hiltViewModel()
+    orderPrintViewModel: OrderPrintViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
 
@@ -166,11 +166,11 @@ fun OrderDetailsScreen(
         if (bluetoothPermissions.allPermissionsGranted) {
             if (bluetoothAdapter?.isEnabled == true) {
                 // Bluetooth is on print the receipt
-                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+                orderPrintViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
             } else {
                 // Bluetooth is off, ask user to turn it on
                 enableBluetoothContract.launch(enableBluetoothIntent)
-                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+                orderPrintViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
             }
         } else {
             bluetoothPermissions.launchMultiplePermissionRequest()

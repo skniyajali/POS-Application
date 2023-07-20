@@ -4,11 +4,15 @@ import com.niyaj.popos.R
 
 object Constants {
 
-    const val MY_REQUEST_CODE = 123
+    const val UPDATE_MANAGER_REQUEST_CODE = 123
+    const val NOTIFICATION_PERMISSION_REQUEST_CODE = 888
+    const val NETWORK_PERMISSION_REQUEST_CODE = 777
 
     // github login token - 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
 
     const val SPLASH_SCREEN_DURATION = 100
+
+    const val PRINTER_ID = "PRINTER11"
 
     const val PRINTER_DPI = 176
 
@@ -29,6 +33,8 @@ object Constants {
     const val JSON_FILE_TYPE = "application/json"
 
     const val JSON_FILE_EXTENSION = ".json"
+
+    const val BACKUP_REALM_NAME = "backup.realm"
 
     const val SAVEABLE_FILE_NAME = "popos"
 

@@ -56,8 +56,8 @@ class GenerateReportWorker @AssistedInject constructor(
                 Random.nextInt(),
                 NotificationCompat.Builder(context, Constants.GENERATE_REPORT_CHANNEL_ID)
                     .setSmallIcon(R.drawable.generate_report_icon)
-                    .setContentText("Generate Report")
-                    .setContentTitle("Sit Relax While Generating Report")
+                    .setContentText("Sit relax while generating report")
+                    .setContentTitle("Generating Report")
                     .build()
             )
         )
