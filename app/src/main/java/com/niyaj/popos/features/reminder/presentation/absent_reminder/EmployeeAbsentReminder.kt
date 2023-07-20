@@ -4,6 +4,7 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
@@ -17,8 +18,9 @@ import com.niyaj.popos.features.employee.domain.repository.EmployeeRepository
 import com.niyaj.popos.features.reminder.domain.model.AbsentReminder
 import com.niyaj.popos.features.reminder.domain.model.toReminder
 import com.niyaj.popos.features.reminder.domain.repository.ReminderRepository
-import com.niyaj.popos.utils.Constants.ABSENT_HOST
+import com.niyaj.popos.utils.Constants.ABSENT_HOST_SECURE
 import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_ID
+import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_REQ_CODE
 import com.niyaj.popos.utils.showPendingIntentNotification
 import com.niyaj.popos.utils.stopPendingIntentNotification
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,14 +33,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EmployeeAbsentReminder @Inject constructor(
-    private val reminderRepository: ReminderRepository,
+    private val reminderRepository : ReminderRepository,
     private val employeeRepository : EmployeeRepository,
-    application: Application,
+    application : Application,
 ) : ViewModel() {
     private val workManager = WorkManager.getInstance(application.applicationContext)
 
     private val _reminder = mutableStateOf(AbsentReminder())
-    val reminder: State<AbsentReminder> = _reminder
+    val reminder : State<AbsentReminder> = _reminder
 
     private val doesEmployeeExist = employeeRepository.doesAnyEmployeeExist()
 
@@ -51,26 +53,27 @@ class EmployeeAbsentReminder @Inject constructor(
 
     private val absentReminderIntent = Intent(
         Intent.ACTION_VIEW,
-        ABSENT_HOST.toUri(),
+        ABSENT_HOST_SECURE.toUri(),
         application.applicationContext,
         MainActivity::class.java
     )
 
-    private val pendingIntent: PendingIntent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-        PendingIntent.getActivity(
-            /* context = */ application.applicationContext,
-            /* requestCode = */ 0,
-            /* intent = */ absentReminderIntent,
-            /* flags = */ PendingIntent.FLAG_IMMUTABLE
-        )
-    }else {
-        PendingIntent.getActivity(
-            /* context = */ application.applicationContext,
-            /* requestCode = */ 0,
-            /* intent = */ absentReminderIntent,
-            /* flags = */ PendingIntent.FLAG_UPDATE_CURRENT
-        )
-    }
+    private val pendingIntent : PendingIntent =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.getActivity(
+                application.applicationContext,
+                ABSENT_REMINDER_REQ_CODE,
+                absentReminderIntent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
+        } else {
+            PendingIntent.getActivity(
+                application.applicationContext,
+                ABSENT_REMINDER_REQ_CODE,
+                absentReminderIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        }
 
     init {
         getAbsentReminderOnCurrentDate(application.applicationContext)
@@ -96,18 +99,22 @@ class EmployeeAbsentReminder @Inject constructor(
 
     private fun enqueueAbsentReminder(context : Context) {
         if (!_reminder.value.isCompleted) {
-            if (currentTime in _reminder.value.reminderStartTime .. _reminder.value.reminderEndTime) {
+            if (currentTime in _reminder.value.reminderStartTime.._reminder.value.reminderEndTime) {
                 workManager.enqueueUniquePeriodicWork(
                     ABSENT_REMINDER_ID,
                     ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
                     absentWorker
                 )
 
-                showPendingIntentNotification(context, _reminder.value.notificationId, pendingIntent)
+                showPendingIntentNotification(
+                    context,
+                    _reminder.value.notificationId,
+                    pendingIntent
+                )
             } else {
                 Timber.d("Absent Reminder is not right time")
             }
-        }else {
+        } else {
             workManager.cancelWorkById(absentWorker.id)
             stopPendingIntentNotification(context, _reminder.value.notificationId)
         }

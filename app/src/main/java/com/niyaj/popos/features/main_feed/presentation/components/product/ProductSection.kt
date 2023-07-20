@@ -101,7 +101,7 @@ fun ProductSection(
         )
     }else {
         ItemNotAvailable(
-            text = stringResource(id = R.string.no_items_in_product),
+            text = stringResource(id = R.string.main_feed_empty_product),
             image = painterResource(id = R.drawable.nothinghere),
             buttonText = stringResource(id = R.string.create_product),
             onClick = onNavigateToProductScreen

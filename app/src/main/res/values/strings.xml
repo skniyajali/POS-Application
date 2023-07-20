@@ -167,5 +167,6 @@
     <string name="product_import_note">Make sure to open product.json file.</string>
     <string name="expenses_import_note">Make sure to open expenses.json file.</string>
     <string name="cartorder_message">Only pending orders will be shown by default, if you want to see all orders including placed and other date then click on right corner then click view all to see all orders.</string>
+    <string name="main_feed_empty_product">You did not add any product yet, click below button to create new products.</string>
 
 </resources>

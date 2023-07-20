@@ -25,9 +25,7 @@ import com.niyaj.popos.BuildConfig
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
 import com.niyaj.popos.features.common.util.hasNetworkPermission
 import com.niyaj.popos.features.common.util.hasNotificationPermission
-import com.niyaj.popos.features.network_connectivity.data.provider.NetworkConnectivityObserver
 import com.niyaj.popos.features.network_connectivity.domain.model.ConnectivityStatus
-import com.niyaj.popos.features.network_connectivity.domain.provider.ConnectivityObserver
 import com.niyaj.popos.features.reminder.presentation.absent_reminder.EmployeeAbsentReminder
 import com.niyaj.popos.features.reminder.presentation.daily_salary_reminder.DailySalaryReminderWorkerViewModel
 import com.niyaj.popos.utils.Constants.DELETE_DATA_INTERVAL_HOUR
@@ -49,7 +47,6 @@ import java.util.concurrent.TimeUnit
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private lateinit var connectivityObserver : ConnectivityObserver
     private lateinit var appUpdateManager : AppUpdateManager
     private val updateOptions = AppUpdateOptions
         .newBuilder(AppUpdateType.IMMEDIATE)
@@ -67,7 +64,6 @@ class MainActivity : ComponentActivity() {
         val absentReminder by viewModels<EmployeeAbsentReminder>()
         val dailySalaryReminder by viewModels<DailySalaryReminderWorkerViewModel>()
 
-        connectivityObserver = NetworkConnectivityObserver(this.applicationContext)
         appUpdateManager = AppUpdateManagerFactory.create(this)
 
         val hasNotificationPermission = this.hasNotificationPermission()
@@ -133,9 +129,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             PoposTheme {
-                val status = connectivityObserver.observeConnectivity().collectAsStateWithLifecycle(
-                    initialValue = ConnectivityStatus.Unavailable
-                ).value
+                val status = mainViewModel.networkStatus.collectAsStateWithLifecycle().value
 
                 if (status == ConnectivityStatus.Available) {
                     checkForAppUpdates()

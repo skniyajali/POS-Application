@@ -21,7 +21,8 @@ import com.niyaj.popos.features.reminder.presentation.absent_reminder.EmployeeAb
 import com.niyaj.popos.utils.Constants.DAILY_SALARY_REMINDER_ID
 import com.niyaj.popos.utils.Constants.DAILY_SALARY_REMINDER_TEXT
 import com.niyaj.popos.utils.Constants.DAILY_SALARY_REMINDER_TITLE
-import com.niyaj.popos.utils.Constants.SALARY_HOST
+import com.niyaj.popos.utils.Constants.DAILY_SALARY_REQ_CODE
+import com.niyaj.popos.utils.Constants.SALARY_HOST_SECURE
 import com.niyaj.popos.utils.showPendingIntentNotification
 import com.niyaj.popos.utils.stopPendingIntentNotification
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,7 +56,7 @@ class DailySalaryReminderWorkerViewModel @Inject constructor(
 
     private val dailyReminderIntent = Intent(
         Intent.ACTION_VIEW,
-        SALARY_HOST.toUri(),
+        SALARY_HOST_SECURE.toUri(),
         application.applicationContext,
         MainActivity::class.java
     )
@@ -63,14 +64,14 @@ class DailySalaryReminderWorkerViewModel @Inject constructor(
     private val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         PendingIntent.getActivity(
             /* context = */ application.applicationContext,
-            /* requestCode = */ 0,
+            /* requestCode = */ DAILY_SALARY_REQ_CODE,
             /* intent = */ dailyReminderIntent,
             /* flags = */ PendingIntent.FLAG_IMMUTABLE
         )
     }else {
         PendingIntent.getActivity(
             /* context = */ application.applicationContext,
-            /* requestCode = */ 0,
+            /* requestCode = */ DAILY_SALARY_REQ_CODE,
             /* intent = */ dailyReminderIntent,
             /* flags = */ PendingIntent.FLAG_UPDATE_CURRENT
         )
