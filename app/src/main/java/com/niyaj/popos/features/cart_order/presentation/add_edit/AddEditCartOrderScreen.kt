@@ -177,7 +177,7 @@ fun AddEditCartOrderScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     text = viewModel.state.orderId,
-                    hint = "Order Id",
+                    label = "Order Id",
                     error = viewModel.state.orderIdError,
                     onValueChange = {
                         viewModel.onEvent(
@@ -201,7 +201,7 @@ fun AddEditCartOrderScreen(
                                 textFieldSize = coordinates.size.toSize()
                             },
                         text = viewModel.state.customer?.customerPhone ?: "",
-                        hint = "Customer Phone",
+                        label = "Customer Phone",
                         error = viewModel.state.customerError,
                         keyboardType = KeyboardType.Phone,
                         onValueChange = {
@@ -249,7 +249,7 @@ fun AddEditCartOrderScreen(
                                     textFieldSize = coordinates.size.toSize()
                                 },
                             text = viewModel.state.address?.addressName ?: "",
-                            hint = "Customer Address",
+                            label = "Customer Address",
                             error = viewModel.state.addressError,
                             onValueChange = {
                                 viewModel.onEvent(AddEditCartOrderEvent.CustomerAddressChanged(it))

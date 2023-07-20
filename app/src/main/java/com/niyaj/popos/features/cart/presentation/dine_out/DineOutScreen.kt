@@ -38,8 +38,8 @@ import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import com.niyaj.popos.features.destinations.OrderDetailsScreenDestination
 import com.niyaj.popos.features.destinations.OrderScreenDestination
+import com.niyaj.popos.features.order.presentation.print_order.OrderPrintViewModel
 import com.niyaj.popos.features.order.presentation.print_order.PrintEvent
-import com.niyaj.popos.features.order.presentation.print_order.PrintViewModel
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
@@ -54,11 +54,11 @@ import timber.log.Timber
  * @param scaffoldState
  * @param dineOutViewModel
  * @param addOnItemViewModel
- * @param printViewModel
+ * @param orderPrintViewModel
  * @param resultRecipient
  * @see DineOutViewModel
  * @see AddOnItemViewModel
- * @see PrintViewModel
+ * @see OrderPrintViewModel
  */
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -67,7 +67,7 @@ fun DineOutScreen(
     scaffoldState : ScaffoldState,
     dineOutViewModel: DineOutViewModel = hiltViewModel(),
     addOnItemViewModel: AddOnItemViewModel = hiltViewModel(),
-    printViewModel: PrintViewModel = hiltViewModel(),
+    orderPrintViewModel: OrderPrintViewModel = hiltViewModel(),
     resultRecipient : ResultRecipient<AddEditCartOrderScreenDestination, String>
 ) {
 
@@ -118,11 +118,11 @@ fun DineOutScreen(
         if (bluetoothPermissions.allPermissionsGranted) {
             if (bluetoothAdapter?.isEnabled == true) {
                 // Bluetooth is on print the receipt
-                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+                orderPrintViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
             } else {
                 // Bluetooth is off, ask user to turn it on
                 enableBluetoothContract.launch(enableBluetoothIntent)
-                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+                orderPrintViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
             }
         } else {
             bluetoothPermissions.launchMultiplePermissionRequest()
@@ -133,11 +133,11 @@ fun DineOutScreen(
         if (bluetoothPermissions.allPermissionsGranted) {
             if (bluetoothAdapter?.isEnabled == true) {
                 // Bluetooth is on print the receipt
-                printViewModel.onPrintEvent(PrintEvent.PrintOrders(it))
+                orderPrintViewModel.onPrintEvent(PrintEvent.PrintOrders(it))
             } else {
                 // Bluetooth is off, ask user to turn it on
                 enableBluetoothContract.launch(enableBluetoothIntent)
-                printViewModel.onPrintEvent(PrintEvent.PrintOrders(it))
+                orderPrintViewModel.onPrintEvent(PrintEvent.PrintOrders(it))
             }
         } else {
             bluetoothPermissions.launchMultiplePermissionRequest()
@@ -196,6 +196,7 @@ fun DineOutScreen(
             navController = navController,
             scaffoldState = scaffoldState,
             showTopBar = false,
+            showBottomBar = true,
             bottomBar = {
                 if (dineOutOrders.isNotEmpty()) {
                     CartFooterPlaceOrder(

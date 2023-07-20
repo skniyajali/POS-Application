@@ -92,7 +92,7 @@ fun AddEditAddOnItemScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(ADDON_NAME_FIELD),
                     text = viewModel.addEditState.itemName,
-                    hint = ADDON_NAME_FIELD,
+                    label = ADDON_NAME_FIELD,
                     leadingIcon = Icons.Default.Badge,
                     error = viewModel.addEditState.itemNameError,
                     errorTag = ADDON_NAME_ERROR_TAG,
@@ -106,7 +106,7 @@ fun AddEditAddOnItemScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(ADDON_PRICE_FIELD),
                     text = viewModel.addEditState.itemPrice,
-                    hint = ADDON_PRICE_FIELD,
+                    label = ADDON_PRICE_FIELD,
                     errorTag = ADDON_PRICE_ERROR_TAG,
                     leadingIcon = Icons.Default.CurrencyRupee,
                     keyboardType = KeyboardType.Number,

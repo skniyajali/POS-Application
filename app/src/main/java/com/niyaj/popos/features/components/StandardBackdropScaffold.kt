@@ -5,9 +5,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.BackdropScaffold
 import androidx.compose.material.BackdropScaffoldState
@@ -19,6 +19,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.ScaffoldState
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -37,6 +38,28 @@ import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+/**
+ * A composable function that creates a backdrop scaffold layout.
+ *
+ * @param navController The NavController instance used for navigation within the app.
+ * @param backdropScaffoldState The state object that controls the backdrop scaffold behavior.
+ * @param scaffoldState The state object that controls the scaffold behavior.
+ * @param scope The CoroutineScope used to launch coroutines for asynchronous operations.
+ * @param selectedOrderId The selected order ID, or null if no order is selected. Default is null.
+ * @param showSearchBar Whether to show the search bar. Default is false.
+ * @param searchText The current text in the search bar. Default is an empty string.
+ * @param showFloatingActionButton Whether to show the floating action button. Default is true.
+ * @param showBottomBar Whether to show the bottom bar. Default is false.
+ * @param bottomBar The composable function representing the content of the bottom bar.
+ *                   Default is [StandardBottomNavigation] with the NavController and true as parameters.
+ * @param onSelectedOrderClick Callback when the selected order is clicked.
+ * @param onSearchButtonClick Callback when the search button is clicked.
+ * @param onSearchTextChanged Callback when the search text is changed.
+ * @param onClearClick Callback when the clear button is clicked.
+ * @param onBackButtonClick Callback when the back button is clicked.
+ * @param backLayerContent The composable function representing the content of the back layer.
+ * @param frontLayerContent The composable function representing the content of the front layer.
+ */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun StandardBackdropScaffold(
@@ -48,15 +71,15 @@ fun StandardBackdropScaffold(
     showSearchBar : Boolean = false,
     searchText : String = "",
     showFloatingActionButton : Boolean = true,
-    showBottomBar: Boolean = true,
-    bottomBar : @Composable () -> Unit = { StandardBottomNavigation(navController = navController, true) },
+    showBottomBar : Boolean = false,
+    bottomBar : @Composable () -> Unit = { StandardBottomNavigation(navController, true) },
     onSelectedOrderClick : () -> Unit,
     onSearchButtonClick : () -> Unit = {},
     onSearchTextChanged : (String) -> Unit = {},
     onClearClick : () -> Unit = {},
     onBackButtonClick : () -> Unit = {},
-    backLayerContent : @Composable () -> Unit,
-    frontLayerContent : @Composable () -> Unit,
+    backLayerContent : @Composable (PaddingValues) -> Unit,
+    frontLayerContent : @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -68,22 +91,36 @@ fun StandardBackdropScaffold(
         drawerGesturesEnabled = true,
         floatingActionButton = {
             AnimatedVisibility(
-                visible = !backdropScaffoldState.isRevealed && showFloatingActionButton && showBottomBar,
+                visible = !backdropScaffoldState.isRevealed && showFloatingActionButton,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
-                FloatingActionButton(
-                    backgroundColor = MaterialTheme.colors.primary,
-                    onClick = {
-                        navController.navigate(AddEditCartOrderScreenDestination())
-                    },
-                    shape = CircleShape,
-                    modifier = Modifier,
-                    contentColor = MaterialTheme.colors.onPrimary,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = stringResource(id = R.string.create_order)
+                if (showBottomBar) {
+                    FloatingActionButton(
+                        shape = CircleShape,
+                        onClick = {
+                            navController.navigate(AddEditCartOrderScreenDestination())
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(id = R.string.create_order)
+                        )
+                    }
+                } else {
+                    ExtendedFloatingActionButton(
+                        text = {
+                            Text(text = stringResource(id = R.string.create_new_order).uppercase())
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = stringResource(id = R.string.create_order)
+                            )
+                        },
+                        onClick = {
+                            navController.navigate(AddEditCartOrderScreenDestination())
+                        }
                     )
                 }
             }
@@ -92,7 +129,7 @@ fun StandardBackdropScaffold(
         floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
             AnimatedVisibility(
-                visible = !backdropScaffoldState.isRevealed && showFloatingActionButton,
+                visible = showBottomBar && (!backdropScaffoldState.isRevealed && showFloatingActionButton),
                 enter = fadeIn() + slideInVertically(
                     initialOffsetY = { fullHeight ->
                         fullHeight / 4
@@ -173,16 +210,15 @@ fun StandardBackdropScaffold(
                 )
             },
             backLayerContent = {
-                backLayerContent()
+                backLayerContent(paddingValues)
             },
             frontLayerContent = {
-                frontLayerContent()
+                frontLayerContent(paddingValues)
             },
             headerHeight = 0.dp,
             frontLayerBackgroundColor = MaterialTheme.colors.background,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+                .fillMaxSize(),
             scaffoldState = backdropScaffoldState,
         )
     }

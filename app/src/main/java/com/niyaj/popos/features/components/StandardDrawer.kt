@@ -78,9 +78,10 @@ import com.niyaj.popos.features.destinations.CustomerScreenDestination
 import com.niyaj.popos.features.destinations.EmployeeScreenDestination
 import com.niyaj.popos.features.destinations.ExpensesCategoryScreenDestination
 import com.niyaj.popos.features.destinations.ExpensesScreenDestination
+import com.niyaj.popos.features.destinations.LoginScreenDestination
 import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import com.niyaj.popos.features.destinations.OrderScreenDestination
-import com.niyaj.popos.features.destinations.PrintSettingsScreenDestination
+import com.niyaj.popos.features.destinations.PrinterInfoScreenDestination
 import com.niyaj.popos.features.destinations.ProductScreenDestination
 import com.niyaj.popos.features.destinations.ProfileScreenDestination
 import com.niyaj.popos.features.destinations.ReminderScreenDestination
@@ -88,6 +89,7 @@ import com.niyaj.popos.features.destinations.ReportScreenDestination
 import com.niyaj.popos.features.destinations.SalaryScreenDestination
 import com.niyaj.popos.features.destinations.SettingsScreenDestination
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
+import com.niyaj.popos.features.profile.presentation.ProfileEvent
 import com.niyaj.popos.features.profile.presentation.ProfileViewModel
 import com.ramcosta.composedestinations.navigation.navigate
 
@@ -595,15 +597,16 @@ fun StandardDrawer(
                                     navController.navigate(SettingsScreenDestination())
                                 }
                             )
+
                             Spacer(modifier = Modifier.height(SpaceSmall))
 
                             DrawerItem(
-                                text = "Print Settings",
+                                text = "Printer Information",
                                 icon = Icons.Default.Print,
-                                selected = currentRoute == PrintSettingsScreenDestination.route,
+                                selected = currentRoute == PrinterInfoScreenDestination.route,
                                 iconColor = MaterialTheme.colors.secondary,
                                 onClick = {
-                                    navController.navigate(PrintSettingsScreenDestination())
+                                    navController.navigate(PrinterInfoScreenDestination())
                                 }
                             )
                         }
@@ -625,11 +628,16 @@ fun StandardDrawer(
                 icon = Icons.Default.Logout,
                 selected = false,
                 onClick = {
+                    viewModel.onEvent(ProfileEvent.LogoutProfile)
 
+                    navController.navigate(LoginScreenDestination()){
+                        popUpTo(navController.graph.id){
+                            inclusive = false
+                        }
+                    }
                 }
             )
         }
-
     }
 }
 

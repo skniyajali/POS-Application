@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.niyaj.popos.features.common.ui.theme.Olive
+import com.niyaj.popos.features.common.ui.theme.PurpleHaze
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.destinations.CartScreenDestination
 import com.niyaj.popos.features.destinations.MainFeedScreenDestination
@@ -55,14 +55,14 @@ fun StandardBottomNavigation(
                 .fillMaxWidth()
                 .height(70.dp)
                 .clip(RoundedCornerShape(topStart = SpaceSmall, topEnd = SpaceSmall)),
-//            backgroundColor = Olive,
+            backgroundColor = PurpleHaze,
             cutoutShape = shape,
             elevation = 5.dp
         ) {
             BottomNavigation(
                 modifier = Modifier
                     .fillMaxSize(),
-//                backgroundColor = Olive,
+                backgroundColor = PurpleHaze,
             ) {
                 navItems.forEach { bottomNavItem ->
                     StandardBottomNavItem(

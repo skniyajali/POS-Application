@@ -1,11 +1,16 @@
 package com.niyaj.popos.features.app_settings.presentation
 
+import android.Manifest
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.Divider
 import androidx.compose.material.FabPosition
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
@@ -13,7 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.RemoveCircleOutline
-import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.filled.SettingsBackupRestore
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,10 +28,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.niyaj.popos.BuildConfig
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.SettingsCard
@@ -34,6 +42,7 @@ import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.destinations.DeletionSettingsDestination
 import com.niyaj.popos.features.destinations.SettingsScreenDestination
+import com.niyaj.popos.features.order.presentation.components.TwoGridText
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
@@ -53,14 +62,14 @@ import kotlinx.coroutines.launch
  *  @param resultRecipient
  *
  */
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalPermissionsApi::class)
 @Destination
 @Composable
 fun SettingsScreen(
-    navController: NavController,
-    scaffoldState: ScaffoldState,
-    settingsViewModel: SettingsViewModel = hiltViewModel(),
-    resultRecipient: ResultRecipient<DeletionSettingsDestination, String>
+    navController : NavController,
+    scaffoldState : ScaffoldState,
+    settingsViewModel : SettingsViewModel = hiltViewModel(),
+    resultRecipient : ResultRecipient<DeletionSettingsDestination, String>
 ) {
     val context = LocalContext.current
     val lazyListState = rememberLazyListState()
@@ -102,6 +111,20 @@ fun SettingsScreen(
                     scaffoldState.snackbarHostState.showSnackbar(result.value)
                 }
             }
+        }
+    }
+
+    val hasStoragePermission =
+        rememberMultiplePermissionsState(
+            permissions = listOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            )
+        )
+
+    fun askForPermissions() {
+        if (!hasStoragePermission.allPermissionsGranted) {
+            hasStoragePermission.launchMultiplePermissionRequest()
         }
     }
 
@@ -172,67 +195,130 @@ fun SettingsScreen(
                 message(res = R.string.delete_past_records)
             }
 
-            LazyColumn(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(SpaceSmall)
+                    .fillMaxSize()
+                    .padding(SpaceSmall),
             ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1.5f),
+                    verticalArrangement = Arrangement.spacedBy(SpaceSmall)
+                ) {
+                    item("Deletion Settings") {
+                        Spacer(modifier = Modifier.height(SpaceSmall))
+                        SettingsCard(
+                            text = "Data Deletion Settings",
+                            icon = Icons.Default.RemoveCircleOutline,
+                            onClick = {
+                                navController.navigate(DeletionSettingsDestination())
+                            },
+                        )
+                    }
 
-                item {
-                    Spacer(modifier = Modifier.height(SpaceSmall))
-                    SettingsCard(
-                        text = "Data Deletion Settings",
-                        icon = Icons.Default.RemoveCircleOutline,
-                        onClick = {
-                            navController.navigate(DeletionSettingsDestination())
-                        },
-                    )
-                    Spacer(modifier = Modifier.height(SpaceMedium))
+                    item("Delete Past Records") {
+                        SettingsCard(
+                            text = "Delete Past Records",
+                            icon = Icons.Default.Delete,
+                            onClick = {
+                                deletePastState.show()
+                            },
+                        )
+                    }
+
+                    item("Delete All Records") {
+                        SettingsCard(
+                            text = "Delete All Records",
+                            icon = Icons.Default.DeleteForever,
+                            onClick = {
+                                dialogState.show()
+                            },
+                        )
+                    }
+
+                    item("Backup Database") {
+                        SettingsCard(
+                            text = "Backup Database",
+                            icon = Icons.Default.UploadFile,
+                            onClick = {
+                                askForPermissions()
+
+                                settingsViewModel.backupDatabase()
+                            },
+                        )
+                    }
+
+                    item("Restore Database") {
+                        SettingsCard(
+                            text = "Restore Database",
+                            icon = Icons.Default.SettingsBackupRestore,
+                            onClick = {
+                                askForPermissions()
+
+                                settingsViewModel.restoreDatabase(context)
+                            },
+                        )
+                    }
                 }
 
-                item {
-                    SettingsCard(
-                        text = "Delete Past Records",
-                        icon = Icons.Default.Delete,
-                        onClick = {
-                            deletePastState.show()
-                        },
-                    )
-                    Spacer(modifier = Modifier.height(SpaceMedium))
-                }
-
-                item {
-                    SettingsCard(
-                        text = "Delete All Records",
-                        icon = Icons.Default.DeleteForever,
-                        onClick = {
-                            dialogState.show()
-                        },
-                    )
-                    Spacer(modifier = Modifier.height(SpaceMedium))
-                }
-
-                item {
-                    SettingsCard(
-                        text = "Backup Files",
-                        icon = Icons.Default.UploadFile,
-                        onClick = settingsViewModel::backupFiles,
-                    )
-                    Spacer(modifier = Modifier.height(SpaceMedium))
-                }
-
-                item {
-                    SettingsCard(
-                        text = "Restore Files",
-                        icon = Icons.Default.Update,
-                        onClick = {
-                            settingsViewModel.restoreFiles(context)
-                        },
-                    )
-                    Spacer(modifier = Modifier.height(SpaceMedium))
+                Column {
+                    AppDetails()
                 }
             }
-
         }
+    }
+}
+
+
+@Composable
+fun AppDetails(
+    modifier : Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(SpaceSmall),
+        verticalArrangement = Arrangement.spacedBy(SpaceSmall)
+    ) {
+        TwoGridText(
+            textOne = "Developed By",
+            textTwo = stringResource(id = R.string.developer_name),
+        )
+
+        Divider(modifier = Modifier.fillMaxWidth())
+
+        TwoGridText(
+            textOne = "Developer Email",
+            textTwo = stringResource(id = R.string.developer_email),
+        )
+
+        Divider(modifier = Modifier.fillMaxWidth())
+
+        TwoGridText(
+            textOne = "Developer Profile",
+            textTwo = stringResource(id = R.string.developer_profile),
+        )
+
+        Divider(modifier = Modifier.fillMaxWidth())
+
+        TwoGridText(
+            textOne = "Application ID",
+            textTwo = BuildConfig.APPLICATION_ID,
+        )
+
+        Divider(modifier = Modifier.fillMaxWidth())
+
+        TwoGridText(
+            textOne = "Version Name",
+            textTwo = BuildConfig.VERSION_NAME
+        )
+
+        Divider(modifier = Modifier.fillMaxWidth())
+
+        TwoGridText(
+            textOne = "Version Code",
+            textTwo = BuildConfig.VERSION_CODE.toString()
+        )
     }
 }

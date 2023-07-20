@@ -81,7 +81,7 @@ fun DeletionSettings(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = deletionSettingsViewModel.state.expensesInterval,
-                    hint = "Expenses Deletion Interval",
+                    label = "Expenses Deletion Interval",
                     keyboardType = KeyboardType.Number,
                     error = deletionSettingsViewModel.state.expensesIntervalError,
                     onValueChange = {
@@ -98,7 +98,7 @@ fun DeletionSettings(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = deletionSettingsViewModel.state.reportsInterval,
-                    hint = "Reports Deletion Interval",
+                    label = "Reports Deletion Interval",
                     keyboardType = KeyboardType.Number,
                     error = deletionSettingsViewModel.state.reportsIntervalError,
                     onValueChange = {
@@ -115,7 +115,7 @@ fun DeletionSettings(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = deletionSettingsViewModel.state.cartInterval,
-                    hint = "Cart Deletion Interval",
+                    label = "Cart Deletion Interval",
                     keyboardType = KeyboardType.Number,
                     error = deletionSettingsViewModel.state.cartIntervalError,
                     onValueChange = {
@@ -128,7 +128,7 @@ fun DeletionSettings(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = deletionSettingsViewModel.state.cartOrderInterval,
-                    hint = "CartOrder Deletion Interval",
+                    label = "CartOrder Deletion Interval",
                     keyboardType = KeyboardType.Number,
                     error = deletionSettingsViewModel.state.cartOrderIntervalError,
                     onValueChange = {

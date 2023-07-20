@@ -154,7 +154,7 @@ fun ProductPriceScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = productPriceViewModel.productPrice.value.productPrice,
-                    hint = "Product Price",
+                    label = "Product Price",
                     leadingIcon = Icons.Default.CurrencyRupee,
                     keyboardType = KeyboardType.Number,
                     error = productPriceViewModel.productPrice.value.productPriceError,

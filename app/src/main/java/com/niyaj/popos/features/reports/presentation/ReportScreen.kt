@@ -24,6 +24,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -48,6 +49,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -76,6 +78,7 @@ import com.niyaj.popos.features.components.LoadingIndicator
 import com.niyaj.popos.features.components.RoundedBox
 import com.niyaj.popos.features.components.StandardButtonFW
 import com.niyaj.popos.features.components.StandardExpandable
+import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.components.chart.common.dimens.ChartDimens
@@ -96,6 +99,7 @@ import com.niyaj.popos.features.reports.presentation.components.CustomerReportCa
 import com.niyaj.popos.features.reports.presentation.components.OrderTypeDropdown
 import com.niyaj.popos.features.reports.presentation.components.ReportBox
 import com.niyaj.popos.utils.getCalculatedStartDate
+import com.niyaj.popos.utils.isScrolled
 import com.niyaj.popos.utils.toMilliSecond
 import com.niyaj.popos.utils.toPrettyDate
 import com.niyaj.popos.utils.toRupee
@@ -105,6 +109,7 @@ import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import io.sentry.compose.SentryTraced
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
 
@@ -181,6 +186,7 @@ fun ReportScreen(
         }
     }
 
+    val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
     val dialogState = rememberMaterialDialogState()
 
@@ -227,7 +233,7 @@ fun ReportScreen(
             navController = navController,
             scaffoldState = scaffoldState,
             showBackArrow = true,
-            showBottomBar = true,
+            showBottomBar = false,
             title = {
                 Text(text = "Reports")
             },
@@ -255,21 +261,21 @@ fun ReportScreen(
                 }
 
             },
-//            isFloatingActionButtonDocked = true,
-//            floatingActionButton = {
-//                StandardFabButton(
-//                    text = "",
-//                    showScrollToTop = showScrollToTop.value,
-//                    visible = false,
-//                    onScrollToTopClick = {
-//                        scope.launch {
-//                            lazyListState.animateScrollToItem(index = 0)
-//                        }
-//                    },
-//                    onClick = {},
-//                )
-//            },
-//            floatingActionButtonPosition = if(showScrollToTop.value) FabPosition.End else FabPosition.Center,
+            isFloatingActionButtonDocked = true,
+            floatingActionButton = {
+                StandardFabButton(
+                    text = "",
+                    showScrollToTop = lazyListState.isScrolled,
+                    visible = false,
+                    onScrollToTopClick = {
+                        scope.launch {
+                            lazyListState.animateScrollToItem(index = 0)
+                        }
+                    },
+                    onClick = {},
+                )
+            },
+            floatingActionButtonPosition = FabPosition.End,
         ) {
             MaterialDialog(
                 dialogState = dialogState,

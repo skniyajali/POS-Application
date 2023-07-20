@@ -1,6 +1,7 @@
 package com.niyaj.popos.features.cart_order.presentation
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
@@ -23,7 +24,6 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.FabPosition
@@ -70,10 +70,12 @@ import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.ui.theme.TextGray
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.ItemNotAvailable
+import com.niyaj.popos.features.components.LoadingIndicator
+import com.niyaj.popos.features.components.NoteCard
 import com.niyaj.popos.features.components.ScaffoldNavActions
 import com.niyaj.popos.features.components.StandardChip
+import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.TextWithCount
 import com.niyaj.popos.features.components.TextWithIcon
@@ -93,8 +95,11 @@ import com.vanpra.composematerialdialogs.message
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import com.vanpra.composematerialdialogs.title
 import io.sentry.compose.SentryTraced
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.ExperimentalTime
 
 /**
  *  CartOrderScreen
@@ -107,15 +112,15 @@ import timber.log.Timber
  *  @see CartOrderSettingScreenDestination
  *  @see AddEditCartOrderScreenDestination
  */
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalTime::class)
 @Destination
 @Composable
 fun CartOrderScreen(
-    navController: NavController,
-    cartOrderViewModel: CartOrderViewModel = hiltViewModel(),
-    scaffoldState: ScaffoldState,
-    resultRecipient: ResultRecipient<AddEditCartOrderScreenDestination, String>,
-    settingRecipient: ResultRecipient<CartOrderSettingScreenDestination, String>,
+    navController : NavController,
+    cartOrderViewModel : CartOrderViewModel = hiltViewModel(),
+    scaffoldState : ScaffoldState,
+    resultRecipient : ResultRecipient<AddEditCartOrderScreenDestination, String>,
+    settingRecipient : ResultRecipient<CartOrderSettingScreenDestination, String>,
 ) {
     val lazyListState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
@@ -150,6 +155,17 @@ fun CartOrderScreen(
 
     val showSearchBar = cartOrderViewModel.toggledSearchBar.collectAsStateWithLifecycle().value
     val searchText = cartOrderViewModel.searchText.collectAsStateWithLifecycle().value
+
+    val showNoteText = remember {
+        mutableStateOf(true)
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        scope.launch {
+            delay(1.minutes)
+            showNoteText.value = false
+        }
+    }
 
     var showMenu by remember { mutableStateOf(false) }
 
@@ -276,14 +292,14 @@ fun CartOrderScreen(
                     searchText = searchText,
                     showMenu = showMenu,
                     onToggleMenu = { showMenu = !showMenu },
-                    onDismissDropdown = { showMenu = false  },
+                    onDismissDropdown = { showMenu = false },
                     onClickDropItem = {
                         cartOrderViewModel.onEvent(CartOrderEvent.ViewAllOrders)
                         showMenu = false
                     },
                     onSearchTextChanged = {
                         cartOrderViewModel.onEvent(CartOrderEvent.OnSearchCartOrder(it))
-                    } ,
+                    },
                     onClearClick = {
                         cartOrderViewModel.onSearchTextClearClick()
                     },
@@ -359,17 +375,12 @@ fun CartOrderScreen(
                         .fillMaxSize(),
                 ) {
                     if (isLoading) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            CircularProgressIndicator()
-                        }
+                        LoadingIndicator()
                     } else if (cartOrders.isEmpty() || hasError != null) {
                         ItemNotAvailable(
                             text = hasError
-                                ?: if (showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(
+                                ?: if (showSearchBar) stringResource(id = R.string.search_item_not_found)
+                                else stringResource(
                                     id = R.string.cart_order_is_empty
                                 ),
                             buttonText = stringResource(id = R.string.create_new_order).uppercase(),
@@ -379,6 +390,12 @@ fun CartOrderScreen(
                             }
                         )
                     } else {
+                        AnimatedVisibility(
+                            visible = showNoteText.value
+                        ) {
+                            NoteCard(text = stringResource(id = R.string.cartorder_message))
+                        }
+
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             state = lazyListState,
@@ -408,10 +425,18 @@ fun CartOrderScreen(
                                         doesOrderSelected = cartOrder.cartOrderId == selectedCartOrder.cartOrderId,
                                         selectedItem = selectedOrder,
                                         onClickItem = {
-                                            cartOrderViewModel.onEvent(CartOrderEvent.SelectCartOrder(it))
+                                            cartOrderViewModel.onEvent(
+                                                CartOrderEvent.SelectCartOrder(
+                                                    it
+                                                )
+                                            )
                                         },
                                         onNavigateItem = {
-                                            navController.navigate(OrderDetailsScreenDestination(cartOrderId = it))
+                                            navController.navigate(
+                                                OrderDetailsScreenDestination(
+                                                    cartOrderId = it
+                                                )
+                                            )
                                         }
                                     )
                                 }
@@ -436,16 +461,16 @@ fun CartOrderScaffoldNavActions(
     onClickDelete : () -> Unit,
     showSearchBar : Boolean,
     searchText : String,
-    showMenu: Boolean,
-    onToggleMenu: () -> Unit,
-    onDismissDropdown: () -> Unit,
+    showMenu : Boolean,
+    onToggleMenu : () -> Unit,
+    onDismissDropdown : () -> Unit,
     onClickDropItem : () -> Unit,
     onSearchTextChanged : (String) -> Unit,
     onClearClick : () -> Unit,
     onClickSearch : () -> Unit,
     onClickSetting : () -> Unit,
-    onClickSelectOrder: () -> Unit,
-    onClickViewDetails: () -> Unit,
+    onClickSelectOrder : () -> Unit,
+    onClickViewDetails : () -> Unit,
 ) {
     ScaffoldNavActions(
         multiSelect = false,
@@ -534,11 +559,11 @@ fun CartOrderScaffoldNavActions(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CartOrdersBox(
-    cartOrder: CartOrder,
+    cartOrder : CartOrder,
     selectedItem : String,
-    doesOrderSelected: Boolean,
-    onClickItem: (String) -> Unit,
-    onNavigateItem: (String) -> Unit,
+    doesOrderSelected : Boolean,
+    onClickItem : (String) -> Unit,
+    onNavigateItem : (String) -> Unit,
 ) {
 //    val isCurrentDateOrder = DateUtils.isToday(cartOrder.updatedAt?.toLong() ?: cartOrder.createdAt.toLong())
 //    val enabled = if (isCurrentDateOrder) true
@@ -552,7 +577,7 @@ fun CartOrdersBox(
                 onClick = {
                     if (selectedItem.isNotEmpty()) {
                         onClickItem(cartOrder.cartOrderId)
-                    }else {
+                    } else {
                         onNavigateItem(cartOrder.cartOrderId)
                     }
                 },
@@ -586,7 +611,7 @@ fun CartOrdersBox(
                     icon = Icons.Default.Tag
                 )
 
-                if (cartOrder.cartOrderStatus != OrderStatus.Processing.orderStatus){
+                if (cartOrder.cartOrderStatus != OrderStatus.Processing.orderStatus) {
                     StandardChip(
                         text = cartOrder.cartOrderStatus,
                         isPrimary = cartOrder.cartOrderStatus == OrderStatus.Processing.orderStatus

@@ -39,10 +39,9 @@ class MainFeedRepositoryImpl(
     override suspend fun getSelectedCartOrders(): Flow<CartOrder?> {
         return channelFlow {
             withContext(ioDispatcher) {
-                val selectedCartOrder = realm.query<SelectedCartOrder>().find()
-                val item = selectedCartOrder.asFlow()
+                val selectedCartOrder = realm.query<SelectedCartOrder>().find().asFlow()
 
-                item.collect { changes ->
+                selectedCartOrder.collect { changes ->
                     when (changes) {
                         is InitialResults -> {
                             if (changes.list.isNotEmpty()) {

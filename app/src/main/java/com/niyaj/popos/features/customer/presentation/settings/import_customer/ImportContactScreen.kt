@@ -56,9 +56,9 @@ import kotlinx.coroutines.launch
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ImportContactScreen(
-    navController: NavController = rememberNavController(),
-    resultBackNavigator: ResultBackNavigator<String>,
-    viewModel: CustomerSettingsViewModel = hiltViewModel(),
+    navController : NavController = rememberNavController(),
+    resultBackNavigator : ResultBackNavigator<String>,
+    viewModel : CustomerSettingsViewModel = hiltViewModel(),
 ) {
 
     val scope = rememberCoroutineScope()
@@ -71,7 +71,8 @@ fun ImportContactScreen(
 
     val importedData = viewModel.importExportedCustomers.collectAsStateWithLifecycle().value
 
-    val showImportedBtn = if(isChosen) selectedCustomers.isNotEmpty() else importedData.isNotEmpty()
+    val showImportedBtn =
+        if (isChosen) selectedCustomers.isNotEmpty() else importedData.isNotEmpty()
 
     var expanded by remember {
         mutableStateOf(false)
@@ -81,7 +82,7 @@ fun ImportContactScreen(
         mutableStateOf(ImportContactType.Customer.name)
     }
 
-    var importJob: Job? = null
+    var importJob : Job? = null
 
     val importLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -93,7 +94,7 @@ fun ImportContactScreen(
                         val data = ImportExport.readData<ImportContact>(context, it)
 
                         viewModel.onEvent(CustomerSettingsEvent.ImportCustomerData(data.toCustomers()))
-                    }else {
+                    } else {
                         val newData = ImportExport.readData<Customer>(context, it)
 
                         viewModel.onEvent(CustomerSettingsEvent.ImportCustomerData(newData))
@@ -131,7 +132,7 @@ fun ImportContactScreen(
                 .fillMaxWidth()
                 .padding(SpaceSmall)
         ) {
-            if(importedData.isNotEmpty()) {
+            if (importedData.isNotEmpty()) {
                 ImportExportHeader(
                     modifier = Modifier,
                     text = "Import " + if (isChosen) "${selectedCustomers.size} Selected Customers" else " All Customers",
@@ -188,12 +189,17 @@ fun ImportContactScreen(
                         .height(48.dp)
                         .fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(SpaceSmall))
             }
-            
+
             ImportFooter(
-                text = "Import ${if (isChosen) selectedCustomers.size else "All"} Customer",
+                importButtonText = "Import ${if (isChosen) selectedCustomers.size else "All"} Customer",
+                noteText = if (selectedImportType == ImportContactType.Contact.name) {
+                    stringResource(id = R.string.contact_import_note)
+                } else {
+                    stringResource(id = R.string.customer_import_note)
+                },
                 importedDataIsEmpty = importedData.isNotEmpty(),
                 showImportedBtn = showImportedBtn,
                 onClearImportedData = {
@@ -214,7 +220,7 @@ fun ImportContactScreen(
 }
 
 
-enum class ImportContactType(val icon: ImageVector) {
+enum class ImportContactType(val icon : ImageVector) {
     Contact(Icons.Default.Contacts),
     Customer(Icons.Default.Person)
 }

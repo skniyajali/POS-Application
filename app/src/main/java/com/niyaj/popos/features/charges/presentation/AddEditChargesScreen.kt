@@ -99,7 +99,7 @@ fun AddEditChargesScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(CHARGES_NAME_FIELD),
                     text = chargesViewModel.addEditState.chargesName,
-                    hint = "Charges Name",
+                    label = "Charges Name",
                     leadingIcon = Icons.Default.Badge,
                     error = chargesViewModel.addEditState.chargesNameError,
                     errorTag = CHARGES_NAME_ERROR,
@@ -113,7 +113,7 @@ fun AddEditChargesScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(CHARGES_AMOUNT_FIELD),
                     text = chargesViewModel.addEditState.chargesPrice,
-                    hint = "Charges Amount",
+                    label = "Charges Amount",
                     leadingIcon = Icons.Default.CurrencyRupee,
                     keyboardType = KeyboardType.Number,
                     error = chargesViewModel.addEditState.chargesPriceError,

@@ -128,4 +128,44 @@
     <string name="export_expenses">Export Expenses</string>
     <string name="asset_statements" translatable="false">[{ \"include\": \"https://niyajali.github.io/.well-known/assetlinks.json\" }]</string>
 
+    <!--  Login & Sing Up Screen  -->
+    <string name="login">Login</string>
+    <string name="register">Create an Account</string>
+    <string name="email_phone">Email or Phone</string>
+    <string name="password">Password</string>
+    <string name="welcome">Welcome Back</string>
+    <string name="login_text">Sign in to continue.</string>
+    <string name="no_account">Do not have any account?</string>
+    <string name="question_count">\u00A0of %d</string>
+    <string name="submit">Submit</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="on_success_register_title">Hooray!!</string>
+    <string name="on_success_register_subtitle">Your account has been created.</string>
+    <string name="on_success_register_desc">Please save your password for future login purpose, otherwise you can not able to login to your account.</string>
+    <string name="setup_profile">Setup Your Restaurant</string>
+    <string name="setup_profile_text">Click next to continue.</string>
+    <string name="basic_title">Fill Additional Info</string>
+    <string name="basic_subtitle">Click submit to create an account.</string>
+    <string name="login_info_note">Please upload a logo within 512x512 px size.</string>
+    <string name="on_failure_register_title">Oops!!</string>
+    <string name="on_failure_register_subtitle">Something Went Wrong!</string>
+    <string name="on_failure_register_desc">Please go back and check and verify your input data and try again.</string>
+    <string name="go_back">Go Back</string>
+    <string name="done">Done</string>
+    <string name="update_printer_info">Update Printer Info</string>
+
+    <!-- Developer Details   -->
+    <string name="developer_name">Sk Niyaj Ali</string>
+    <string name="developer_email">niyaj639@gmail.com</string>
+    <string name="developer_profile">https://github.com/niyajali</string>
+
+    <!-- Import File Notes   -->
+    <string name="address_import_note">Make sure to open a address.json file.</string>
+    <string name="customer_import_note">Make sure to open customer.json file.</string>
+    <string name="contact_import_note">Make sure to open contact.json file.</string>
+    <string name="product_import_note">Make sure to open product.json file.</string>
+    <string name="expenses_import_note">Make sure to open expenses.json file.</string>
+    <string name="cartorder_message">Only pending orders will be shown by default, if you want to see all orders including placed and other date then click on right corner then click view all to see all orders.</string>
+
 </resources>

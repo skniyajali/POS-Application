@@ -52,8 +52,8 @@ class DataDeletionWorker @AssistedInject constructor(
                 Random.nextInt(),
                 NotificationCompat.Builder(context, DELETE_DATA_NOTIFICATION_CHANNEL_ID)
                     .setSmallIcon(R.drawable.auto_delete_icon)
-                    .setContentText("Data Deletion")
-                    .setContentTitle("Deletion in progress")
+                    .setContentText("Deletion in progress")
+                    .setContentTitle("Deleting Old Data")
                     .build()
             )
         )

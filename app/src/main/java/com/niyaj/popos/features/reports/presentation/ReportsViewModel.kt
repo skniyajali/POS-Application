@@ -2,16 +2,11 @@ package com.niyaj.popos.features.reports.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dantsu.escposprinter.EscPosPrinter
-import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.niyaj.popos.features.common.util.Resource
+import com.niyaj.popos.features.printer_info.domain.utils.BluetoothPrinter
 import com.niyaj.popos.features.reports.domain.model.Reports
 import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
 import com.niyaj.popos.features.reports.domain.use_cases.ReportsUseCases
-import com.niyaj.popos.utils.Constants
-import com.niyaj.popos.utils.Constants.PRINT_ADDRESS_WISE_REPORT_LIMIT
-import com.niyaj.popos.utils.Constants.PRINT_CUSTOMER_WISE_REPORT_LIMIT
-import com.niyaj.popos.utils.Constants.PRINT_PRODUCT_WISE_REPORT_LIMIT
 import com.niyaj.popos.utils.getCalculatedEndDate
 import com.niyaj.popos.utils.getCalculatedStartDate
 import com.niyaj.popos.utils.getEndTime
@@ -36,9 +31,11 @@ import javax.inject.Inject
 class ReportsViewModel @Inject constructor(
     private val reportsUseCases: ReportsUseCases,
     private val reportsRepository : ReportsRepository,
+    private val bluetoothPrinter : BluetoothPrinter,
 ) : ViewModel() {
 
-    private lateinit var escposPrinter: EscPosPrinter
+    private val escposPrinter = bluetoothPrinter.printer
+    private val info = bluetoothPrinter.info
 
     private val _reportState = MutableStateFlow(ReportState())
     val reportState = _reportState.asStateFlow()
@@ -318,21 +315,6 @@ class ReportsViewModel @Inject constructor(
         }
     }
 
-    private fun connectPrinter(): Boolean {
-        try {
-            escposPrinter = EscPosPrinter(
-                BluetoothPrintersConnections.selectFirstPaired(),
-                Constants.PRINTER_DPI,
-                Constants.PRINTER_WIDTH_MM,
-                Constants.PRINTER_NBR_LINE
-            )
-
-            return true
-        } catch (e: Exception) {
-            throw e
-        }
-    }
-
     private fun printAllReports() {
         try {
             var printItems = ""
@@ -344,9 +326,7 @@ class ReportsViewModel @Inject constructor(
             printItems += getPrintableAddressWiseReport()
             printItems += getPrintableCustomerWiseReport()
 
-            connectPrinter()
-
-            escposPrinter.printFormattedText(printItems, 50)
+            escposPrinter?.printFormattedText(printItems, info.printerWidth)
         } catch (e: Exception) {
             Timber.e(e)
         }
@@ -410,7 +390,7 @@ class ReportsViewModel @Inject constructor(
         if (_productWiseData.value.data.isNotEmpty()) {
 
             //TODO: use dynamic limit for printing products
-            val productWiseData = _productWiseData.value.data.take(PRINT_PRODUCT_WISE_REPORT_LIMIT)
+            val productWiseData = _productWiseData.value.data.take(info.productWiseReportLimit)
 
             productReport += "[L]Name[R]Qty\n"
             productReport += "[L]-------------------------------\n"
@@ -474,7 +454,7 @@ class ReportsViewModel @Inject constructor(
 
         report += "[L]-------------------------------\n"
 
-        val addresses = _addressWiseData.value.reports.take(PRINT_ADDRESS_WISE_REPORT_LIMIT)
+        val addresses = _addressWiseData.value.reports.take(info.addressWiseReportLimit)
 
         if (addresses.isNotEmpty()){
             addresses.forEachIndexed { _, address ->
@@ -500,7 +480,7 @@ class ReportsViewModel @Inject constructor(
 
         report += "[L]-------------------------------\n"
 
-        val customers = _customerWiseData.value.reports.take(PRINT_CUSTOMER_WISE_REPORT_LIMIT)
+        val customers = _customerWiseData.value.reports.take(info.customerWiseReportLimit)
 
         if (customers.isNotEmpty()){
             customers.forEachIndexed { _, customerWiseReport ->

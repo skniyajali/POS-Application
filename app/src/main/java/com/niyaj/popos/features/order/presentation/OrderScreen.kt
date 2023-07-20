@@ -58,8 +58,8 @@ import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.features.destinations.CartScreenDestination
 import com.niyaj.popos.features.order.presentation.dine_in.DineInOrderScreen
 import com.niyaj.popos.features.order.presentation.dine_out.DineOutOrderScreen
+import com.niyaj.popos.features.order.presentation.print_order.OrderPrintViewModel
 import com.niyaj.popos.features.order.presentation.print_order.PrintEvent
-import com.niyaj.popos.features.order.presentation.print_order.PrintViewModel
 import com.niyaj.popos.utils.toBarDate
 import com.niyaj.popos.utils.toMilliSecond
 import com.ramcosta.composedestinations.annotation.Destination
@@ -83,10 +83,10 @@ import java.time.LocalDate
  * @param navController
  * @param scaffoldState
  * @param orderViewModel
- * @param printViewModel
+ * @param orderPrintViewModel
  * @param resultRecipient
  * @see OrderViewModel
- * @see PrintViewModel
+ * @see OrderPrintViewModel
  */
 @OptIn(
     ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class,
@@ -99,7 +99,7 @@ fun OrderScreen(
     navController : NavController,
     scaffoldState : ScaffoldState,
     orderViewModel : OrderViewModel = hiltViewModel(),
-    printViewModel : PrintViewModel = hiltViewModel(),
+    orderPrintViewModel : OrderPrintViewModel = hiltViewModel(),
     resultRecipient : ResultRecipient<AddEditCartOrderScreenDestination, String>
 ) {
     val context = LocalContext.current
@@ -164,11 +164,11 @@ fun OrderScreen(
         if (bluetoothPermissions.allPermissionsGranted) {
             if (bluetoothAdapter?.isEnabled == true) {
                 // Bluetooth is on print the receipt
-                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+                orderPrintViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
             } else {
                 // Bluetooth is off, ask user to turn it on
                 enableBluetoothContract.launch(enableBluetoothIntent)
-                printViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
+                orderPrintViewModel.onPrintEvent(PrintEvent.PrintOrder(it))
             }
         } else {
             bluetoothPermissions.launchMultiplePermissionRequest()
@@ -244,7 +244,7 @@ fun OrderScreen(
             navController = navController,
             scaffoldState = scaffoldState,
             showBackArrow = true,
-            showBottomBar = dineInOrders.isNotEmpty() || dineOutOrders.isNotEmpty(),
+            showBottomBar = false, // dineInOrders.isNotEmpty() || dineOutOrders.isNotEmpty(),
             onBackButtonClick = {
                 if (showSearchBar) {
                     orderViewModel.onSearchBarCloseAndClearClick()

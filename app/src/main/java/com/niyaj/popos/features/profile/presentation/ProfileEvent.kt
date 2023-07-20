@@ -29,4 +29,6 @@ sealed class ProfileEvent {
     object SetProfileInfo: ProfileEvent()
 
     object UpdateProfile : ProfileEvent()
+
+    object LogoutProfile: ProfileEvent()
 }

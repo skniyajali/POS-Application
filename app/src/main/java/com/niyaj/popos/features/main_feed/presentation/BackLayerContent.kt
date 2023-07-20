@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun BackLayerContent(
+    modifier : Modifier = Modifier,
     navController: NavController,
     viewModel: BackLayerViewModel = hiltViewModel(),
 ) {
@@ -65,7 +66,7 @@ fun BackLayerContent(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(SpaceSmall)
             .fillMaxWidth(),
         verticalArrangement = Arrangement.Center,

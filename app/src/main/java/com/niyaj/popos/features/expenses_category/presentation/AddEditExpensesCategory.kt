@@ -82,7 +82,7 @@ fun AddEditExpensesCategoryScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier,
                     text = expensesCategoryViewModel.addEditState.expensesCategoryName,
-                    hint = "Expenses Category Name",
+                    label = "Expenses Category Name",
                     leadingIcon = Icons.Default.Category,
                     error = expensesCategoryViewModel.addEditState.expensesCategoryNameError,
                     onValueChange = {

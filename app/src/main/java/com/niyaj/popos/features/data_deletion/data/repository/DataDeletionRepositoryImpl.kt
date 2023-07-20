@@ -104,7 +104,6 @@ class DataDeletionRepositoryImpl(
                         delete(Settings::class)
                     }
                 }.join()
-
             }
 
             Resource.Success(true)

@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +38,7 @@ fun ItemNotAvailable(
     text: String = "",
     buttonText: String = "",
     showImage: Boolean = true,
+    icon: ImageVector = Icons.Default.Add,
     image: Painter = painterResource(id = R.drawable.emptystate),
     onClick: () -> Unit = {},
 ) {
@@ -70,7 +72,7 @@ fun ItemNotAvailable(
                 shape= CutCornerShape(4.dp),
                 modifier = btnModifier.heightIn(ButtonSize)
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.add_icon) )
+                Icon(imageVector = icon, contentDescription = stringResource(id = R.string.add_icon) )
                 Spacer(modifier = Modifier.width(SpaceSmall))
                 Text(
                     text = buttonText.uppercase(),

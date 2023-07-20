@@ -167,7 +167,7 @@ fun AddEditAbsentScreen(
                                 textFieldSize = coordinates.size.toSize()
                             },
                         text = absentViewModel.absentState.employee.employeeName,
-                        hint = "Employee Name",
+                        label = "Employee Name",
                         leadingIcon = Icons.Default.Person4,
                         error = absentViewModel.absentState.employeeError,
                         errorTag = ABSENT_EMPLOYEE_NAME_ERROR,
@@ -217,7 +217,7 @@ fun AddEditAbsentScreen(
 
                 StandardOutlinedTextField(
                     text = absentViewModel.absentState.absentDate.toSalaryDate,
-                    hint = "Absent Date",
+                    label = "Absent Date",
                     leadingIcon = Icons.Default.CalendarToday,
                     error = absentViewModel.absentState.absentDateError,
                     onValueChange = {},
@@ -237,7 +237,7 @@ fun AddEditAbsentScreen(
                 StandardOutlinedTextField(
                     modifier = Modifier.testTag(ABSENT_REASON_FIELD),
                     text = absentViewModel.absentState.absentReason,
-                    hint = "Absent Reason",
+                    label = "Absent Reason",
                     leadingIcon = Icons.Default.EventNote,
                     onValueChange = {
                         absentViewModel.onEvent(AbsentEvent.AbsentReasonChanged(it))

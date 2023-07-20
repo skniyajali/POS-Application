@@ -1,5 +1,7 @@
 package com.niyaj.popos.features.qrcode_scanner.data
 
+import com.google.android.gms.common.moduleinstall.ModuleInstallClient
+import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import com.niyaj.popos.features.qrcode_scanner.domain.repository.QRCodeScanner
@@ -7,11 +9,28 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class QRCodeScannerImpl(
-    private val scanner: GmsBarcodeScanner
+    private val scanner: GmsBarcodeScanner,
+    private val playModule: ModuleInstallClient,
 ) : QRCodeScanner {
 
+    init {
+        playModule
+            .areModulesAvailable(scanner)
+            .addOnSuccessListener {
+                if (!it.areModulesAvailable()) {
+                    Timber.d("Downloading QR Code Module")
+                    // Modules are not present on the device install...
+//                    playModule.deferredInstall(scanner)
+                    val newRequest = ModuleInstallRequest.newBuilder().addApi(scanner).build()
+                    playModule.installModules(newRequest)
+                }
+            }.addOnFailureListener {
+                Timber.d("Failed to install QRCodeScanner Module")
+            }
+    }
 
     override fun startScanning() : Flow<String?> {
         return callbackFlow {

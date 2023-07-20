@@ -93,7 +93,8 @@ fun ImportExportHeader(
 @Composable
 fun ImportFooter(
     modifier : Modifier = Modifier,
-    text : String,
+    importButtonText : String,
+    noteText: String,
     importedDataIsEmpty : Boolean = false,
     showImportedBtn : Boolean = false,
     onClearImportedData : () -> Unit,
@@ -120,7 +121,7 @@ fun ImportFooter(
             Spacer(modifier = Modifier.height(SpaceSmall))
 
             StandardButtonFW(
-                text = text,
+                text = importButtonText,
                 icon = Icons.Default.SaveAlt,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = MaterialTheme.colors.secondaryVariant
@@ -130,6 +131,8 @@ fun ImportFooter(
             )
         }
     } else {
+        NoteCard(text = noteText)
+
         Spacer(modifier = Modifier.height(SpaceMedium))
 
         StandardButtonFW(

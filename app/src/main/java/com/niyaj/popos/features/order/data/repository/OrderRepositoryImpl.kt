@@ -3,6 +3,7 @@ package com.niyaj.popos.features.order.data.repository
 import com.niyaj.popos.features.cart.domain.model.CartProductItem
 import com.niyaj.popos.features.cart.domain.model.CartRealm
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
+import com.niyaj.popos.features.cart_order.domain.model.SelectedCartOrder
 import com.niyaj.popos.features.cart_order.domain.util.CartOrderType
 import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.charges.domain.model.Charges
@@ -11,8 +12,10 @@ import com.niyaj.popos.features.order.domain.model.DineInOrder
 import com.niyaj.popos.features.order.domain.model.DineOutOrder
 import com.niyaj.popos.features.order.domain.model.OrderDetail
 import com.niyaj.popos.features.order.domain.repository.OrderRepository
+import com.niyaj.popos.utils.Constants
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
+import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.UpdatedResults
@@ -73,6 +76,10 @@ class OrderRepositoryImpl(
                             it?.cartOrderStatus = newOrderStatus
                             it?.updatedAt = System.currentTimeMillis().toString()
                         }
+                    }
+
+                    if (orderStatus == OrderStatus.Processing.orderStatus) {
+                        addSelectedCartOrder(cartOrderId)
                     }
                 }
 
@@ -174,6 +181,40 @@ class OrderRepositoryImpl(
         return null
     }
 
+    private suspend fun addSelectedCartOrder(cartOrderId: String): Boolean {
+        return try {
+            withContext(ioDispatcher){
+                val order = realm.query<CartOrder>("cartOrderId == $0", cartOrderId).first().find()
+
+                if (order != null && order.cartOrderStatus != OrderStatus.Placed.orderStatus) {
+                    realm.write {
+                        val selectedCartOrder = this.query<SelectedCartOrder>("selectedCartId == $0",
+                            Constants.SELECTED_CART_ORDER_ID
+                        ).first().find()
+
+                        if (selectedCartOrder != null) {
+                            findLatest(order)?.let {
+                                selectedCartOrder.cartOrder = it
+                            }
+                        }else {
+                            val cartOrder = SelectedCartOrder()
+                            findLatest(order)?.let {
+                                cartOrder.cartOrder = it
+                            }
+
+                            this.copyToRealm(cartOrder, UpdatePolicy.ALL)
+                        }
+                    }
+                    true
+                }else {
+                    false
+                }
+            }
+        }catch (e: Exception) {
+            Timber.e(e)
+            false
+        }
+    }
 
     override suspend fun getDineInOrders(
         startDate : String,

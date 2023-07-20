@@ -169,7 +169,7 @@ fun AddEditEmployeeScreen(
                     StandardOutlinedTextField(
                         modifier = Modifier.testTag(EMPLOYEE_NAME_FIELD),
                         text = viewModel.addEditState.employeeName,
-                        hint = "Employee Name",
+                        label = "Employee Name",
                         errorTag = EMPLOYEE_NAME_ERROR,
                         leadingIcon = Icons.Default.Person4,
                         error = viewModel.addEditState.employeeNameError,
@@ -185,7 +185,7 @@ fun AddEditEmployeeScreen(
                     StandardOutlinedTextField(
                         modifier = Modifier.testTag(EMPLOYEE_PHONE_FIELD),
                         text = viewModel.addEditState.employeePhone,
-                        hint = "Employee Phone",
+                        label = "Employee Phone",
                         leadingIcon = Icons.Default.PhoneAndroid,
                         keyboardType = KeyboardType.Number,
                         error = viewModel.addEditState.employeePhoneError,
@@ -201,7 +201,7 @@ fun AddEditEmployeeScreen(
                     StandardOutlinedTextField(
                         modifier = Modifier.testTag(EMPLOYEE_MONTHLY_SALARY_FIELD),
                         text = viewModel.addEditState.employeeSalary,
-                        hint = "Employee Monthly Salary",
+                        label = "Employee Monthly Salary",
                         leadingIcon = Icons.Default.Money,
                         keyboardType = KeyboardType.Number,
                         error = viewModel.addEditState.employeeSalaryError,
@@ -228,7 +228,7 @@ fun AddEditEmployeeScreen(
                                     textFieldSize = coordinates.size.toSize()
                                 },
                             text = viewModel.addEditState.employeeSalaryType,
-                            hint = "Employee Salary Type",
+                            label = "Employee Salary Type",
                             leadingIcon = Icons.Default.MergeType,
                             onValueChange = {},
                             readOnly = true,
@@ -319,7 +319,7 @@ fun AddEditEmployeeScreen(
                                     textFieldSize = coordinates.size.toSize()
                                 },
                             text = viewModel.addEditState.employeeType,
-                            hint = "Employee Type",
+                            label = "Employee Type",
                             leadingIcon = Icons.Default.Accessibility,
                             onValueChange = {},
                             readOnly = true,
@@ -389,7 +389,7 @@ fun AddEditEmployeeScreen(
                                     textFieldSize = coordinates.size.toSize()
                                 },
                             text = viewModel.addEditState.employeePosition,
-                            hint = "Employee Position",
+                            label = "Employee Position",
                             readOnly = true,
                             leadingIcon = Icons.Default.Star,
                             error = viewModel.addEditState.employeePositionError,
@@ -453,7 +453,7 @@ fun AddEditEmployeeScreen(
                     Spacer(modifier = Modifier.height(SpaceSmall))
 
                     StandardOutlinedTextField(text = viewModel.addEditState.employeeJoinedDate.toSalaryDate,
-                        hint = "Employee Joined Date",
+                        label = "Employee Joined Date",
                         leadingIcon = Icons.Default.CalendarMonth,
                         error = null,
                         onValueChange = {},

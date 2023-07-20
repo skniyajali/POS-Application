@@ -1,5 +1,5 @@
 [versions]
-androidGradlePlugin = '8.0.1'
+androidGradlePlugin = '8.0.2'
 kotlin = '1.8.10'
 dagger-hilt-version = "2.46.1"
 hilt-version = '1.0.0'
@@ -53,6 +53,7 @@ play-integrity = '1.1.0'
 play-update = "2.1.0"
 coil-version = "2.4.0"
 play-scanner = "16.0.0"
+play-service = "18.2.0"
 
 # AndroidX camera
 camera-version = "1.2.3"
@@ -66,8 +67,8 @@ namespace = "com.niyaj.popos"
 minSdk = "26"
 compileSdk = "33"
 targetSdk = "33"
-versionCode = "3"
-versionName = "1.0.0"
+versionCode = "4"
+versionName = "1.0.1"
 
 [libraries]
 # Androidx Core
@@ -238,6 +239,7 @@ zxing-android-embedded = { group = "com.journeyapps", name = "zxing-android-embe
 
 # Play Gms Scanner
 play-gms-scanner = { group = "com.google.android.gms", name = "play-services-code-scanner", version.ref = "play-scanner"}
+play-service = {group = "com.google.android.gms", name = "play-services-base", version.ref = "play-service"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
