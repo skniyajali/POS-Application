@@ -35,8 +35,8 @@ class PoposApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
-    override fun getWorkManagerConfiguration()=
-        Configuration.Builder()
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
             .setMinimumLoggingLevel(android.util.Log.DEBUG)
             .setWorkerFactory(workerFactory)
             .build()
@@ -97,18 +97,3 @@ class PoposApplication : Application(), Configuration.Provider {
         }
     }
 }
-
-/*
-
- A cutting-edge POS application designed specifically for restaurants!
- This innovative software streamlines the ordering process, allowing for multiple types of orders,
- whether it be dine-in or take-out. Not only that, but it also assists in managing daily expenses,
-  generating bills, and keeping track of employee and their salaries.
-  With its advanced reporting capabilities, this application provides
-  valuable insights into different types of sales,
-  giving restaurant owners the tools they need to make informed decisions and drive success.
- */
-
-/*
-    Name Cheeap - RppQZ4Ms2q
- */

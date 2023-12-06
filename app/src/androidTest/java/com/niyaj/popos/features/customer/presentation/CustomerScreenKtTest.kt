@@ -20,7 +20,7 @@ import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
 import com.niyaj.popos.features.MainActivity
 import com.niyaj.popos.features.common.di.RealmModule
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
-import com.niyaj.popos.features.common.util.Navigation
+import com.niyaj.popos.features.common.util.PoposNavigation
 import com.niyaj.popos.features.customer.domain.model.Customer
 import com.niyaj.popos.features.customer.domain.util.CustomerTestTags.ADD_EDIT_CUSTOMER_BUTTON
 import com.niyaj.popos.features.customer.domain.util.CustomerTestTags.CUSTOMER_EMAIL_ERROR
@@ -86,7 +86,7 @@ class CustomerScreenKtTest {
                 val bottomSheetNavigator = rememberBottomSheetNavigator()
                 navController.navigatorProvider += bottomSheetNavigator
 
-                Navigation(
+                PoposNavigation(
                     scaffoldState = scaffoldState,
                     navController = navController,
                     bottomSheetNavigator = bottomSheetNavigator,

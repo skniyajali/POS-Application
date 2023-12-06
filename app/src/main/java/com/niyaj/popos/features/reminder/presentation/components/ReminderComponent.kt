@@ -36,13 +36,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.material.placeholder
-import com.google.accompanist.placeholder.material.shimmer
 import com.niyaj.popos.features.common.ui.theme.ButtonSize
 import com.niyaj.popos.features.common.ui.theme.IconSizeMedium
-import com.niyaj.popos.features.common.ui.theme.LightColor16
-import com.niyaj.popos.features.common.ui.theme.LightColor9
 import com.niyaj.popos.features.common.ui.theme.Pewter
 import com.niyaj.popos.features.common.ui.theme.PoposPink300
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
@@ -65,10 +60,9 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 
 @Composable
 fun InfoCard(
-    modifier : Modifier = Modifier,
-    text : String,
-    isLoading : Boolean = false,
-    backgroundColor : Color = Pewter,
+    modifier: Modifier = Modifier,
+    text: String,
+    backgroundColor: Color = Pewter,
 ) {
     Card(
         modifier = modifier
@@ -88,11 +82,7 @@ fun InfoCard(
                 tint = Teal200,
                 modifier = Modifier
                     .size(IconSizeMedium)
-                    .placeholder(
-                        visible = isLoading,
-                        highlight = PlaceholderHighlight.shimmer(),
-                        color = LightColor9
-                    )
+
             )
 
             Spacer(modifier = Modifier.width(SpaceMini))
@@ -101,11 +91,6 @@ fun InfoCard(
                 text = text,
                 style = MaterialTheme.typography.body1,
                 maxLines = 2,
-                modifier = Modifier.placeholder(
-                    visible = isLoading,
-                    highlight = PlaceholderHighlight.shimmer(),
-                    color = LightColor16,
-                ),
             )
         }
     }
@@ -119,7 +104,7 @@ fun EmployeeSelectionHeader(
     checked: Boolean = false,
     onSelectDate: (String) -> Unit,
     onCheckedChange: () -> Unit,
-    backgroundColor : Color = PoposPink300,
+    backgroundColor: Color = PoposPink300,
 ) {
     val dialogState = rememberMaterialDialogState()
 
@@ -132,7 +117,7 @@ fun EmployeeSelectionHeader(
     ) {
         datepicker(
             allowedDateValidator = { date ->
-                date.toMilliSecond in getCalculatedStartDate("-7") .. getEndTime
+                date.toMilliSecond in getCalculatedStartDate("-7")..getEndTime
             }
         ) { date ->
             onSelectDate(date.toMilliSecond)
@@ -187,8 +172,8 @@ fun EmployeeSelectionHeader(
 
 @Composable
 fun EmployeeSelectionBodyRow(
-    modifier : Modifier = Modifier,
-    primaryText : String,
+    modifier: Modifier = Modifier,
+    primaryText: String,
     secText: String,
     onSelectEmployee: () -> Unit = {},
     isSelected: Boolean = false,
@@ -242,7 +227,7 @@ fun EmployeeSelectionBodyRow(
         )
 
         paymentStatus?.let {
-            if (it != PaymentStatus.NotPaid){
+            if (it != PaymentStatus.NotPaid) {
                 PaymentStatusChip(paymentStatus = it)
             }
         }
@@ -251,7 +236,7 @@ fun EmployeeSelectionBodyRow(
 
 @Composable
 fun EmployeeSelectionFooter(
-    modifier : Modifier = Modifier,
+    modifier: Modifier = Modifier,
     primaryText: String,
     primaryIcon: ImageVector? = Icons.Default.EventAvailable,
     secondaryText: String = "Cancel, Do It Later",

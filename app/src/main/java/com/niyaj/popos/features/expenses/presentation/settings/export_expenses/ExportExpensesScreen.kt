@@ -46,12 +46,12 @@ import com.niyaj.popos.utils.Constants.ImportExportType.EXPORT
 import com.niyaj.popos.utils.toPrettyDate
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
-import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalPermissionsApi::class)
-@Destination(style = DestinationStyle.BottomSheet::class)
+@Destination(style = DestinationStyleBottomSheet::class)
 @Composable
 fun ExportExpensesScreen(
     navController : NavController,

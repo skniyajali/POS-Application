@@ -95,12 +95,12 @@ import java.time.LocalDate
 @Destination
 @Composable
 fun OrderScreen(
-    selectedDate : String = "",
-    navController : NavController,
-    scaffoldState : ScaffoldState,
-    orderViewModel : OrderViewModel = hiltViewModel(),
-    orderPrintViewModel : OrderPrintViewModel = hiltViewModel(),
-    resultRecipient : ResultRecipient<AddEditCartOrderScreenDestination, String>
+    selectedDate: String = "",
+    navController: NavController,
+    scaffoldState: ScaffoldState,
+    orderViewModel: OrderViewModel = hiltViewModel(),
+    orderPrintViewModel: OrderPrintViewModel = hiltViewModel(),
+    resultRecipient: ResultRecipient<AddEditCartOrderScreenDestination, String>
 ) {
     val context = LocalContext.current
 
@@ -141,11 +141,11 @@ fun OrderScreen(
         context.getSystemService(BluetoothManager::class.java)
     }
 
-    val bluetoothAdapter : BluetoothAdapter? = remember {
+    val bluetoothAdapter: BluetoothAdapter? = remember {
         bluetoothManager.adapter
     }
 
-    val printDeliveryReport : () -> Unit = {
+    val printDeliveryReport: () -> Unit = {
         if (bluetoothPermissions.allPermissionsGranted) {
             if (bluetoothAdapter?.isEnabled == true) {
                 // Bluetooth is on print the receipt
@@ -160,7 +160,7 @@ fun OrderScreen(
         }
     }
 
-    val printOrder : (String) -> Unit = {
+    val printOrder: (String) -> Unit = {
         if (bluetoothPermissions.allPermissionsGranted) {
             if (bluetoothAdapter?.isEnabled == true) {
                 // Bluetooth is on print the receipt
@@ -175,20 +175,20 @@ fun OrderScreen(
         }
     }
 
-    val pagerState = rememberPagerState(0)
+    val pagerState = rememberPagerState { 2 }
     val dialogState = rememberMaterialDialogState()
     val deleteOrderState = rememberMaterialDialogState()
 
     val showSearchBar by orderViewModel.toggledSearchBar.collectAsStateWithLifecycle()
 
     val dineInOrders = orderViewModel.dineInOrders.collectAsStateWithLifecycle().value.dineInOrders
-    val dineInLoading : Boolean =
+    val dineInLoading: Boolean =
         orderViewModel.dineInOrders.collectAsStateWithLifecycle().value.isLoading
     val dineInError = orderViewModel.dineInOrders.collectAsStateWithLifecycle().value.error
 
     val dineOutOrders =
         orderViewModel.dineOutOrders.collectAsStateWithLifecycle().value.dineOutOrders
-    val dineOutLoading : Boolean =
+    val dineOutLoading: Boolean =
         orderViewModel.dineOutOrders.collectAsStateWithLifecycle().value.isLoading
     val dineOutError = orderViewModel.dineOutOrders.collectAsStateWithLifecycle().value.error
 

@@ -76,7 +76,6 @@ fun FrontLayerContent(
                     lazyListState = categoryLazyListState,
                     categories = categories,
                     selectedCategory = selectedCategory,
-                    isLoading = categoriesIsLoading || productsIsLoading,
                     onCategoryClick = onCategoryClick,
                     onCategoryFilterClick = onCategoryFilterClick,
                 )

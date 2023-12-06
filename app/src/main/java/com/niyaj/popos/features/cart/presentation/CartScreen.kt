@@ -47,7 +47,7 @@ fun CartScreen(
     scaffoldState: ScaffoldState,
     resultRecipient: ResultRecipient<AddEditCartOrderScreenDestination, String>
 ) {
-    val pagerState = rememberPagerState(0)
+    val pagerState = rememberPagerState { 2 }
 
     SentryTraced(tag = CartScreenDestination.route) {
         StandardScaffold(
@@ -60,7 +60,7 @@ fun CartScreen(
                     onClick = {
                         navController.navigate(OrderScreenDestination())
                     },
-                ){
+                ) {
                     Icon(
                         imageVector = Icons.Default.Inventory,
                         contentDescription = "go to order screen",
@@ -71,7 +71,7 @@ fun CartScreen(
             title = {
                 Text(text = "My Cart")
             },
-        ){
+        ) {
             val tabs = listOf(
                 CartTabItem.DineOutItem {
                     DineOutScreen(

@@ -3,11 +3,11 @@ package com.baselineprofile.baselineprofile
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.benchmark.macro.junit4.BaselineProfileRule
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
 
 /**
  * This test class generates a basic startup baseline profile for the target package.
@@ -28,7 +28,7 @@ import org.junit.runner.RunWith
  *
  * After you run the generator, you can verify the improvements running the [StartupBenchmarks] benchmark.
  **/
-@RunWith(AndroidJUnit4::class)
+@RunWith(JUnit4::class)
 @RequiresApi(Build.VERSION_CODES.P)
 @LargeTest
 class BaselineProfileGenerator {

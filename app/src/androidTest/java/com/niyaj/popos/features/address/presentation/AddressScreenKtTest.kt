@@ -27,7 +27,7 @@ import com.niyaj.popos.features.address.domain.util.AddressTestTags.ADDRESS_SHOR
 import com.niyaj.popos.features.address.domain.util.AddressTestTags.CREATE_UPDATE_ADDRESS_BUTTON
 import com.niyaj.popos.features.common.di.RealmModule
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
-import com.niyaj.popos.features.common.util.Navigation
+import com.niyaj.popos.features.common.util.PoposNavigation
 import com.niyaj.popos.features.destinations.AddressScreenDestination
 import com.niyaj.popos.utils.Constants.NEGATIVE_BUTTON
 import com.niyaj.popos.utils.Constants.POSITIVE_BUTTON
@@ -74,7 +74,7 @@ class AddressScreenKtTest {
                 val bottomSheetNavigator = rememberBottomSheetNavigator()
                 navController.navigatorProvider += bottomSheetNavigator
 
-                Navigation(
+                PoposNavigation(
                     scaffoldState = scaffoldState,
                     navController = navController,
                     bottomSheetNavigator = bottomSheetNavigator,

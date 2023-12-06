@@ -51,7 +51,7 @@ import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.FILTER_ADD
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.NO_ITEMS_IN_ADDON
 import com.niyaj.popos.features.common.di.RealmModule
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
-import com.niyaj.popos.features.common.util.Navigation
+import com.niyaj.popos.features.common.util.PoposNavigation
 import com.niyaj.popos.features.destinations.AddOnItemScreenDestination
 import com.niyaj.popos.utils.Constants.NEGATIVE_BUTTON
 import com.niyaj.popos.utils.Constants.POSITIVE_BUTTON
@@ -116,7 +116,7 @@ class AddOnItemScreenKtTest {
                 val bottomSheetNavigator = rememberBottomSheetNavigator()
                 navController.navigatorProvider += bottomSheetNavigator
 
-                Navigation(
+                PoposNavigation(
                     scaffoldState = scaffoldState,
                     navController = navController,
                     bottomSheetNavigator = bottomSheetNavigator,

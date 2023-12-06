@@ -95,9 +95,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProductDetailsScreen(
     productId: String,
-    navController : NavController = rememberNavController(),
-    scaffoldState : ScaffoldState = rememberScaffoldState(),
-    viewModel : ProductDetailsViewModel = hiltViewModel()
+    navController: NavController = rememberNavController(),
+    scaffoldState: ScaffoldState = rememberScaffoldState(),
+    viewModel: ProductDetailsViewModel = hiltViewModel()
 ) {
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -158,7 +158,7 @@ fun ProductDetailsScreen(
                             navController.navigate(AddEditProductScreenDestination(it))
                         }
                     )
-                    
+
                     Spacer(modifier = Modifier.height(SpaceSmall))
                 }
 
@@ -197,7 +197,7 @@ fun ProductTotalOrdersDetails(
     ) {
         if (isLoading) {
             LoadingIndicator()
-        }else {
+        } else {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -250,7 +250,10 @@ fun ProductTotalOrdersDetails(
                                 if (endDate.isNotEmpty()) {
                                     if (!details.datePeriod.isSameDay()) {
                                         Spacer(modifier = Modifier.width(SpaceMini))
-                                        Icon(imageVector = Icons.Default.ArrowRightAlt, contentDescription = "DatePeriod")
+                                        Icon(
+                                            imageVector = Icons.Default.ArrowRightAlt,
+                                            contentDescription = "DatePeriod"
+                                        )
                                         Spacer(modifier = Modifier.width(SpaceMini))
                                         Text(
                                             text = endDate.toBarDate,
@@ -271,7 +274,7 @@ fun ProductTotalOrdersDetails(
                     modifier = Modifier
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Card(
                         backgroundColor = Cream,
@@ -548,7 +551,8 @@ fun ProductOrderDetails(
 
                         state.productOrders.isNotEmpty() && state.productPrice != 0 -> {
                             val productOrders = state.productOrders
-                            val groupedByDate = productOrders.groupBy { it.orderedDate.toPrettyDate() }
+                            val groupedByDate =
+                                productOrders.groupBy { it.orderedDate.toPrettyDate() }
 
                             Column {
                                 groupedByDate.forEach { (date, orders) ->
@@ -586,7 +590,7 @@ fun ProductOrderDetails(
                                                     .align(Alignment.Center)
                                             )
                                         }
-                                        
+
                                         Spacer(modifier = Modifier.height(SpaceMini))
 
                                         grpOrders.forEachIndexed { index, order ->
@@ -644,7 +648,8 @@ fun ProductOrderDetails(
 
                         else -> {
                             ItemNotAvailable(
-                                text = state.hasError ?: "Have not placed any order on this product."
+                                text = state.hasError
+                                    ?: "Have not placed any order on this product."
                             )
                         }
                     }

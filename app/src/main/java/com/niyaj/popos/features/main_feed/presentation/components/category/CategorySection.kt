@@ -16,11 +16,10 @@ fun CategorySection(
     lazyListState: LazyListState,
     categories: List<Category> = emptyList(),
     selectedCategory: String = "",
-    isLoading: Boolean = false,
     onCategoryFilterClick: () -> Unit = {},
     onCategoryClick: (String) -> Unit = {},
 ) {
-    if(categories.isNotEmpty()){
+    if (categories.isNotEmpty()) {
         TitleWithIcon(
             text = "Categories",
             icon = Icons.Default.Category,
@@ -35,7 +34,6 @@ fun CategorySection(
             categories = categories,
             lazyListState = lazyListState,
             selectedCategory = selectedCategory,
-            isLoading = isLoading,
             onClickCategory = {
                 onCategoryClick(it)
             },

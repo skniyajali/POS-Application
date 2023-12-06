@@ -1,9 +1,6 @@
 package com.niyaj.popos.features.common.util
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ScaffoldState
 import androidx.compose.runtime.Composable
@@ -34,7 +31,7 @@ import com.ramcosta.composedestinations.spec.Route
  */
 @OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun Navigation(
+fun PoposNavigation(
     modifier: Modifier = Modifier,
     scaffoldState: ScaffoldState,
     navController: NavHostController,
@@ -49,10 +46,7 @@ fun Navigation(
         rootDefaultAnimations = RootNavGraphDefaultAnimations.ACCOMPANIST_FADING,
         // all other nav graphs not specified in this map, will get their animations from the `rootDefaultAnimations` above.
         defaultAnimationsForNestedNavGraph = mapOf(
-            NavGraphs.root to NestedNavGraphDefaultAnimations(
-                enterTransition = { fadeIn(animationSpec = tween(1000)) },
-                exitTransition = { fadeOut(animationSpec = tween(1000)) }
-            )
+            NavGraphs.root to NestedNavGraphDefaultAnimations.ACCOMPANIST_FADING
         )
     )
 

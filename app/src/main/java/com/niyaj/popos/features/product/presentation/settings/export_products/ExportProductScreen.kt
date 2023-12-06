@@ -40,7 +40,7 @@ import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.product.presentation.components.ProductBody
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
-import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import io.sentry.compose.SentryTraced
 import kotlinx.coroutines.launch
 
@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
  * Export products to file
  */
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalPermissionsApi::class)
-@Destination(style = DestinationStyle.BottomSheet::class)
+@Destination(style = DestinationStyleBottomSheet::class)
 @Composable
 fun ExportProductScreen(
     navController : NavController = rememberNavController(),

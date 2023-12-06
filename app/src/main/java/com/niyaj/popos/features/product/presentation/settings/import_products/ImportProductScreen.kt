@@ -36,7 +36,7 @@ import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.product.presentation.components.ProductBody
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
-import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import io.sentry.compose.SentryTraced
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
  * Import products from file to database
  */
 @OptIn(ExperimentalComposeUiApi::class)
-@Destination(style = DestinationStyle.BottomSheet::class)
+@Destination(style = DestinationStyleBottomSheet::class)
 @Composable
 fun ImportProductScreen(
     navController : NavController = rememberNavController(),

@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -151,7 +150,6 @@ fun QuickLinks(
         modifier = modifier
             .fillMaxWidth()
             .padding(SpaceSmall),
-        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
         maxItemsInEachRow = 2,
     ) {

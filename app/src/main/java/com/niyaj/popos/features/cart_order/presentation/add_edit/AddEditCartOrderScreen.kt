@@ -71,6 +71,7 @@ import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import io.sentry.compose.SentryTraced
 
 /**
@@ -83,7 +84,7 @@ import io.sentry.compose.SentryTraced
  * @see AddEditCartOrderViewModel
  */
 @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
-@Destination(style = DestinationStyle.BottomSheet::class)
+@Destination(style = DestinationStyleBottomSheet::class)
 @Composable
 fun AddEditCartOrderScreen(
     cartOrderId: String? = "",
