@@ -4,6 +4,8 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -63,7 +65,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.niyaj.popos.R
@@ -847,7 +848,7 @@ fun EmployeePayment(
 /**
  *
  */
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun AbsentDetails(
     absentState: MonthlyAbsentReportState,
@@ -939,7 +940,6 @@ fun AbsentDetails(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .padding(SpaceSmall),
-                                            crossAxisSpacing = SpaceMini,
                                         ) {
                                             absentReport.absent.forEach{  attendance ->
                                                 Card(

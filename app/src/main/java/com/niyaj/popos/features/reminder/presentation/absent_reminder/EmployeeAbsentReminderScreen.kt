@@ -164,10 +164,7 @@ fun EmployeeAbsentReminderScreen(
                                 enter = fadeIn(),
                                 exit = fadeOut()
                             ){
-                                InfoCard(
-                                    text = Constants.ABSENT_REMINDER_NOTE,
-                                    isLoading = isLoading
-                                )
+                                InfoCard(text = Constants.ABSENT_REMINDER_NOTE)
                             }
 
                             EmployeeSelectionFooter(

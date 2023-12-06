@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Tabs(tabs : List<CartTabItem>, pagerState : PagerState) {
+fun Tabs(tabs: List<CartTabItem>, pagerState: PagerState) {
     val scope = rememberCoroutineScope()
 
     // OR ScrollableTabRow()
@@ -36,7 +36,7 @@ fun Tabs(tabs : List<CartTabItem>, pagerState : PagerState) {
         // Our selected tab is our current page
         selectedTabIndex = pagerState.currentPage,
         // Override the indicator, using the provided pagerTabIndicatorOffset modifier
-        indicator = { tabPositions : List<TabPosition> ->
+        indicator = { tabPositions: List<TabPosition> ->
             FancyAnimatedIndicator(tabPositions, pagerState)
         }
     ) {
@@ -61,8 +61,8 @@ fun Tabs(tabs : List<CartTabItem>, pagerState : PagerState) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FancyAnimatedIndicator(
-    tabPositions : List<TabPosition>,
-    pagerState : PagerState
+    tabPositions: List<TabPosition>,
+    pagerState: PagerState
 ) {
     val colors = listOf(Color.Yellow, Color.Red, Color.Green)
 
@@ -124,11 +124,12 @@ fun FancyAnimatedIndicator(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TabsContent(tabs : List<CartTabItem>, pagerState : PagerState) {
+fun TabsContent(tabs: List<CartTabItem>, pagerState: PagerState) {
     HorizontalPager(
-        pageCount = tabs.size,
-        state = pagerState
-    ) { page ->
-        tabs[page].screen()
-    }
+        modifier = Modifier,
+        state = pagerState,
+        pageContent = { page ->
+            tabs[page].screen()
+        }
+    )
 }

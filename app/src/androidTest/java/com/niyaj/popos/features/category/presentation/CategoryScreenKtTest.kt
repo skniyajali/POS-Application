@@ -24,7 +24,7 @@ import com.niyaj.popos.features.category.domain.util.CategoryTestTags.CATEGORY_N
 import com.niyaj.popos.features.category.domain.util.CategoryTestTags.CATEGORY_NAME_FIELD
 import com.niyaj.popos.features.common.di.RealmModule
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
-import com.niyaj.popos.features.common.util.Navigation
+import com.niyaj.popos.features.common.util.PoposNavigation
 import com.niyaj.popos.features.destinations.CategoryScreenDestination
 import com.niyaj.popos.utils.Constants.NEGATIVE_BUTTON
 import com.niyaj.popos.utils.Constants.POSITIVE_BUTTON
@@ -71,7 +71,7 @@ class CategoryScreenKtTest {
                 val bottomSheetNavigator = rememberBottomSheetNavigator()
                 navController.navigatorProvider += bottomSheetNavigator
 
-                Navigation(
+                PoposNavigation(
                     scaffoldState = scaffoldState,
                     navController = navController,
                     bottomSheetNavigator = bottomSheetNavigator,

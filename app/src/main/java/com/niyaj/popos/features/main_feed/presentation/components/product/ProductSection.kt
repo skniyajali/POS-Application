@@ -38,12 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.material.fade
-import com.google.accompanist.placeholder.material.placeholder
-import com.google.accompanist.placeholder.material.shimmer
 import com.niyaj.popos.R
-import com.niyaj.popos.features.common.ui.theme.Cream
 import com.niyaj.popos.features.common.ui.theme.IconSizeMedium
 import com.niyaj.popos.features.common.ui.theme.PoposPink100
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeSmall
@@ -58,7 +53,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ProductSection(
-    modifier : Modifier = Modifier,
+    modifier: Modifier = Modifier,
     lazyListState: LazyListState,
     products: List<ProductWithFlowQuantity>,
     isLoading: Boolean = false,
@@ -71,7 +66,7 @@ fun ProductSection(
 
     if (isLoading) {
         LoadingIndicator()
-    }else if(products.isNotEmpty()){
+    } else if (products.isNotEmpty()) {
         TitleWithIcon(
             text = "Products",
             icon = Icons.Default.Dns,
@@ -99,7 +94,7 @@ fun ProductSection(
                 onProductRightClick(product)
             },
         )
-    }else {
+    } else {
         ItemNotAvailable(
             text = stringResource(id = R.string.main_feed_empty_product),
             image = painterResource(id = R.drawable.nothinghere),
@@ -111,14 +106,13 @@ fun ProductSection(
 
 @Composable
 fun ProductItems(
-    modifier : Modifier = Modifier,
-    lazyListState : LazyListState,
+    modifier: Modifier = Modifier,
+    lazyListState: LazyListState,
     cartProducts: List<ProductWithFlowQuantity>,
-    isLoading: Boolean = false,
     backgroundColor: Color = MaterialTheme.colors.surface,
     onProductLeftClick: (String) -> Unit = {},
     onProductRightClick: (String) -> Unit = {},
-){
+) {
     LazyColumn(
         state = lazyListState,
     ) {
@@ -127,14 +121,14 @@ fun ProductItems(
             key = { _, product ->
                 product.productId
             }
-        ){ index, product ->
+        ) { index, product ->
             val quantity = product.quantity.collectAsStateWithLifecycle(0).value
 
             Card(
                 modifier = modifier
                     .fillMaxWidth(),
                 elevation = 1.dp,
-                shape =  RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(4.dp),
                 backgroundColor = backgroundColor,
             ) {
                 Row(
@@ -147,11 +141,6 @@ fun ProductItems(
                     Box(
                         modifier = Modifier
                             .weight(1.5f)
-                            .placeholder(
-                                visible = isLoading,
-                                highlight = PlaceholderHighlight.shimmer(),
-                                color = Cream,
-                            )
                             .clickable(
                                 enabled = quantity != 0
                             ) {
@@ -163,17 +152,13 @@ fun ProductItems(
                                 .fillMaxSize(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
-                        ){
+                        ) {
                             Column(
                                 modifier = Modifier
-                                    .placeholder(
-                                        visible = isLoading,
-                                        highlight = PlaceholderHighlight.fade(),
-                                    )
                                     .padding(SpaceSmall),
                                 horizontalAlignment = Alignment.Start,
                                 verticalArrangement = Arrangement.Center
-                            ){
+                            ) {
                                 Text(
                                     text = product.productName,
                                     style = MaterialTheme.typography.body1,
@@ -190,7 +175,7 @@ fun ProductItems(
                                 )
                             }
 
-                            if(quantity != 0) {
+                            if (quantity != 0) {
                                 Icon(
                                     imageVector = Icons.Default.Remove,
                                     contentDescription = null,
@@ -218,7 +203,7 @@ fun ProductItems(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if(quantity != 0) {
+                        if (quantity != 0) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = null,
@@ -232,7 +217,7 @@ fun ProductItems(
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colors.secondaryVariant
                             )
-                        }else{
+                        } else {
                             Icon(
                                 imageVector = Icons.Default.AddShoppingCart,
                                 contentDescription = null,
@@ -246,7 +231,7 @@ fun ProductItems(
 
             Spacer(modifier = Modifier.height(SpaceSmall))
 
-            if(index == cartProducts.size - 1) {
+            if (index == cartProducts.size - 1) {
                 Spacer(modifier = Modifier.height(ProfilePictureSizeSmall))
             }
         }

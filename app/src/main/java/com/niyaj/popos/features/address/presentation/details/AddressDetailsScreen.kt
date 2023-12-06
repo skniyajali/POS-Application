@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,9 +52,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
-import com.google.accompanist.flowlayout.FlowMainAxisAlignment
-import com.google.accompanist.flowlayout.FlowRow
 import com.niyaj.popos.features.address.domain.model.Address
 import com.niyaj.popos.features.address.domain.model.AddressWiseOrder
 import com.niyaj.popos.features.common.ui.theme.LightColor21
@@ -378,7 +377,7 @@ fun AddressDetailsCard(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun RecentOrders(
     recentOrders: Map<String, List<AddressWiseOrder>>,
@@ -489,9 +488,7 @@ fun RecentOrders(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .padding(SpaceSmall),
-                                            crossAxisSpacing = SpaceMini,
-                                            mainAxisAlignment = FlowMainAxisAlignment.Center,
-                                            crossAxisAlignment = FlowCrossAxisAlignment.Center
+                                            horizontalArrangement = Arrangement.Center
                                         ) {
                                             u.forEach{  order ->
                                                 Card(

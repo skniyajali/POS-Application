@@ -28,7 +28,7 @@ import com.niyaj.popos.features.charges.domain.util.ChargesTestTags.CHARGES_NAME
 import com.niyaj.popos.features.charges.domain.util.ChargesTestTags.CHARGES_NAME_FIELD
 import com.niyaj.popos.features.common.di.RealmModule
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
-import com.niyaj.popos.features.common.util.Navigation
+import com.niyaj.popos.features.common.util.PoposNavigation
 import com.niyaj.popos.features.destinations.ChargesScreenDestination
 import com.niyaj.popos.utils.Constants.NEGATIVE_BUTTON
 import com.niyaj.popos.utils.Constants.POSITIVE_BUTTON
@@ -85,7 +85,7 @@ class ChargesScreenKtTest {
                 val bottomSheetNavigator = rememberBottomSheetNavigator()
                 navController.navigatorProvider += bottomSheetNavigator
 
-                Navigation(
+                PoposNavigation(
                     scaffoldState = scaffoldState,
                     navController = navController,
                     bottomSheetNavigator = bottomSheetNavigator,

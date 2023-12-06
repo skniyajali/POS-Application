@@ -8,7 +8,6 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.work.WorkInfo
@@ -17,10 +16,11 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.niyaj.popos.features.common.util.Navigation
+import com.niyaj.popos.features.common.util.PoposNavigation
 import com.niyaj.popos.features.destinations.LoginScreenDestination
 import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import io.sentry.compose.withSentryObservableEffect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -52,12 +52,8 @@ fun PoposApp(
     val scope = rememberCoroutineScope()
     val systemUiController = rememberSystemUiController()
 
-    val deletionState = workManager
-        .getWorkInfoByIdLiveData(dataDeletionId)
-        .observeAsState()
-
-    LaunchedEffect(key1 = deletionState) {
-        deletionState.value?.let { workInfo ->
+    LaunchedEffect(key1 = true) {
+        workManager.getWorkInfoByIdFlow(dataDeletionId).collectLatest { workInfo ->
             when (workInfo.state) {
                 WorkInfo.State.FAILED -> {}
                 WorkInfo.State.RUNNING -> {}
@@ -66,12 +62,8 @@ fun PoposApp(
         }
     }
 
-    val reportState = workManager
-        .getWorkInfoByIdLiveData(generateReportId)
-        .observeAsState()
-
-    LaunchedEffect(key1 = reportState) {
-        reportState.value?.let { workInfo ->
+    LaunchedEffect(key1 = true) {
+        workManager.getWorkInfoByIdFlow(generateReportId).collectLatest { workInfo ->
             when (workInfo.state) {
                 WorkInfo.State.FAILED -> {
                     scope.launch {
@@ -80,6 +72,7 @@ fun PoposApp(
                         )
                     }
                 }
+
                 WorkInfo.State.RUNNING -> {
                     scope.launch {
                         scaffoldState.snackbarHostState.showSnackbar(
@@ -87,57 +80,11 @@ fun PoposApp(
                         )
                     }
                 }
+
                 else -> {}
             }
         }
     }
-
-//    val absentReminderWorker = workManager
-//        .getWorkInfoByIdLiveData(absentReminderId)
-//        .observeAsState().value
-//
-//    val dailyReminderWorker = workManager
-//        .getWorkInfoByIdLiveData(dailySalaryReminderId)
-//        .observeAsState().value
-//
-//    LaunchedEffect(key1 = Unit, key2 = absentReminderWorker) {
-//        if (absentReminderWorker != null) {
-//            when(absentReminderWorker.state) {
-//                WorkInfo.State.ENQUEUED -> {
-//                    Timber.d("Employee Absent Reminder Enqueued")
-//                }
-//                WorkInfo.State.RUNNING -> {
-//                    val reminder = employeeAbsentReminder.reminder.value
-//
-//                    if (!reminder.isCompleted && currentTime in reminder.reminderStartTime .. reminder.reminderEndTime) {
-//                        navController.navigate(EmployeeAbsentReminderScreenDestination)
-//                    }else {
-//                        workManager.cancelWorkById(employeeAbsentReminder.absentWorker.id)
-//                    }
-//                }
-//                else -> {}
-//            }
-//        }
-//    }
-//
-//    LaunchedEffect(key1 = Unit, key2 = dailyReminderWorker) {
-//        if (dailyReminderWorker != null) {
-//            when(dailyReminderWorker.state) {
-//                WorkInfo.State.ENQUEUED -> {
-//                    Timber.d("Daily Salary Reminder Enqueued")
-//                }
-//                WorkInfo.State.RUNNING -> {
-//                    Timber.d("Daily Salary Reminder Running")
-//                    val reminder = dailySalaryReminderWorkerViewModel.salaryReminder.value
-//
-//                    if (!reminder.isCompleted && currentTime in reminder.reminderStartTime .. reminder.reminderEndTime) {
-//                        navController.navigate(EmployeeDailySalaryReminderScreenDestination)
-//                    }
-//                }
-//                else -> {}
-//            }
-//        }
-//    }
 
     systemUiController.setStatusBarColor(
         color = MaterialTheme.colors.primary,
@@ -146,7 +93,7 @@ fun PoposApp(
 
     val destination = if (isLoggedIn) MainFeedScreenDestination else LoginScreenDestination
 
-    Navigation(
+    PoposNavigation(
         scaffoldState = scaffoldState,
         navController = navController,
         bottomSheetNavigator = bottomSheetNavigator,

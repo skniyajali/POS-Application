@@ -2,6 +2,8 @@ package com.niyaj.popos.features.main_feed.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,12 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
-import com.google.accompanist.flowlayout.FlowMainAxisAlignment
-import com.google.accompanist.flowlayout.FlowRow
-import com.google.accompanist.flowlayout.SizeMode
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
-import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.destinations.CartScreenDestination
 import com.niyaj.popos.features.destinations.EmployeeScreenDestination
@@ -48,14 +45,16 @@ import kotlinx.coroutines.launch
  * Main Feed Back Layer Component
  * @author Sk Niyaj Ali
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BackLayerContent(
-    modifier : Modifier = Modifier,
+    modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: BackLayerViewModel = hiltViewModel(),
 ) {
     val reportState = viewModel.reportState.collectAsStateWithLifecycle().value.report
-    val totalAmount = reportState.expensesAmount.plus(reportState.dineInSalesAmount).plus(reportState.dineOutSalesAmount).toString()
+    val totalAmount = reportState.expensesAmount.plus(reportState.dineInSalesAmount)
+        .plus(reportState.dineOutSalesAmount).toString()
 
     val scope = rememberCoroutineScope()
 
@@ -81,41 +80,41 @@ fun BackLayerContent(
         ) {
             IconBox(
                 iconName = Icons.Default.ShoppingCart,
-                onClick = {navController.navigate(CartScreenDestination())}
+                onClick = { navController.navigate(CartScreenDestination()) }
             )
             Spacer(modifier = Modifier.width(SpaceSmall))
             IconBox(
                 iconName = Icons.Default.Inventory,
-                onClick = {navController.navigate(OrderScreenDestination())}
+                onClick = { navController.navigate(OrderScreenDestination()) }
             )
             Spacer(modifier = Modifier.width(SpaceSmall))
             IconBox(
                 iconName = Icons.Default.Assessment,
-                onClick = {navController.navigate(ReportScreenDestination())}
+                onClick = { navController.navigate(ReportScreenDestination()) }
             )
             Spacer(modifier = Modifier.width(SpaceSmall))
             IconBox(
                 iconName = Icons.Default.Money,
-                onClick = {navController.navigate(ExpensesScreenDestination())}
+                onClick = { navController.navigate(ExpensesScreenDestination()) }
             )
             Spacer(modifier = Modifier.width(SpaceSmall))
             IconBox(
                 iconName = Icons.Default.People,
-                onClick = {navController.navigate(EmployeeScreenDestination())}
+                onClick = { navController.navigate(EmployeeScreenDestination()) }
             )
             Spacer(modifier = Modifier.width(SpaceSmall))
             IconBox(
                 iconName = Icons.Default.Notifications,
-                onClick = { navController.navigate(ReminderScreenDestination)}
+                onClick = { navController.navigate(ReminderScreenDestination) }
             )
         }
 
         Spacer(modifier = Modifier.height(SpaceMedium))
         FlowRow(
-            mainAxisSize = SizeMode.Expand,
-            mainAxisAlignment = FlowMainAxisAlignment.SpaceBetween,
-            crossAxisAlignment = FlowCrossAxisAlignment.Center,
-            crossAxisSpacing = SpaceMini,
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.Center
         ) {
             ReportBox(
                 title = "DineIn Sales",

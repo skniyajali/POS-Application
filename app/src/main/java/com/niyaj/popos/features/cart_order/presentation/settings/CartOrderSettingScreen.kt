@@ -25,14 +25,14 @@ import com.niyaj.popos.features.components.SettingsCard
 import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
-import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.message
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import com.vanpra.composematerialdialogs.title
 import timber.log.Timber
 
-@Destination(style = DestinationStyle.BottomSheet::class)
+@Destination(style = DestinationStyleBottomSheet::class)
 @Composable
 fun CartOrderSettingScreen(
     navController: NavController = rememberNavController(),

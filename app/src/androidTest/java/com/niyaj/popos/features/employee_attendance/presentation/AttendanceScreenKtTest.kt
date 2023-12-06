@@ -16,7 +16,7 @@ import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
 import com.niyaj.popos.features.MainActivity
 import com.niyaj.popos.features.common.di.RealmModule
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
-import com.niyaj.popos.features.common.util.Navigation
+import com.niyaj.popos.features.common.util.PoposNavigation
 import com.niyaj.popos.features.destinations.EmployeeScreenDestination
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.util.EmployeeSalaryType
@@ -83,7 +83,7 @@ class AttendanceScreenKtTest {
                 val bottomSheetNavigator = rememberBottomSheetNavigator()
                 navController.navigatorProvider += bottomSheetNavigator
 
-                Navigation(
+                PoposNavigation(
                     scaffoldState = scaffoldState,
                     bottomSheetScaffoldState = bottomSheetScaffoldState,
                     navController = navController,

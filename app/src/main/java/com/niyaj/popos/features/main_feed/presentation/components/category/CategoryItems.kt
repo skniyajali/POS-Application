@@ -22,9 +22,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.material.placeholder
-import com.google.accompanist.placeholder.material.shimmer
 import com.niyaj.popos.features.category.domain.model.Category
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 
@@ -36,24 +33,22 @@ fun CategoryItems(
     selectedCategory: String = "",
     selectedColor: Color = MaterialTheme.colors.primary,
     unselectedColor: Color = MaterialTheme.colors.onPrimary,
-    isLoading: Boolean = false,
     onClickCategory: (String) -> Unit = {},
 ) {
     LazyRow(
         state = lazyListState,
         modifier = modifier
             .fillMaxWidth()
-    ){
+    ) {
         items(
             items = categories,
             key = {
                 it.categoryId
             }
-        ){ category ->
+        ) { category ->
             CategoryItem(
                 category = category,
                 selectedCategory = selectedCategory,
-                isLoading = isLoading,
                 selectedColor = selectedColor,
                 unselectedColor = unselectedColor,
                 onClickCategory = {
@@ -68,23 +63,22 @@ fun CategoryItems(
 
 @Composable
 fun CategoryItem(
-    category : Category,
-    selectedCategory : String,
-    isLoading : Boolean,
-    selectedColor : Color,
-    unselectedColor : Color,
-    onClickCategory : (String) -> Unit
+    category: Category,
+    selectedCategory: String,
+    selectedColor: Color,
+    unselectedColor: Color,
+    onClickCategory: (String) -> Unit
 ) {
-    val backgroundColor = if (selectedCategory == category.categoryId) selectedColor else unselectedColor
-    val borderStroke = if (selectedCategory == category.categoryId) BorderStroke(0.dp, Color.Transparent) else BorderStroke(1.dp, MaterialTheme.colors.primary)
+    val backgroundColor =
+        if (selectedCategory == category.categoryId) selectedColor else unselectedColor
+    val borderStroke = if (selectedCategory == category.categoryId) BorderStroke(
+        0.dp,
+        Color.Transparent
+    ) else BorderStroke(1.dp, MaterialTheme.colors.primary)
     Box(
         modifier = Modifier
             .width(120.dp)
             .height(40.dp)
-            .placeholder(
-                visible = isLoading,
-                highlight = PlaceholderHighlight.shimmer(),
-            )
             .clip(CutCornerShape(4.dp))
             .border(borderStroke, CutCornerShape(4.dp))
             .clickable {

@@ -73,7 +73,7 @@ import com.niyaj.popos.utils.toMilliSecond
 import com.niyaj.popos.utils.toSalaryDate
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
-import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
@@ -91,7 +91,7 @@ import java.time.LocalDate
  * @see AddEditSalaryViewModel
  */
 @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
-@Destination(style = DestinationStyle.BottomSheet::class)
+@Destination(style = DestinationStyleBottomSheet::class)
 @Composable
 fun AddEditSalaryScreen(
     salaryId: String = "",

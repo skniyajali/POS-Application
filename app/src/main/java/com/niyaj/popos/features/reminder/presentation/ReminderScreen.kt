@@ -34,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -73,6 +72,7 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import com.vanpra.composematerialdialogs.title
 import de.charlex.compose.RevealSwipe
 import io.sentry.compose.SentryTraced
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -85,12 +85,12 @@ import timber.log.Timber
 @Destination
 @Composable
 fun ReminderScreen(
-    navController : NavController = rememberNavController(),
-    scaffoldState : ScaffoldState = rememberScaffoldState(),
-    reminderViewModel : ReminderViewModel = hiltViewModel(),
+    navController: NavController = rememberNavController(),
+    scaffoldState: ScaffoldState = rememberScaffoldState(),
+    reminderViewModel: ReminderViewModel = hiltViewModel(),
     employeeAbsentReminder: EmployeeAbsentReminder = hiltViewModel(),
     dailySalaryReminderWorkerViewModel: DailySalaryReminderWorkerViewModel = hiltViewModel(),
-    resultRecipient : ResultRecipient<EmployeeAbsentReminderScreenDestination, String>,
+    resultRecipient: ResultRecipient<EmployeeAbsentReminderScreenDestination, String>,
     dailySalaryRecipient: ResultRecipient<EmployeeDailySalaryReminderScreenDestination, String>
 ) {
     val context = LocalContext.current
@@ -113,10 +113,18 @@ fun ReminderScreen(
     val transition = updateTransition(selectedReminder.isNotEmpty(), label = "isContextual")
 
     val statusBarColor by transition.animateColor(label = "statusBarContextual") { isContextualMode ->
-        if(isContextualMode) { MaterialTheme.colors.secondary } else { MaterialTheme.colors.primary }
+        if (isContextualMode) {
+            MaterialTheme.colors.secondary
+        } else {
+            MaterialTheme.colors.primary
+        }
     }
     val backgroundColor by transition.animateColor(label = "actionBarContextual") { isContextualMode ->
-        if(isContextualMode) { MaterialTheme.colors.secondary } else { MaterialTheme.colors.primary }
+        if (isContextualMode) {
+            MaterialTheme.colors.secondary
+        } else {
+            MaterialTheme.colors.primary
+        }
     }
 
     SideEffect {
@@ -127,15 +135,15 @@ fun ReminderScreen(
     }
 
     BackHandler(true) {
-        if(selectedReminder.isNotEmpty()) {
+        if (selectedReminder.isNotEmpty()) {
             reminderViewModel.onEvent(ReminderEvent.DeselectReminder)
-        } else{
+        } else {
             navController.navigateUp()
         }
     }
 
     resultRecipient.onNavResult { result ->
-        when(result) {
+        when (result) {
             is NavResult.Canceled -> {}
             is NavResult.Value -> {
                 scope.launch {
@@ -146,7 +154,7 @@ fun ReminderScreen(
     }
 
     dailySalaryRecipient.onNavResult { result ->
-        when(result) {
+        when (result) {
             is NavResult.Canceled -> {}
             is NavResult.Value -> {
                 scope.launch {
@@ -157,49 +165,55 @@ fun ReminderScreen(
     }
 
     val absentReminderWorker = workManager
-        .getWorkInfoByIdLiveData(employeeAbsentReminder.absentWorker.id)
-        .observeAsState().value
+        .getWorkInfoByIdFlow(employeeAbsentReminder.absentWorker.id)
 
     val dailyReminderWorker = workManager
-        .getWorkInfoByIdLiveData(dailySalaryReminderWorkerViewModel.salaryWorker.id)
-        .observeAsState().value
+        .getWorkInfoByIdFlow(dailySalaryReminderWorkerViewModel.salaryWorker.id)
 
     LaunchedEffect(key1 = Unit, key2 = absentReminderWorker) {
-        if (absentReminderWorker != null) {
-            when(absentReminderWorker.state) {
-                WorkInfo.State.ENQUEUED -> {
-                    Timber.d("Employee Absent Reminder Enqueued")
-                }
-                WorkInfo.State.RUNNING -> {
-                    Timber.d("Employee Absent Reminder Running")
-                    val reminder = employeeAbsentReminder.reminder.value
-
-                    if (!reminder.isCompleted && currentTime in reminder.reminderStartTime .. reminder.reminderEndTime) {
-                        navController.navigate(EmployeeAbsentReminderScreenDestination)
-                    }else {
-                        workManager.cancelWorkById(employeeAbsentReminder.absentWorker.id)
+        absentReminderWorker.collectLatest { info ->
+            if (info != null) {
+                when (info.state) {
+                    WorkInfo.State.ENQUEUED -> {
+                        Timber.d("Employee Absent Reminder Enqueued")
                     }
+
+                    WorkInfo.State.RUNNING -> {
+                        Timber.d("Employee Absent Reminder Running")
+                        val reminder = employeeAbsentReminder.reminder.value
+
+                        if (!reminder.isCompleted && currentTime in reminder.reminderStartTime..reminder.reminderEndTime) {
+                            navController.navigate(EmployeeAbsentReminderScreenDestination)
+                        } else {
+                            workManager.cancelWorkById(employeeAbsentReminder.absentWorker.id)
+                        }
+                    }
+
+                    else -> {}
                 }
-                else -> {}
             }
         }
     }
 
     LaunchedEffect(key1 = Unit, key2 = dailyReminderWorker) {
-        if (dailyReminderWorker != null) {
-            when(dailyReminderWorker.state) {
-                WorkInfo.State.ENQUEUED -> {
-                    Timber.d("Daily Salary Reminder Enqueued")
-                }
-                WorkInfo.State.RUNNING -> {
-                    Timber.d("Daily Salary Reminder Running")
-                    val reminder = dailySalaryReminderWorkerViewModel.salaryReminder.value
-
-                    if (!reminder.isCompleted && currentTime in reminder.reminderStartTime .. reminder.reminderEndTime) {
-                        navController.navigate(EmployeeDailySalaryReminderScreenDestination)
+        dailyReminderWorker.collectLatest { info ->
+            if (info != null) {
+                when (info.state) {
+                    WorkInfo.State.ENQUEUED -> {
+                        Timber.d("Daily Salary Reminder Enqueued")
                     }
+
+                    WorkInfo.State.RUNNING -> {
+                        Timber.d("Daily Salary Reminder Running")
+                        val reminder = dailySalaryReminderWorkerViewModel.salaryReminder.value
+
+                        if (!reminder.isCompleted && currentTime in reminder.reminderStartTime..reminder.reminderEndTime) {
+                            navController.navigate(EmployeeDailySalaryReminderScreenDestination)
+                        }
+                    }
+
+                    else -> {}
                 }
-                else -> {}
             }
         }
     }
@@ -270,17 +284,15 @@ fun ReminderScreen(
                         buttonText = "",
                         onClick = {}
                     )
-                }
-                else if(isLoading){
+                } else if (isLoading) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
-                    ){
+                    ) {
                         CircularProgressIndicator()
                     }
-                }
-                else {
+                } else {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -291,9 +303,15 @@ fun ReminderScreen(
                                 modifier = Modifier
                                     .fillMaxWidth(),
                                 onContentClick = {
-                                    when(reminder.reminderType) {
-                                        ReminderType.Attendance.reminderType -> navController.navigate(EmployeeAbsentReminderScreenDestination)
-                                        ReminderType.DailySalary.reminderType -> navController.navigate(EmployeeDailySalaryReminderScreenDestination)
+                                    when (reminder.reminderType) {
+                                        ReminderType.Attendance.reminderType -> navController.navigate(
+                                            EmployeeAbsentReminderScreenDestination
+                                        )
+
+                                        ReminderType.DailySalary.reminderType -> navController.navigate(
+                                            EmployeeDailySalaryReminderScreenDestination
+                                        )
+
                                         else -> {}
                                     }
                                 },
@@ -303,7 +321,11 @@ fun ReminderScreen(
                                 hiddenContentStart = {
                                     IconButton(
                                         onClick = {
-                                            reminderViewModel.onEvent(ReminderEvent.SelectReminder(reminder.reminderId))
+                                            reminderViewModel.onEvent(
+                                                ReminderEvent.SelectReminder(
+                                                    reminder.reminderId
+                                                )
+                                            )
                                             updateReminderState.show()
                                         },
                                         modifier = Modifier,
@@ -319,7 +341,11 @@ fun ReminderScreen(
                                 hiddenContentEnd = {
                                     IconButton(
                                         onClick = {
-                                            reminderViewModel.onEvent(ReminderEvent.SelectReminder(reminder.reminderId))
+                                            reminderViewModel.onEvent(
+                                                ReminderEvent.SelectReminder(
+                                                    reminder.reminderId
+                                                )
+                                            )
                                             deleteReminderState.show()
                                         },
                                         modifier = Modifier

@@ -45,11 +45,12 @@ import com.niyaj.popos.features.destinations.AddEditAddOnItemScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import io.sentry.compose.SentryTraced
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalComposeUiApi::class)
-@Destination(style = DestinationStyle.BottomSheet::class)
+@Destination(style = DestinationStyleBottomSheet::class)
 @Composable
 fun AddEditAddOnItemScreen(
     addOnItemId: String? = "",

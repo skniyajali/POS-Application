@@ -48,11 +48,11 @@ import com.niyaj.popos.features.customer.presentation.settings.CustomerSettingsE
 import com.niyaj.popos.features.customer.presentation.settings.CustomerSettingsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
-import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-@Destination(style = DestinationStyle.BottomSheet::class)
+@Destination(style = DestinationStyleBottomSheet::class)
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ImportContactScreen(

@@ -11,6 +11,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,10 +62,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
-import com.google.accompanist.flowlayout.FlowMainAxisAlignment
-import com.google.accompanist.flowlayout.FlowRow
-import com.google.accompanist.flowlayout.SizeMode
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.niyaj.popos.features.common.ui.theme.KellyGreen
@@ -276,7 +274,7 @@ fun ReportScreen(
                 )
             },
             floatingActionButtonPosition = FabPosition.End,
-        ) {
+        ) { paddingValues ->
             MaterialDialog(
                 dialogState = dialogState,
                 buttons = {
@@ -296,7 +294,7 @@ fun ReportScreen(
             LazyColumn(
                 state = lazyListState,
                 modifier = Modifier
-                    .padding(it)
+                    .padding(paddingValues)
                     .padding(SpaceSmall)
             ) {
                 item("reportBoxData") {
@@ -409,20 +407,22 @@ fun ReportScreen(
 }
 
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ReportBoxData(
-    report : Reports,
+    report: Reports,
     onOrderClick: () -> Unit,
     onExpensesClick: () -> Unit,
     onRefreshReport: () -> Unit
 ) {
-    val totalAmount = report.expensesAmount.plus(report.dineInSalesAmount).plus(report.dineOutSalesAmount).toString()
+    val totalAmount =
+        report.expensesAmount.plus(report.dineInSalesAmount).plus(report.dineOutSalesAmount)
+            .toString()
 
     FlowRow(
-        mainAxisSize = SizeMode.Expand,
-        mainAxisAlignment = FlowMainAxisAlignment.SpaceBetween,
-        crossAxisAlignment = FlowCrossAxisAlignment.Center,
-        crossAxisSpacing = SpaceMini,
+        maxItemsInEachRow = 2,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement = Arrangement.Center
     ) {
         ReportBox(
             title = "DineIn Sales",
@@ -619,6 +619,7 @@ fun CategoryWiseReport(
                                 onProductClick = onProductClick
                             )
                         }
+
                         else -> {
                             ItemNotAvailable(
                                 text = state.hasError ?: "Category wise report not available",
@@ -640,7 +641,7 @@ fun ProductWiseReport(
     productState: ProductWiseReportState,
     productRepExpanded: Boolean,
     selectedProduct: String,
-    onExpandChanged : () -> Unit,
+    onExpandChanged: () -> Unit,
     onClickOrderType: (String) -> Unit,
     onBarClick: (String) -> Unit
 ) {
@@ -735,7 +736,7 @@ fun ProductWiseReport(
 fun AddressWiseReport(
     addressState: AddressWiseReportState,
     addressWiseRepExpanded: Boolean,
-    onExpandChanged : () -> Unit,
+    onExpandChanged: () -> Unit,
     onAddressClick: (addressId: String) -> Unit,
 ) {
     Card(
@@ -787,6 +788,7 @@ fun AddressWiseReport(
                                 }
                             }
                         }
+
                         else -> {
                             ItemNotAvailable(
                                 text = state.error ?: "Address wise report not available",
@@ -807,7 +809,7 @@ fun AddressWiseReport(
 fun CustomerWiseReport(
     customerState: CustomerWiseReportState,
     customerWiseRepExpanded: Boolean,
-    onExpandChanged : () -> Unit,
+    onExpandChanged: () -> Unit,
     onCustomerClick: (String) -> Unit,
 ) {
     Card(
@@ -859,6 +861,7 @@ fun CustomerWiseReport(
                                 }
                             }
                         }
+
                         else -> {
                             ItemNotAvailable(
                                 text = "Customer wise report not available",

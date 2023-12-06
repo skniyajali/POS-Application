@@ -79,10 +79,10 @@ import io.sentry.compose.SentryTraced
 )
 @Composable
 fun EmployeeDailySalaryReminderScreen(
-    navController : NavController = rememberNavController(),
-    scaffoldState : ScaffoldState = rememberScaffoldState(),
-    viewModel : DailySalaryReminderViewModel = hiltViewModel(),
-    resultBackNavigator : ResultBackNavigator<String>
+    navController: NavController = rememberNavController(),
+    scaffoldState: ScaffoldState = rememberScaffoldState(),
+    viewModel: DailySalaryReminderViewModel = hiltViewModel(),
+    resultBackNavigator: ResultBackNavigator<String>
 ) {
 
     val employees = viewModel.employees.collectAsStateWithLifecycle().value.employees
@@ -138,7 +138,7 @@ fun EmployeeDailySalaryReminderScreen(
                 )
             },
             bottomBar = {
-                if(employees.isNotEmpty()) {
+                if (employees.isNotEmpty()) {
                     AnimatedVisibility(
                         visible = !hideBottomBar.value,
                         enter = slideInVertically(
@@ -163,11 +163,8 @@ fun EmployeeDailySalaryReminderScreen(
                                 visible = selectedEmployees.isNotEmpty(),
                                 enter = fadeIn(),
                                 exit = fadeOut()
-                            ){
-                                InfoCard(
-                                    text = Constants.DAILY_SALARY_REMINDER_NOTE,
-                                    isLoading = isLoading
-                                )
+                            ) {
+                                InfoCard(text = Constants.DAILY_SALARY_REMINDER_NOTE)
                             }
 
                             EmployeeSelectionFooter(
@@ -190,7 +187,7 @@ fun EmployeeDailySalaryReminderScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
-                ){
+                ) {
                     CircularProgressIndicator()
                 }
             } else if (employees.isEmpty() || hasError != null) {
@@ -229,7 +226,8 @@ fun EmployeeDailySalaryReminderScreen(
                         LazyColumn(
                             state = listState
                         ) {
-                            val groupedBy = employees.sortedBy { it.paymentStatus.order }.groupBy { it.paymentStatus }
+                            val groupedBy = employees.sortedBy { it.paymentStatus.order }
+                                .groupBy { it.paymentStatus }
 
                             groupedBy.forEach { (paymentStatus, groupedReminderEmployee) ->
                                 stickyHeader {
@@ -256,7 +254,11 @@ fun EmployeeDailySalaryReminderScreen(
                                         paymentStatus = reminderEmployee.paymentStatus,
                                         isEnabled = isEnabled,
                                         onSelectEmployee = {
-                                            viewModel.onEvent(DailySalaryReminderEvent.SelectEmployee(reminderEmployee.employee.employeeId))
+                                            viewModel.onEvent(
+                                                DailySalaryReminderEvent.SelectEmployee(
+                                                    reminderEmployee.employee.employeeId
+                                                )
+                                            )
                                         }
                                     )
 

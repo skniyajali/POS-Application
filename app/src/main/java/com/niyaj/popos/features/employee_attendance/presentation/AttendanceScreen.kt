@@ -5,6 +5,8 @@ import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -112,7 +113,8 @@ fun AttendanceScreen(
 
     val groupedEmployeeAbsent = attendances.groupBy { it.employee?.employeeId }
 
-    val selectedAttendance = attendanceViewModel.selectedAttendance.collectAsStateWithLifecycle().value
+    val selectedAttendance =
+        attendanceViewModel.selectedAttendance.collectAsStateWithLifecycle().value
     val selectedEmployee = attendanceViewModel.selectedEmployee.collectAsStateWithLifecycle().value
 
     // Remember a SystemUiController
@@ -180,6 +182,7 @@ fun AttendanceScreen(
                     attendanceViewModel.onEvent(AttendanceEvent.SelectAttendance(selectedAttendance))
                 }
             }
+
             is NavResult.Value -> {
                 if (selectedAttendance.isNotEmpty()) {
                     attendanceViewModel.onEvent(AttendanceEvent.SelectAttendance(selectedAttendance))
@@ -264,10 +267,14 @@ fun AttendanceScreen(
                 )
             },
             navigationIcon = {
-                if(selectedAttendance.isNotEmpty()) {
+                if (selectedAttendance.isNotEmpty()) {
                     IconButton(
                         onClick = {
-                            attendanceViewModel.onEvent(AttendanceEvent.SelectAttendance(selectedAttendance))
+                            attendanceViewModel.onEvent(
+                                AttendanceEvent.SelectAttendance(
+                                    selectedAttendance
+                                )
+                            )
                         }
                     ) {
                         Icon(
@@ -318,7 +325,8 @@ fun AttendanceScreen(
                     ItemNotAvailable(
                         text = hasError
                             ?: if (showSearchBar) stringResource(id = R.string.search_item_not_found) else stringResource(
-                                id = R.string.no_items_in_absent),
+                                id = R.string.no_items_in_absent
+                            ),
                         buttonText = stringResource(id = R.string.create_absent_entry).uppercase(),
                         onClick = {
                             navController.navigate(AddEditAbsentScreenDestination())
@@ -338,7 +346,11 @@ fun AttendanceScreen(
                                     data?.let { employee ->
                                         AbsentEmployees(
                                             employee = employee,
-                                            groupedAttendances = employeeAttendances.groupBy { toMonthAndYear(it.absentDate) },
+                                            groupedAttendances = employeeAttendances.groupBy {
+                                                toMonthAndYear(
+                                                    it.absentDate
+                                                )
+                                            },
                                             isExpanded = selectedEmployee == empId,
                                             selectedAttendance = selectedAttendance,
                                             onClickAttendance = {
@@ -350,7 +362,7 @@ fun AttendanceScreen(
                                                 attendanceViewModel.onEvent(
                                                     AttendanceEvent.SelectEmployee(it)
                                                 )
-                                            } ,
+                                            },
                                             onExpandChange = {
                                                 attendanceViewModel.onEvent(
                                                     AttendanceEvent.SelectEmployee(it)
@@ -421,8 +433,8 @@ fun AttendanceNavActions(
 fun AbsentEmployees(
     employee: Employee,
     isExpanded: Boolean,
-    groupedAttendances:  Map<String, List<EmployeeAttendance>>,
-    selectedAttendance : String = "",
+    groupedAttendances: Map<String, List<EmployeeAttendance>>,
+    selectedAttendance: String = "",
     onClickAttendance: (attendanceId: String) -> Unit,
     onSelectEmployee: (employeeId: String) -> Unit,
     onExpandChange: (employeeId: String) -> Unit,
@@ -491,11 +503,11 @@ fun AbsentEmployees(
 /**
  *
  */
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun EmployeeAbsentData(
-    groupedAttendances:  Map<String, List<EmployeeAttendance>>,
-    selectedAttendance : String = "",
+    groupedAttendances: Map<String, List<EmployeeAttendance>>,
+    selectedAttendance: String = "",
     onClickAttendance: (attendanceId: String) -> Unit,
 ) {
     Column(
@@ -516,9 +528,8 @@ fun EmployeeAbsentData(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(SpaceMini),
-                crossAxisSpacing = SpaceMini,
             ) {
-                grouped.value.forEach{  attendance ->
+                grouped.value.forEach { attendance ->
                     Card(
                         modifier = Modifier
                             .testTag(attendance.employee?.employeeName.plus(attendance.absentDate.toDate)),
@@ -527,7 +538,10 @@ fun EmployeeAbsentData(
                         },
                         backgroundColor = LightColor6,
                         elevation = 2.dp,
-                        border = if (selectedAttendance == attendance.attendeeId) BorderStroke(1.dp, MaterialTheme.colors.primary) else null,
+                        border = if (selectedAttendance == attendance.attendeeId) BorderStroke(
+                            1.dp,
+                            MaterialTheme.colors.primary
+                        ) else null,
                     ) {
                         Text(
                             text = attendance.absentDate.toDate,
