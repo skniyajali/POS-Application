@@ -56,6 +56,7 @@ import com.niyaj.popos.features.destinations.SelectedCartOrderScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import io.sentry.compose.SentryTraced
 
 /**
@@ -66,7 +67,7 @@ import io.sentry.compose.SentryTraced
  * @see CartOrderViewModel
  */
 @OptIn(ExperimentalComposeUiApi::class)
-@Destination(style = DestinationStyle.BottomSheet::class)
+@Destination(style = DestinationStyleBottomSheet::class)
 @Composable
 fun SelectedCartOrderScreen(
     navController: NavController = rememberNavController(),

@@ -1,9 +1,8 @@
 import com.android.build.api.dsl.ManagedVirtualDevice
 
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
-    alias(libs.plugins.android.test)
-    alias(libs.plugins.kotlin.android)
+    id(libs.plugins.kotlin.android.get().pluginId)
+    id(libs.plugins.android.test.get().pluginId)
     alias(libs.plugins.androidx.baselineprofile)
 }
 
@@ -17,7 +16,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -46,8 +45,9 @@ baselineProfile {
 }
 
 dependencies {
-    implementation(libs.androidx.junit)
-    implementation(libs.espresso.core)
-    implementation(libs.uiautomator)
-    implementation(libs.benchmark.macro)
+    implementation(libs.junit4)
+    implementation(libs.androidx.test.espresso.core)
+    implementation(libs.androidx.test.uiautomator)
+    implementation(libs.androidx.benchmark.macro)
+    implementation(libs.androidx.profileinstaller)
 }
