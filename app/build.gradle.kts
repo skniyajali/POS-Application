@@ -1,19 +1,27 @@
-@Suppress("DSL_SCOPE_VIOLATION")
+import com.niyaj.samples.apps.popos.PoposBuildType
+
 plugins {
-    id(libs.plugins.android.application.get().pluginId)
-    id(libs.plugins.kotlin.android.get().pluginId)
-    id(libs.plugins.hilt.get().pluginId)
+    id("popos.android.application")
+    id("popos.android.application.compose")
+    id("popos.android.application.flavors")
+    id("popos.android.application.jacoco")
+    id("popos.android.hilt")
+    id("jacoco")
     id(libs.plugins.realm.get().pluginId)
     alias(libs.plugins.appsweep)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.sentry)
     alias(libs.plugins.androidx.baselineprofile)
-    id(libs.plugins.kotlin.kapt.get().pluginId)
 }
 
 android {
-    namespace = libs.versions.namespace.get()
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
 
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    kotlinOptions {
+        jvmTarget = "11"
+    }
 
     defaultConfig {
         applicationId = libs.versions.namespace.get()
@@ -26,50 +34,47 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
+            applicationIdSuffix = PoposBuildType.DEBUG.applicationIdSuffix
+        }
+
+        val release = getByName("release") {
             isMinifyEnabled = true
-            isShrinkResources = true
-            setProguardFiles(
-                listOf(
-                    getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-                )
-            )
+            applicationIdSuffix = PoposBuildType.RELEASE.applicationIdSuffix
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+
+            // To publish on the Play store a private signing key is required, but to allow anyone
+            // who clones the code to sign and run the release variant, use the debug signing key.
+            // TODO: Abstract the signing configuration to a separate file to avoid hardcoding this.
+            signingConfig = signingConfigs.getByName("debug")
+            // Ensure Baseline Profile is fresh for release builds.
+//            baselineProfile.automaticGenerationDuringBuild = true
         }
 
         create("benchmark") {
-            initWith(buildTypes.getByName("release"))
+            // Enable all the optimizations from release build through initWith(release).
+            initWith(release)
+            matchingFallbacks.add("release")
+            // Debug key signing is available to everyone.
             signingConfig = signingConfigs.getByName("debug")
-            matchingFallbacks += listOf("release")
-            isDebuggable = false
+            // Only use benchmark proguard rules
+            proguardFiles("benchmark-rules.pro")
+            isMinifyEnabled = true
+            applicationIdSuffix = PoposBuildType.BENCHMARK.applicationIdSuffix
         }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
     }
 
     buildFeatures {
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.4"
+        buildConfig = true
     }
 
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "META-INF/LICENSE.md"
-            excludes += "META-INF/LICENSE-notice.md"
-            excludes += "DebugProbesKt.bin"
-        }
-        jniLibs {
-            excludes += "lib/arm64-v8a/librealm-jni.so"
+            excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+            excludes.add("META-INF/LICENSE.md")
+            excludes.add("META-INF/LICENSE-notice.md")
+            excludes.add("DebugProbesKt.bin")
         }
     }
 
@@ -77,100 +82,60 @@ android {
         apiKey = "gs_appsweep_2sU1w2D_VgxRVNNmlBhWdMawvtcd6wZHHZkcsUSz"
     }
 
-    hilt {
-        enableAggregatingTask = true
-    }
-
-    subprojects {
-        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-            kotlinOptions {
-                if (project.findProperty("composeCompilerReports") == "true") {
-                    freeCompilerArgs += listOf(
-                        "-P",
-                        "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=${project.buildDir.absolutePath}/compose_compiler"
-                    )
-                }
-                if (project.findProperty("composeCompilerMetrics") == "true") {
-                    freeCompilerArgs += listOf(
-                        "-P",
-                        "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=${project.buildDir.absolutePath}/compose_compiler"
-                    )
-                }
-            }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
         }
     }
+
+    namespace = libs.versions.namespace.get()
 }
 
 dependencies {
+    implementation(libs.androidx.core.ktx)
 
-    implementation(libs.core.ktx)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.material.iconsExtended)
+    implementation(libs.androidx.compose.ui.tooling.preview)
 
-    implementation(platform(libs.compose.bom))
-    implementation(libs.ui)
-    implementation(libs.material)
-    implementation(libs.material.icons)
-    implementation(libs.ui.tooling.preview)
-
-    implementation(libs.activity.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.appcompat)
 
     //Startup & Splash screen
-    implementation(libs.startup)
-    implementation(libs.splashscreen)
-
-    implementation(libs.runtime.livedata)
+    implementation(libs.androidx.core.startup)
+    implementation(libs.androidx.core.splashscreen)
 
     // ViewModel
-    implementation(libs.viewmodel.ktx)
-    implementation(libs.viewmodel.compose)
-    implementation(libs.runtime.compose)
-    implementation(libs.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewModelCompose)
+    implementation(libs.androidx.lifecycle.runtimeCompose)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     // Saved state module for ViewModel
-    implementation(libs.viewmodel.savedstate)
-    // Annotation processor
-    implementation(libs.common.java8)
+    implementation(libs.androidx.lifecycle.viewmodel.savedstate)
 
     // Compose dependencies
-    implementation(libs.navigation.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     // Kotlin + coroutines
-    implementation(libs.work.runtime.ktx)
-    androidTestImplementation(libs.work.testing)
-
+    implementation(libs.androidx.work.ktx)
+    androidTestImplementation(libs.androidx.work.testing)
 
     //Accompanist
-    implementation(libs.flowlayout)
-    implementation(libs.systemuicontroller)
-    implementation(libs.permissions)
-    implementation(libs.swiperefresh)
-    implementation(libs.placeholder.material)
-    implementation(libs.pager)
-    implementation(libs.pager.indicators)
+    implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.accompanist.permissions)
+    implementation(libs.accompanist.swiperefresh)
 
     // Coroutines
-    implementation(libs.coroutines.core)
-    implementation(libs.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
 
     // For testing
-    testImplementation(libs.coroutines.test)
-    androidTestImplementation(libs.coroutines.test)
-
-    //Hilt Work
-    implementation(libs.hilt.work)
-    kapt(libs.hilt.compiler)
-
-    implementation(libs.hilt.navigation.compose)
-    kapt(libs.hilt.android)
-
-    // Dagger & Hilt
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.dagger.compiler)
-
-    // For testing
-    androidTestImplementation(libs.hilt.android.testing)
-    kaptAndroidTest(libs.hilt.dagger.compiler)
-
-    testImplementation(libs.hilt.android.testing)
-    kaptTest(libs.hilt.dagger.compiler)
+    testImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 
     // Timber
     implementation(libs.timber)
@@ -200,24 +165,23 @@ dependencies {
     implementation(libs.moshi)
 
     //ProfileInstaller
-    implementation(libs.profileinstaller)
+    implementation(libs.androidx.profileinstaller)
 
     // Local unit tests
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.junit)
+    testImplementation(libs.junit4)
+    androidTestImplementation(libs.junit4)
 
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.androidx.test.espresso.core)
     testImplementation(libs.androidx.test.core)
-    androidTestImplementation(libs.androidx.test.core.ktx)
+    androidTestImplementation(libs.androidx.test.ext)
     androidTestImplementation(libs.androidx.test.runner)
 
     testImplementation(libs.androidx.arch.core.testing)
     androidTestImplementation(libs.androidx.arch.core.testing)
 
-    androidTestImplementation(libs.ui.test.junit)
-    debugImplementation(libs.ui.tooling)
-    debugImplementation(libs.ui.test.manifest)
+    androidTestImplementation(libs.androidx.compose.ui.test)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.testManifest)
 
     // Truth
     testImplementation(libs.truth)
@@ -230,9 +194,6 @@ dependencies {
     //ACRA Logger
     implementation(libs.acra.mail)
     implementation(libs.acra.toast)
-    implementation(libs.acra.notification)
-    implementation(libs.acra.limiter)
-    implementation(libs.acra.advanced.scheduler)
 
     //Sentry
     implementation(libs.sentry.android)
@@ -242,14 +203,15 @@ dependencies {
     "baselineProfile"(project(mapOf("path" to ":benchmark")))
 
     //Google Play Play Integrity API
-    implementation(libs.integrity)
+    implementation(libs.play.integrity)
 
     // Google Play In-App Updates API
-    implementation(libs.app.update)
-    implementation(libs.app.update.ktx)
+    implementation(libs.play.app.update)
+    implementation(libs.play.app.update.ktx)
 
     // Coil Library
-    implementation(libs.coil)
+    implementation(libs.coil.kt)
+    implementation(libs.coil.kt.compose)
 
     // zxing QR code library
     implementation(libs.zxing.core)
@@ -259,9 +221,10 @@ dependencies {
 
     // Play Service Base
     implementation(libs.play.service)
-
 }
 
-kapt {
-    correctErrorTypes = true
+baselineProfile {
+    // Don't build on every iteration of a full assemble.
+    // Instead enable generation directly for the release build variant.
+    automaticGenerationDuringBuild = false
 }

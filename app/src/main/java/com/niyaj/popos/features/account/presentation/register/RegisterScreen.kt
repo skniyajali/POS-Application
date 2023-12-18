@@ -35,6 +35,7 @@ import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO_NAME
 import com.niyaj.popos.utils.Constants.RESTAURANT_PRINT_LOGO_NAME
 import com.niyaj.popos.utils.toBitmap
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.launch
 
 private const val CONTENT_ANIMATION_DURATION = 300
