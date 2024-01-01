@@ -1,18 +1,17 @@
-@Suppress("DSL_SCOPE_VIOLATION")
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id(libs.plugins.android.application.get().pluginId)
     id(libs.plugins.kotlin.android.get().pluginId)
-    id(libs.plugins.hilt.get().pluginId)
     id(libs.plugins.realm.get().pluginId)
+    id(libs.plugins.ksp.get().pluginId)
+    id(libs.plugins.hilt.get().pluginId)
     alias(libs.plugins.appsweep)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.androidx.baselineprofile)
-    id(libs.plugins.kotlin.kapt.get().pluginId)
+    id(libs.plugins.androidx.baselineprofile.get().pluginId)
 }
 
 android {
     namespace = libs.versions.namespace.get()
-
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
@@ -45,20 +44,17 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.4"
+        kotlinCompilerExtensionVersion = "1.5.6"
     }
 
     packaging {
@@ -77,12 +73,8 @@ android {
         apiKey = "gs_appsweep_2sU1w2D_VgxRVNNmlBhWdMawvtcd6wZHHZkcsUSz"
     }
 
-    hilt {
-        enableAggregatingTask = true
-    }
-
-    subprojects {
-        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    allprojects {
+        tasks.withType<KotlinCompile>().configureEach {
             kotlinOptions {
                 if (project.findProperty("composeCompilerReports") == "true") {
                     freeCompilerArgs += listOf(
@@ -156,21 +148,21 @@ dependencies {
 
     //Hilt Work
     implementation(libs.hilt.work)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     implementation(libs.hilt.navigation.compose)
-    kapt(libs.hilt.android)
+    ksp(libs.hilt.android)
 
     // Dagger & Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.dagger.compiler)
+    ksp(libs.hilt.dagger.compiler)
 
     // For testing
     androidTestImplementation(libs.hilt.android.testing)
-    kaptAndroidTest(libs.hilt.dagger.compiler)
+    kspAndroidTest(libs.hilt.dagger.compiler)
 
     testImplementation(libs.hilt.android.testing)
-    kaptTest(libs.hilt.dagger.compiler)
+    kspTest(libs.hilt.dagger.compiler)
 
     // Timber
     implementation(libs.timber)
@@ -260,8 +252,4 @@ dependencies {
     // Play Service Base
     implementation(libs.play.service)
 
-}
-
-kapt {
-    correctErrorTypes = true
 }

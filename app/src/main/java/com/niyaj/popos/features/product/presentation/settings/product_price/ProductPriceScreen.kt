@@ -39,6 +39,7 @@ import com.niyaj.popos.features.product.presentation.components.ProductBody
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import io.sentry.compose.SentryTraced
 
 /**
@@ -46,7 +47,7 @@ import io.sentry.compose.SentryTraced
  * @author Sk Niyaj Ali
  */
 @OptIn(ExperimentalComposeUiApi::class)
-@Destination(style = DestinationStyle.BottomSheet::class)
+@Destination(style = DestinationStyleBottomSheet::class)
 @Composable
 fun ProductPriceScreen(
     type: String = "Increase",

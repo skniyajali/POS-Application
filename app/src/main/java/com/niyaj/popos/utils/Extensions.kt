@@ -389,7 +389,7 @@ fun toMonthAndYear(date : String) : String {
     }
 }
 
-fun setTodayStartTime(time : Int = 11) : Calendar {
+fun setTodayStartTime(time : Int = 23) : Calendar {
     val startTime = Calendar.getInstance()
     startTime[Calendar.HOUR_OF_DAY] = time
     startTime[Calendar.MINUTE] = 0
@@ -399,7 +399,7 @@ fun setTodayStartTime(time : Int = 11) : Calendar {
     return startTime
 }
 
-private fun setTodayEndTime(time : Int = 23) : Calendar {
+private fun setTodayEndTime(time : Int = 11) : Calendar {
     val endTime = Calendar.getInstance()
     endTime[Calendar.HOUR_OF_DAY] = time
     endTime[Calendar.MINUTE] = 0
@@ -557,7 +557,7 @@ fun drawableToByteArray(context : Context, imageRes : Int) : ByteArray {
  * Convert bitmap to byte array using ByteBuffer.
  */
 fun Bitmap.convertToByteArray(): ByteArray {
-    //minimum number of bytes that can be used to store this bitmap's pixels
+    //minimum number of bytes that can be used to store this bitmaps pixels
     val size = this.byteCount
 
     //allocate new instances which will hold bitmap
@@ -573,7 +573,7 @@ fun Bitmap.convertToByteArray(): ByteArray {
     //transfer bytes from buffer into the given destination array
     buffer.get(bytes)
 
-    //return bitmap's pixels
+    //return bitmaps pixels
     return bytes
 }
 

@@ -1,34 +1,34 @@
 [versions]
-androidGradlePlugin = '8.0.2'
-kotlin = '1.8.10'
-dagger-hilt-version = "2.46.1"
-hilt-version = '1.0.0'
-realm-version = "1.8.0"
-sentry-version = '3.5.0'
-sentry-android-version = '6.17.0'
-ksp-version = '1.8.10-1.0.9'
+androidGradlePlugin = "8.2.0"
+kotlin = '1.9.21'
+dagger-hilt-version = "2.50"
+hilt-version = '1.1.0'
+realm-version = "1.11.0"
+sentry-version = '3.14.0'
+sentry-android-version = '6.33.0'
+ksp-version = '1.9.21-1.0.16'
 appsweep = 'latest.release'
-androidx-core-version = "1.10.1"
+androidx-core-version = "1.12.0"
 junit = '4.13.2'
 androidx-test-ext-junit = '1.1.5'
 espresso-core = '3.5.1'
-accompanist-version = '0.30.1'
+accompanist-version = '0.32.0'
 accompanist-swiperefresh-version = '0.27.0'
 acra-version = '5.9.7'
-androidx-work-version = '2.8.1'
-kotlinx-coroutines-version = '1.7.1'
+androidx-work-version = '2.9.0'
+kotlinx-coroutines-version = '1.7.3'
 timber-version = '5.0.1'
 revealswipe-version = '1.1.0'
-pos-printer-version = '3.2.1'
+pos-printer-version = '3.4.0'
 leakcanary-version = '2.10'
 vanpra-compose-version = '0.9.0'
-raamcosta-version = "1.8.32-beta"
+raamcosta-version = "1.9.56"
 moshi-version = '1.15.0'
-truth-version = '1.1.3'
+truth-version = '1.1.5'
 mockk-version = "1.13.5"
 profileinstaller-version = '1.3.1'
-androidx-livedata-version = "1.4.3"
-androidx-navigation-compose-version = "2.6.0"
+androidx-livedata-version = "1.5.4"
+androidx-navigation-compose-version = "2.7.6"
 androidx-test-core-version = '1.5.0'
 androidx-test-runner = '1.5.2'
 androidx-arch-core-version = '2.2.0'
@@ -37,26 +37,26 @@ androidx-splash-version = "1.0.1"
 androidx-paging-version = "3.1.1"
 # Compose
 compose-version = '1.4.0-beta01'
-compose-bom = "2023.06.01"
-activity-compose = "1.7.2"
-lifecycle-version = "2.6.1"
-ui-test-junit = '1.4.3'
+compose-bom = "2023.10.01"
+activity-compose = "1.8.2"
+lifecycle-version = "2.6.2"
+ui-test-junit = '1.5.4'
 kotlinComposeExtension = '1.4.1' # As per Kotlin version
 # Benchmark Variables
 uiautomator = '2.2.0'
-benchmark-macro = "1.2.0-alpha16"
-androidx-baselineprofile = "1.2.0-alpha13"
-androidx-benchmark = "1.1.1"
-benchmark-junit4 = "1.1.1"
+benchmark-macro = "1.2.2"
+androidx-baselineprofile = "1.2.2"
+androidx-benchmark = "1.2.2"
+benchmark-junit4 = "1.2.2"
 
-play-integrity = '1.1.0'
+play-integrity = '1.3.0'
 play-update = "2.1.0"
-coil-version = "2.4.0"
-play-scanner = "16.0.0"
+coil-version = "2.5.0"
+play-scanner = "16.1.0"
 play-service = "18.2.0"
 
 # AndroidX camera
-camera-version = "1.2.3"
+camera-version = "1.3.1"
 
 # zxing android-embeded
 zxing-core-version = "3.5.1"
@@ -65,9 +65,9 @@ zxing-android-version = "4.3.0"
 # App Version
 namespace = "com.niyaj.popos"
 minSdk = "26"
-compileSdk = "33"
-targetSdk = "33"
-versionCode = "5"
+compileSdk = "34"
+targetSdk = "34"
+versionCode = "6"
 versionName = "1.0.0"
 
 [libraries]
@@ -79,7 +79,7 @@ compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = 
 ui = { group = "androidx.compose.ui", name = "ui" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.5.4" }
 ui-test-junit = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref="ui-test-junit" }
 
 # Androidx Compose Material
@@ -133,6 +133,7 @@ hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref =
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hilt-version" }
 # Dagger
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "dagger-hilt-version" }
+dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger-hilt-version" }
 hilt-dagger-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger-hilt-version" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "dagger-hilt-version" }
 
@@ -207,6 +208,7 @@ kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-pl
 kotlin-serialization-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "kotlin" }
 hilt-gradlePlugin = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "dagger-hilt-version" }
 realm-gradlePlugin = { group = "io.realm.kotlin", name = "gradle-plugin", version.ref = "realm-version" }
+ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp-version" }
 
 # Kotlin Bom
 kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlin" }

@@ -1,14 +1,13 @@
 import com.android.build.api.dsl.ManagedVirtualDevice
 
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.android.test)
-    alias(libs.plugins.kotlin.android)
+    id(libs.plugins.kotlin.android.get().pluginId)
     alias(libs.plugins.androidx.baselineprofile)
 }
 
 android {
-    namespace = "com.baselineprofile.baselineprofile"
+    namespace = "com.popos.baselineprofile"
     compileSdk = 34
 
     compileOptions {

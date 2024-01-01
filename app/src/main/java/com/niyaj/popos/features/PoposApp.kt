@@ -1,6 +1,5 @@
 package com.niyaj.popos.features
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetValue
@@ -10,9 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.navigation.compose.rememberNavController
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -24,11 +23,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-@OptIn(
-    ExperimentalMaterialNavigationApi::class,
-    ExperimentalAnimationApi::class,
-    ExperimentalMaterialApi::class
-)
+@OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun PoposApp(
     workManager: WorkManager,
@@ -39,7 +34,7 @@ fun PoposApp(
     isLoggedIn: Boolean,
 ) {
     val scaffoldState = rememberScaffoldState()
-    val navController = rememberAnimatedNavController()
+    val navController = rememberNavController()
         .withSentryObservableEffect(
             enableNavigationBreadcrumbs = true,
             enableNavigationTracing = true
@@ -54,34 +49,38 @@ fun PoposApp(
 
     LaunchedEffect(key1 = true) {
         workManager.getWorkInfoByIdFlow(dataDeletionId).collectLatest { workInfo ->
-            when (workInfo.state) {
-                WorkInfo.State.FAILED -> {}
-                WorkInfo.State.RUNNING -> {}
-                else -> {}
+            if (workInfo != null) {
+                when (workInfo.state) {
+                    WorkInfo.State.FAILED -> {}
+                    WorkInfo.State.RUNNING -> {}
+                    else -> {}
+                }
             }
         }
     }
 
     LaunchedEffect(key1 = true) {
         workManager.getWorkInfoByIdFlow(generateReportId).collectLatest { workInfo ->
-            when (workInfo.state) {
-                WorkInfo.State.FAILED -> {
-                    scope.launch {
-                        scaffoldState.snackbarHostState.showSnackbar(
-                            "Unable to generate report"
-                        )
+            if (workInfo != null) {
+                when (workInfo.state) {
+                    WorkInfo.State.FAILED -> {
+                        scope.launch {
+                            scaffoldState.snackbarHostState.showSnackbar(
+                                "Unable to generate report"
+                            )
+                        }
                     }
-                }
 
-                WorkInfo.State.RUNNING -> {
-                    scope.launch {
-                        scaffoldState.snackbarHostState.showSnackbar(
-                            "Report Generate Running"
-                        )
+                    WorkInfo.State.RUNNING -> {
+                        scope.launch {
+                            scaffoldState.snackbarHostState.showSnackbar(
+                                "Report Generate Running"
+                            )
+                        }
                     }
-                }
 
-                else -> {}
+                    else -> {}
+                }
             }
         }
     }
