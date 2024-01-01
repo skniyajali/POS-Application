@@ -1,13 +1,13 @@
 import com.android.build.api.dsl.ManagedVirtualDevice
 
 plugins {
+    alias(libs.plugins.android.test)
     id(libs.plugins.kotlin.android.get().pluginId)
-    id(libs.plugins.android.test.get().pluginId)
     alias(libs.plugins.androidx.baselineprofile)
 }
 
 android {
-    namespace = "com.baselineprofile.baselineprofile"
+    namespace = "com.popos.baselineprofile"
     compileSdk = 34
 
     compileOptions {
@@ -16,7 +16,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = "17"
     }
 
     defaultConfig {
@@ -45,9 +45,8 @@ baselineProfile {
 }
 
 dependencies {
-    implementation(libs.junit4)
-    implementation(libs.androidx.test.espresso.core)
-    implementation(libs.androidx.test.uiautomator)
-    implementation(libs.androidx.benchmark.macro)
-    implementation(libs.androidx.profileinstaller)
+    implementation(libs.androidx.junit)
+    implementation(libs.espresso.core)
+    implementation(libs.uiautomator)
+    implementation(libs.benchmark.macro)
 }
