@@ -1,7 +1,7 @@
 package com.niyaj.popos.features.address.presentation.settings
 
+import com.niyaj.popos.common.utils.Constants.ImportExportType
 import com.niyaj.popos.features.address.domain.model.Address
-import com.niyaj.popos.utils.Constants.ImportExportType
 
 sealed class AddressSettingEvent {
 

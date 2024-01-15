@@ -29,6 +29,7 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.Constants
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.ImportExport
 import com.niyaj.popos.features.common.util.ImportExport.writeData
@@ -41,7 +42,6 @@ import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.customer.presentation.components.ImportExportCustomerBody
 import com.niyaj.popos.features.customer.presentation.settings.CustomerSettingsEvent
 import com.niyaj.popos.features.customer.presentation.settings.CustomerSettingsViewModel
-import com.niyaj.popos.utils.Constants
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
@@ -179,7 +179,8 @@ fun ExportCustomerScreen(
                                     viewModel.onEvent(CustomerSettingsEvent.SelectCustomer(it))
                                 },
                                 onClickSelectAll = {
-                                    viewModel.onEvent(CustomerSettingsEvent.SelectAllCustomer(Constants.ImportExportType.EXPORT))
+                                    viewModel.onEvent(CustomerSettingsEvent.SelectAllCustomer(
+                                        Constants.ImportExportType.EXPORT))
                                 }
                             )
                         }

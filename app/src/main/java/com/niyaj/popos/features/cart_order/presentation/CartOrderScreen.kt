@@ -64,6 +64,8 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.toBarDate
+import com.niyaj.popos.common.utils.toPrettyDate
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
 import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
@@ -84,8 +86,6 @@ import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
 import com.niyaj.popos.features.destinations.CartOrderScreenDestination
 import com.niyaj.popos.features.destinations.CartOrderSettingScreenDestination
 import com.niyaj.popos.features.destinations.OrderDetailsScreenDestination
-import com.niyaj.popos.utils.toBarDate
-import com.niyaj.popos.utils.toPrettyDate
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult

@@ -54,6 +54,8 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.toMilliSecond
+import com.niyaj.popos.common.utils.toSalaryDate
 import com.niyaj.popos.features.cart_order.presentation.add_edit.PhoneNoCountBox
 import com.niyaj.popos.features.common.ui.theme.IconSizeExtraLarge
 import com.niyaj.popos.features.common.ui.theme.LightColor7
@@ -78,8 +80,6 @@ import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_P
 import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_SALARY_TYPE_FIELD
 import com.niyaj.popos.features.employee.domain.util.EmployeeTestTags.EMPLOYEE_TYPE_FIELD
 import com.niyaj.popos.features.employee.domain.util.EmployeeType
-import com.niyaj.popos.utils.toMilliSecond
-import com.niyaj.popos.utils.toSalaryDate
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.vanpra.composematerialdialogs.MaterialDialog

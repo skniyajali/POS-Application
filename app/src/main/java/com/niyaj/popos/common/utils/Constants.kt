@@ -1,6 +1,7 @@
-package com.niyaj.popos.utils
+package com.niyaj.popos.common.utils
 
 import com.niyaj.popos.R
+import java.util.concurrent.TimeUnit
 
 object Constants {
 
@@ -88,17 +89,22 @@ object Constants {
     const val ABSENT_REMINDER_NOTE = "Selected employees will be mark as absent."
     const val DAILY_SALARY_REMINDER_NOTE = "Selected employees will be mark as paid."
 
-    const val ABSENT_REMINDER_ID = "EA889977"
+    const val ABSENT_REMINDER_ID = "EAR889977"
     const val ABSENT_REMINDER_NAME = "Employee Attendance"
     const val ABSENT_REMINDER_TITLE = "Did You Marked Employee Attendance?"
     const val ABSENT_REMINDER_TEXT = "Don't forget to mark absent employees."
     const val ABSENT_REMINDER_REQ_CODE = 9977
+    const val ABSENT_REMINDER_INTERVAL = 16
+    val ABSENT_REMINDER_TIME_UNIT: TimeUnit = TimeUnit.MINUTES
 
-    const val DAILY_SALARY_REMINDER_ID = "DAL907856"
+    const val DAILY_SALARY_REMINDER_ID = "DSR907856"
     const val DAILY_SALARY_REMINDER_NAME = "Daily Salary Reminder"
     const val DAILY_SALARY_REMINDER_TITLE = "Did You Paid Employee Salary?"
     const val DAILY_SALARY_REMINDER_TEXT = "Don't forget to add salary entries."
     const val DAILY_SALARY_REQ_CODE = 9078
+    const val DAILY_SALARY_REMINDER_INTERVAL = 20
+    val DAILY_SALARY_REMINDER_TIME_UNIT: TimeUnit = TimeUnit.MINUTES
+
 
     private const val HOST = "http://skniyajali.me/"
     private const val HOST_SECURE = "https://skniyajali.me/"

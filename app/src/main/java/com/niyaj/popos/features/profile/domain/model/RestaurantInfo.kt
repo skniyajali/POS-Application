@@ -3,10 +3,10 @@ package com.niyaj.popos.features.profile.domain.model
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.core.graphics.drawable.toBitmap
+import com.niyaj.popos.common.utils.Constants.PRINT_LOGO
+import com.niyaj.popos.common.utils.Constants.RESTAURANT_ID
+import com.niyaj.popos.common.utils.Constants.RESTAURANT_LOGO
 import com.niyaj.popos.features.common.util.ImageStorageManager
-import com.niyaj.popos.utils.Constants.PRINT_LOGO
-import com.niyaj.popos.utils.Constants.RESTAURANT_ID
-import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 

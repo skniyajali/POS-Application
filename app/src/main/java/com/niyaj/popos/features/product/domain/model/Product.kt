@@ -1,7 +1,7 @@
 package com.niyaj.popos.features.product.domain.model
 
+import com.niyaj.popos.common.utils.getAllCapitalizedLetters
 import com.niyaj.popos.features.category.domain.model.Category
-import com.niyaj.popos.utils.getAllCapitalizedLetters
 import com.squareup.moshi.JsonClass
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey

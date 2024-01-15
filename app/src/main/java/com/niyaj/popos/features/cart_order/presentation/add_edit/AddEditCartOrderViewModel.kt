@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.niyaj.popos.common.utils.capitalizeWords
+import com.niyaj.popos.common.utils.getAllCapitalizedLetters
 import com.niyaj.popos.features.address.domain.model.Address
 import com.niyaj.popos.features.address.domain.use_cases.GetAllAddress
 import com.niyaj.popos.features.address.presentation.AddressState
@@ -18,8 +20,6 @@ import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.customer.domain.model.Customer
 import com.niyaj.popos.features.customer.domain.use_cases.GetAllCustomers
 import com.niyaj.popos.features.customer.presentation.CustomerState
-import com.niyaj.popos.utils.capitalizeWords
-import com.niyaj.popos.utils.getAllCapitalizedLetters
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow

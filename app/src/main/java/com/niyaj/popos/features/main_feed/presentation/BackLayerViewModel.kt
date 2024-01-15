@@ -2,11 +2,11 @@ package com.niyaj.popos.features.main_feed.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.niyaj.popos.common.utils.getEndTime
+import com.niyaj.popos.common.utils.getStartTime
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
 import com.niyaj.popos.features.reports.presentation.ReportState
-import com.niyaj.popos.utils.getEndTime
-import com.niyaj.popos.utils.getStartTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,13 +1,13 @@
 package com.niyaj.popos.features.profile.data.repository
 
 import android.util.Patterns
+import com.niyaj.popos.common.utils.Constants.RESTAURANT_ID
+import com.niyaj.popos.common.utils.isValidPassword
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.ValidationResult
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoRepository
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
-import com.niyaj.popos.utils.Constants.RESTAURANT_ID
-import com.niyaj.popos.utils.isValidPassword
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query

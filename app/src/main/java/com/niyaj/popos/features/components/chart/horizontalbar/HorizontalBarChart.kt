@@ -16,9 +16,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.*
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
+import com.niyaj.popos.common.utils.toRupee
 import com.niyaj.popos.features.components.chart.common.dimens.ChartDimens
 import com.niyaj.popos.features.components.chart.common.dimens.ChartDimensDefaults
 import com.niyaj.popos.features.components.chart.horizontalbar.axis.HorizontalAxisConfig
@@ -32,7 +38,6 @@ import com.niyaj.popos.features.components.chart.horizontalbar.config.Horizontal
 import com.niyaj.popos.features.components.chart.horizontalbar.config.StartDirection
 import com.niyaj.popos.features.components.chart.horizontalbar.model.HorizontalBarData
 import com.niyaj.popos.features.components.chart.horizontalbar.model.maxXValue
-import com.niyaj.popos.utils.toRupee
 
 @Composable
 fun HorizontalBarChart(

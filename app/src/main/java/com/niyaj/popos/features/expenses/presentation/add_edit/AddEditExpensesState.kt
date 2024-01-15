@@ -1,7 +1,7 @@
 package com.niyaj.popos.features.expenses.presentation.add_edit
 
+import com.niyaj.popos.common.utils.toMilliSecond
 import com.niyaj.popos.features.expenses_category.domain.model.ExpensesCategory
-import com.niyaj.popos.utils.toMilliSecond
 import java.time.LocalDate
 
 data class AddEditExpensesState(

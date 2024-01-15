@@ -1,6 +1,6 @@
 package com.niyaj.popos.features.cart_order.domain.model
 
-import com.niyaj.popos.utils.Constants.SELECTED_CART_ORDER_ID
+import com.niyaj.popos.common.utils.Constants.SELECTED_CART_ORDER_ID
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 

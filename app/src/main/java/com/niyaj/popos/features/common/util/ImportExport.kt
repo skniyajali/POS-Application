@@ -5,9 +5,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import com.niyaj.popos.utils.Constants.JSON_FILE_EXTENSION
-import com.niyaj.popos.utils.Constants.JSON_FILE_TYPE
-import com.niyaj.popos.utils.Constants.SAVEABLE_FILE_NAME
+import com.niyaj.popos.common.utils.Constants.JSON_FILE_EXTENSION
+import com.niyaj.popos.common.utils.Constants.JSON_FILE_TYPE
+import com.niyaj.popos.common.utils.Constants.SAVEABLE_FILE_NAME
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapter
 import kotlinx.coroutines.delay

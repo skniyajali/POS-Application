@@ -51,6 +51,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.niyaj.popos.common.utils.toPrettyDate
+import com.niyaj.popos.common.utils.toSafeString
 import com.niyaj.popos.features.common.ui.theme.Cream
 import com.niyaj.popos.features.common.ui.theme.HintGray
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeMedium
@@ -66,8 +68,6 @@ import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.destinations.UpdatePrinterInfoDestination
 import com.niyaj.popos.features.order.presentation.components.TwoGridText
-import com.niyaj.popos.utils.toPrettyDate
-import com.niyaj.popos.utils.toSafeString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult

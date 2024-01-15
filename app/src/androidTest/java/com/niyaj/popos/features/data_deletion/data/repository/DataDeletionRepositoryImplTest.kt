@@ -1,6 +1,5 @@
 package com.niyaj.popos.features.data_deletion.data.repository
 
-import com.niyaj.popos.applicationScope
 import com.niyaj.popos.di.TestConfig
 import com.niyaj.popos.features.app_settings.data.repository.SettingsRepositoryImpl
 import com.niyaj.popos.features.app_settings.domain.repository.SettingsRepository
@@ -27,7 +26,7 @@ class DataDeletionRepositoryImplTest {
         settingsRepository = SettingsRepositoryImpl(config, dispatcher)
 
 
-        repository = DataDeletionRepositoryImpl(config, settingsRepository, applicationScope, dispatcher)
+        repository = DataDeletionRepositoryImpl(config, settingsRepository, dispatcher)
     }
 
     @After

@@ -1,6 +1,6 @@
 package com.niyaj.popos.features.main_feed.domain.model
 
-import com.niyaj.popos.utils.getAllCapitalizedLetters
+import com.niyaj.popos.common.utils.getAllCapitalizedLetters
 import kotlinx.coroutines.flow.Flow
 
 data class ProductWithFlowQuantity(

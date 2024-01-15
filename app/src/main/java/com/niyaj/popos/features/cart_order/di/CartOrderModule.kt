@@ -1,6 +1,5 @@
 package com.niyaj.popos.features.cart_order.di
 
-import com.niyaj.popos.applicationScope
 import com.niyaj.popos.features.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.features.cart_order.data.repository.CartOrderRepositoryImpl
 import com.niyaj.popos.features.cart_order.domain.repository.CartOrderRepository
@@ -23,7 +22,7 @@ object CartOrderModule {
         config : RealmConfiguration,
         settingsRepository : SettingsRepository
     ): CartOrderRepository {
-        return CartOrderRepositoryImpl(config, settingsRepository, applicationScope)
+        return CartOrderRepositoryImpl(config, settingsRepository)
     }
 
     @Provides
@@ -31,7 +30,7 @@ object CartOrderModule {
         config : RealmConfiguration,
         settingsRepository : SettingsRepository
     ): CartOrderValidationRepository {
-        return CartOrderRepositoryImpl(config, settingsRepository, applicationScope)
+        return CartOrderRepositoryImpl(config, settingsRepository)
     }
 
     @Provides

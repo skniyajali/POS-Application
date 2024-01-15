@@ -1,11 +1,11 @@
 package com.niyaj.popos.features.reminder.presentation.absent_reminder
 
-import android.app.Application
 import android.text.format.DateUtils
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.niyaj.popos.common.utils.getStartTime
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.employee_attendance.domain.model.EmployeeAttendance
@@ -16,8 +16,7 @@ import com.niyaj.popos.features.reminder.domain.model.toReminder
 import com.niyaj.popos.features.reminder.domain.repository.ReminderRepository
 import com.niyaj.popos.features.reminder.domain.util.PaymentStatus
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
-import com.niyaj.popos.utils.getStartTime
-import com.niyaj.popos.utils.stopPendingIntentNotification
+import com.niyaj.popos.notifications.Notifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +33,7 @@ import javax.inject.Inject
 class AbsentReminderViewModel @Inject constructor(
     private val reminderRepository: ReminderRepository,
     private val attendanceRepository : AttendanceRepository,
-    private val application : Application
+    private val notifier: Notifier,
 ): ViewModel() {
 
     private val _employees = MutableStateFlow(EmployeeReminderWithStatusState())
@@ -128,13 +127,13 @@ class AbsentReminderViewModel @Inject constructor(
                     }
 
                     val markAsCompleted = DateUtils.isToday(_selectedDate.value.toLong())
+                    val reminder = AbsentReminder(isCompleted = markAsCompleted).toReminder()
 
-                    val result = reminderRepository.createOrUpdateReminder(AbsentReminder(isCompleted = markAsCompleted).toReminder())
+                    val result = reminderRepository.createOrUpdateReminder(reminder)
 
                     if (result) {
                         _eventFlow.emit(UiEvent.Success("Selected employee marked as absent on selected date."))
-                        val reminder = reminderRepository.getAbsentReminder()!!
-                        stopPendingIntentNotification(application.applicationContext, reminder.notificationId)
+                        notifier.stopAttendanceNotification(reminder.notificationId)
                     }
                 }
             }

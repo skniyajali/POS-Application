@@ -1,8 +1,8 @@
 package com.niyaj.popos.features.employee.presentation.add_edit
 
+import com.niyaj.popos.common.utils.toMilliSecond
 import com.niyaj.popos.features.employee.domain.util.EmployeeSalaryType
 import com.niyaj.popos.features.employee.domain.util.EmployeeType
-import com.niyaj.popos.utils.toMilliSecond
 import java.time.LocalDate
 
 data class AddEditEmployeeState(

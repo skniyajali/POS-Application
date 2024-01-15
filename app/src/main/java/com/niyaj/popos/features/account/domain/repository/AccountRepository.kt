@@ -1,8 +1,8 @@
 package com.niyaj.popos.features.account.domain.repository
 
+import com.niyaj.popos.common.utils.Constants.RESTAURANT_ID
 import com.niyaj.popos.features.account.domain.model.Account
 import com.niyaj.popos.features.common.util.Resource
-import com.niyaj.popos.utils.Constants.RESTAURANT_ID
 import kotlinx.coroutines.flow.Flow
 
 interface AccountRepository {

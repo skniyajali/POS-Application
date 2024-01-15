@@ -7,13 +7,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.niyaj.popos.common.utils.Constants
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.customer.domain.model.Customer
 import com.niyaj.popos.features.customer.domain.repository.CustomerRepository
 import com.niyaj.popos.features.customer.domain.use_cases.GetAllCustomers
 import com.niyaj.popos.features.customer.presentation.CustomerState
-import com.niyaj.popos.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

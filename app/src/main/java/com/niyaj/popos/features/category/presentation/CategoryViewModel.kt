@@ -8,13 +8,13 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.niyaj.popos.common.utils.capitalizeWords
 import com.niyaj.popos.features.category.domain.model.Category
 import com.niyaj.popos.features.category.domain.repository.CategoryRepository
 import com.niyaj.popos.features.category.domain.repository.CategoryValidationRepository
 import com.niyaj.popos.features.category.domain.use_cases.GetAllCategories
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.utils.capitalizeWords
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

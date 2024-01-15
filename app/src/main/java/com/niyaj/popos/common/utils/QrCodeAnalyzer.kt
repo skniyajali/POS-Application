@@ -1,4 +1,4 @@
-package com.niyaj.popos.utils
+package com.niyaj.popos.common.utils
 
 //class QrCodeAnalyzer(
 //    private val onQrCodeScanned : (String) -> Unit

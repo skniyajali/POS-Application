@@ -34,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.isScrolled
 import com.niyaj.popos.features.common.ui.theme.LightColor8
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
@@ -47,7 +48,6 @@ import com.niyaj.popos.features.destinations.ImportExpensesScreenDestination
 import com.niyaj.popos.features.expenses.domain.model.Expenses
 import com.niyaj.popos.features.expenses.presentation.ExpensesItems
 import com.niyaj.popos.features.expenses.presentation.ExpensesViewModel
-import com.niyaj.popos.utils.isScrolled
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult.Canceled

@@ -58,6 +58,8 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.toBarDate
+import com.niyaj.popos.common.utils.toRupee
 import com.niyaj.popos.features.common.ui.theme.ButtonSize
 import com.niyaj.popos.features.common.ui.theme.LightColor6
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
@@ -77,8 +79,6 @@ import com.niyaj.popos.features.destinations.AddEditSalaryScreenDestination
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.util.PaymentType
 import com.niyaj.popos.features.employee_salary.domain.model.EmployeeSalary
-import com.niyaj.popos.utils.toBarDate
-import com.niyaj.popos.utils.toRupee
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult

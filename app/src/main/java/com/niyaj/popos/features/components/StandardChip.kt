@@ -25,12 +25,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.niyaj.popos.common.utils.Constants.NOT_PAID
+import com.niyaj.popos.common.utils.Constants.PAID
 import com.niyaj.popos.features.common.ui.theme.IconSizeSmall
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.reminder.domain.util.PaymentStatus
-import com.niyaj.popos.utils.Constants.NOT_PAID
-import com.niyaj.popos.utils.Constants.PAID
 
 @Composable
 fun StandardOutlinedChip(

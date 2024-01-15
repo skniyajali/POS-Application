@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.niyaj.popos.common.utils.Constants.RESTAURANT_LOGO_NAME
+import com.niyaj.popos.common.utils.Constants.RESTAURANT_PRINT_LOGO_NAME
+import com.niyaj.popos.common.utils.toBitmap
 import com.niyaj.popos.features.account.presentation.register.components.RegistrationScaffold
 import com.niyaj.popos.features.account.presentation.register.components.basic_info.BasicInfo
 import com.niyaj.popos.features.account.presentation.register.components.basic_info.BasicInfoEvent
@@ -31,9 +34,6 @@ import com.niyaj.popos.features.account.presentation.register.utils.RegisterScre
 import com.niyaj.popos.features.common.util.ImageStorageManager
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.destinations.RegistrationResultScreenDestination
-import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO_NAME
-import com.niyaj.popos.utils.Constants.RESTAURANT_PRINT_LOGO_NAME
-import com.niyaj.popos.utils.toBitmap
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.launch

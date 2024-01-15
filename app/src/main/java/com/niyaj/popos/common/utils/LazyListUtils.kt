@@ -1,4 +1,4 @@
-package com.niyaj.popos.utils
+package com.niyaj.popos.common.utils
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.derivedStateOf

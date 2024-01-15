@@ -1,4 +1,4 @@
-package com.niyaj.popos.utils
+package com.niyaj.popos.common.utils
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable

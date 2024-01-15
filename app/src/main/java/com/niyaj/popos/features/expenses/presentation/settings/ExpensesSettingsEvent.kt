@@ -1,7 +1,7 @@
 package com.niyaj.popos.features.expenses.presentation.settings
 
+import com.niyaj.popos.common.utils.Constants.ImportExportType
 import com.niyaj.popos.features.expenses.domain.model.Expenses
-import com.niyaj.popos.utils.Constants.ImportExportType
 
 sealed class ExpensesSettingsEvent {
 

@@ -39,6 +39,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.isScrolled
+import com.niyaj.popos.common.utils.toRupee
 import com.niyaj.popos.features.common.ui.theme.IconSizeMedium
 import com.niyaj.popos.features.common.ui.theme.PoposPink100
 import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeSmall
@@ -47,8 +49,6 @@ import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.LoadingIndicator
 import com.niyaj.popos.features.main_feed.domain.model.ProductWithFlowQuantity
 import com.niyaj.popos.features.main_feed.presentation.components.components.TitleWithIcon
-import com.niyaj.popos.utils.isScrolled
-import com.niyaj.popos.utils.toRupee
 import kotlinx.coroutines.launch
 
 @Composable

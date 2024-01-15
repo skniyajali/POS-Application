@@ -77,6 +77,11 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.Constants.RESTAURANT_LOGO
+import com.niyaj.popos.common.utils.Constants.RESTAURANT_LOGO_NAME
+import com.niyaj.popos.common.utils.Constants.RESTAURANT_PRINT_LOGO_NAME
+import com.niyaj.popos.common.utils.isScrolled
+import com.niyaj.popos.common.utils.toBitmap
 import com.niyaj.popos.features.account.domain.model.Account
 import com.niyaj.popos.features.common.ui.theme.LightColor6
 import com.niyaj.popos.features.common.ui.theme.LightColor7
@@ -94,11 +99,6 @@ import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.destinations.ChangePasswordScreenDestination
 import com.niyaj.popos.features.destinations.UpdateProfileScreenDestination
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
-import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO
-import com.niyaj.popos.utils.Constants.RESTAURANT_LOGO_NAME
-import com.niyaj.popos.utils.Constants.RESTAURANT_PRINT_LOGO_NAME
-import com.niyaj.popos.utils.isScrolled
-import com.niyaj.popos.utils.toBitmap
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
