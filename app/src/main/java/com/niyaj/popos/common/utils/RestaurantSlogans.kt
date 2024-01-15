@@ -1,4 +1,4 @@
-package com.niyaj.popos.utils
+package com.niyaj.popos.common.utils
 
 val slogans = listOf(
         "Life is too short for bad food.",

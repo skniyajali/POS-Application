@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.niyaj.popos.common.utils.capitalizeWords
 import com.niyaj.popos.features.category.domain.model.Category
 import com.niyaj.popos.features.category.domain.use_cases.GetAllCategories
 import com.niyaj.popos.features.common.util.Resource
@@ -14,7 +15,6 @@ import com.niyaj.popos.features.common.util.safeString
 import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.product.domain.repository.ProductRepository
 import com.niyaj.popos.features.product.domain.repository.ProductValidationRepository
-import com.niyaj.popos.utils.capitalizeWords
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

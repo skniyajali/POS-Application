@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,9 +24,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.niyaj.popos.common.utils.toRupee
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.utils.toRupee
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -45,9 +44,7 @@ fun ReportBox(
     val screenWidth = configuration.screenWidthDp.dp
 
     Card(
-        onClick = {
-            onClick()
-        },
+        onClick = onClick,
         modifier = Modifier
             .width(
                 screenWidth
@@ -60,7 +57,6 @@ fun ReportBox(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(SpaceSmall),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically

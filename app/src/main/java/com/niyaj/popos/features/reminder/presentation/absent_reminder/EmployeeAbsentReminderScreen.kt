@@ -41,6 +41,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.Constants
+import com.niyaj.popos.common.utils.Constants.ABSENT_HOST
+import com.niyaj.popos.common.utils.Constants.ABSENT_HOST_SECURE
 import com.niyaj.popos.features.common.ui.theme.LightColor6
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
@@ -57,9 +60,6 @@ import com.niyaj.popos.features.reminder.presentation.components.EmployeeSelecti
 import com.niyaj.popos.features.reminder.presentation.components.EmployeeSelectionFooter
 import com.niyaj.popos.features.reminder.presentation.components.EmployeeSelectionHeader
 import com.niyaj.popos.features.reminder.presentation.components.InfoCard
-import com.niyaj.popos.utils.Constants
-import com.niyaj.popos.utils.Constants.ABSENT_HOST
-import com.niyaj.popos.utils.Constants.ABSENT_HOST_SECURE
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate

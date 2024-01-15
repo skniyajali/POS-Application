@@ -9,6 +9,9 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg
+import com.niyaj.popos.common.utils.createDottedString
+import com.niyaj.popos.common.utils.toFormattedTime
+import com.niyaj.popos.common.utils.toRupee
 import com.niyaj.popos.features.addon_item.domain.model.AddOnItem
 import com.niyaj.popos.features.cart.domain.model.CartProductItem
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
@@ -20,9 +23,6 @@ import com.niyaj.popos.features.order.domain.repository.OrderRepository
 import com.niyaj.popos.features.printer_info.domain.utils.BluetoothPrinter
 import com.niyaj.popos.features.profile.domain.model.RestaurantInfo
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoRepository
-import com.niyaj.popos.utils.createDottedString
-import com.niyaj.popos.utils.toFormattedTime
-import com.niyaj.popos.utils.toRupee
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

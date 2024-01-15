@@ -12,7 +12,7 @@ interface ReminderRepository {
 
     fun getAllReminders(): Flow<Resource<List<Reminder>>>
 
-    fun getAbsentReminder(): AbsentReminder?
+    suspend fun getAbsentReminder(): AbsentReminder?
 
     suspend fun getDailySalaryReminder(): DailySalaryReminder?
 

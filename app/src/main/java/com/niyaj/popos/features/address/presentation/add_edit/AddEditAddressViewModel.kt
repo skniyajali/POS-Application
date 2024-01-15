@@ -6,13 +6,13 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.niyaj.popos.common.utils.capitalizeWords
+import com.niyaj.popos.common.utils.getAllCapitalizedLetters
 import com.niyaj.popos.features.address.domain.model.Address
 import com.niyaj.popos.features.address.domain.repository.AddressRepository
 import com.niyaj.popos.features.address.domain.repository.AddressValidationRepository
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.utils.capitalizeWords
-import com.niyaj.popos.utils.getAllCapitalizedLetters
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

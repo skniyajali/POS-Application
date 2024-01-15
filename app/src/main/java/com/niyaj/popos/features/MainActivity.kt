@@ -12,9 +12,6 @@ import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
@@ -22,23 +19,14 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.ktx.isImmediateUpdateAllowed
 import com.niyaj.popos.BuildConfig
+import com.niyaj.popos.common.utils.Constants.NETWORK_PERMISSION_REQUEST_CODE
+import com.niyaj.popos.common.utils.Constants.NOTIFICATION_PERMISSION_REQUEST_CODE
+import com.niyaj.popos.common.utils.Constants.UPDATE_MANAGER_REQUEST_CODE
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
 import com.niyaj.popos.features.common.util.hasNetworkPermission
 import com.niyaj.popos.features.common.util.hasNotificationPermission
 import com.niyaj.popos.features.network_connectivity.domain.model.ConnectivityStatus
-import com.niyaj.popos.features.reminder.presentation.absent_reminder.EmployeeAbsentReminder
-import com.niyaj.popos.features.reminder.presentation.daily_salary_reminder.DailySalaryReminderWorkerViewModel
-import com.niyaj.popos.utils.Constants.DELETE_DATA_INTERVAL_HOUR
-import com.niyaj.popos.utils.Constants.DELETE_DATA_NOTIFICATION_CHANNEL_ID
-import com.niyaj.popos.utils.Constants.GENERATE_REPORT_CHANNEL_ID
-import com.niyaj.popos.utils.Constants.GENERATE_REPORT_INTERVAL_HOUR
-import com.niyaj.popos.utils.Constants.NETWORK_PERMISSION_REQUEST_CODE
-import com.niyaj.popos.utils.Constants.NOTIFICATION_PERMISSION_REQUEST_CODE
-import com.niyaj.popos.utils.Constants.UPDATE_MANAGER_REQUEST_CODE
-import com.niyaj.popos.utils.worker.DataDeletionWorker
-import com.niyaj.popos.utils.worker.GenerateReportWorker
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.concurrent.TimeUnit
 
 /**
  * Main activity
@@ -60,9 +48,6 @@ class MainActivity : ComponentActivity() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
         val mainViewModel by viewModels<MainViewModel>()
-        val workManager = WorkManager.getInstance(applicationContext)
-        val absentReminder by viewModels<EmployeeAbsentReminder>()
-        val dailySalaryReminder by viewModels<DailySalaryReminderWorkerViewModel>()
 
         appUpdateManager = AppUpdateManagerFactory.create(this)
 
@@ -90,30 +75,6 @@ class MainActivity : ComponentActivity() {
             )
         }
 
-        val periodicDeletionWorker =
-            PeriodicWorkRequestBuilder<DataDeletionWorker>(
-                DELETE_DATA_INTERVAL_HOUR,
-                TimeUnit.HOURS
-            ).addTag(DELETE_DATA_NOTIFICATION_CHANNEL_ID).build()
-
-        val generateReportWorker = PeriodicWorkRequestBuilder<GenerateReportWorker>(
-            GENERATE_REPORT_INTERVAL_HOUR,
-            TimeUnit.HOURS
-        ).addTag(GENERATE_REPORT_CHANNEL_ID).build()
-
-        if (mainViewModel.isLoggedIn) {
-            workManager.enqueueUniquePeriodicWork(
-                DELETE_DATA_NOTIFICATION_CHANNEL_ID,
-                ExistingPeriodicWorkPolicy.KEEP,
-                periodicDeletionWorker
-            )
-
-            workManager.enqueueUniquePeriodicWork(
-                GENERATE_REPORT_CHANNEL_ID,
-                ExistingPeriodicWorkPolicy.KEEP,
-                generateReportWorker
-            )
-        }
 
         registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             run {
@@ -135,14 +96,7 @@ class MainActivity : ComponentActivity() {
                     checkForAppUpdates()
                 }
 
-                PoposApp(
-                    workManager = workManager,
-                    dataDeletionId = periodicDeletionWorker.id,
-                    generateReportId = generateReportWorker.id,
-                    absentReminderId = absentReminder.absentWorker.id,
-                    dailySalaryReminderId = dailySalaryReminder.salaryWorker.id,
-                    isLoggedIn = mainViewModel.isLoggedIn,
-                )
+                PoposApp(mainViewModel)
             }
         }
     }

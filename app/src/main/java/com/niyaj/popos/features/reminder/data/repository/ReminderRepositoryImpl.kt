@@ -1,5 +1,11 @@
 package com.niyaj.popos.features.reminder.data.repository
 
+import com.niyaj.popos.common.network.Dispatcher
+import com.niyaj.popos.common.network.PoposDispatchers
+import com.niyaj.popos.common.utils.Constants.ABSENT_REMINDER_ID
+import com.niyaj.popos.common.utils.Constants.DAILY_SALARY_REMINDER_ID
+import com.niyaj.popos.common.utils.toDailySalaryAmount
+import com.niyaj.popos.common.utils.toRupee
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.employee.domain.model.Employee
 import com.niyaj.popos.features.employee.domain.util.EmployeeSalaryType
@@ -14,10 +20,6 @@ import com.niyaj.popos.features.reminder.domain.model.toDailySalaryReminder
 import com.niyaj.popos.features.reminder.domain.repository.ReminderRepository
 import com.niyaj.popos.features.reminder.domain.util.PaymentStatus
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
-import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_ID
-import com.niyaj.popos.utils.Constants.DAILY_SALARY_REMINDER_ID
-import com.niyaj.popos.utils.toDailySalaryAmount
-import com.niyaj.popos.utils.toRupee
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
@@ -25,7 +27,6 @@ import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.RealmResults
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -34,7 +35,8 @@ import timber.log.Timber
 
 class ReminderRepositoryImpl(
     val config: RealmConfiguration,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    @Dispatcher(PoposDispatchers.IO)
+    private val ioDispatcher: CoroutineDispatcher,
 ) : ReminderRepository {
 
     val realm = Realm.open(config)
@@ -71,14 +73,18 @@ class ReminderRepositoryImpl(
         }
     }
 
-    override fun getAbsentReminder(): AbsentReminder? {
-        val findReminder = realm.query<Reminder>("reminderId == $0", ABSENT_REMINDER_ID).first().find()
+    override suspend fun getAbsentReminder(): AbsentReminder? {
+        val findReminder = withContext(ioDispatcher) {
+            realm.query<Reminder>("reminderId == $0", ABSENT_REMINDER_ID).first().find()
+        }
 
         return findReminder?.toAbsentReminder()
     }
 
-    override suspend fun getDailySalaryReminder() : DailySalaryReminder? {
-        val reminder = realm.query<Reminder>("reminderId == $0", DAILY_SALARY_REMINDER_ID).first().find()
+    override suspend fun getDailySalaryReminder(): DailySalaryReminder? {
+        val reminder = withContext(ioDispatcher) {
+            realm.query<Reminder>("reminderId == $0", DAILY_SALARY_REMINDER_ID).first().find()
+        }
 
         return reminder?.toDailySalaryReminder()
     }

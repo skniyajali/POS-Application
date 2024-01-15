@@ -1,5 +1,7 @@
 package com.niyaj.popos.features.reports.data.repository
 
+import com.niyaj.popos.common.utils.getCalculatedStartDate
+import com.niyaj.popos.common.utils.toSalaryDate
 import com.niyaj.popos.features.cart.domain.model.CartRealm
 import com.niyaj.popos.features.cart.domain.repository.CartRepository
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
@@ -12,8 +14,6 @@ import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.reports.domain.model.Reports
 import com.niyaj.popos.features.reports.domain.repository.ReportsRepository
 import com.niyaj.popos.features.reports.domain.util.ProductWiseReport
-import com.niyaj.popos.utils.getCalculatedStartDate
-import com.niyaj.popos.utils.toSalaryDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query

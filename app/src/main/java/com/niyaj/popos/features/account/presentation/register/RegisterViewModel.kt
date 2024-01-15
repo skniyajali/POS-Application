@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.niyaj.popos.common.utils.capitalizeWords
 import com.niyaj.popos.features.account.domain.model.Account
 import com.niyaj.popos.features.account.domain.repository.AccountRepository
 import com.niyaj.popos.features.account.presentation.register.components.basic_info.BasicInfoEvent
@@ -21,7 +22,6 @@ import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoReposito
 import com.niyaj.popos.features.profile.domain.repository.RestaurantInfoValidationRepository
 import com.niyaj.popos.features.qrcode_scanner.domain.repository.QRCodeEncoder
 import com.niyaj.popos.features.qrcode_scanner.domain.repository.QRCodeScanner
-import com.niyaj.popos.utils.capitalizeWords
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow

@@ -1,11 +1,12 @@
 package com.niyaj.popos.features.reminder.presentation.daily_salary_reminder
 
-import android.app.Application
 import android.text.format.DateUtils
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.niyaj.popos.common.utils.getStartTime
+import com.niyaj.popos.common.utils.toDailySalaryAmount
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.employee.domain.util.PaymentType
@@ -18,9 +19,7 @@ import com.niyaj.popos.features.reminder.domain.model.toReminder
 import com.niyaj.popos.features.reminder.domain.repository.ReminderRepository
 import com.niyaj.popos.features.reminder.domain.util.PaymentStatus
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
-import com.niyaj.popos.utils.getStartTime
-import com.niyaj.popos.utils.stopPendingIntentNotification
-import com.niyaj.popos.utils.toDailySalaryAmount
+import com.niyaj.popos.notifications.Notifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +36,7 @@ import javax.inject.Inject
 class DailySalaryReminderViewModel @Inject constructor(
     private val reminderRepository: ReminderRepository,
     private val salaryRepository : SalaryRepository,
-    private val application : Application
+    private val notifier: Notifier,
 ): ViewModel() {
 
     private val _employees = MutableStateFlow(EmployeeReminderWithStatusState())
@@ -131,13 +130,13 @@ class DailySalaryReminderViewModel @Inject constructor(
                     }
 
                     val markAsCompleted = DateUtils.isToday(_selectedDate.value.toLong())
+                    val reminder = DailySalaryReminder(isCompleted = markAsCompleted).toReminder()
 
-                    val result = reminderRepository.createOrUpdateReminder(DailySalaryReminder(isCompleted = markAsCompleted).toReminder())
+                    val result = reminderRepository.createOrUpdateReminder(reminder)
 
                     if (result) {
                         _eventFlow.emit(UiEvent.Success("Selected employee marked as paid on selected Date."))
-                        val reminder = reminderRepository.getDailySalaryReminder()!!
-                        stopPendingIntentNotification(application.applicationContext, reminder.notificationId)
+                        notifier.stopDailySalaryNotification(reminder.notificationId)
                     }
                 }
             }

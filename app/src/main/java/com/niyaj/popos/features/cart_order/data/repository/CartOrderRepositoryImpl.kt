@@ -1,5 +1,7 @@
 package com.niyaj.popos.features.cart_order.data.repository
 
+import com.niyaj.popos.common.utils.Constants.SELECTED_CART_ORDER_ID
+import com.niyaj.popos.common.utils.getCalculatedStartDate
 import com.niyaj.popos.features.addon_item.domain.model.AddOnItem
 import com.niyaj.popos.features.address.domain.model.Address
 import com.niyaj.popos.features.app_settings.domain.repository.SettingsRepository
@@ -13,8 +15,6 @@ import com.niyaj.popos.features.cart_order.domain.util.OrderStatus
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.ValidationResult
 import com.niyaj.popos.features.customer.domain.model.Customer
-import com.niyaj.popos.utils.Constants.SELECTED_CART_ORDER_ID
-import com.niyaj.popos.utils.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.UpdatePolicy
@@ -26,7 +26,6 @@ import io.realm.kotlin.notifications.UpdatedObject
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -37,7 +36,6 @@ import timber.log.Timber
 class CartOrderRepositoryImpl(
     config: RealmConfiguration,
     private val settingsRepository: SettingsRepository,
-    private val externalScope: CoroutineScope,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : CartOrderRepository, CartOrderValidationRepository {
 

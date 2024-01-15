@@ -1,6 +1,6 @@
 package com.niyaj.popos.features.app_settings.domain.model
 
-import com.niyaj.popos.utils.Constants.SETTINGS_ID
+import com.niyaj.popos.common.utils.Constants.SETTINGS_ID
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 

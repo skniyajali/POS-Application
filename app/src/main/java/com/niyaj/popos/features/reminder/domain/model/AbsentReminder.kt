@@ -1,10 +1,10 @@
 package com.niyaj.popos.features.reminder.domain.model
 
+import com.niyaj.popos.common.utils.Constants.ABSENT_REMINDER_ID
+import com.niyaj.popos.common.utils.Constants.ABSENT_REMINDER_NAME
+import com.niyaj.popos.common.utils.closingTime
+import com.niyaj.popos.common.utils.openingTime
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
-import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_ID
-import com.niyaj.popos.utils.Constants.ABSENT_REMINDER_NAME
-import com.niyaj.popos.utils.closingTime
-import com.niyaj.popos.utils.openingTime
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 

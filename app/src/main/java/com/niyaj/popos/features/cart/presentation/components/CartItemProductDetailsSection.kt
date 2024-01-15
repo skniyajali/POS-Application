@@ -32,11 +32,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.toRupee
 import com.niyaj.popos.features.cart.domain.model.CartProductItem
 import com.niyaj.popos.features.common.ui.theme.LightColor10
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.utils.toRupee
 
 @Composable
 fun CartItemProductDetailsSection(

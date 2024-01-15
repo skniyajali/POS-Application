@@ -1,7 +1,7 @@
 package com.niyaj.popos.features.customer.presentation.settings
 
+import com.niyaj.popos.common.utils.Constants.ImportExportType
 import com.niyaj.popos.features.customer.domain.model.Customer
-import com.niyaj.popos.utils.Constants.ImportExportType
 
 sealed class CustomerSettingsEvent {
 

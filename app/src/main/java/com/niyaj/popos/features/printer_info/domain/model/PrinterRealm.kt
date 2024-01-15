@@ -1,13 +1,13 @@
 package com.niyaj.popos.features.printer_info.domain.model
 
-import com.niyaj.popos.utils.Constants.PRINTER_DPI
-import com.niyaj.popos.utils.Constants.PRINTER_ID
-import com.niyaj.popos.utils.Constants.PRINTER_NBR_LINE
-import com.niyaj.popos.utils.Constants.PRINTER_WIDTH_MM
-import com.niyaj.popos.utils.Constants.PRINT_ADDRESS_WISE_REPORT_LIMIT
-import com.niyaj.popos.utils.Constants.PRINT_CUSTOMER_WISE_REPORT_LIMIT
-import com.niyaj.popos.utils.Constants.PRINT_PRODUCT_WISE_REPORT_LIMIT
-import com.niyaj.popos.utils.Constants.PRODUCT_NAME_LENGTH
+import com.niyaj.popos.common.utils.Constants.PRINTER_DPI
+import com.niyaj.popos.common.utils.Constants.PRINTER_ID
+import com.niyaj.popos.common.utils.Constants.PRINTER_NBR_LINE
+import com.niyaj.popos.common.utils.Constants.PRINTER_WIDTH_MM
+import com.niyaj.popos.common.utils.Constants.PRINT_ADDRESS_WISE_REPORT_LIMIT
+import com.niyaj.popos.common.utils.Constants.PRINT_CUSTOMER_WISE_REPORT_LIMIT
+import com.niyaj.popos.common.utils.Constants.PRINT_PRODUCT_WISE_REPORT_LIMIT
+import com.niyaj.popos.common.utils.Constants.PRODUCT_NAME_LENGTH
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 

@@ -31,25 +31,22 @@ import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.toFormattedDateAndTime
 import com.niyaj.popos.features.common.ui.theme.LightColor12
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
@@ -59,9 +56,6 @@ import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.destinations.EmployeeAbsentReminderScreenDestination
 import com.niyaj.popos.features.destinations.EmployeeDailySalaryReminderScreenDestination
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
-import com.niyaj.popos.features.reminder.presentation.absent_reminder.EmployeeAbsentReminder
-import com.niyaj.popos.features.reminder.presentation.daily_salary_reminder.DailySalaryReminderWorkerViewModel
-import com.niyaj.popos.utils.toFormattedDateAndTime
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult
@@ -72,9 +66,7 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import com.vanpra.composematerialdialogs.title
 import de.charlex.compose.RevealSwipe
 import io.sentry.compose.SentryTraced
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 /**
  * Reminder Screen
@@ -88,15 +80,9 @@ fun ReminderScreen(
     navController: NavController = rememberNavController(),
     scaffoldState: ScaffoldState = rememberScaffoldState(),
     reminderViewModel: ReminderViewModel = hiltViewModel(),
-    employeeAbsentReminder: EmployeeAbsentReminder = hiltViewModel(),
-    dailySalaryReminderWorkerViewModel: DailySalaryReminderWorkerViewModel = hiltViewModel(),
     resultRecipient: ResultRecipient<EmployeeAbsentReminderScreenDestination, String>,
     dailySalaryRecipient: ResultRecipient<EmployeeDailySalaryReminderScreenDestination, String>
 ) {
-    val context = LocalContext.current
-    val workManager = WorkManager.getInstance(context)
-    val currentTime = System.currentTimeMillis().toString()
-
     val scope = rememberCoroutineScope()
     val updateReminderState = rememberMaterialDialogState()
     val deleteReminderState = rememberMaterialDialogState()
@@ -159,60 +145,6 @@ fun ReminderScreen(
             is NavResult.Value -> {
                 scope.launch {
                     scaffoldState.snackbarHostState.showSnackbar(result.value)
-                }
-            }
-        }
-    }
-
-    val absentReminderWorker = workManager
-        .getWorkInfoByIdFlow(employeeAbsentReminder.absentWorker.id)
-
-    val dailyReminderWorker = workManager
-        .getWorkInfoByIdFlow(dailySalaryReminderWorkerViewModel.salaryWorker.id)
-
-    LaunchedEffect(key1 = Unit, key2 = absentReminderWorker) {
-        absentReminderWorker.collectLatest { info ->
-            if (info != null) {
-                when (info.state) {
-                    WorkInfo.State.ENQUEUED -> {
-                        Timber.d("Employee Absent Reminder Enqueued")
-                    }
-
-                    WorkInfo.State.RUNNING -> {
-                        Timber.d("Employee Absent Reminder Running")
-                        val reminder = employeeAbsentReminder.reminder.value
-
-                        if (!reminder.isCompleted && currentTime in reminder.reminderStartTime..reminder.reminderEndTime) {
-                            navController.navigate(EmployeeAbsentReminderScreenDestination)
-                        } else {
-                            workManager.cancelWorkById(employeeAbsentReminder.absentWorker.id)
-                        }
-                    }
-
-                    else -> {}
-                }
-            }
-        }
-    }
-
-    LaunchedEffect(key1 = Unit, key2 = dailyReminderWorker) {
-        dailyReminderWorker.collectLatest { info ->
-            if (info != null) {
-                when (info.state) {
-                    WorkInfo.State.ENQUEUED -> {
-                        Timber.d("Daily Salary Reminder Enqueued")
-                    }
-
-                    WorkInfo.State.RUNNING -> {
-                        Timber.d("Daily Salary Reminder Running")
-                        val reminder = dailySalaryReminderWorkerViewModel.salaryReminder.value
-
-                        if (!reminder.isCompleted && currentTime in reminder.reminderStartTime..reminder.reminderEndTime) {
-                            navController.navigate(EmployeeDailySalaryReminderScreenDestination)
-                        }
-                    }
-
-                    else -> {}
                 }
             }
         }

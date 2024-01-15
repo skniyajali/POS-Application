@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.Constants
 import com.niyaj.popos.features.cart_order.presentation.add_edit.PhoneNoCountBox
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
@@ -36,7 +37,6 @@ import com.niyaj.popos.features.common.ui.theme.TextGray
 import com.niyaj.popos.features.components.ImageCard
 import com.niyaj.popos.features.components.NoteCard
 import com.niyaj.popos.features.components.StandardOutlinedTextField
-import com.niyaj.popos.utils.Constants
 
 @Composable
 fun LoginInfo(

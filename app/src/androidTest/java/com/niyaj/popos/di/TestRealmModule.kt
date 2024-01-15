@@ -1,6 +1,5 @@
 package com.niyaj.popos.di
 
-import com.niyaj.popos.applicationScope
 import com.niyaj.popos.features.addon_item.data.repository.AddOnItemRepositoryImpl
 import com.niyaj.popos.features.addon_item.domain.repository.AddOnItemRepository
 import com.niyaj.popos.features.addon_item.domain.repository.AddOnItemValidationRepository
@@ -112,12 +111,12 @@ object TestRealmModule {
 
     @Provides
     fun provideCartOrderRepositoryImpl(settingsRepository: SettingsRepository): CartOrderRepository {
-        return CartOrderRepositoryImpl(config, settingsRepository, applicationScope)
+        return CartOrderRepositoryImpl(config, settingsRepository)
     }
 
     @Provides
     fun provideCartOrderValidationRepositoryImpl(settingsRepository: SettingsRepository): CartOrderValidationRepository {
-        return CartOrderRepositoryImpl(config, settingsRepository, applicationScope)
+        return CartOrderRepositoryImpl(config, settingsRepository)
     }
 
     @Provides
@@ -207,7 +206,7 @@ object TestRealmModule {
 
     @Provides
     fun provideDataDeletionRepositoryImpl(settingsRepository: SettingsRepository): DataDeletionRepository {
-        return DataDeletionRepositoryImpl(config, settingsRepository, applicationScope)
+        return DataDeletionRepositoryImpl(config, settingsRepository)
     }
 
     @Provides

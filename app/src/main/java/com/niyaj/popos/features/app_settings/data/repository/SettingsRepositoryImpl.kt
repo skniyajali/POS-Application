@@ -1,12 +1,12 @@
 package com.niyaj.popos.features.app_settings.data.repository
 
+import com.niyaj.popos.common.utils.Constants.SETTINGS_ID
+import com.niyaj.popos.common.utils.isContainsArithmeticCharacter
 import com.niyaj.popos.features.app_settings.domain.model.Settings
 import com.niyaj.popos.features.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.features.app_settings.domain.repository.SettingsValidationRepository
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.ValidationResult
-import com.niyaj.popos.utils.Constants.SETTINGS_ID
-import com.niyaj.popos.utils.isContainsArithmeticCharacter
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query

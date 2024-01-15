@@ -9,9 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
 import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -19,19 +19,12 @@ import com.niyaj.popos.features.common.util.PoposNavigation
 import com.niyaj.popos.features.destinations.LoginScreenDestination
 import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import io.sentry.compose.withSentryObservableEffect
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 @OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun PoposApp(
-    workManager: WorkManager,
-    dataDeletionId: UUID,
-    generateReportId: UUID,
-    absentReminderId: UUID,
-    dailySalaryReminderId: UUID,
-    isLoggedIn: Boolean,
+    mainViewModel: MainViewModel = hiltViewModel(),
 ) {
     val scaffoldState = rememberScaffoldState()
     val navController = rememberNavController()
@@ -47,40 +40,37 @@ fun PoposApp(
     val scope = rememberCoroutineScope()
     val systemUiController = rememberSystemUiController()
 
-    LaunchedEffect(key1 = true) {
-        workManager.getWorkInfoByIdFlow(dataDeletionId).collectLatest { workInfo ->
-            if (workInfo != null) {
-                when (workInfo.state) {
-                    WorkInfo.State.FAILED -> {}
-                    WorkInfo.State.RUNNING -> {}
-                    else -> {}
-                }
+    val isLoggedIn = mainViewModel.isLoggedIn
+    val deleteState = mainViewModel.deleteState.collectAsStateWithLifecycle().value
+    val reportState = mainViewModel.reportState.collectAsStateWithLifecycle().value
+    val dailySalaryState = mainViewModel.salaryReminderState.collectAsStateWithLifecycle().value
+    val attendanceState = mainViewModel.attendanceState.collectAsStateWithLifecycle().value
+
+
+    LaunchedEffect(key1 = deleteState) {
+        if (deleteState) {
+            scaffoldState.snackbarHostState.showSnackbar("Data Deletion Running")
+        }
+    }
+
+    LaunchedEffect(key1 = reportState) {
+        if (reportState) {
+            scope.launch {
+                scaffoldState.snackbarHostState.showSnackbar("Report Generate Running")
             }
         }
     }
 
-    LaunchedEffect(key1 = true) {
-        workManager.getWorkInfoByIdFlow(generateReportId).collectLatest { workInfo ->
-            if (workInfo != null) {
-                when (workInfo.state) {
-                    WorkInfo.State.FAILED -> {
-                        scope.launch {
-                            scaffoldState.snackbarHostState.showSnackbar(
-                                "Unable to generate report"
-                            )
-                        }
-                    }
+    LaunchedEffect(key1 = dailySalaryState) {
+        if (dailySalaryState) {
+            scaffoldState.snackbarHostState.showSnackbar("Daily Salary Reminder Running")
+        }
+    }
 
-                    WorkInfo.State.RUNNING -> {
-                        scope.launch {
-                            scaffoldState.snackbarHostState.showSnackbar(
-                                "Report Generate Running"
-                            )
-                        }
-                    }
-
-                    else -> {}
-                }
+    LaunchedEffect(key1 = attendanceState) {
+        if (attendanceState) {
+            scope.launch {
+                scaffoldState.snackbarHostState.showSnackbar("Attendance Reminder Running")
             }
         }
     }

@@ -1,6 +1,8 @@
 package com.niyaj.popos.features.expenses.data.repository
 
 import com.google.common.truth.Truth.assertThat
+import com.niyaj.popos.common.utils.getEndTime
+import com.niyaj.popos.common.utils.getStartTime
 import com.niyaj.popos.di.TestConfig
 import com.niyaj.popos.features.app_settings.data.repository.SettingsRepositoryImpl
 import com.niyaj.popos.features.app_settings.domain.repository.SettingsRepository
@@ -8,8 +10,6 @@ import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.expenses.domain.model.Expenses
 import com.niyaj.popos.features.expenses_category.data.repository.ExpensesCategoryRepositoryImpl
 import com.niyaj.popos.features.expenses_category.domain.model.ExpensesCategory
-import com.niyaj.popos.utils.getEndTime
-import com.niyaj.popos.utils.getStartTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.runTest

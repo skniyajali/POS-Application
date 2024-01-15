@@ -20,7 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.niyaj.popos.R
-import com.niyaj.popos.utils.Constants.STANDARD_BACK_BUTTON
+import com.niyaj.popos.common.utils.Constants.STANDARD_BACK_BUTTON
 
 @Composable
 fun StandardScaffold(

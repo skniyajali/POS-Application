@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.niyaj.popos.common.utils.isScrolled
 import com.niyaj.popos.features.common.util.UiEvent
 import com.niyaj.popos.features.components.StandardBackdropScaffold
 import com.niyaj.popos.features.destinations.AddEditCartOrderScreenDestination
@@ -24,7 +25,6 @@ import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import com.niyaj.popos.features.destinations.SelectedCartOrderScreenDestination
 import com.niyaj.popos.features.main_feed.presentation.components.category.MainFeedCategoryEvent
 import com.niyaj.popos.features.main_feed.presentation.components.product.MainFeedProductEvent
-import com.niyaj.popos.utils.isScrolled
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.result.NavResult

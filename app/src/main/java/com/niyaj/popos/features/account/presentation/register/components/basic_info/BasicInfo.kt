@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.Constants.PRINT_LOGO
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
@@ -37,7 +38,6 @@ import com.niyaj.popos.features.common.ui.theme.TextGray
 import com.niyaj.popos.features.components.ImageCard
 import com.niyaj.popos.features.components.NoteCard
 import com.niyaj.popos.features.components.StandardOutlinedTextField
-import com.niyaj.popos.utils.Constants.PRINT_LOGO
 
 @Composable
 fun BasicInfo(

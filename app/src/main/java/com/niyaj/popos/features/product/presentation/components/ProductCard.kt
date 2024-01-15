@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.niyaj.popos.common.utils.toRupee
 import com.niyaj.popos.features.common.ui.theme.LightColor8
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
@@ -49,7 +50,6 @@ import com.niyaj.popos.features.components.TextWithCount
 import com.niyaj.popos.features.components.TextWithIcon
 import com.niyaj.popos.features.components.header
 import com.niyaj.popos.features.product.domain.model.Product
-import com.niyaj.popos.utils.toRupee
 
 
 @OptIn(ExperimentalFoundationApi::class)

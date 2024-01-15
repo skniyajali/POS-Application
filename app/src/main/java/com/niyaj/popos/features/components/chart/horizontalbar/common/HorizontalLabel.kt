@@ -7,8 +7,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import com.niyaj.popos.common.utils.getAllCapitalizedLetters
 import com.niyaj.popos.features.components.chart.horizontalbar.model.HorizontalBarData
-import com.niyaj.popos.utils.getAllCapitalizedLetters
 
 internal fun DrawScope.drawHorizontalBarLabel(
     horizontalBarData: HorizontalBarData,

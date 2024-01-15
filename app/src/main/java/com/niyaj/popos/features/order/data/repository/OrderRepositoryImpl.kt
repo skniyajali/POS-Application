@@ -1,5 +1,6 @@
 package com.niyaj.popos.features.order.data.repository
 
+import com.niyaj.popos.common.utils.Constants
 import com.niyaj.popos.features.cart.domain.model.CartProductItem
 import com.niyaj.popos.features.cart.domain.model.CartRealm
 import com.niyaj.popos.features.cart_order.domain.model.CartOrder
@@ -12,7 +13,6 @@ import com.niyaj.popos.features.order.domain.model.DineInOrder
 import com.niyaj.popos.features.order.domain.model.DineOutOrder
 import com.niyaj.popos.features.order.domain.model.OrderDetail
 import com.niyaj.popos.features.order.domain.repository.OrderRepository
-import com.niyaj.popos.utils.Constants
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.UpdatePolicy

@@ -1,5 +1,6 @@
 package com.niyaj.popos.features.expenses.data.repository
 
+import com.niyaj.popos.common.utils.getCalculatedStartDate
 import com.niyaj.popos.features.app_settings.domain.repository.SettingsRepository
 import com.niyaj.popos.features.common.util.Resource
 import com.niyaj.popos.features.common.util.ValidationResult
@@ -7,7 +8,6 @@ import com.niyaj.popos.features.expenses.domain.model.Expenses
 import com.niyaj.popos.features.expenses.domain.repository.ExpensesRepository
 import com.niyaj.popos.features.expenses.domain.repository.ExpensesValidationRepository
 import com.niyaj.popos.features.expenses_category.domain.model.ExpensesCategory
-import com.niyaj.popos.utils.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.UpdatePolicy

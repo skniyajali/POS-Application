@@ -39,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.toFormattedTime
 import com.niyaj.popos.features.common.ui.theme.LightColor12
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
@@ -50,7 +51,6 @@ import com.niyaj.popos.features.destinations.MainFeedScreenDestination
 import com.niyaj.popos.features.destinations.OrderDetailsScreenDestination
 import com.niyaj.popos.features.order.domain.model.DineInOrder
 import com.niyaj.popos.features.order.domain.model.DineOutOrder
-import com.niyaj.popos.utils.toFormattedTime
 import com.ramcosta.composedestinations.navigation.navigate
 import de.charlex.compose.RevealSwipe
 

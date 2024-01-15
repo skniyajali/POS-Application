@@ -1,5 +1,6 @@
 package com.niyaj.popos.features.data_deletion.data.repository
 
+import com.niyaj.popos.common.utils.getCalculatedStartDate
 import com.niyaj.popos.features.addon_item.domain.model.AddOnItem
 import com.niyaj.popos.features.address.domain.model.Address
 import com.niyaj.popos.features.app_settings.domain.model.Settings
@@ -19,21 +20,17 @@ import com.niyaj.popos.features.expenses.domain.model.Expenses
 import com.niyaj.popos.features.expenses_category.domain.model.ExpensesCategory
 import com.niyaj.popos.features.product.domain.model.Product
 import com.niyaj.popos.features.reports.domain.model.Reports
-import com.niyaj.popos.utils.getCalculatedStartDate
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.query
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class DataDeletionRepositoryImpl(
     config: RealmConfiguration,
     private val settingsRepository: SettingsRepository,
-    private val coroutineScope: CoroutineScope,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : DataDeletionRepository {
 
@@ -60,7 +57,7 @@ class DataDeletionRepositoryImpl(
                 val cartOrderDate = getCalculatedStartDate(days = "-${settings.cartOrderDataDeletionInterval}")
                 val reportDate = getCalculatedStartDate(days = "-${settings.reportDataDeletionInterval}")
 
-                coroutineScope.launch {
+                withContext(ioDispatcher) {
                     realm.write {
                         val expenses = this.query<Expenses>("createdAt < $0", reportDate).find()
                         val carts = this.query<CartRealm>("createdAt < $0", cartDate).find()
@@ -72,7 +69,7 @@ class DataDeletionRepositoryImpl(
                         delete(reports)
                         delete(expenses)
                     }
-                }.join()
+                }
             }
 
             Resource.Success(true)
@@ -84,26 +81,24 @@ class DataDeletionRepositoryImpl(
     override suspend fun deleteAllRecords(): Resource<Boolean> {
         return try {
             withContext(ioDispatcher) {
-                coroutineScope.launch {
-                    realm.write {
-                        delete(Category::class)
-                        delete(Product::class)
-                        delete(Address::class)
-                        delete(Customer::class)
-                        delete(CartOrder::class)
-                        delete(CartRealm::class)
-                        delete(AddOnItem::class)
-                        delete(Charges::class)
-                        delete(Employee::class)
-                        delete(ExpensesCategory::class)
-                        delete(Expenses::class)
-                        delete(SelectedCartOrder::class)
-                        delete(EmployeeSalary::class)
-                        delete(EmployeeAttendance::class)
-                        delete(Reports::class)
-                        delete(Settings::class)
-                    }
-                }.join()
+                realm.write {
+                    delete(Category::class)
+                    delete(Product::class)
+                    delete(Address::class)
+                    delete(Customer::class)
+                    delete(CartOrder::class)
+                    delete(CartRealm::class)
+                    delete(AddOnItem::class)
+                    delete(Charges::class)
+                    delete(Employee::class)
+                    delete(ExpensesCategory::class)
+                    delete(Expenses::class)
+                    delete(SelectedCartOrder::class)
+                    delete(EmployeeSalary::class)
+                    delete(EmployeeAttendance::class)
+                    delete(Reports::class)
+                    delete(Settings::class)
+                }
             }
 
             Resource.Success(true)

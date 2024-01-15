@@ -26,12 +26,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.niyaj.popos.R
+import com.niyaj.popos.common.utils.Constants.STANDARD_BOTTOM_SHEET
+import com.niyaj.popos.common.utils.Constants.STANDARD_BOTTOM_SHEET_CLOSE_BTN
 import com.niyaj.popos.features.common.ui.theme.LightColor6
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.utils.Constants.STANDARD_BOTTOM_SHEET
-import com.niyaj.popos.utils.Constants.STANDARD_BOTTOM_SHEET_CLOSE_BTN
 
 /**
  * Bottom sheet with close icon

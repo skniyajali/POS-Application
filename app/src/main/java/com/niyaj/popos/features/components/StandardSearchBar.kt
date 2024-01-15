@@ -33,9 +33,9 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.niyaj.popos.common.utils.Constants.SEARCH_BAR_CLEAR_BUTTON
+import com.niyaj.popos.common.utils.Constants.STANDARD_SEARCH_BAR
 import com.niyaj.popos.features.addon_item.domain.util.AddOnConstants.ADDON_SEARCH_PLACEHOLDER
-import com.niyaj.popos.utils.Constants.SEARCH_BAR_CLEAR_BUTTON
-import com.niyaj.popos.utils.Constants.STANDARD_SEARCH_BAR
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

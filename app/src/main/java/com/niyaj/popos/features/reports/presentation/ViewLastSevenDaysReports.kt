@@ -28,11 +28,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.niyaj.popos.common.utils.toRupee
 import com.niyaj.popos.features.common.ui.theme.MediumGray
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.components.ItemNotAvailable
 import com.niyaj.popos.features.components.StandardScaffold
-import com.niyaj.popos.utils.toRupee
 import com.ramcosta.composedestinations.annotation.Destination
 
 @Destination

@@ -18,6 +18,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
+import com.niyaj.popos.common.utils.Constants.NEGATIVE_BUTTON
+import com.niyaj.popos.common.utils.Constants.POSITIVE_BUTTON
+import com.niyaj.popos.common.utils.Constants.STANDARD_BACK_BUTTON
+import com.niyaj.popos.common.utils.Constants.STANDARD_BOTTOM_SHEET_CLOSE_BTN
 import com.niyaj.popos.features.MainActivity
 import com.niyaj.popos.features.address.domain.util.AddressTestTags.ADDRESS_FULL_NAME_ERROR
 import com.niyaj.popos.features.address.domain.util.AddressTestTags.ADDRESS_FULL_NAME_FIELD
@@ -29,10 +33,6 @@ import com.niyaj.popos.features.common.di.RealmModule
 import com.niyaj.popos.features.common.ui.theme.PoposTheme
 import com.niyaj.popos.features.common.util.PoposNavigation
 import com.niyaj.popos.features.destinations.AddressScreenDestination
-import com.niyaj.popos.utils.Constants.NEGATIVE_BUTTON
-import com.niyaj.popos.utils.Constants.POSITIVE_BUTTON
-import com.niyaj.popos.utils.Constants.STANDARD_BACK_BUTTON
-import com.niyaj.popos.utils.Constants.STANDARD_BOTTOM_SHEET_CLOSE_BTN
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules

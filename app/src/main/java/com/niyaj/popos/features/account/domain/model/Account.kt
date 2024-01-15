@@ -1,6 +1,6 @@
 package com.niyaj.popos.features.account.domain.model
 
-import com.niyaj.popos.utils.Constants.RESTAURANT_ID
+import com.niyaj.popos.common.utils.Constants.RESTAURANT_ID
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 

@@ -1,7 +1,7 @@
 package com.niyaj.popos.features.employee_attendance.domain.model
 
+import com.niyaj.popos.common.utils.toFormattedDate
 import com.niyaj.popos.features.employee.domain.model.Employee
-import com.niyaj.popos.utils.toFormattedDate
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 
