@@ -327,7 +327,7 @@ fun toMonthAndYear(date: String): String {
     }
 }
 
-fun setTodayStartTime(time: Int = 23): Calendar {
+fun setTodayStartTime(time: Int = 11): Calendar {
     val startTime = Calendar.getInstance()
     startTime[Calendar.HOUR_OF_DAY] = time
     startTime[Calendar.MINUTE] = 0
@@ -337,7 +337,7 @@ fun setTodayStartTime(time: Int = 23): Calendar {
     return startTime
 }
 
-private fun setTodayEndTime(time: Int = 11): Calendar {
+private fun setTodayEndTime(time: Int = 23): Calendar {
     val endTime = Calendar.getInstance()
     endTime[Calendar.HOUR_OF_DAY] = time
     endTime[Calendar.MINUTE] = 0
