@@ -30,6 +30,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.AlternateEmail
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.DeliveryDining
@@ -40,7 +41,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreTime
 import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Print
@@ -424,7 +424,7 @@ fun CustomerDetails(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.OpenInNew,
+                        imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                         contentDescription = "View Address Details",
                         tint = MaterialTheme.colors.secondaryVariant
                     )
@@ -559,7 +559,7 @@ fun AddressDetails(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.OpenInNew,
+                        imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                         contentDescription = "View Address Details",
                         tint = MaterialTheme.colors.secondaryVariant
                     )

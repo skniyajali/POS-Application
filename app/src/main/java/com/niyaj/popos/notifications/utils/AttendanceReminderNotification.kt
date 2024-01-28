@@ -33,6 +33,7 @@ fun Context.attendanceNotification(): Notification {
         .setContentIntent(this.createOrGetAttendancePendingIntent())
         .setAutoCancel(false)
         .setOngoing(isOngoing)
+        .setChannelId(ABSENT_REMINDER_ID)
         .setOnlyAlertOnce(true)
         .build()
 }

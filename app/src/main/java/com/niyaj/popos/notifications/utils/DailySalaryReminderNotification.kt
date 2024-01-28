@@ -18,7 +18,7 @@ import com.niyaj.popos.features.MainActivity
 
 
 /**
- * Notification displayed on lower API levels when sync workers are being
+ * Notification displayed on lower API levels when reminder workers are being
  * run with a foreground service
  */
 fun Context.dailySalaryNotification(): Notification {
@@ -33,6 +33,7 @@ fun Context.dailySalaryNotification(): Notification {
         .setContentIntent(this.createOrGetDailySalaryPendingIntent())
         .setAutoCancel(false)
         .setOngoing(isOngoing)
+        .setChannelId(DAILY_SALARY_REMINDER_ID)
         .setOnlyAlertOnce(true)
         .build()
 }

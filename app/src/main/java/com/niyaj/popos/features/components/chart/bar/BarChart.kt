@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -19,8 +20,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import com.niyaj.popos.features.components.chart.bar.common.calculations.getTopLeft
 import com.niyaj.popos.features.components.chart.bar.common.calculations.getTopRight
 import com.niyaj.popos.features.components.chart.bar.common.component.drawBarLabel
-import com.niyaj.popos.features.components.chart.bar.config.BarConfig
-import com.niyaj.popos.features.components.chart.bar.config.BarConfigDefaults
 import com.niyaj.popos.features.components.chart.bar.model.BarData
 import com.niyaj.popos.features.components.chart.bar.model.maxYValue
 import com.niyaj.popos.features.components.chart.common.axis.AxisConfig
@@ -37,7 +36,6 @@ fun BarChart(
     modifier: Modifier = Modifier,
     chartDimens: ChartDimens = ChartDimensDefaults.chartDimesDefaults(),
     axisConfig: AxisConfig = AxisConfigDefaults.axisConfigDefaults(isSystemInDarkTheme()),
-    barConfig: BarConfig = BarConfigDefaults.barConfigDimesDefaults()
 ) {
     BarChart(
         barData = barData,
@@ -45,8 +43,7 @@ fun BarChart(
         onBarClick = onBarClick,
         modifier = modifier,
         chartDimens = chartDimens,
-        axisConfig = axisConfig,
-        barConfig = barConfig
+        axisConfig = axisConfig
     )
 }
 
@@ -58,15 +55,12 @@ fun BarChart(
     modifier: Modifier = Modifier,
     chartDimens: ChartDimens = ChartDimensDefaults.chartDimesDefaults(),
     axisConfig: AxisConfig = AxisConfigDefaults.axisConfigDefaults(isSystemInDarkTheme()),
-    barConfig: BarConfig = BarConfigDefaults.barConfigDimesDefaults()
 ) {
-    val maxYValueState = rememberSaveable { mutableStateOf(barData.maxYValue()) }
+    val maxYValueState = rememberSaveable { mutableFloatStateOf(barData.maxYValue()) }
     val clickedBar = remember { mutableStateOf(Offset(-10F, -10F)) }
 
-    val maxYValue = maxYValueState.value
-    val barWidth = remember { mutableStateOf(0F) }
-
-//    val textMeasurer = rememberTextMeasurer()
+    val maxYValue = maxYValueState.floatValue
+    val barWidth = remember { mutableFloatStateOf(0F) }
 
     Canvas(
         modifier = modifier
@@ -86,12 +80,12 @@ fun BarChart(
                 })
             }
     ) {
-        barWidth.value = size.width.div(barData.count().times(1.2F))
+        barWidth.floatValue = size.width.div(barData.count().times(1.2F))
         val yScalableFactor = size.height.div(maxYValue)
 
         barData.forEachIndexed { index, data ->
-            val topLeft = getTopLeft(index, barWidth.value, size, data.yValue, yScalableFactor)
-            val topRight = getTopRight(index, barWidth.value, size, data.yValue, yScalableFactor)
+            val topLeft = getTopLeft(index, barWidth.floatValue, size, data.yValue, yScalableFactor)
+            val topRight = getTopRight(index, barWidth.floatValue, size, data.yValue, yScalableFactor)
             val barHeight = data.yValue.times(yScalableFactor)
 
             if (clickedBar.value.x in (topLeft.x..topRight.x)) {
@@ -103,7 +97,7 @@ fun BarChart(
                 cornerRadius = CornerRadius(x = 4F, y =  4F),
                 topLeft = topLeft,
                 brush = Brush.linearGradient(colors),
-                size = Size(barWidth.value, barHeight)
+                size = Size(barWidth.floatValue, barHeight)
             )
 
 //            drawText(
@@ -123,7 +117,7 @@ fun BarChart(
             if (axisConfig.showXLabels) {
                 drawBarLabel(
                     data.xValue,
-                    barWidth.value,
+                    barWidth.floatValue,
                     barHeight,
                     topLeft,
                     barData.count(),

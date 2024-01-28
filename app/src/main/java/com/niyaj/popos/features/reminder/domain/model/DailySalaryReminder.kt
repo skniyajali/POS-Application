@@ -3,10 +3,10 @@ package com.niyaj.popos.features.reminder.domain.model
 import com.niyaj.popos.common.utils.Constants.DAILY_SALARY_REMINDER_ID
 import com.niyaj.popos.common.utils.Constants.DAILY_SALARY_REMINDER_INTERVAL
 import com.niyaj.popos.common.utils.Constants.DAILY_SALARY_REMINDER_NAME
+import com.niyaj.popos.common.utils.Constants.DAILY_SALARY_REMINDER_TIME_UNIT
 import com.niyaj.popos.common.utils.closingTime
 import com.niyaj.popos.common.utils.dailySalaryStartTime
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
-import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 data class DailySalaryReminder(
@@ -20,7 +20,7 @@ data class DailySalaryReminder(
 
     val reminderInterval: Int = DAILY_SALARY_REMINDER_INTERVAL,
 
-    val reminderIntervalTimeUnit: String = TimeUnit.MINUTES.name,
+    val reminderIntervalTimeUnit: String = DAILY_SALARY_REMINDER_TIME_UNIT.name,
 
     val reminderType: String = ReminderType.DailySalary.reminderType,
 

@@ -23,10 +23,10 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.filled.AlternateEmail
 import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.SettingsBackupRestore
-import androidx.compose.material.icons.outlined.Login
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -326,7 +326,7 @@ fun LoginForm(
 
             StandardButtonFW(
                 text = stringResource(id = R.string.login),
-                icon = Icons.Outlined.Login,
+                icon = Icons.AutoMirrored.Outlined.Login,
                 onClick = onClickLogin
             )
         }

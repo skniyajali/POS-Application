@@ -17,11 +17,11 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EventBusy
-import androidx.compose.material.icons.filled.EventNote
 import androidx.compose.material.icons.filled.Person4
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -238,7 +238,7 @@ fun AddEditAbsentScreen(
                     modifier = Modifier.testTag(ABSENT_REASON_FIELD),
                     text = absentViewModel.absentState.absentReason,
                     label = "Absent Reason",
-                    leadingIcon = Icons.Default.EventNote,
+                    leadingIcon = Icons.AutoMirrored.Filled.EventNote,
                     onValueChange = {
                         absentViewModel.onEvent(AbsentEvent.AbsentReasonChanged(it))
                     },

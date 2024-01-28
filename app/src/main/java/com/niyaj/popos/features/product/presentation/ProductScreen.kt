@@ -17,9 +17,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.List
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -282,7 +282,7 @@ fun ProductScreen(
                                     modifier = Modifier.testTag("ViewTypeColumn")
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Outlined.List,
+                                        imageVector = Icons.AutoMirrored.Outlined.List,
                                         contentDescription = stringResource(id = R.string.setting_icon),
                                         tint = MaterialTheme.colors.onPrimary,
                                     )

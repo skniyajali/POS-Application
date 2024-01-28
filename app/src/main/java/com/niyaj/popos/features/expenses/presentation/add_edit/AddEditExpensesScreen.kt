@@ -19,6 +19,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.SpeakerNotes
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CalendarToday
@@ -26,7 +27,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Paid
-import androidx.compose.material.icons.filled.SpeakerNotes
 import androidx.compose.material.icons.rounded.AddBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -257,7 +257,7 @@ fun AddEditExpensesScreen(
                     modifier = Modifier.fillMaxWidth(),
                     text = addEditExpensesViewModel.addEditState.value.expensesRemarks,
                     label = "Payment Notes",
-                    leadingIcon = Icons.Default.SpeakerNotes,
+                    leadingIcon = Icons.AutoMirrored.Filled.SpeakerNotes,
                     error = null,
                     onValueChange = {
                         addEditExpensesViewModel.onExpensesEvent(

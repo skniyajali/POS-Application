@@ -22,6 +22,8 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material.icons.filled.AllInbox
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.Badge
@@ -35,13 +37,11 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.InsertLink
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.StickyNote2
 import androidx.compose.material.icons.filled.SwitchAccount
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.outlined.AccountCircle
@@ -173,7 +173,7 @@ fun StandardDrawer(
 
                 DrawerItem(
                     text = "View Expenses",
-                    icon = Icons.Default.StickyNote2,
+                    icon = Icons.AutoMirrored.Filled.StickyNote2,
                     selected = currentRoute == ExpensesScreenDestination.route,
                     onClick = {
                         navController.navigate(ExpensesScreenDestination())
@@ -265,7 +265,7 @@ fun StandardDrawer(
                     },
                     leading = {
                         Icon(
-                            imageVector = Icons.Default.StickyNote2,
+                            imageVector = Icons.AutoMirrored.Filled.StickyNote2,
                             contentDescription = "Expenses Icon",
                             tint = MaterialTheme.colors.secondaryVariant
                         )
@@ -290,7 +290,7 @@ fun StandardDrawer(
                         ) {
                             DrawerItem(
                                 text = "Expenses",
-                                icon = Icons.Default.StickyNote2,
+                                icon = Icons.AutoMirrored.Filled.StickyNote2,
                                 selected = currentRoute == ExpensesScreenDestination.route,
                                 iconColor = MaterialTheme.colors.secondary,
                                 onClick = {
@@ -625,7 +625,7 @@ fun StandardDrawer(
 
             DrawerItem(
                 text = "Logout",
-                icon = Icons.Default.Logout,
+                icon = Icons.AutoMirrored.Filled.Logout,
                 selected = false,
                 onClick = {
                     viewModel.onEvent(ProfileEvent.LogoutProfile)

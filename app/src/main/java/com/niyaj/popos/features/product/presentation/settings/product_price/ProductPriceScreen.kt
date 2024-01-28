@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material.icons.filled.Moving
-import androidx.compose.material.icons.filled.TrendingDown
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -38,7 +38,6 @@ import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.product.presentation.components.ProductBody
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
-import com.ramcosta.composedestinations.spec.DestinationStyle
 import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import io.sentry.compose.SentryTraced
 
@@ -172,7 +171,7 @@ fun ProductPriceScreen(
                         stringResource(id = R.string.increase_product_price).uppercase()
                     else
                         stringResource(id = R.string.decrease_product_price).uppercase(),
-                    icon = if (type == "Increase") Icons.Default.Moving else Icons.Default.TrendingDown,
+                    icon = if (type == "Increase") Icons.Default.Moving else Icons.AutoMirrored.Filled.TrendingDown,
                     onClick = {
                         if (type == "Increase") {
                             productPriceViewModel.onEvent(ProductPriceEvent.IncreaseProductPrice)

@@ -94,16 +94,16 @@ object Constants {
     const val ABSENT_REMINDER_TITLE = "Did You Marked Employee Attendance?"
     const val ABSENT_REMINDER_TEXT = "Don't forget to mark absent employees."
     const val ABSENT_REMINDER_REQ_CODE = 9977
-    const val ABSENT_REMINDER_INTERVAL = 16
-    val ABSENT_REMINDER_TIME_UNIT: TimeUnit = TimeUnit.MINUTES
+    const val ABSENT_REMINDER_INTERVAL = 2
+    val ABSENT_REMINDER_TIME_UNIT: TimeUnit = TimeUnit.HOURS
 
     const val DAILY_SALARY_REMINDER_ID = "DSR907856"
     const val DAILY_SALARY_REMINDER_NAME = "Daily Salary Reminder"
     const val DAILY_SALARY_REMINDER_TITLE = "Did You Paid Employee Salary?"
     const val DAILY_SALARY_REMINDER_TEXT = "Don't forget to add salary entries."
     const val DAILY_SALARY_REQ_CODE = 9078
-    const val DAILY_SALARY_REMINDER_INTERVAL = 20
-    val DAILY_SALARY_REMINDER_TIME_UNIT: TimeUnit = TimeUnit.MINUTES
+    const val DAILY_SALARY_REMINDER_INTERVAL = 2
+    val DAILY_SALARY_REMINDER_TIME_UNIT: TimeUnit = TimeUnit.HOURS
 
 
     private const val HOST = "http://skniyajali.me/"

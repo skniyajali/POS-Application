@@ -16,11 +16,11 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notes
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QrCodeScanner
-import androidx.compose.material.icons.filled.StarHalf
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -117,7 +117,7 @@ fun BasicInfo(
             StandardOutlinedTextField(
                 text = tagline,
                 label = "Restaurant Tagline",
-                leadingIcon = Icons.Default.StarHalf,
+                leadingIcon = Icons.AutoMirrored.Filled.StarHalf,
                 error = taglineError,
                 onValueChange = {
                     onChangeTagline(BasicInfoEvent.TaglineChanged(it))
@@ -131,7 +131,7 @@ fun BasicInfo(
                 label = "Restaurant Description",
                 singleLine = false,
                 maxLines = 4,
-                leadingIcon = Icons.Default.Notes,
+                leadingIcon = Icons.AutoMirrored.Filled.Notes,
                 error = descriptionError,
                 onValueChange = {
                     onChangeDescription(BasicInfoEvent.DescriptionChanged(it))

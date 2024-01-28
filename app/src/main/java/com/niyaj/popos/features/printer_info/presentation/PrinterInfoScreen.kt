@@ -31,11 +31,11 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.InsertLink
-import androidx.compose.material.icons.filled.Notes
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -283,7 +283,7 @@ fun BluetoothDevices(
                         ) {
                             TextWithIcon(
                                 text = data.name,
-                                icon = Icons.Default.Notes
+                                icon = Icons.AutoMirrored.Filled.Notes
                             )
 
                             TextWithIcon(

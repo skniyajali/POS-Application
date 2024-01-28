@@ -16,9 +16,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Rule
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -65,7 +65,10 @@ fun ImportExportAddressContent(
                 IconButton(
                     onClick = onClickSelectAll
                 ) {
-                    Icon(imageVector = Icons.Default.Rule, contentDescription = "Select All Address")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Rule,
+                        contentDescription = "Select All Address"
+                    )
                 }
             },
             expand = {  modifier: Modifier ->

@@ -2,9 +2,9 @@ package com.niyaj.popos.features.addon_item.presentation.components
 
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Rule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -52,7 +52,7 @@ fun AddOnItemNavActions(
             modifier = Modifier.testTag(AddOnConstants.ADDON_SELECT_ALL_BUTTON),
             onClick = onClickSelectAll,
             enabled = selectedAddOnItems.isNotEmpty(),
-            imageVector = Icons.Default.Rule,
+            imageVector = Icons.AutoMirrored.Filled.Rule,
             contentDescription = AddOnConstants.ADDON_SELECT_ALL_BUTTON,
             tint = MaterialTheme.colors.onPrimary,
         )
