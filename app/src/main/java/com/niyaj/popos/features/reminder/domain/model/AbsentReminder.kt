@@ -1,11 +1,12 @@
 package com.niyaj.popos.features.reminder.domain.model
 
 import com.niyaj.popos.common.utils.Constants.ABSENT_REMINDER_ID
+import com.niyaj.popos.common.utils.Constants.ABSENT_REMINDER_INTERVAL
 import com.niyaj.popos.common.utils.Constants.ABSENT_REMINDER_NAME
+import com.niyaj.popos.common.utils.Constants.ABSENT_REMINDER_TIME_UNIT
 import com.niyaj.popos.common.utils.closingTime
 import com.niyaj.popos.common.utils.openingTime
 import com.niyaj.popos.features.reminder.domain.util.ReminderType
-import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 data class AbsentReminder(
@@ -18,9 +19,9 @@ data class AbsentReminder(
 
     val reminderEndTime: String = closingTime,
 
-    val reminderInterval: Int = 16,
+    val reminderInterval: Int = ABSENT_REMINDER_INTERVAL,
 
-    val reminderIntervalTimeUnit: String = TimeUnit.MINUTES.name,
+    val reminderIntervalTimeUnit: String = ABSENT_REMINDER_TIME_UNIT.name,
 
     val reminderType: String = ReminderType.Attendance.reminderType,
 

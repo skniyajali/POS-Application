@@ -22,14 +22,14 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.AllInbox
-import androidx.compose.material.icons.filled.ArrowRightAlt
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Tag
@@ -228,7 +228,10 @@ fun TotalOrderDetailsCard(
                             if (endDate.isNotEmpty()) {
                                 if (!details.datePeriod.isSameDay()) {
                                     Spacer(modifier = Modifier.width(SpaceMini))
-                                    Icon(imageVector = Icons.Default.ArrowRightAlt, contentDescription = "DatePeriod")
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowRightAlt,
+                                        contentDescription = "DatePeriod"
+                                    )
                                     Spacer(modifier = Modifier.width(SpaceMini))
                                     Text(
                                         text = endDate.toBarDate,
@@ -380,7 +383,7 @@ fun CustomerDetailsCard(
                         Spacer(modifier = Modifier.height(SpaceSmall))
                         TextWithIcon(
                             text = "Updated At : ${it.toFormattedDateAndTime}",
-                            icon = Icons.Default.Login
+                            icon = Icons.AutoMirrored.Filled.Login
                         )
                     }
                 }

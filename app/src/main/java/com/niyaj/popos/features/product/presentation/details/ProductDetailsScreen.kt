@@ -27,16 +27,16 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
+import androidx.compose.material.icons.automirrored.filled.Feed
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.AllInbox
-import androidx.compose.material.icons.filled.ArrowRightAlt
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Feed
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Tag
@@ -251,7 +251,7 @@ fun ProductTotalOrdersDetails(
                                     if (!details.datePeriod.isSameDay()) {
                                         Spacer(modifier = Modifier.width(SpaceMini))
                                         Icon(
-                                            imageVector = Icons.Default.ArrowRightAlt,
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowRightAlt,
                                             contentDescription = "DatePeriod"
                                         )
                                         Spacer(modifier = Modifier.width(SpaceMini))
@@ -411,7 +411,7 @@ fun ProductDetails(
             title = {
                 TextWithIcon(
                     text = "Product Details",
-                    icon = Icons.Default.Feed,
+                    icon = Icons.AutoMirrored.Filled.Feed,
                     isTitle = true
                 )
             },
@@ -491,7 +491,7 @@ fun ProductDetails(
                         Spacer(modifier = Modifier.height(SpaceSmall))
                         TextWithIcon(
                             text = "Updated At : ${it.toFormattedDateAndTime}",
-                            icon = Icons.Default.Login
+                            icon = Icons.AutoMirrored.Filled.Login
                         )
                     }
                 }

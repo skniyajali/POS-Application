@@ -4,9 +4,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Rule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
@@ -101,7 +101,7 @@ fun ScaffoldNavActions(
                 modifier = Modifier.testTag(NAV_SELECT_ALL_BTN)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Rule,
+                    imageVector = Icons.AutoMirrored.Filled.Rule,
                     contentDescription = "Select All Item",
                     tint = MaterialTheme.colors.onPrimary,
                 )

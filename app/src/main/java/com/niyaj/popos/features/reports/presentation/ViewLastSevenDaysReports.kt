@@ -18,7 +18,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowRightAlt
+import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -105,7 +105,7 @@ fun ViewLastSevenDaysReports(
                                 onClick = {}
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.ArrowRightAlt,
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowRightAlt,
                                     contentDescription = "View Details",
                                     tint = MaterialTheme.colors.secondary
                                 )

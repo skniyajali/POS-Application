@@ -17,12 +17,12 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MergeType
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MergeType
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Person4
@@ -257,7 +257,7 @@ fun AddEditSalaryScreen(
                             error = addEditSalaryViewModel.addEditSalaryState.salaryTypeError,
                             errorTag = SALARY_TYPE_ERROR,
                             label = "Salary Type",
-                            leadingIcon = Icons.Default.MergeType,
+                            leadingIcon = Icons.AutoMirrored.Filled.MergeType,
                             onValueChange = {},
                             readOnly = true,
                             trailingIcon = {

@@ -28,6 +28,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.automirrored.filled.MergeType
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Add
@@ -37,9 +39,7 @@ import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Merge
-import androidx.compose.material.icons.filled.MergeType
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Person
@@ -629,7 +629,7 @@ fun EmployeeDetails(
                                 TextWithIcon(
                                     modifier = Modifier.testTag(state.employee.employeeType),
                                     text = "Type - ${state.employee.employeeType}",
-                                    icon = Icons.Default.MergeType
+                                    icon = Icons.AutoMirrored.Filled.MergeType
                                 )
                                 Spacer(modifier = Modifier.height(SpaceSmall))
                                 TextWithIcon(
@@ -646,7 +646,7 @@ fun EmployeeDetails(
                                     Spacer(modifier = Modifier.height(SpaceSmall))
                                     TextWithIcon(
                                         text = "Updated At : ${it.toFormattedDateAndTime}",
-                                        icon = Icons.Default.Login
+                                        icon = Icons.AutoMirrored.Filled.Login
                                     )
                                 }
                             }

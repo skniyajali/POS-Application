@@ -15,11 +15,11 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Rule
 import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
@@ -275,7 +275,7 @@ fun ImportExportExpensesBody(
                     onClick = onClickSelectAll
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Rule,
+                        imageVector = Icons.AutoMirrored.Filled.Rule,
                         contentDescription = "Select All Customers"
                     )
                 }

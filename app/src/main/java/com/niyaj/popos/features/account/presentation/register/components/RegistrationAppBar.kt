@@ -22,10 +22,10 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NavigateBefore
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.NavigateBefore
-import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -137,7 +137,7 @@ fun RegisterBottomBar(
                             .weight(1f)
                             .height(48.dp),
                         text = stringResource(id = R.string.previous),
-                        icon = Icons.Default.NavigateBefore,
+                        icon = Icons.AutoMirrored.Filled.NavigateBefore,
                         onClick = onPreviousPressed
                     )
                     Spacer(modifier = Modifier.width(16.dp))
@@ -158,7 +158,7 @@ fun RegisterBottomBar(
                             .weight(1f)
                             .height(48.dp),
                         text = stringResource(id = R.string.next),
-                        icon = Icons.Default.NavigateNext,
+                        icon = Icons.AutoMirrored.Filled.NavigateNext,
                         onClick = onNextPressed,
                         enabled = isNextButtonEnabled,
                     )

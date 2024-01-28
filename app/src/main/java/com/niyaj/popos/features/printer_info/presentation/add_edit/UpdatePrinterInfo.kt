@@ -18,11 +18,11 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DensityMedium
 import androidx.compose.material.icons.filled.Margin
 import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.ViewHeadline
 import androidx.compose.material.icons.filled.WidthNormal
 import androidx.compose.runtime.Composable
@@ -189,7 +189,7 @@ fun UpdatePrinterInfo(
                 StandardOutlinedTextField(
                     text = viewModel.state.productWiseReportLimit.toString(),
                     label = "Product Report Limit",
-                    leadingIcon = Icons.Default.ReceiptLong,
+                    leadingIcon = Icons.AutoMirrored.Filled.ReceiptLong,
                     error = productLimitError,
                     message = "How many products should be printed in a report",
                     onValueChange = {

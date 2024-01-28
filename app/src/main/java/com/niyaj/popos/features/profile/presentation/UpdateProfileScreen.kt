@@ -10,16 +10,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notes
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.StarHalf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -145,7 +145,7 @@ fun UpdateProfileScreen(
                     modifier = Modifier,
                     text = profileViewModel.updateState.tagline,
                     label = "Restaurant Tagline",
-                    leadingIcon = Icons.Default.StarHalf,
+                    leadingIcon = Icons.AutoMirrored.Filled.StarHalf,
                     error = profileViewModel.updateState.taglineError,
                     onValueChange = {
                         profileViewModel.onEvent(ProfileEvent.TaglineChanged(it))
@@ -178,7 +178,7 @@ fun UpdateProfileScreen(
                     label = "Restaurant Description",
                     singleLine = false,
                     maxLines = 2,
-                    leadingIcon = Icons.Default.Notes,
+                    leadingIcon = Icons.AutoMirrored.Filled.Notes,
                     error = null,
                     onValueChange = {
                         profileViewModel.onEvent(ProfileEvent.DescriptionChanged(it))

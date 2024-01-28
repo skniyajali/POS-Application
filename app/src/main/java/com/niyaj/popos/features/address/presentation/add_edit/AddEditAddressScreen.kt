@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ShortText
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.DomainAdd
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ShortText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -33,7 +33,6 @@ import com.niyaj.popos.features.components.util.BottomSheetWithCloseDialog
 import com.niyaj.popos.features.destinations.AddEditAddressScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
-import com.ramcosta.composedestinations.spec.DestinationStyle
 import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import io.sentry.compose.SentryTraced
 
@@ -106,7 +105,7 @@ fun AddEditAddressScreen(
                     modifier = Modifier.testTag(ADDRESS_SHORT_NAME_FIELD),
                     text = addEditAddressViewModel.addEditAddressState.shortName,
                     label = ADDRESS_SHORT_NAME_FIELD,
-                    leadingIcon = Icons.Default.ShortText,
+                    leadingIcon = Icons.AutoMirrored.Filled.ShortText,
                     error = addEditAddressViewModel.addEditAddressState.shortNameError,
                     errorTag = ADDRESS_SHORT_NAME_ERROR,
                     onValueChange = {

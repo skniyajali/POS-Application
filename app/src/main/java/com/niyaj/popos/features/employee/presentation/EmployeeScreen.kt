@@ -24,12 +24,12 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.Money
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
@@ -60,8 +60,8 @@ import com.niyaj.popos.features.common.ui.theme.ProfilePictureSizeSmall
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
 import com.niyaj.popos.features.common.util.UiEvent
-import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.ItemNotAvailable
+import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardScaffold
 import com.niyaj.popos.features.components.StandardSearchBar
 import com.niyaj.popos.features.destinations.AddEditAbsentScreenDestination
@@ -499,7 +499,7 @@ fun EmployeeScreen(
                                                     }
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.OpenInNew,
+                                                        imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                                                         contentDescription = stringResource(id = R.string.employee_details),
                                                         tint = MaterialTheme.colors.primary,
                                                     )

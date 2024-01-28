@@ -17,8 +17,8 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NavigateBefore
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.NavigateBefore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,7 +78,7 @@ fun RegistrationResultScreen(
 
                                     StandardOutlinedButtonFW(
                                         text = stringResource(id = R.string.go_back),
-                                        icon = Icons.Default.NavigateBefore,
+                                        icon = Icons.AutoMirrored.Filled.NavigateBefore,
                                         onClick = {
                                             navController.navigateUp()
                                         },

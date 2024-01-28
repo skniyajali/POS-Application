@@ -8,43 +8,19 @@ import android.content.Intent
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowRightAlt
-import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.DeliveryDining
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Money
-import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Print
-import androidx.compose.material.icons.filled.RamenDining
-import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,12 +29,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -68,39 +41,22 @@ import com.niyaj.popos.common.utils.getCalculatedStartDate
 import com.niyaj.popos.common.utils.isScrolled
 import com.niyaj.popos.common.utils.toMilliSecond
 import com.niyaj.popos.common.utils.toPrettyDate
-import com.niyaj.popos.common.utils.toRupee
-import com.niyaj.popos.features.common.ui.theme.KellyGreen
-import com.niyaj.popos.features.common.ui.theme.MediumGray
-import com.niyaj.popos.features.common.ui.theme.PurpleHaze
 import com.niyaj.popos.features.common.ui.theme.SpaceMedium
 import com.niyaj.popos.features.common.ui.theme.SpaceMini
 import com.niyaj.popos.features.common.ui.theme.SpaceSmall
-import com.niyaj.popos.features.components.CountBox
-import com.niyaj.popos.features.components.ItemNotAvailable
-import com.niyaj.popos.features.components.LoadingIndicator
 import com.niyaj.popos.features.components.RoundedBox
-import com.niyaj.popos.features.components.StandardButtonFW
-import com.niyaj.popos.features.components.StandardExpandable
 import com.niyaj.popos.features.components.StandardFabButton
 import com.niyaj.popos.features.components.StandardScaffold
-import com.niyaj.popos.features.components.TextWithIcon
-import com.niyaj.popos.features.components.chart.common.dimens.ChartDimens
-import com.niyaj.popos.features.components.chart.horizontalbar.HorizontalBarChart
-import com.niyaj.popos.features.components.chart.horizontalbar.axis.HorizontalAxisConfig
-import com.niyaj.popos.features.components.chart.horizontalbar.config.HorizontalBarConfig
-import com.niyaj.popos.features.components.chart.horizontalbar.config.StartDirection
-import com.niyaj.popos.features.destinations.AddressDetailsScreenDestination
-import com.niyaj.popos.features.destinations.CustomerDetailsScreenDestination
 import com.niyaj.popos.features.destinations.ExpensesScreenDestination
 import com.niyaj.popos.features.destinations.OrderScreenDestination
 import com.niyaj.popos.features.destinations.ProductDetailsScreenDestination
 import com.niyaj.popos.features.destinations.ViewLastSevenDaysReportsDestination
-import com.niyaj.popos.features.reports.domain.model.Reports
-import com.niyaj.popos.features.reports.presentation.components.AddressReportCard
-import com.niyaj.popos.features.reports.presentation.components.CategoryWiseReportCard
-import com.niyaj.popos.features.reports.presentation.components.CustomerReportCard
-import com.niyaj.popos.features.reports.presentation.components.OrderTypeDropdown
-import com.niyaj.popos.features.reports.presentation.components.ReportBox
+import com.niyaj.popos.features.reports.presentation.components.AddressWiseReport
+import com.niyaj.popos.features.reports.presentation.components.CategoryWiseReport
+import com.niyaj.popos.features.reports.presentation.components.CustomerWiseReport
+import com.niyaj.popos.features.reports.presentation.components.ProductWiseReport
+import com.niyaj.popos.features.reports.presentation.components.ReportBarData
+import com.niyaj.popos.features.reports.presentation.components.ReportBoxData
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.navigate
 import com.vanpra.composematerialdialogs.MaterialDialog
@@ -115,10 +71,7 @@ import java.time.LocalDate
  * Report Screen
  * @author Sk Niyaj Ali
  */
-@OptIn(
-    ExperimentalPermissionsApi::class,
-    ExperimentalComposeUiApi::class
-)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
 @Destination
 @Composable
 fun ReportScreen(
@@ -380,7 +333,11 @@ fun ReportScreen(
                             addressWiseRepExpanded = !addressWiseRepExpanded
                         },
                         onAddressClick = {
-                            navController.navigate(AddressDetailsScreenDestination(it))
+                            navController.navigate(
+                                com.niyaj.popos.features.destinations.AddressDetailsScreenDestination(
+                                    it
+                                )
+                            )
                         }
                     )
                 }
@@ -395,7 +352,11 @@ fun ReportScreen(
                             customerWiseRepExpanded = !customerWiseRepExpanded
                         },
                         onCustomerClick = {
-                            navController.navigate(CustomerDetailsScreenDestination(it))
+                            navController.navigate(
+                                com.niyaj.popos.features.destinations.CustomerDetailsScreenDestination(
+                                    it
+                                )
+                            )
                         }
                     )
 
@@ -403,475 +364,5 @@ fun ReportScreen(
                 }
             }
         }
-    }
-}
-
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun ReportBoxData(
-    report: Reports,
-    onOrderClick: () -> Unit,
-    onExpensesClick: () -> Unit,
-    onRefreshReport: () -> Unit
-) {
-    val totalAmount =
-        report.expensesAmount.plus(report.dineInSalesAmount).plus(report.dineOutSalesAmount)
-            .toString()
-
-    FlowRow(
-        maxItemsInEachRow = 2,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalArrangement = Arrangement.Center
-    ) {
-        ReportBox(
-            title = "DineIn Sales",
-            amount = report.dineInSalesAmount.toString(),
-            icon = Icons.Default.RamenDining,
-            onClick = onOrderClick
-        )
-
-        ReportBox(
-            title = "DineOut Sales",
-            amount = report.dineOutSalesAmount.toString(),
-            icon = Icons.Default.DeliveryDining,
-            onClick = onOrderClick
-        )
-
-        ReportBox(
-            title = "Expenses",
-            amount = report.expensesAmount.toString(),
-            icon = Icons.Default.Receipt,
-            onClick = onExpensesClick
-        )
-
-        ReportBox(
-            title = "Total Amount",
-            amount = totalAmount,
-            icon = Icons.Default.Money,
-            enabled = false,
-            onClick = {}
-        )
-    }
-
-    Spacer(modifier = Modifier.height(SpaceSmall))
-
-    StandardButtonFW(
-        modifier = Modifier.fillMaxWidth(),
-        text = "Re-Generate Report",
-        icon = Icons.Default.Sync,
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = colors.secondaryVariant
-        ),
-        onClick = onRefreshReport
-    )
-}
-
-@Composable
-fun ReportBarData(
-    reportBarState: ReportsBarState,
-    selectedBarData: String,
-    onBarClick: (String) -> Unit,
-    onClickViewDetails: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth(),
-        elevation = 2.dp,
-    ) {
-        Crossfade(targetState = reportBarState, label = "ReportBarState") { state ->
-            when {
-                state.isLoading -> LoadingIndicator()
-
-                state.reportBarData.isNotEmpty() -> {
-                    val reportBarData = state.reportBarData
-
-                    Column(
-                        modifier = Modifier
-                            .padding(SpaceSmall)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Column {
-                                Text(
-                                    text = "Last ${reportBarData.size} Days Reports",
-                                    style = MaterialTheme.typography.body1,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                if (selectedBarData.isNotEmpty()) {
-                                    Spacer(modifier = Modifier.height(SpaceSmall))
-                                    Text(
-                                        text = selectedBarData,
-                                        style = MaterialTheme.typography.body2,
-                                        color = MediumGray
-                                    )
-                                }
-                            }
-
-                            IconButton(
-                                onClick = onClickViewDetails
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ArrowRightAlt,
-                                    contentDescription = "View Reports Details",
-                                    tint = colors.secondary
-                                )
-                            }
-                        }
-
-                        Divider(modifier = Modifier.fillMaxWidth())
-
-                        Spacer(modifier = Modifier.height(SpaceSmall))
-
-                        HorizontalBarChart(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height((reportBarData.size.times(60)).dp)
-                                .padding(SpaceSmall),
-                            onBarClick = {
-                                onBarClick(
-                                    "${it.yValue} - ${
-                                        it.xValue.toString().substringBefore(".").toRupee
-                                    }"
-                                )
-                            },
-                            colors = listOf(colors.secondary, colors.secondaryVariant),
-                            barDimens = ChartDimens(2.dp),
-                            horizontalBarConfig = HorizontalBarConfig(
-                                showLabels = false,
-                                startDirection = StartDirection.Left,
-                                productReport = false
-                            ),
-                            horizontalAxisConfig = HorizontalAxisConfig(
-                                showAxes = true,
-                                showUnitLabels = false
-                            ),
-                            horizontalBarData = reportBarData,
-                        )
-                    }
-                }
-
-                else -> {
-                    ItemNotAvailable(
-                        modifier = Modifier.padding(SpaceSmall),
-                        text = state.error ?: "Reports are not available",
-                        showImage = false,
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun CategoryWiseReport(
-    categoryState: CategoryWiseReportState,
-    reportExpanded: Boolean,
-    selectedCategory: String,
-    onCategoryExpandChanged: (String) -> Unit,
-    onExpandChanged: () -> Unit,
-    onClickOrderType: (String) -> Unit,
-    onProductClick: (productId: String) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-    ) {
-        StandardExpandable(
-            modifier = Modifier
-                .padding(SpaceSmall)
-                .fillMaxWidth(),
-            expanded = reportExpanded,
-            onExpandChanged = {
-                onExpandChanged()
-            },
-            title = {
-                TextWithIcon(
-                    text = "Category Wise Report",
-                    icon = Icons.Default.Category,
-                    isTitle = true
-                )
-            },
-            trailing = {
-                OrderTypeDropdown(
-                    text = categoryState.orderType.ifEmpty { "All" }
-                ) {
-                    onClickOrderType(it)
-                }
-            },
-            expand = null,
-            content = {
-                Crossfade(targetState = categoryState, label = "CategoryState") { state ->
-                    when {
-                        state.isLoading -> LoadingIndicator()
-                        state.categoryWiseReport.isNotEmpty() -> {
-                            CategoryWiseReportCard(
-                                report = state.categoryWiseReport,
-                                selectedCategory = selectedCategory,
-                                onExpandChanged = onCategoryExpandChanged,
-                                onProductClick = onProductClick
-                            )
-                        }
-
-                        else -> {
-                            ItemNotAvailable(
-                                text = state.hasError ?: "Category wise report not available",
-                                showImage = false,
-                            )
-                        }
-                    }
-                }
-            },
-            contentDesc = "Category wise report"
-        )
-    }
-}
-
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun ProductWiseReport(
-    productState: ProductWiseReportState,
-    productRepExpanded: Boolean,
-    selectedProduct: String,
-    onExpandChanged: () -> Unit,
-    onClickOrderType: (String) -> Unit,
-    onBarClick: (String) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-    ) {
-        StandardExpandable(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SpaceSmall),
-            expanded = productRepExpanded,
-            onExpandChanged = {
-                onExpandChanged()
-            },
-            title = {
-                Column {
-                    TextWithIcon(
-                        text = "Product Wise Report",
-                        icon = Icons.Default.Dns,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    if (selectedProduct.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(SpaceSmall))
-                        Text(
-                            text = selectedProduct,
-                            style = MaterialTheme.typography.body2,
-                            color = MediumGray
-                        )
-                    }
-                }
-            },
-            trailing = {
-                OrderTypeDropdown(
-                    text = productState.orderType.ifEmpty { "All" },
-                    onItemClick = onClickOrderType
-                )
-            },
-            expand = null,
-            content = {
-                Crossfade(targetState = productState, label = "ProductState") { state ->
-                    when {
-                        state.isLoading -> LoadingIndicator()
-
-                        state.data.isNotEmpty() -> {
-                            Spacer(modifier = Modifier.height(SpaceSmall))
-
-                            HorizontalBarChart(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height((state.data.size.times(50)).dp)
-                                    .padding(SpaceSmall),
-                                onBarClick = {
-                                    onBarClick(
-                                        "${it.yValue} - ${
-                                            it.xValue.toString().substringBefore(".")
-                                        } Qty"
-                                    )
-                                },
-                                colors = listOf(PurpleHaze, KellyGreen),
-                                barDimens = ChartDimens(2.dp),
-                                horizontalBarConfig = HorizontalBarConfig(
-                                    showLabels = false,
-                                    startDirection = StartDirection.Left
-                                ),
-                                horizontalAxisConfig = HorizontalAxisConfig(
-                                    showAxes = true,
-                                    showUnitLabels = false
-                                ),
-                                horizontalBarData = state.data,
-                            )
-                        }
-
-                        else -> {
-                            ItemNotAvailable(
-                                text = state.error ?: "Product wise report not available",
-                                showImage = false,
-                            )
-                        }
-                    }
-                }
-            },
-            contentDesc = "Product wise report"
-        )
-    }
-}
-
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun AddressWiseReport(
-    addressState: AddressWiseReportState,
-    addressWiseRepExpanded: Boolean,
-    onExpandChanged: () -> Unit,
-    onAddressClick: (addressId: String) -> Unit,
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-    ) {
-        StandardExpandable(
-            modifier = Modifier
-                .padding(SpaceSmall)
-                .fillMaxWidth(),
-            expanded = addressWiseRepExpanded,
-            onExpandChanged = {
-                onExpandChanged()
-            },
-            title = {
-                TextWithIcon(
-                    text = "Address Wise Report",
-                    icon = Icons.Default.Business,
-                    isTitle = true
-                )
-            },
-            trailing = {
-                CountBox(count = addressState.reports.size.toString())
-            },
-            rowClickable = true,
-            expand = null,
-            content = {
-                Crossfade(targetState = addressState, label = "AddressState") { state ->
-                    when {
-                        state.isLoading -> LoadingIndicator()
-                        state.reports.isNotEmpty() -> {
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                state.reports.forEachIndexed { index, report ->
-                                    if (report.address != null) {
-                                        AddressReportCard(
-                                            report = report,
-                                            onAddressClick = onAddressClick
-                                        )
-
-                                        if (index != state.reports.size - 1) {
-                                            Spacer(modifier = Modifier.height(SpaceMini))
-                                            Divider(modifier = Modifier.fillMaxWidth())
-                                            Spacer(modifier = Modifier.height(SpaceMini))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        else -> {
-                            ItemNotAvailable(
-                                text = state.error ?: "Address wise report not available",
-                                showImage = false
-                            )
-                        }
-                    }
-                }
-            },
-            contentDesc = "Address wise report"
-        )
-    }
-}
-
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun CustomerWiseReport(
-    customerState: CustomerWiseReportState,
-    customerWiseRepExpanded: Boolean,
-    onExpandChanged: () -> Unit,
-    onCustomerClick: (String) -> Unit,
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-    ) {
-        StandardExpandable(
-            modifier = Modifier
-                .padding(SpaceSmall)
-                .fillMaxWidth(),
-            expanded = customerWiseRepExpanded,
-            onExpandChanged = {
-                onExpandChanged()
-            },
-            title = {
-                TextWithIcon(
-                    text = "Customer Wise Report",
-                    icon = Icons.Default.PeopleAlt,
-                    isTitle = true
-                )
-            },
-            trailing = {
-                CountBox(count = customerState.reports.size.toString())
-            },
-            rowClickable = true,
-            expand = null,
-            content = {
-                Crossfade(targetState = customerState, label = "CustomerState") { state ->
-                    when {
-                        state.isLoading -> LoadingIndicator()
-                        state.reports.isNotEmpty() -> {
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                state.reports.forEachIndexed { index, report ->
-                                    if (report.customer != null) {
-                                        CustomerReportCard(
-                                            customerReport = report,
-                                            onClickCustomer = onCustomerClick
-                                        )
-
-                                        if (index != state.reports.size - 1) {
-                                            Spacer(modifier = Modifier.height(SpaceMini))
-                                            Divider(modifier = Modifier.fillMaxWidth())
-                                            Spacer(modifier = Modifier.height(SpaceMini))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        else -> {
-                            ItemNotAvailable(
-                                text = "Customer wise report not available",
-                                showImage = false
-                            )
-                        }
-                    }
-                }
-            },
-            contentDesc = "Customer wise report"
-        )
     }
 }

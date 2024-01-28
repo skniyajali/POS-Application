@@ -44,8 +44,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     buildFeatures {
@@ -54,7 +54,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.6"
+        kotlinCompilerExtensionVersion = libs.versions.androidxComposeCompiler.get()
     }
 
     packaging {
@@ -174,7 +174,7 @@ dependencies {
     implementation(libs.pos.printer)
 
     //Realm
-    implementation(libs.realm.library.base)
+    implementation(libs.realm.library.sync)
 
     // debugImplementation because LeakCanary should only run in debug builds.
     debugImplementation(libs.leakcanary)

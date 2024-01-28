@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -17,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -60,7 +60,6 @@ fun HorizontalBarChart(
     )
 }
 
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun HorizontalBarChart(
     horizontalBarData: List<HorizontalBarData>,
@@ -73,11 +72,10 @@ fun HorizontalBarChart(
 ) {
     val labelTextColor = if (isSystemInDarkTheme()) Color.White else Color.Black
     val startAngle = if (horizontalBarConfig.startDirection == StartDirection.Left) 180F else 0F
-//    val maxXValueState = rememberSaveable { mutableStateOf(horizontalBarData.maxXValue()) }
     val clickedBar = remember { mutableStateOf(Offset(-10F, -10F)) }
     val maxXValue = horizontalBarData.maxXValue()
-    val barHeight = remember { mutableStateOf(0F) }
-    val chartBound = remember { mutableStateOf(0F) }
+    val barHeight = remember { mutableFloatStateOf(0F) }
+    val chartBound = remember { mutableFloatStateOf(0F) }
     val textMeasurer = rememberTextMeasurer()
     val productReport = horizontalBarConfig.productReport
 
@@ -95,8 +93,8 @@ fun HorizontalBarChart(
                 })
             }
     ) {
-        barHeight.value = size.height.div(horizontalBarData.count().times(1.2F))
-        chartBound.value = size.width.div(horizontalBarData.count().times(1.2F))
+        barHeight.floatValue = size.height.div(horizontalBarData.count().times(1.2F))
+        chartBound.floatValue = size.width.div(horizontalBarData.count().times(1.2F))
 
         val xScalableFactor = size.width.div(maxXValue)
 
@@ -112,7 +110,7 @@ fun HorizontalBarChart(
                     }
                     drawBars(
                         horizontalBarData = data,
-                        barHeight = barHeight.value,
+                        barHeight = barHeight.floatValue,
                         colors = colors,
                         showLabels = horizontalBarConfig.showLabels,
                         topLeft = topLeft,
@@ -126,7 +124,7 @@ fun HorizontalBarChart(
             else -> {
                 horizontalBarData.forEachIndexed { index, data ->
                     val barWidth = data.xValue.times(xScalableFactor)
-                    val topLeft = Offset(0F, barHeight.value.times(index).times(1.2F))
+                    val topLeft = Offset(0F, barHeight.floatValue.times(index).times(1.2F))
                     val bottomLeft = getBottomLeft(index, barHeight, size, data, xScalableFactor)
 
                     if (clickedBar.value.y in (topLeft.y..bottomLeft.y)) {
@@ -135,7 +133,7 @@ fun HorizontalBarChart(
 
                     drawBars(
                         horizontalBarData = data,
-                        barHeight = barHeight.value,
+                        barHeight = barHeight.floatValue,
                         colors = colors,
                         showLabels = horizontalBarConfig.showLabels,
                         topLeft = topLeft,
@@ -150,7 +148,6 @@ fun HorizontalBarChart(
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 private fun DrawScope.drawBars(
     horizontalBarData: HorizontalBarData,
     barHeight: Float,
@@ -202,7 +199,6 @@ private fun DrawScope.drawBars(
             color = textColor,
             fontWeight = FontWeight.Normal,
         ),
-//        maxSize = IntSize(barWidth.toInt(), barHeight.toInt())
     )
 
     if (showLabels) {

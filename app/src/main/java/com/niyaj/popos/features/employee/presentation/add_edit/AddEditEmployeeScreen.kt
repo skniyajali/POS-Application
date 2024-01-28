@@ -20,12 +20,12 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MergeType
 import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MergeType
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Person4
@@ -171,7 +171,7 @@ fun AddEditEmployeeScreen(
                     },
                 )
             }
-        ) {
+        ) { paddingValues ->
             MaterialDialog(
                 dialogState = dialogState,
                 buttons = {
@@ -189,7 +189,7 @@ fun AddEditEmployeeScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(it)
+                    .padding(paddingValues)
                     .padding(SpaceMedium),
                 verticalArrangement = Arrangement.spacedBy(SpaceSmall),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -277,7 +277,7 @@ fun AddEditEmployeeScreen(
                                 },
                             text = viewModel.addEditState.employeeSalaryType,
                             label = "Employee Salary Type",
-                            leadingIcon = Icons.Default.MergeType,
+                            leadingIcon = Icons.AutoMirrored.Filled.MergeType,
                             onValueChange = {},
                             readOnly = true,
                             trailingIcon = {
