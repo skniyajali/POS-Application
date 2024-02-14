@@ -25,22 +25,24 @@ group = "com.niyaj.samples.apps.popos.buildlogic"
 // Configure the build-logic plugins to target JDK 19
 // This matches the JDK used to build the project, and is not related to what is running on device.
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 }
 
 dependencies {
     compileOnly(libs.android.gradlePlugin)
+    compileOnly(libs.android.tools.common)
+    compileOnly(libs.firebase.crashlytics.gradlePlugin)
+    compileOnly(libs.firebase.performance.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
-    compileOnly(libs.hilt.gradlePlugin)
-    compileOnly(libs.realm.gradlePlugin)
+    implementation(libs.truth)
 }
 
 gradlePlugin {
@@ -81,13 +83,25 @@ gradlePlugin {
             id = "popos.android.library.jacoco"
             implementationClass = "AndroidLibraryJacocoConventionPlugin"
         }
+        register("androidFirebase") {
+            id = "popos.android.application.firebase"
+            implementationClass = "AndroidApplicationFirebaseConventionPlugin"
+        }
         register("androidFlavors") {
             id = "popos.android.application.flavors"
             implementationClass = "AndroidApplicationFlavorsConventionPlugin"
         }
+        register("androidLint") {
+            id = "popos.android.lint"
+            implementationClass = "AndroidLintConventionPlugin"
+        }
         register("androidRoom") {
             id = "popos.android.room"
             implementationClass = "AndroidRoomConventionPlugin"
+        }
+        register("androidRealm") {
+            id = "popos.android.realm"
+            implementationClass = "AndroidRealmConventionPlugin"
         }
         register("jvmLibrary") {
             id = "popos.jvm.library"
