@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="reminder_notification_title">Generating Report</string>
+    <string name="reminder_notification_text">Sit relax while generating report</string>
+    <string name="reminder_notification_channel_name">Report</string>
+    <string name="reminder_notification_channel_description">Automatically Generate Report Within Period Of Time</string>
+
+    <string name="deletion_notification_channel_name">Data Deletion</string>
+    <string name="deletion_notification_channel_description">Deleting app data within a period of time.</string>
+    <string name="deletion_notification_title">Deleting Data</string>
+    <string name="deletion_notification_text">Deleting Old App Data</string>
+
+    <string name="salary_notification_channel_name">Daily Salary Reminder</string>
+    <string name="salary_notification_channel_description">Don\'t forget to add salary entries.</string>
+    <string name="salary_notification_title">Did You Paid Employee Salary?</string>
+    <string name="salary_notification_text">Don\'t forget to add salary entries.</string>
+
+    <string name="attendance_notification_channel_name">Employee Attendance Reminder</string>
+    <string name="attendance_notification_channel_description">Did You Marked Employee Attendance?</string>
+    <string name="attendance_notification_title">Employee Attendance</string>
+    <string name="attendance_notification_text">Did You Marked Employee Attendance?</string>
+</resources>

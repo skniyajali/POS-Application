@@ -3,7 +3,7 @@ package com.niyaj.popos
 import android.app.Application
 import android.content.Context
 import android.widget.Toast
-import com.niyaj.popos.worker.initializers.WorkInitializers
+import com.niyaj.worker.initializers.WorkInitializers
 import dagger.hilt.android.HiltAndroidApp
 import org.acra.config.mailSender
 import org.acra.config.toast
