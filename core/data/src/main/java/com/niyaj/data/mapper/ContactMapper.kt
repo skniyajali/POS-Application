@@ -15,8 +15,8 @@ fun ImportContact.toCustomer(): Customer? {
             return Customer(
                 customerId = BsonObjectId().toHexString(),
                 customerPhone = phoneNo,
-                customerName = displayName ?: "",
-                customerEmail = eMailAddress ?: ""
+                customerName = if (displayName.isNullOrEmpty()) null else displayName,
+                customerEmail = if (eMailAddress.isNullOrEmpty()) null else eMailAddress
             )
         }
 

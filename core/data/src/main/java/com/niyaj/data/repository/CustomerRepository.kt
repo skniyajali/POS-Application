@@ -33,15 +33,7 @@ interface CustomerRepository {
      * @return [Boolean] true if customer exists, false otherwise.
      * @see Customer
      */
-    fun findCustomerByPhone(customerPhone: String, customerId: String?): Boolean
-
-    /**
-     * Create new customer in database.
-     * @param newCustomer : [Customer] object to be created
-     * @return [Resource] of [Boolean] true if customer created, false otherwise.
-     * @see Customer
-     */
-    suspend fun createNewCustomer(newCustomer: Customer): Resource<Boolean>
+    suspend fun findCustomerByPhone(customerPhone: String, customerId: String?): Boolean
 
     /**
      * Update customer in database.
@@ -49,15 +41,7 @@ interface CustomerRepository {
      * @param customerId : id of customer
      * @return [Resource] of [Boolean] true if customer updated, false otherwise.
      */
-    suspend fun updateCustomer(newCustomer: Customer, customerId: String): Resource<Boolean>
-
-    /**
-     * Delete customer from database.
-     * @param customerId : id of customer to be deleted
-     * @return [Resource] of [Boolean] true if customer deleted, false otherwise.
-     * @see Customer
-     */
-    suspend fun deleteCustomer(customerId: String): Resource<Boolean>
+    suspend fun createOrUpdateCustomer(newCustomer: Customer, customerId: String): Resource<Boolean>
 
     /**
      * Delete customer from database.
@@ -80,6 +64,7 @@ interface CustomerRepository {
      * @return [Resource] of [Boolean] true if customers imported, false otherwise.
      */
     suspend fun importContacts(customers: List<Customer>): Resource<Boolean>
+
 
     suspend fun getCustomerWiseOrder(customerId : String): Flow<List<CustomerWiseOrder>>
 }

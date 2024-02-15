@@ -1,6 +1,5 @@
 package com.niyaj.feature.customer.settings.import_customer
 
-
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -59,9 +58,9 @@ import kotlinx.coroutines.launch
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ImportContactScreen(
-    navController : NavController = rememberNavController(),
-    resultBackNavigator : ResultBackNavigator<String>,
-    viewModel : CustomerSettingsViewModel = hiltViewModel(),
+    navController: NavController = rememberNavController(),
+    resultBackNavigator: ResultBackNavigator<String>,
+    viewModel: CustomerSettingsViewModel = hiltViewModel(),
 ) {
 
     val scope = rememberCoroutineScope()
@@ -85,7 +84,7 @@ fun ImportContactScreen(
         mutableStateOf(ImportContactType.Customer.name)
     }
 
-    var importJob : Job? = null
+    var importJob: Job? = null
 
     val importLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -197,9 +196,9 @@ fun ImportContactScreen(
             ImportFooter(
                 importButtonText = "Import ${if (isChosen) selectedCustomers.size else "All"} Customer",
                 noteText = if (selectedImportType == ImportContactType.Contact.name) {
-                    IMPORT_CUSTOMER_NOTE_TEXT
-                } else {
                     IMPORT_CONTACT_NOTE_TEXT
+                } else {
+                    IMPORT_CUSTOMER_NOTE_TEXT
                 },
                 importedDataIsEmpty = importedData.isNotEmpty(),
                 showImportedBtn = showImportedBtn,
@@ -221,7 +220,7 @@ fun ImportContactScreen(
 }
 
 
-enum class ImportContactType(val icon : ImageVector) {
+enum class ImportContactType(val icon: ImageVector) {
     Contact(Icons.Default.Contacts),
     Customer(Icons.Default.Person)
 }
