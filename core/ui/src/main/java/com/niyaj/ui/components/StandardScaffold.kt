@@ -94,7 +94,20 @@ fun StandardScaffold(
             }
         },
         bottomBar = {
-            if (showBottomBar) {
+            AnimatedVisibility(
+                visible = showBottomBar,
+                label = "BottomBar",
+                enter = fadeIn() + slideInVertically(
+                    initialOffsetY = { fullHeight ->
+                        fullHeight / 4
+                    }
+                ),
+                exit = fadeOut() + slideOutVertically(
+                    targetOffsetY = { fullHeight ->
+                        fullHeight / 4
+                    }
+                )
+            ) {
                 bottomBar()
             }
         },

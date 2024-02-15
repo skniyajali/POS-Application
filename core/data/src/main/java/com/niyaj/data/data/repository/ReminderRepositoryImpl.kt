@@ -29,6 +29,7 @@ import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.RealmResults
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -163,8 +164,8 @@ class ReminderRepositoryImpl(
         reminderType: ReminderType
     ): Flow<List<EmployeeReminderWithStatus>> {
         return channelFlow {
-            try {
-                withContext(ioDispatcher) {
+            withContext(ioDispatcher) {
+                try {
                     val employees = when (reminderType) {
                         ReminderType.Attendance -> {
                             realm.query<EmployeeEntity>().find().asFlow()
@@ -196,53 +197,67 @@ class ReminderRepositoryImpl(
                             }
                         }
                     }
+                } catch (e: Exception) {
+                    Timber.e(e)
+                    send(emptyList())
                 }
-            } catch (e: Exception) {
-                send(emptyList())
             }
         }
     }
 
-    private fun resultsChange(
+    private suspend fun resultsChange(
         result: RealmResults<EmployeeEntity>,
         reminderType: ReminderType,
         salaryDate: String
     ): List<EmployeeReminderWithStatus> {
-        val employeeSalaryWithStatusList = mutableListOf<EmployeeReminderWithStatus>()
+        return withContext(ioDispatcher) {
+            try {
+                val employeeSalaryWithStatusList = mutableListOf<EmployeeReminderWithStatus>()
 
-        result.forEach { employee ->
-            val isPaid = realm.query<PaymentEntity>(
-                "employee.employeeId == $0 && salaryGivenDate == $1",
-                employee.employeeId,
-                salaryDate
-            ).first().find()
+                result.forEach { employee ->
+                    val isPaid = async(ioDispatcher) {
+                        realm.query<PaymentEntity>(
+                            "employee.employeeId == $0 && paymentDate == $1",
+                            employee.employeeId,
+                            salaryDate
+                        ).first().find()
+                    }
 
-            val isAbsent = realm.query<AttendanceEntity>(
-                "employee.employeeId == $0 && absentDate == $1",
-                employee.employeeId,
-                salaryDate
-            ).first().find()
+                    val isAbsent = async(ioDispatcher) {
+                        realm.query<AttendanceEntity>(
+                            "employee.employeeId == $0 && absentDate == $1",
+                            employee.employeeId,
+                            salaryDate
+                        ).first().find()
+                    }
 
-            val employeeSalary = when (reminderType) {
-                ReminderType.Attendance -> employee.employeePhone
-                ReminderType.DailySalary -> employee.employeeSalary.toDailySalaryAmount()
-                else -> employee.employeeSalary.toRupee
+                    val employeeSalary = when (reminderType) {
+                        ReminderType.Attendance -> employee.employeePhone
+                        ReminderType.DailySalary -> employee.employeeSalary.toDailySalaryAmount()
+                        else -> employee.employeeSalary.toRupee
+                    }
+
+                    val paymentStatus =
+                        if (isPaid.await() != null) PaymentStatus.Paid
+                        else if (isAbsent.await() != null) PaymentStatus.Absent
+                        else PaymentStatus.NotPaid
+
+                    val employeeSalaryWithStatus = EmployeeReminderWithStatus(
+                        employee = employee.toExternalModel(),
+                        paymentStatus = paymentStatus,
+                        absentStatus = isAbsent.await() != null,
+                        reminderType = reminderType,
+                        employeeSalary = employeeSalary,
+                    )
+
+                    employeeSalaryWithStatusList.add(employeeSalaryWithStatus)
+                }
+
+                employeeSalaryWithStatusList
+            }catch (e: Exception) {
+                Timber.e(e)
+                emptyList()
             }
-
-            val paymentStatus =
-                if (isPaid != null) PaymentStatus.Paid else if (isAbsent != null) PaymentStatus.Absent else PaymentStatus.NotPaid
-
-            val employeeSalaryWithStatus = EmployeeReminderWithStatus(
-                employee = employee.toExternalModel(),
-                paymentStatus = paymentStatus,
-                absentStatus = isAbsent != null,
-                reminderType = reminderType,
-                employeeSalary = employeeSalary,
-            )
-
-            employeeSalaryWithStatusList.add(employeeSalaryWithStatus)
         }
-
-        return employeeSalaryWithStatusList
     }
 }

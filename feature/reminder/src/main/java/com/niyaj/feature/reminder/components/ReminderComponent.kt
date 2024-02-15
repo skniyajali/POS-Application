@@ -198,7 +198,6 @@ fun EmployeeSelectionBodyRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(if (paymentUiStatus != PaymentUiStatus.NotPaid) SpaceMedium else 0.dp)
         ) {
-
             if (paymentUiStatus == PaymentUiStatus.NotPaid) {
                 Checkbox(
                     enabled = isEnabled,
@@ -219,16 +218,22 @@ fun EmployeeSelectionBodyRow(
             )
         }
 
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(SpaceSmall),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (paymentUiStatus == PaymentUiStatus.NotPaid) {
+                TextWithTitle(
+                    modifier = Modifier,
+                    text = secText,
+                    icon = secIcon
+                )
+            }
 
-        TextWithTitle(
-            modifier = Modifier,
-            text = secText,
-            icon = secIcon
-        )
-
-        paymentUiStatus?.let {
-            if (it != PaymentUiStatus.NotPaid) {
-                PaymentStatusChip(paymentStatus = it)
+            paymentUiStatus?.let {
+                if (it != PaymentUiStatus.NotPaid) {
+                    PaymentStatusChip(paymentStatus = it)
+                }
             }
         }
     }

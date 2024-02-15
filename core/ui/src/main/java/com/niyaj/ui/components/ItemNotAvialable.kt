@@ -93,7 +93,7 @@ fun ItemNotAvailable(
 fun ItemNotAvailableHalf(
     modifier: Modifier = Modifier,
     btnModifier: Modifier = Modifier,
-    text: String = "",
+    text: String,
     buttonText: String = "",
     showImage: Boolean = true,
     icon: ImageVector = Icons.Default.Add,
@@ -138,6 +138,43 @@ fun ItemNotAvailableHalf(
                     style = MaterialTheme.typography.button
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun ItemNotFound(
+    modifier: Modifier = Modifier,
+    text: String,
+    buttonText: String,
+    icon: ImageVector = Icons.Default.Add,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = text,
+            fontWeight = FontWeight.Normal,
+            style = MaterialTheme.typography.body2,
+            textAlign = TextAlign.Center,
+            color = HintGray
+        )
+
+        Spacer(modifier = Modifier.height(SpaceMedium))
+
+        StartIconButton(
+            onClick = onClick
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = text.plus("Icon")
+            )
+
+            Text(text = buttonText)
         }
     }
 }
