@@ -82,7 +82,6 @@ fun CustomerScreen(
     val showSearchBar = viewModel.showSearchBar.collectAsStateWithLifecycle().value
     val searchText = viewModel.searchText.value
 
-
     resultRecipient.onNavResult { result ->
         when (result) {
             is NavResult.Canceled -> {
@@ -102,7 +101,6 @@ fun CustomerScreen(
             }
         }
     }
-
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
@@ -193,6 +191,7 @@ fun CustomerScreen(
         ) { state ->
             when (state) {
                 is UiState.Loading -> LoadingIndicator()
+
                 is UiState.Empty -> {
                     ItemNotAvailable(
                         text = if (searchText.isEmpty()) CUSTOMER_NOT_AVAILABLE else NO_ITEMS_IN_CUSTOMER,

@@ -2,10 +2,9 @@ package com.niyaj.feature.customer.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,14 +24,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,74 +44,6 @@ import com.niyaj.model.Customer
 import com.niyaj.ui.components.CircularBox
 import com.niyaj.ui.components.StandardExpandable
 import com.niyaj.ui.components.TextWithIcon
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun CustomerCard(
-    modifier: Modifier = Modifier,
-    customer : Customer,
-    doesSelected: (String) -> Boolean,
-    doesAnySelected: Boolean = false,
-    onSelectContact: (String) -> Unit,
-    onClickViewDetails: (String) -> Unit = {},
-) {
-    Card(
-        shape = RoundedCornerShape(4.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(SpaceMini)
-            .testTag(customer.customerPhone)
-            .combinedClickable(
-                onClick = {
-                    if (!doesAnySelected) {
-                        onClickViewDetails(customer.customerId)
-                    } else {
-                        onSelectContact(customer.customerId)
-                    }
-                },
-                onLongClick = {
-                    onSelectContact(customer.customerId)
-                }
-            ),
-        border = if(doesSelected(customer.customerId))
-            BorderStroke(1.dp, MaterialTheme.colors.primary)
-        else null,
-        elevation = 2.dp,
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(SpaceSmall)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.Start
-        ) {
-            customer.customerName?.let { it ->
-                TextWithIcon(
-                    text = it,
-                    icon = Icons.Default.Person,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Spacer(modifier = Modifier.height(SpaceMini))
-            }
-
-            TextWithIcon(
-                text = customer.customerPhone,
-                icon = Icons.Default.PhoneAndroid,
-                fontWeight = FontWeight.SemiBold,
-            )
-
-            customer.customerEmail?.let { email ->
-                Spacer(modifier = Modifier.height(SpaceMini))
-                TextWithIcon(
-                    text = email,
-                    icon = Icons.Default.Email,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-        }
-    }
-}
-
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -136,7 +65,9 @@ fun CustomerData(
             .then(borderStroke?.let {
                 Modifier.border(it, RoundedCornerShape(SpaceMini))
             } ?: Modifier)
+            .shadow(1.dp, RoundedCornerShape(SpaceMini))
             .clip(RoundedCornerShape(SpaceMini))
+            .background(MaterialTheme.colors.surface)
             .combinedClickable(
                 onClick = {
                     onClick(item.customerId)
@@ -148,7 +79,8 @@ fun CustomerData(
         text = {
             Text(
                 text = item.customerPhone,
-                style = MaterialTheme.typography.body1
+                style = MaterialTheme.typography.body1,
+                fontWeight = FontWeight.SemiBold
             )
         },
         secondaryText = item.customerName?.let {
@@ -158,7 +90,8 @@ fun CustomerData(
             CircularBox(
                 icon = Icons.Default.Person,
                 doesSelected = doesSelected(item.customerId),
-                text = item.customerName
+                text = item.customerName,
+                backgroundColor = MaterialTheme.colors.background
             )
         },
         trailing = {
@@ -237,15 +170,13 @@ fun ImportExportCustomerBody(
                             item.customerId.plus(index)
                         }
                     ){ index, customer ->
-                        CustomerCard(
-                            customer = customer,
+                        CustomerData(
+                            item = customer,
                             doesSelected = {
                                 selectedCustomers.contains(it)
                             },
-                            doesAnySelected = true,
-                            onSelectContact = {
-                                onSelectCustomer(customer.customerId)
-                            },
+                            onClick = onSelectCustomer,
+                            onLongClick = onSelectCustomer
                         )
 
                         Spacer(modifier = Modifier.height(SpaceMini))

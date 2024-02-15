@@ -88,7 +88,7 @@ class AddEditCustomerViewModel @Inject constructor(
             }
 
             is AddEditCustomerEvent.CreateOrUpdateCustomer -> {
-                createOrUpdateCustomer()
+                createOrUpdateCustomer(customerId)
             }
         }
     }
@@ -115,7 +115,7 @@ class AddEditCustomerViewModel @Inject constructor(
         }
     }
 
-    private fun createOrUpdateCustomer(customerId: String = "") {
+    private fun createOrUpdateCustomer(customerId: String) {
         viewModelScope.launch {
             if (phoneError.value == null && nameError.value == null && emailError.value == null) {
                 val newCustomer = Customer(
@@ -128,27 +128,22 @@ class AddEditCustomerViewModel @Inject constructor(
                         .toString() else null
                 )
 
-                if (customerId.isEmpty()) {
-                    when (customerRepository.createNewCustomer(newCustomer)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable To Create Customer."))
-                        }
+                val message = if (customerId.isEmpty()) "Created" else "Updated"
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Customer Created Successfully."))
-                        }
+                val result = customerRepository.createOrUpdateCustomer(newCustomer, customerId)
+
+                when (result) {
+                    is Resource.Error -> {
+                        _eventFlow.emit(
+                            UiEvent.Error(result.message ?: "Unable To $message Customer.")
+                        )
                     }
-                } else {
-                    when (customerRepository.updateCustomer(newCustomer, customerId)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable To Create Customer."))
-                        }
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Customer Updated Successfully."))
-                        }
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("Customer $message Successfully."))
                     }
                 }
+
                 addEditState = AddEditCustomerState()
             }
         }

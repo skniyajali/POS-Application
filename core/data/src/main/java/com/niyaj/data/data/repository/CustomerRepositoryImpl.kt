@@ -9,6 +9,7 @@ import com.niyaj.common.tags.CustomerTestTags.CUSTOMER_PHONE_LENGTH_ERROR
 import com.niyaj.common.tags.CustomerTestTags.CUSTOMER_PHONE_LETTER_ERROR
 import com.niyaj.common.utils.Resource
 import com.niyaj.common.utils.ValidationResult
+import com.niyaj.data.mapper.toEntity
 import com.niyaj.data.repository.CustomerRepository
 import com.niyaj.data.repository.validation.CustomerValidationRepository
 import com.niyaj.data.utils.collectWithSearch
@@ -28,15 +29,14 @@ import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.withContext
-import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
 /**
- * Created by Niyaj on 5/26/2020.
  * @author Niyaj
  * @param config : Realm Configuration
  * @param ioDispatcher : Coroutine Dispatcher
@@ -91,67 +91,30 @@ class CustomerRepositoryImpl(
         }
     }
 
-    override fun findCustomerByPhone(customerPhone: String, customerId: String?): Boolean {
-        val customer = if (customerId == null) {
-            realm.query<CustomerEntity>(
-                "customerPhone == $0",
-                customerPhone
-            ).first().find()
-        } else {
-            realm.query<CustomerEntity>(
-                "customerId != $0 && customerPhone == $1",
-                customerId,
-                customerPhone
-            ).first().find()
-        }
-
-        return customer != null
-    }
-
-    override suspend fun createNewCustomer(newCustomer: Customer): Resource<Boolean> {
-        return try {
-            val validateCustomerName = validateCustomerName(newCustomer.customerName)
-            val validateCustomerPhone = validateCustomerPhone(newCustomer.customerPhone)
-            val validateCustomerEmail = validateCustomerEmail(newCustomer.customerEmail)
-
-            val hasError = listOf(
-                validateCustomerName,
-                validateCustomerPhone,
-                validateCustomerEmail
-            ).any { !it.successful }
-
-            if (!hasError) {
-                withContext(ioDispatcher) {
-                    val customer = CustomerEntity()
-                    customer.customerId =
-                        newCustomer.customerId.ifEmpty { BsonObjectId().toHexString() }
-                    customer.customerName = newCustomer.customerName
-                    customer.customerEmail = newCustomer.customerEmail
-                    customer.customerPhone = newCustomer.customerPhone
-                    customer.createdAt =
-                        newCustomer.createdAt.ifEmpty { System.currentTimeMillis().toString() }
-
-                    realm.write {
-                        this.copyToRealm(customer)
-                    }
-                }
-
-                Resource.Success(true)
+    override suspend fun findCustomerByPhone(customerPhone: String, customerId: String?): Boolean {
+        return withContext(ioDispatcher) {
+            if (customerId.isNullOrEmpty()) {
+                realm.query<CustomerEntity>(
+                    "customerPhone == $0",
+                    customerPhone
+                ).first().find()
             } else {
-                Resource.Error("Unable to validate customer")
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to create new customer")
+                realm.query<CustomerEntity>(
+                    "customerId != $0 && customerPhone == $1",
+                    customerId,
+                    customerPhone
+                ).first().find()
+            } != null
         }
     }
 
-    override suspend fun updateCustomer(
+    override suspend fun createOrUpdateCustomer(
         newCustomer: Customer,
         customerId: String
     ): Resource<Boolean> {
         return try {
+            val validateCustomerPhone = validateCustomerPhone(newCustomer.customerPhone, customerId)
             val validateCustomerName = validateCustomerName(newCustomer.customerName)
-            val validateCustomerPhone = validateCustomerPhone(newCustomer.customerPhone)
             val validateCustomerEmail = validateCustomerEmail(newCustomer.customerEmail)
 
             val hasError = listOf(
@@ -161,8 +124,10 @@ class CustomerRepositoryImpl(
             ).any { !it.successful }
 
             if (!hasError) {
-                val customer =
+                val customer = withContext(ioDispatcher) {
                     realm.query<CustomerEntity>("customerId == $0", customerId).first().find()
+                }
+
                 if (customer != null) {
                     withContext(ioDispatcher) {
                         realm.write {
@@ -177,54 +142,19 @@ class CustomerRepositoryImpl(
 
                     Resource.Success(true)
                 } else {
-                    Resource.Error("Unable to find customer")
+                    withContext(ioDispatcher) {
+                        realm.write {
+                            this.copyToRealm(newCustomer.toEntity())
+                        }
+                    }
+
+                    Resource.Success(true)
                 }
             } else {
                 Resource.Error("Unable to validate customer")
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to update customer")
-        }
-    }
-
-    override suspend fun deleteCustomer(customerId: String): Resource<Boolean> {
-        return try {
-            val customer =
-                realm.query<CustomerEntity>("customerId == $0", customerId).first().find()
-
-            if (customer != null) {
-                withContext(ioDispatcher) {
-                    realm.write {
-                        val cartOrder =
-                            this.query<CartOrderEntity>("customer.customerId == $0", customerId)
-                                .find()
-                        val cart =
-                            this.query<CartEntity>(
-                                "cartOrder.customer.customerId == $0",
-                                customerId
-                            )
-                                .find()
-
-                        if (cartOrder.isNotEmpty()) {
-                            delete(cartOrder)
-                        }
-
-                        if (cart.isNotEmpty()) {
-                            delete(cart)
-                        }
-
-                        findLatest(customer)?.let {
-                            delete(it)
-                        }
-                    }
-                }
-
-                Resource.Success(true)
-            } else {
-                Resource.Error("Unable to find customer")
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to delete customer")
         }
     }
 
@@ -320,15 +250,7 @@ class CustomerRepositoryImpl(
                         ).first().find()
 
                         if (findCustomer == null) {
-                            val newCustomer = CustomerEntity()
-                            newCustomer.customerId = BsonObjectId().toHexString()
-                            newCustomer.customerName = customer.customerName
-                            newCustomer.customerPhone = customer.customerPhone
-                            newCustomer.customerEmail = customer.customerEmail
-                            newCustomer.createdAt = System.currentTimeMillis().toString()
-
-                            this.copyToRealm(newCustomer)
-
+                            this.copyToRealm(customer.toEntity())
                         } else {
                             findCustomer.customerName = findCustomer.customerName
                             findCustomer.customerEmail = findCustomer.customerEmail
@@ -374,7 +296,7 @@ class CustomerRepositoryImpl(
         )
     }
 
-    override fun validateCustomerPhone(
+    override suspend fun validateCustomerPhone(
         customerPhone: String,
         customerId: String?
     ): ValidationResult {
@@ -415,69 +337,80 @@ class CustomerRepositoryImpl(
 
     override suspend fun getCustomerWiseOrder(customerId: String): Flow<List<CustomerWiseOrder>> {
         return channelFlow {
-            try {
-                val orders = realm.query<CartOrderEntity>("customer.customerId == $0", customerId)
-                    .sort("updatedAt", Sort.DESCENDING)
-                    .asFlow()
+            withContext(ioDispatcher) {
+                try {
+                    val orders =
+                        realm.query<CartOrderEntity>("customer.customerId == $0", customerId)
+                            .sort("updatedAt", Sort.DESCENDING)
+                            .asFlow()
 
-                orders.collectLatest { result ->
-                    when (result) {
-                        is InitialResults -> {
-                            send(mapCartOrdersToCustomerWiseOrder(result.list))
-                        }
+                    orders.collectLatest { result ->
+                        when (result) {
+                            is InitialResults -> {
+                                send(mapCartOrdersToCustomerWiseOrder(result.list))
+                            }
 
-                        is UpdatedResults -> {
-                            send(mapCartOrdersToCustomerWiseOrder(result.list))
+                            is UpdatedResults -> {
+                                send(mapCartOrdersToCustomerWiseOrder(result.list))
+                            }
                         }
                     }
-                }
 
-            } catch (e: Exception) {
-                send(emptyList())
+                } catch (e: Exception) {
+                    send(emptyList())
+                }
             }
         }
     }
 
-    private fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
-        var totalPrice = 0
-        var discountPrice = 0
+    private suspend fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
+        return withContext(ioDispatcher) {
 
-        val cartOrder =
-            realm.query<CartOrderEntity>("cartOrderId == $0", cartOrderId).first().find()
-        val cartOrders = realm.query<CartEntity>("cartOrder.cartOrderId == $0", cartOrderId).find()
+            var totalPrice = 0
+            var discountPrice = 0
 
-        if (cartOrder != null && cartOrders.isNotEmpty()) {
-            if (cartOrder.doesChargesIncluded) {
-                val charges = realm.query<ChargesEntity>().find()
-                for (charge in charges) {
-                    if (charge.isApplicable && cartOrder.orderType != OrderType.DineIn.name) {
-                        totalPrice += charge.chargesPrice
+            val cartOrder = async(ioDispatcher) {
+                realm.query<CartOrderEntity>("cartOrderId == $0", cartOrderId).first().find()
+            }.await()
+
+            val cartOrders = async(ioDispatcher) {
+                realm.query<CartEntity>("cartOrder.cartOrderId == $0", cartOrderId).find()
+            }.await()
+
+
+            if (cartOrder != null && cartOrders.isNotEmpty()) {
+                if (cartOrder.doesChargesIncluded) {
+                    val charges = realm.query<ChargesEntity>().find()
+                    for (charge in charges) {
+                        if (charge.isApplicable && cartOrder.orderType != OrderType.DineIn.name) {
+                            totalPrice += charge.chargesPrice
+                        }
+                    }
+                }
+
+                if (cartOrder.addOnItems.isNotEmpty()) {
+                    for (addOnItem in cartOrder.addOnItems) {
+
+                        totalPrice += addOnItem.itemPrice
+
+                        if (!addOnItem.isApplicable) {
+                            discountPrice += addOnItem.itemPrice
+                        }
+                    }
+                }
+
+                for (cartOrder1 in cartOrders) {
+                    if (cartOrder1.product != null) {
+                        totalPrice += cartOrder1.quantity.times(cartOrder1.product?.productPrice!!)
                     }
                 }
             }
 
-            if (cartOrder.addOnItems.isNotEmpty()) {
-                for (addOnItem in cartOrder.addOnItems) {
-
-                    totalPrice += addOnItem.itemPrice
-
-                    if (!addOnItem.isApplicable) {
-                        discountPrice += addOnItem.itemPrice
-                    }
-                }
-            }
-
-            for (cartOrder1 in cartOrders) {
-                if (cartOrder1.product != null) {
-                    totalPrice += cartOrder1.quantity.times(cartOrder1.product?.productPrice!!)
-                }
-            }
+            Pair(totalPrice, discountPrice)
         }
-
-        return Pair(totalPrice, discountPrice)
     }
 
-    private fun mapCartOrdersToCustomerWiseOrder(data: List<CartOrderEntity>): List<CustomerWiseOrder> {
+    private suspend fun mapCartOrdersToCustomerWiseOrder(data: List<CartOrderEntity>): List<CustomerWiseOrder> {
         return data.map { order ->
             val price = countTotalPrice(order.cartOrderId)
             val totalPrice = price.first.minus(price.second).toString()

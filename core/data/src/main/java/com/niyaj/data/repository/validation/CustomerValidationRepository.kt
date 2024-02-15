@@ -30,5 +30,5 @@ interface CustomerValidationRepository {
      * @return [ValidationResult] object.
      * @see ValidationResult
      */
-    fun validateCustomerPhone(customerPhone: String, customerId: String? = null): ValidationResult
+    suspend fun validateCustomerPhone(customerPhone: String, customerId: String? = null): ValidationResult
 }
