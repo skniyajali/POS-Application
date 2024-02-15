@@ -11,4 +11,6 @@ object ReminderTestTags {
     const val DELETE_REMINDER = "Delete Reminder?"
     const val DELETE_REMINDER_MSG = "Are you sure to delete reminder?"
 
+    const val EMPLOYEE_NOT_FOUND = "Could not find employee or want to add more, click below"
+    const val CREATE_NEW_EMP = "Add New Employee"
 }

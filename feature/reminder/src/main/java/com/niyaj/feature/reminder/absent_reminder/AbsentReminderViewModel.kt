@@ -2,7 +2,6 @@ package com.niyaj.feature.reminder.absent_reminder
 
 import android.text.format.DateUtils
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -41,7 +40,7 @@ class AbsentReminderViewModel @Inject constructor(
     private val _selectedDate = MutableStateFlow(getStartTime)
     val selectedDate = _selectedDate.asStateFlow()
 
-    val employees = snapshotFlow { _selectedDate.value }.flatMapLatest {
+    val employees = _selectedDate.flatMapLatest {
         reminderRepository.getReminderEmployee(it, ReminderType.Attendance)
     }.stateIn(
         scope = viewModelScope,
