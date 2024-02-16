@@ -142,7 +142,7 @@ fun ExportAddressScreen(
                     text = "Export " + if (isChosen) "${selectedAddresses.size} Selected Addresses" else " All Addresses",
                     onClickAll = {
                         viewModel.onChoose = false
-                        viewModel.deselectItems()
+                        viewModel.selectAllItems()
                     },
                     isChosen = isChosen,
                     onClickChoose = {

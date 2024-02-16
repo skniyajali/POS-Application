@@ -61,5 +61,4 @@ class AddressViewModel @Inject constructor(
             mSelectedItems.clear()
         }
     }
-
 }

@@ -27,17 +27,35 @@ suspend fun <T : RealmObject, R> Flow<ResultsChange<T>>.collectWithSearch(
     send: suspend (List<R>) -> Unit,
 ) {
     collectLatest { result ->
-        when(result) {
+        when (result) {
             is InitialResults -> {
                 val mappedList = result.list.map { transform(it) }
                 val filteredList = searchFilter(mappedList)
                 send(filteredList)
             }
+
             is UpdatedResults -> {
                 val mappedList = result.list.map { transform(it) }
                 val filteredList = searchFilter(mappedList)
                 send(filteredList)
             }
+        }
+    }
+}
+
+
+// Extension function to simplify collecting, transforming, and sending results with search filtering
+fun <T : RealmObject, R> ResultsChange<T>.collectWithSearch(
+    transform: (T) -> R,
+    searchFilter: (List<R>) -> List<R>,
+): List<R> {
+    return when (this) {
+        is InitialResults -> {
+            searchFilter(this.list.map { transform(it) })
+        }
+
+        is UpdatedResults -> {
+            searchFilter(this.list.map { transform(it) })
         }
     }
 }

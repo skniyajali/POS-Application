@@ -2,6 +2,7 @@ package com.niyaj.data.data.repository
 
 import com.niyaj.common.utils.Resource
 import com.niyaj.common.utils.ValidationResult
+import com.niyaj.data.mapper.toEntity
 import com.niyaj.data.repository.AddressRepository
 import com.niyaj.data.repository.validation.AddressValidationRepository
 import com.niyaj.data.utils.collectWithSearch
@@ -24,6 +25,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 
@@ -35,24 +37,17 @@ class AddressRepositoryImpl(
     val realm = Realm.open(config)
 
     override suspend fun getAllAddress(searchText: String): Flow<List<Address>> {
-        return channelFlow {
-            withContext(ioDispatcher) {
-                try {
-                    val items = realm.query<AddressEntity>()
-                        .sort("addressId", Sort.DESCENDING)
-                        .find()
-                        .asFlow()
-
+        return withContext(ioDispatcher) {
+            realm.query<AddressEntity>()
+                .sort("addressId", Sort.DESCENDING)
+                .find()
+                .asFlow()
+                .mapLatest { items ->
                     items.collectWithSearch(
                         transform = { it.toExternalModel() },
                         searchFilter = { it.filterAddress(searchText) },
-                        send = { send(it) }
                     )
-
-                } catch (e: Exception) {
-                    send(emptyList())
                 }
-            }
         }
     }
 
@@ -66,56 +61,27 @@ class AddressRepositoryImpl(
         }
     }
 
-    override fun findAddressByName(addressName: String, addressId: String?): Boolean {
-        val address = if (addressId.isNullOrEmpty()) {
-            realm.query<AddressEntity>("addressName == $0", addressName).first().find()
-        } else {
-            realm.query<AddressEntity>(
-                "addressId != $0 && addressName == $1",
-                addressId,
-                addressName
-            )
-                .first().find()
-        }
-
-        return address != null
-    }
-
-    override suspend fun addNewAddress(newAddress: Address): Resource<Boolean> {
-        return try {
-            withContext(ioDispatcher) {
-                val validateAddressName = validateAddressName(newAddress.addressName, null)
-                val validateAddressShortName = validateAddressShortName(newAddress.shortName)
-
-                val hasError =
-                    listOf(validateAddressName, validateAddressShortName).any { !it.successful }
-
-                if (!hasError) {
-                    val address = AddressEntity()
-                    address.addressId =
-                        newAddress.addressId.ifEmpty { BsonObjectId().toHexString() }
-                    address.shortName = newAddress.shortName
-                    address.addressName = newAddress.addressName
-                    address.createdAt =
-                        newAddress.createdAt.ifEmpty { System.currentTimeMillis().toString() }
-
-                    realm.write {
-                        this.copyToRealm(address)
-                    }
-
-                    Resource.Success(true)
-                } else {
-                    Resource.Error("Unable to create address")
-                }
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to new address")
+    override suspend fun findAddressByName(addressName: String, addressId: String?): Boolean {
+        return withContext(ioDispatcher) {
+            if (addressId.isNullOrEmpty()) {
+                realm.query<AddressEntity>("addressName == $0", addressName).first().find()
+            } else {
+                realm.query<AddressEntity>(
+                    "addressId != $0 && addressName == $1",
+                    addressId,
+                    addressName
+                )
+                    .first().find()
+            } != null
         }
     }
 
-    override suspend fun updateAddress(newAddress: Address, addressId: String): Resource<Boolean> {
-        return try {
-            withContext(ioDispatcher) {
+    override suspend fun createOrUpdateAddress(
+        newAddress: Address,
+        addressId: String
+    ): Resource<Boolean> {
+        return withContext(ioDispatcher) {
+            try {
                 val validateAddressName = validateAddressName(newAddress.addressName, addressId)
                 val validateAddressShortName = validateAddressShortName(newAddress.shortName)
 
@@ -125,6 +91,8 @@ class AddressRepositoryImpl(
                 if (!hasError) {
                     val address =
                         realm.query<AddressEntity>("addressId == $0", addressId).first().find()
+
+
                     if (address != null) {
                         realm.write {
                             findLatest(address)?.apply {
@@ -135,50 +103,18 @@ class AddressRepositoryImpl(
                         }
                         Resource.Success(true)
                     } else {
-                        Resource.Error("Unable to find address")
+                        realm.write {
+                            this.copyToRealm(newAddress.toEntity())
+                        }
+
+                        Resource.Success(true)
                     }
                 } else {
                     Resource.Error("Unable to update address")
                 }
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "Unable to update address")
             }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to update address")
-        }
-    }
-
-    override suspend fun deleteAddress(addressId: String): Resource<Boolean> {
-        return try {
-            val address = realm.query<AddressEntity>("addressId == $0", addressId).first().find()
-
-            if (address != null) {
-                withContext(ioDispatcher) {
-                    realm.write {
-                        val cartOrder =
-                            this.query<CartOrderEntity>("address.addressId == $0", addressId).find()
-                        val cart =
-                            this.query<CartEntity>("cartOrder.address.addressId == $0", addressId)
-                                .find()
-
-                        if (cartOrder.isNotEmpty()) {
-                            delete(cartOrder)
-                        }
-
-                        if (cart.isNotEmpty()) {
-                            delete(cart)
-                        }
-
-                        findLatest(address)?.let {
-                            delete(it)
-                        }
-                    }
-                }
-
-                Resource.Success(true)
-            } else {
-                Resource.Error("Unable to delete address")
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to delete address")
         }
     }
 
@@ -295,7 +231,10 @@ class AddressRepositoryImpl(
         }
     }
 
-    override fun validateAddressName(addressName: String, addressId: String?): ValidationResult {
+    override suspend fun validateAddressName(
+        addressName: String,
+        addressId: String?
+    ): ValidationResult {
         if (addressName.isEmpty()) {
             return ValidationResult(
                 successful = false,
@@ -310,7 +249,9 @@ class AddressRepositoryImpl(
             )
         }
 
-        val serverResult = this.findAddressByName(addressName, addressId)
+        val serverResult = withContext(ioDispatcher) {
+            this@AddressRepositoryImpl.findAddressByName(addressName, addressId)
+        }
 
         if (serverResult) {
             return ValidationResult(
@@ -368,46 +309,50 @@ class AddressRepositoryImpl(
         }
     }
 
-    private fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
-        var totalPrice = 0
-        var discountPrice = 0
+    private suspend fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
+        return withContext(ioDispatcher) {
+            var totalPrice = 0
+            var discountPrice = 0
 
-        val cartOrder =
-            realm.query<CartOrderEntity>("cartOrderId == $0", cartOrderId).first().find()
-        val cartOrders = realm.query<CartEntity>("cartOrder.cartOrderId == $0", cartOrderId).find()
+            val cartOrder =
+                realm.query<CartOrderEntity>("cartOrderId == $0", cartOrderId).first().find()
 
-        if (cartOrder != null && cartOrders.isNotEmpty()) {
-            if (cartOrder.doesChargesIncluded) {
-                val charges = realm.query<ChargesEntity>().find()
-                for (charge in charges) {
-                    if (charge.isApplicable && cartOrder.orderType != OrderType.DineIn.name) {
-                        totalPrice += charge.chargesPrice
+            val cartOrders =
+                realm.query<CartEntity>("cartOrder.cartOrderId == $0", cartOrderId).find()
+
+            if (cartOrder != null && cartOrders.isNotEmpty()) {
+                if (cartOrder.doesChargesIncluded) {
+                    val charges = realm.query<ChargesEntity>().find()
+                    for (charge in charges) {
+                        if (charge.isApplicable && cartOrder.orderType != OrderType.DineIn.name) {
+                            totalPrice += charge.chargesPrice
+                        }
+                    }
+                }
+
+                if (cartOrder.addOnItems.isNotEmpty()) {
+                    for (addOnItem in cartOrder.addOnItems) {
+
+                        totalPrice += addOnItem.itemPrice
+
+                        if (!addOnItem.isApplicable) {
+                            discountPrice += addOnItem.itemPrice
+                        }
+                    }
+                }
+
+                for (cartOrder1 in cartOrders) {
+                    if (cartOrder1.product != null) {
+                        totalPrice += cartOrder1.quantity.times(cartOrder1.product?.productPrice!!)
                     }
                 }
             }
 
-            if (cartOrder.addOnItems.isNotEmpty()) {
-                for (addOnItem in cartOrder.addOnItems) {
-
-                    totalPrice += addOnItem.itemPrice
-
-                    if (!addOnItem.isApplicable) {
-                        discountPrice += addOnItem.itemPrice
-                    }
-                }
-            }
-
-            for (cartOrder1 in cartOrders) {
-                if (cartOrder1.product != null) {
-                    totalPrice += cartOrder1.quantity.times(cartOrder1.product?.productPrice!!)
-                }
-            }
+            Pair(totalPrice, discountPrice)
         }
-
-        return Pair(totalPrice, discountPrice)
     }
 
-    private fun mapOrderToAddressWiseOrder(data: List<CartOrderEntity>): List<AddressWiseOrder> {
+    private suspend fun mapOrderToAddressWiseOrder(data: List<CartOrderEntity>): List<AddressWiseOrder> {
         return data.map { order ->
             val price = countTotalPrice(order.cartOrderId)
             val totalPrice = price.first.minus(price.second).toString()

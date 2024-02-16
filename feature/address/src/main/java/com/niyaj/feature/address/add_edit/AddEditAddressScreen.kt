@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ShortText
 import androidx.compose.material.icons.filled.Add
@@ -21,9 +22,9 @@ import com.niyaj.common.tags.AddressTestTags.ADDRESS_FULL_NAME_ERROR
 import com.niyaj.common.tags.AddressTestTags.ADDRESS_FULL_NAME_FIELD
 import com.niyaj.common.tags.AddressTestTags.ADDRESS_SHORT_NAME_ERROR
 import com.niyaj.common.tags.AddressTestTags.ADDRESS_SHORT_NAME_FIELD
-import com.niyaj.common.tags.AddressTestTags.CREATE_ADDRESS_SCREEN
+import com.niyaj.common.tags.AddressTestTags.CREATE_NEW_ADDRESS
 import com.niyaj.common.tags.AddressTestTags.CREATE_UPDATE_ADDRESS_BUTTON
-import com.niyaj.common.tags.AddressTestTags.UPDATE_ADDRESS_SCREEN
+import com.niyaj.common.tags.AddressTestTags.UPDATE_ADDRESS
 import com.niyaj.designsystem.theme.SpaceMedium
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.ui.components.StandardButtonFW
@@ -51,13 +52,12 @@ fun AddEditAddressScreen(
     viewModel: AddEditAddressViewModel = hiltViewModel(),
     resultNavigator: ResultBackNavigator<String>
 ) {
-
     val nameError = viewModel.nameError.collectAsStateWithLifecycle().value
     val shortNameError = viewModel.shortNameError.collectAsStateWithLifecycle().value
 
     val enableBtn = nameError == null && shortNameError == null
 
-    val title = if (addressId.isNullOrEmpty()) CREATE_ADDRESS_SCREEN else UPDATE_ADDRESS_SCREEN
+    val title = if (addressId.isNullOrEmpty()) CREATE_NEW_ADDRESS else UPDATE_ADDRESS
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
@@ -84,6 +84,7 @@ fun AddEditAddressScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(SpaceSmall)
         ) {
             StandardOutlinedTextField(
                 modifier = Modifier.testTag(ADDRESS_FULL_NAME_FIELD),

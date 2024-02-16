@@ -102,44 +102,27 @@ class AddEditAddressViewModel @Inject constructor(
         }
     }
 
-    private fun createOrUpdateAddress(addressId: String? = null) {
+    private fun createOrUpdateAddress(addressId: String) {
         viewModelScope.launch {
             if (nameError.value == null && shortNameError.value == null) {
-                val address = Address(
+                val newAddress = Address(
                     shortName = state.shortName.uppercase(),
                     addressName = state.addressName.capitalizeWords,
                     createdAt = System.currentTimeMillis().toString(),
-                    updatedAt = if (addressId.isNullOrEmpty()) null else System.currentTimeMillis()
+                    updatedAt = if (addressId.isEmpty()) null else System.currentTimeMillis()
                         .toString()
                 )
+                val message = if (addressId.isEmpty()) "created" else "updated"
 
-                if (addressId.isNullOrEmpty()) {
-                    when (val result = addressRepository.addNewAddress(address)) {
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Address created successfully"))
-                        }
-
-                        is Resource.Error -> {
-                            _eventFlow.emit(
-                                UiEvent.Error(
-                                    result.message ?: "Unable to create address"
-                                )
-                            )
-                        }
+                when (val result = addressRepository.createOrUpdateAddress(newAddress, addressId)) {
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("Address $message successfully"))
                     }
-                } else {
-                    when (val result = addressRepository.updateAddress(address, addressId)) {
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Address updated successfully"))
-                        }
 
-                        is Resource.Error -> {
-                            _eventFlow.emit(
-                                UiEvent.Error(
-                                    result.message ?: "Unable to update address"
-                                )
-                            )
-                        }
+                    is Resource.Error -> {
+                        _eventFlow.emit(
+                            UiEvent.Error(result.message ?: "Unable to $message address")
+                        )
                     }
                 }
 

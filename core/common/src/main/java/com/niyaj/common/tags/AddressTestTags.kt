@@ -6,15 +6,8 @@ object AddressTestTags {
     const val ADDRESS_NOT_AVAILABLE = "Address Not Available"
     const val ADDRESS_SEARCH_PLACEHOLDER = "Search for Addresses..."
 
-    const val CREATE_ADDRESS_SCREEN = "Create New Address"
-    const val UPDATE_ADDRESS_SCREEN = "Update Address"
-    const val ADD_EDIT_ADDRESS_BTN = "AddEdit Address"
-
     const val CREATE_NEW_ADDRESS = "Create New Address"
-    const val EDIT_ADDRESS = "Update Address"
-
-    //Address Screen
-    const val ADDRESS_SEARCH_BAR = "Address Search Bar"
+    const val UPDATE_ADDRESS = "Update Address"
 
     //Add Edit Address Screen Tags
     const val ADDRESS_SHORT_NAME_FIELD = "Short Name"
@@ -32,7 +25,6 @@ object AddressTestTags {
 
 
     const val IMPORT_ADDRESS_TITLE = "Import Address"
-    const val IMPORT_ADDRESS_OPN_FILE = "Open File"
     const val IMPORT_ADDRESS_NOTE_TEXT = "Make sure to open addresses.json file."
 
     const val EXPORT_ADDRESS_TITLE = "Export Address"

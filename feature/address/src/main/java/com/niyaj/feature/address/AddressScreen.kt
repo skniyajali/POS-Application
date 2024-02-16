@@ -5,6 +5,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -21,11 +22,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.common.tags.AddressTestTags.ADDRESS_NOT_AVAILABLE
+import com.niyaj.common.tags.AddressTestTags.ADDRESS_SCREEN_NOTE_TEXT
 import com.niyaj.common.tags.AddressTestTags.ADDRESS_SCREEN_TITLE
 import com.niyaj.common.tags.AddressTestTags.ADDRESS_SEARCH_PLACEHOLDER
 import com.niyaj.common.tags.AddressTestTags.CREATE_NEW_ADDRESS
 import com.niyaj.common.tags.AddressTestTags.DELETE_ADDRESS_ITEM_MESSAGE
 import com.niyaj.common.utils.Constants.SEARCH_ITEM_NOT_FOUND
+import com.niyaj.designsystem.theme.SpaceMini
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.feature.address.components.AddressCard
 import com.niyaj.feature.address.destinations.AddEditAddressScreenDestination
@@ -33,6 +36,7 @@ import com.niyaj.feature.address.destinations.AddressDetailsScreenDestination
 import com.niyaj.feature.address.destinations.AddressSettingScreenDestination
 import com.niyaj.ui.components.ItemNotAvailable
 import com.niyaj.ui.components.LoadingIndicator
+import com.niyaj.ui.components.NoteCard
 import com.niyaj.ui.components.ScaffoldNavActions
 import com.niyaj.ui.components.StandardFAB
 import com.niyaj.ui.components.StandardScaffoldNew
@@ -81,31 +85,29 @@ fun AddressScreen(
     val showSearchBar = viewModel.showSearchBar.collectAsStateWithLifecycle().value
     val searchText = viewModel.searchText.value
 
+    resultRecipient.onNavResult { result ->
+        when (result) {
+            is NavResult.Canceled -> {
+                // `GoToProfileConfirmationDestination` was shown but it was canceled
+                // and no value was set (example: dialog/bottom sheet dismissed)
+                if (selectedAddress.isNotEmpty()) {
+                    viewModel.deselectItems()
+                }
+            }
 
-        resultRecipient.onNavResult { result ->
-            when (result) {
-                is NavResult.Canceled -> {
-                    // `GoToProfileConfirmationDestination` was shown but it was canceled
-                    // and no value was set (example: dialog/bottom sheet dismissed)
-                    if (selectedAddress.isNotEmpty()) {
-                        viewModel.deselectItems()
-                    }
+            is NavResult.Value -> {
+                if (selectedAddress.isNotEmpty()) {
+                    viewModel.deselectItems()
                 }
 
-                is NavResult.Value -> {
-                    if (selectedAddress.isNotEmpty()) {
-                        viewModel.deselectItems()
-                    }
-
-                    scope.launch {
-                        scaffoldState.snackbarHostState.showSnackbar(
-                            message = result.value
-                        )
-                    }
+                scope.launch {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = result.value
+                    )
                 }
             }
         }
-
+    }
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
@@ -186,7 +188,10 @@ fun AddressScreen(
             if (showSearchBar) viewModel.closeSearchBar() else navController.navigateUp()
         },
     ) {
-        Crossfade(targetState = uiState, label = "Address::State") { state ->
+        Crossfade(
+            targetState = uiState,
+            label = "Address::State"
+        ) { state ->
             when (state) {
                 is UiState.Loading -> LoadingIndicator()
 
@@ -206,8 +211,19 @@ fun AddressScreen(
                         state = lazyListState,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(SpaceSmall),
+                            .padding(SpaceSmall)
+                            .padding(it),
                     ) {
+                        item(
+                            span = { GridItemSpan(2) }
+                        ) {
+                            NoteCard(
+                                text = ADDRESS_SCREEN_NOTE_TEXT,
+                                modifier = Modifier
+                                    .padding(vertical = SpaceSmall, horizontal = SpaceMini)
+                            )
+                        }
+
                         items(
                             items = state.data,
                             key = { address ->
