@@ -40,7 +40,6 @@ import androidx.compose.ui.util.trace
 import com.niyaj.common.utils.toPrettyDate
 import com.niyaj.common.utils.toRupee
 import com.niyaj.common.utils.toTime
-import com.niyaj.designsystem.theme.LightColor6
 import com.niyaj.designsystem.theme.SpaceMini
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.model.AddressWiseOrder
@@ -213,7 +212,7 @@ fun GroupedOrders(
                     text = order.totalPrice.toRupee,
                     icon = Icons.Default.Tag,
                     onClick = {
-                        onClickOrder(order.orderId)
+                        onClickOrder(order.cartOrderId)
                     }
                 )
 
@@ -237,7 +236,7 @@ fun ListOfOrders(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    onClickOrder(order.orderId)
+                    onClickOrder(order.cartOrderId)
                 }
                 .padding(SpaceSmall),
             verticalAlignment = Alignment.CenterVertically,
@@ -278,215 +277,5 @@ fun ListOfOrders(
             Divider(modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(SpaceMini))
         }
-    }
-}
-
-
-@OptIn(ExperimentalMaterialApi::class, ExperimentalLayoutApi::class)
-@Composable
-fun RecentOrders(
-    recentOrders: Map<String, List<AddressWiseOrder>>,
-    isLoading: Boolean = false,
-    error: String? = null,
-    onExpanded: () -> Unit,
-    doesExpanded: Boolean,
-    onClickOrder: (String) -> Unit,
-) {
-    Card(
-        onClick = onExpanded,
-        modifier = Modifier
-            .testTag("EmployeeDetails")
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-        elevation = SpaceMini
-    ) {
-        StandardExpandable(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SpaceSmall),
-            expanded = doesExpanded,
-            onExpandChanged = {
-                onExpanded()
-            },
-            title = {
-                TextWithIcon(
-                    text = "Recent Orders",
-                    icon = Icons.Default.AllInbox,
-                    isTitle = true
-                )
-            },
-            rowClickable = true,
-            expand = { modifier: Modifier ->
-                IconButton(
-                    modifier = modifier,
-                    onClick = onExpanded
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.KeyboardArrowDown,
-                        contentDescription = "Expand More",
-                        tint = MaterialTheme.colors.secondary
-                    )
-                }
-            },
-            content = {
-                if (isLoading) {
-                    LoadingIndicator()
-                } else if (recentOrders.isEmpty() || error != null) {
-                    ItemNotAvailable(text = error ?: "No orders made using this address.")
-                } else {
-                    Column {
-                        recentOrders.forEach { (date, orders) ->
-                            TextWithCount(
-                                modifier = Modifier.background(Color.Transparent),
-                                text = date,
-                                count = orders.size,
-                            )
-
-                            val groupByCustomer = orders.groupBy { it.customerPhone }
-
-                            groupByCustomer.forEach { (t, u) ->
-                                if (u.size > 1) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(SpaceSmall),
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth(),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            TextWithIcon(
-                                                text = t,
-                                                icon = Icons.Default.PhoneAndroid
-                                            )
-
-                                            val startDate = u.first().updatedAt
-                                            val endDate = u.last().updatedAt
-
-                                            Row(
-                                                modifier = Modifier
-                                                    .padding(SpaceMini),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text(
-                                                    text = endDate.toTime,
-                                                    style = MaterialTheme.typography.body2,
-                                                )
-
-                                                Spacer(modifier = Modifier.width(SpaceMini))
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Filled.ArrowRightAlt,
-                                                    contentDescription = "DatePeriod"
-                                                )
-                                                Spacer(modifier = Modifier.width(SpaceMini))
-                                                Text(
-                                                    text = startDate.toTime,
-                                                    style = MaterialTheme.typography.body2,
-                                                )
-                                            }
-                                        }
-
-                                        Spacer(modifier = Modifier.height(SpaceMini))
-                                        Divider(modifier = Modifier.fillMaxWidth())
-                                        Spacer(modifier = Modifier.height(SpaceMini))
-
-                                        FlowRow(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(SpaceSmall),
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            u.forEach { order ->
-                                                Card(
-                                                    backgroundColor = LightColor6,
-                                                    modifier = Modifier
-                                                        .clickable {
-                                                            onClickOrder(order.cartOrderId)
-                                                        }
-                                                        .testTag(order.cartOrderId)
-                                                ) {
-                                                    Row(
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.SpaceBetween
-                                                    ) {
-                                                        TextWithIcon(
-                                                            text = order.orderId,
-                                                            icon = Icons.Default.Tag
-                                                        )
-                                                        Spacer(modifier = Modifier.width(SpaceMini))
-                                                        Text(
-                                                            text = order.totalPrice.toRupee,
-                                                            style = MaterialTheme.typography.body1,
-                                                            textAlign = TextAlign.Start,
-                                                            fontWeight = FontWeight.SemiBold,
-                                                            modifier = Modifier
-                                                                .padding(SpaceSmall)
-                                                        )
-                                                    }
-
-                                                }
-                                                Spacer(modifier = Modifier.width(SpaceSmall))
-                                            }
-                                        }
-
-                                        Spacer(modifier = Modifier.height(SpaceMini))
-                                        Divider(modifier = Modifier.fillMaxWidth())
-                                    }
-                                } else {
-                                    u.forEachIndexed { index, order ->
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
-                                                    onClickOrder(order.cartOrderId)
-                                                }
-                                                .padding(SpaceSmall),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            TextWithIcon(
-                                                text = order.orderId,
-                                                icon = Icons.Default.Tag,
-                                                isTitle = true,
-                                            )
-
-                                            Column {
-                                                Text(
-                                                    text = order.customerPhone,
-                                                    textAlign = TextAlign.Start
-                                                )
-
-                                                order.customerName?.let {
-                                                    Spacer(modifier = Modifier.height(SpaceMini))
-                                                    Text(text = it)
-                                                }
-                                            }
-
-                                            Text(
-                                                text = order.totalPrice.toRupee,
-                                                textAlign = TextAlign.Start
-                                            )
-
-                                            Text(
-                                                text = order.updatedAt.toTime,
-                                                textAlign = TextAlign.End
-                                            )
-                                        }
-
-                                        if (index != orders.size - 1) {
-                                            Spacer(modifier = Modifier.height(SpaceMini))
-                                            Divider(modifier = Modifier.fillMaxWidth())
-                                            Spacer(modifier = Modifier.height(SpaceMini))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        )
     }
 }

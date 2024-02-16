@@ -90,8 +90,7 @@ fun ImportExportAddressContent(
                     columns = GridCells.Fixed(2),
                     state = lazyListState,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(SpaceSmall),
+                        .fillMaxSize(),
                 ) {
                     items(
                         items = addresses,

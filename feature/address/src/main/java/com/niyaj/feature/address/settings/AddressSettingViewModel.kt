@@ -14,7 +14,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
@@ -26,9 +25,13 @@ class AddressSettingViewModel @Inject constructor(
     private val addressRepository: AddressRepository,
 ) : BaseViewModel() {
 
+    override var totalItems: List<String> = emptyList()
+
     val addresses = snapshotFlow { mSearchText.value }.flatMapLatest {
         addressRepository.getAllAddress(it)
     }.mapLatest { list ->
+        totalItems = list.map { it.addressId }
+
         list
     }.stateIn(
         scope = viewModelScope,
@@ -115,11 +118,7 @@ class AddressSettingViewModel @Inject constructor(
         super.deleteItems()
 
         viewModelScope.launch {
-            val addressIds = addressRepository.getAllAddress("").first().map {
-                it.addressId
-            }
-
-            val result = addressRepository.deleteAddresses(addressIds)
+            val result = addressRepository.deleteAllAddress()
 
             when (result) {
                 is Resource.Error -> {
@@ -127,12 +126,8 @@ class AddressSettingViewModel @Inject constructor(
                 }
 
                 is Resource.Success -> {
-                    mEventFlow.emit(
-                        UiEvent.Success("${addressIds.size} addresses has been deleted.")
-                    )
-
+                    mEventFlow.emit(UiEvent.Success("All addresses has been deleted."))
                 }
-
             }
         }
     }

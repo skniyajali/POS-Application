@@ -24,12 +24,13 @@ import com.niyaj.designsystem.theme.SpaceSmall
 
 @Composable
 fun NoteCard(
+    modifier: Modifier = Modifier,
     text: String,
     icon: ImageVector = Icons.Outlined.Info,
     backgroundColor: Color = LightColor7,
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(SpaceMini),
         elevation = 0.dp,
