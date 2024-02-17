@@ -18,8 +18,8 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.trace
 import com.niyaj.common.tags.AddOnConstants.ADDON_ITEM_TAG
@@ -27,7 +27,6 @@ import com.niyaj.common.utils.toRupee
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.model.AddOnItem
 import com.niyaj.ui.components.CircularBox
-import com.niyaj.ui.components.drawAnimatedBorder
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -45,15 +44,6 @@ fun AddOnItemData(
         modifier = modifier
             .testTag(ADDON_ITEM_TAG.plus(item.addOnItemId))
             .padding(SpaceSmall)
-            .then(borderStroke?.let {
-                Modifier
-                    .drawAnimatedBorder(
-                        strokeWidth = 1.dp,
-                        durationMillis = 2000,
-                        shape = MaterialTheme.shapes.medium
-                    )
-            } ?: Modifier)
-            .clip(MaterialTheme.shapes.medium)
             .combinedClickable(
                 onClick = {
                     onClick(item.addOnItemId)
@@ -62,7 +52,8 @@ fun AddOnItemData(
                     onLongClick(item.addOnItemId)
                 },
             ),
-        elevation = 2.dp
+        elevation = 1.dp,
+        border = borderStroke
     ) {
         Row(
             modifier = Modifier
@@ -75,12 +66,17 @@ fun AddOnItemData(
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = item.itemName)
+                Text(
+                    text = item.itemName,
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.body1
+                )
                 Spacer(modifier = Modifier.height(SpaceSmall))
                 Text(text = item.itemPrice.toRupee)
             }
 
             CircularBox(
+                backgroundColor = MaterialTheme.colors.background,
                 icon = Icons.Default.Link,
                 doesSelected = doesSelected(item.addOnItemId),
                 showBorder = !item.isApplicable

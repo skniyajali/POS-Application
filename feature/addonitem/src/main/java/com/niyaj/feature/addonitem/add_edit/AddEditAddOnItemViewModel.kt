@@ -118,34 +118,19 @@ class AddEditAddOnItemViewModel @Inject constructor(
                     updatedAt = if (addOnItemId.isNotEmpty()) System.currentTimeMillis()
                         .toString() else null
                 )
+                val message = if (addOnItemId.isEmpty()) "created" else "updated"
 
-                if (addOnItemId.isEmpty()) {
-                    when (val result = repository.createNewAddOnItem(addOnItem)) {
-                        is Resource.Success -> {
-                            _eventFlow.emit(
-                                UiEvent.Success(
-                                    result.message ?: "AddOnItem created successfully"
-                                )
-                            )
-                        }
-
-                        is Resource.Error -> {
-                            _eventFlow.emit(
-                                UiEvent.Error(
-                                    result.message ?: "Unable to create AddOnItem"
-                                )
-                            )
-                        }
+                when (val result = repository.createOrUpdateItem(addOnItem, addOnItemId)) {
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("AddOnItem $message successfully"))
                     }
-                } else {
-                    when (repository.updateAddOnItem(addOnItem, addOnItemId)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable to Update AddOnItems"))
-                        }
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("AddOnItem updated successfully"))
-                        }
+                    is Resource.Error -> {
+                        _eventFlow.emit(
+                            UiEvent.Error(
+                                result.message ?: "Unable to $message AddOnItem"
+                            )
+                        )
                     }
                 }
 

@@ -4,7 +4,7 @@ import com.niyaj.common.utils.ValidationResult
 
 interface AddOnItemValidationRepository {
 
-    fun validateItemName(name: String, addOnItemId: String?): ValidationResult
+    suspend fun validateItemName(name: String, addOnItemId: String?): ValidationResult
 
     fun validateItemPrice(price: Int): ValidationResult
 }

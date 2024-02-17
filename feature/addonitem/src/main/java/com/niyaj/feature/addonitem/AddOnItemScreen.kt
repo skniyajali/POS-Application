@@ -99,9 +99,10 @@ fun AddOnItemScreen(
             viewModel.deselectItems()
         } else if (showSearchBar) {
             viewModel.closeSearchBar()
+        }else {
+            navController.navigateUp()
         }
     }
-
 
     resultRecipient.onNavResult { result ->
         when (result) {
@@ -170,7 +171,10 @@ fun AddOnItemScreen(
             if (showSearchBar) viewModel.closeSearchBar() else navController.navigateUp()
         },
     ) {
-        Crossfade(targetState = uiState, label = "AddOn::State") { state ->
+        Crossfade(
+            targetState = uiState,
+            label = "AddOn::State"
+        ) { state ->
             when (state) {
                 is UiState.Loading -> LoadingIndicator()
 

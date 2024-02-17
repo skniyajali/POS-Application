@@ -9,6 +9,7 @@ import com.niyaj.common.tags.AddOnConstants.ADDON_PRICE_LESS_THAN_FIVE_ERROR
 import com.niyaj.common.tags.AddOnConstants.ADDON_WHITELIST_ITEM
 import com.niyaj.common.utils.Resource
 import com.niyaj.common.utils.ValidationResult
+import com.niyaj.data.mapper.toEntity
 import com.niyaj.data.repository.AddOnItemRepository
 import com.niyaj.data.repository.validation.AddOnItemValidationRepository
 import com.niyaj.data.utils.collectWithSearch
@@ -22,10 +23,8 @@ import io.realm.kotlin.ext.query
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
-import org.mongodb.kbson.BsonObjectId
-import timber.log.Timber
 
 class AddOnItemRepositoryImpl(
     config: RealmConfiguration,
@@ -35,142 +34,85 @@ class AddOnItemRepositoryImpl(
     val realm = Realm.open(config)
 
     override suspend fun getAllAddOnItems(searchText: String): Flow<List<AddOnItem>> {
-        return channelFlow {
-            withContext(ioDispatcher) {
-                try {
-                    val data = realm.query<AddOnItemEntity>()
-                        .sort("addOnItemId", Sort.DESCENDING)
-                        .find()
-                        .asFlow()
-
+        return withContext(ioDispatcher) {
+            realm.query<AddOnItemEntity>()
+                .sort("addOnItemId", Sort.DESCENDING)
+                .find()
+                .asFlow()
+                .mapLatest { data ->
                     data.collectWithSearch(
                         transform = { it.toExternalModel() },
                         searchFilter = { it.searchAddOnItem(searchText) },
-                        send = { send(it) },
                     )
-                } catch (e: Exception) {
-                    send(emptyList())
                 }
-            }
         }
     }
 
     override suspend fun getAddOnItemById(addOnItemId: String): Resource<AddOnItem?> {
-        return try {
-            val addOnItem =
-                realm.query<AddOnItemEntity>("addOnItemId == $0", addOnItemId).first().find()
-
-            Resource.Success(addOnItem?.toExternalModel())
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to get AddOnItem")
-        }
-    }
-
-    override fun findAddOnItemByName(addOnItemName: String, addOnItemId: String?): Boolean {
-        val addOnItem = if (addOnItemId.isNullOrEmpty()) {
-            realm.query<AddOnItemEntity>("itemName == $0", addOnItemName).first().find()
-        } else {
-            realm.query<AddOnItemEntity>(
-                "addOnItemId != $0 && itemName == $1",
-                addOnItemId,
-                addOnItemName
-            ).first().find()
-        }
-
-        return addOnItem != null
-    }
-
-    override suspend fun createNewAddOnItem(newAddOnItem: AddOnItem): Resource<Boolean> {
-        return try {
-            val validateName = validateItemName(newAddOnItem.itemName, null)
-            val validatePrice = validateItemPrice(newAddOnItem.itemPrice)
-
-            val hasError = listOf(validateName, validatePrice).any { !it.successful }
-
-            if (!hasError) {
-                withContext(ioDispatcher) {
-                    val addOnItem = AddOnItemEntity()
-                    addOnItem.addOnItemId =
-                        newAddOnItem.addOnItemId.ifEmpty { BsonObjectId().toHexString() }
-                    addOnItem.itemName = newAddOnItem.itemName
-                    addOnItem.itemPrice = newAddOnItem.itemPrice
-                    addOnItem.isApplicable = newAddOnItem.isApplicable
-                    addOnItem.createdAt =
-                        newAddOnItem.createdAt.ifEmpty { System.currentTimeMillis().toString() }
-
-                    realm.write {
-                        this.copyToRealm(addOnItem)
-                    }
-                }
-
-                Resource.Success(true)
-            } else {
-                Resource.Error("Unable to create new addon item")
-            }
-        } catch (e: Exception) {
-            Timber.e(e)
-            Resource.Error(e.message ?: "Error creating AddOn Item")
-        }
-    }
-
-    override suspend fun updateAddOnItem(
-        newAddOnItem: AddOnItem,
-        addOnItemId: String
-    ): Resource<Boolean> {
-        return try {
-            val validateName = validateItemName(newAddOnItem.itemName, addOnItemId)
-            val validatePrice = validateItemPrice(newAddOnItem.itemPrice)
-
-            val hasError = listOf(validateName, validatePrice).any { !it.successful }
-
-            if (!hasError) {
+        return withContext(ioDispatcher) {
+            try {
                 val addOnItem =
                     realm.query<AddOnItemEntity>("addOnItemId == $0", addOnItemId).first().find()
 
-                if (addOnItem != null) {
-                    withContext(ioDispatcher) {
-                        realm.write {
-                            findLatest(addOnItem)?.apply {
-                                this.itemName = newAddOnItem.itemName
-                                this.itemPrice = newAddOnItem.itemPrice
-                                this.isApplicable = newAddOnItem.isApplicable
-                                this.updatedAt = System.currentTimeMillis().toString()
-                            }
-                        }
-                    }
-
-                    Resource.Success(true)
-                } else {
-                    Resource.Error("Unable to find add on item")
-                }
-            } else {
-                Resource.Error("Unable to update item")
+                Resource.Success(addOnItem?.toExternalModel())
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "Unable to get AddOnItem")
             }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to update item")
         }
     }
 
-    override suspend fun deleteAddOnItem(addOnItemId: String): Resource<Boolean> {
-        return try {
-            val addOnItem =
-                realm.query<AddOnItemEntity>("addOnItemId == $0", addOnItemId).first().find()
-
-            if (addOnItem != null) {
-                withContext(ioDispatcher) {
-                    realm.write {
-                        findLatest(addOnItem)?.let {
-                            delete(it)
-                        }
-                    }
-                }
-
-                Resource.Success(true)
+    override suspend fun findAddOnItemByName(itemName: String, itemId: String?): Boolean {
+        return withContext(ioDispatcher) {
+            if (itemId.isNullOrEmpty()) {
+                realm.query<AddOnItemEntity>("itemName == $0", itemName).first().find()
             } else {
-                Resource.Error("Unable to find add on item")
+                realm.query<AddOnItemEntity>(
+                    "addOnItemId != $0 && itemName == $1",
+                    itemId,
+                    itemName
+                ).first().find()
+            } != null
+        }
+    }
+
+    override suspend fun createOrUpdateItem(newItem: AddOnItem, itemId: String): Resource<Boolean> {
+        return withContext(ioDispatcher) {
+            try {
+                val validateName = validateItemName(newItem.itemName, itemId)
+                val validatePrice = validateItemPrice(newItem.itemPrice)
+
+                val hasError = listOf(validateName, validatePrice).any { !it.successful }
+
+                if (!hasError) {
+                    val addOnItem = realm
+                        .query<AddOnItemEntity>("addOnItemId == $0", itemId)
+                        .first()
+                        .find()
+
+                    if (addOnItem != null) {
+                        realm.write {
+                            findLatest(addOnItem)?.apply {
+                                this.itemName = newItem.itemName
+                                this.itemPrice = newItem.itemPrice
+                                this.isApplicable = newItem.isApplicable
+                                this.updatedAt = System.currentTimeMillis().toString()
+                            }
+                        }
+
+                        Resource.Success(true)
+                    } else {
+                        realm.write {
+                            this.copyToRealm(newItem.toEntity())
+                        }
+
+                        Resource.Success(true)
+                    }
+                } else {
+                    Resource.Error("Unable to update item")
+                }
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "Failed to update item")
             }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to delete AddOnItem")
         }
     }
 
@@ -198,7 +140,7 @@ class AddOnItemRepositoryImpl(
         }
     }
 
-    override fun validateItemName(name: String, addOnItemId: String?): ValidationResult {
+    override suspend fun validateItemName(name: String, addOnItemId: String?): ValidationResult {
         if (name.isEmpty()) {
             return ValidationResult(
                 successful = false,
@@ -224,7 +166,9 @@ class AddOnItemRepositoryImpl(
                 )
             }
 
-            val serverResult = this.findAddOnItemByName(name, addOnItemId)
+            val serverResult = withContext(ioDispatcher) {
+                findAddOnItemByName(name, addOnItemId)
+            }
 
             if (serverResult) {
                 return ValidationResult(

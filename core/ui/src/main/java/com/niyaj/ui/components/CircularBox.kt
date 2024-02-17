@@ -33,8 +33,8 @@ fun CircularBox(
     size: Dp = 40.dp,
     selectedIcon: ImageVector = Icons.Default.Check,
     backgroundColor: Color = MaterialTheme.colors.surface,
-    selectedTint: Color = MaterialTheme.colors.primary,
-    unselectedTint: Color = MaterialTheme.colors.secondary,
+    selectedTint: Color = MaterialTheme.colors.secondaryVariant,
+    unselectedTint: Color = MaterialTheme.colors.secondaryVariant,
     borderStroke: BorderStroke = BorderStroke(1.dp, MaterialTheme.colors.error),
 ) {
     val availBorder = if (showBorder) borderStroke  else null
