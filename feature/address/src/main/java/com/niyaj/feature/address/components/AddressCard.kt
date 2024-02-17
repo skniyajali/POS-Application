@@ -86,8 +86,7 @@ fun AddressCard(
 
             CircularBox(
                 icon = Icons.Default.Business,
-                doesSelected = doesSelected(address.addressId),
-                backgroundColor = MaterialTheme.colors.background
+                doesSelected = doesSelected(address.addressId)
             )
         }
     }

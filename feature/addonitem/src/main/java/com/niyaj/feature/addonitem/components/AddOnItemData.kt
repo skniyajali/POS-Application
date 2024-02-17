@@ -76,7 +76,6 @@ fun AddOnItemData(
             }
 
             CircularBox(
-                backgroundColor = MaterialTheme.colors.background,
                 icon = Icons.Default.Link,
                 doesSelected = doesSelected(item.addOnItemId),
                 showBorder = !item.isApplicable

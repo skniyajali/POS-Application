@@ -120,27 +120,16 @@ class AddEditChargesViewModel @Inject constructor(
                         .toString() else null
                 )
 
-                if (chargesId.isEmpty()) {
-                    when (chargesRepository.createNewCharges(newCharges)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable To Create Charges."))
+                val message = if (chargesId.isEmpty()) "Created" else "Updated"
 
-                        }
+                when (chargesRepository.createOrUpdateCharges(newCharges, chargesId)) {
+                    is Resource.Error -> {
+                        _eventFlow.emit(UiEvent.Error("Unable To $message Charges."))
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Charges Created Successfully."))
-                        }
                     }
-                } else {
-                    when (chargesRepository.updateCharges(newCharges, chargesId)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable To Update Charges."))
 
-                        }
-
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Charges Updated Successfully."))
-                        }
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("Charges $message Successfully."))
                     }
                 }
 

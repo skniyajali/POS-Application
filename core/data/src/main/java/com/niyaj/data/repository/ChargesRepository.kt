@@ -10,13 +10,9 @@ interface ChargesRepository {
 
     suspend fun getChargesById(chargesId: String): Resource<Charges?>
 
-    fun findChargesByName(chargesName: String, chargesId: String?): Boolean
+    suspend fun findChargesByName(chargesName: String, chargesId: String?): Boolean
 
-    suspend fun createNewCharges(newCharges: Charges): Resource<Boolean>
-
-    suspend fun updateCharges(newCharges: Charges, chargesId: String): Resource<Boolean>
-
-    suspend fun deleteCharges(chargesId: String): Resource<Boolean>
+    suspend fun createOrUpdateCharges(newCharges: Charges, chargesId: String): Resource<Boolean>
 
     suspend fun deleteAllCharges(chargesIds: List<String>): Resource<Boolean>
 }

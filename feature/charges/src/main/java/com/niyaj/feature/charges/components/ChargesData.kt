@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Card
@@ -38,9 +39,11 @@ fun ChargesData(
     doesSelected: (String) -> Boolean,
     onClick: (String) -> Unit,
     onLongClick: (String) -> Unit,
+    borderStroke: BorderStroke = BorderStroke(1.dp, MaterialTheme.colors.secondaryVariant)
 ) = trace("ChargesData") {
     Card(
         modifier = modifier
+            .fillMaxWidth()
             .padding(SpaceSmall)
             .testTag(ChargesTestTags.CHARGES_TAG.plus(item.chargesId))
             .combinedClickable(
@@ -51,9 +54,8 @@ fun ChargesData(
                     onLongClick(item.chargesId)
                 }
             ),
-        border = if (doesSelected(item.chargesId))
-            BorderStroke(1.dp, MaterialTheme.colors.primary)
-        else null,
+        border = if (doesSelected(item.chargesId)) borderStroke else null,
+        elevation = 1.dp
     ) {
         Row(
             modifier = Modifier
@@ -79,8 +81,7 @@ fun ChargesData(
             CircularBox(
                 icon = Icons.Default.Bolt,
                 doesSelected = doesSelected(item.chargesId),
-                showBorder = !item.isApplicable,
-                backgroundColor = MaterialTheme.colors.background
+                showBorder = !item.isApplicable
             )
         }
     }

@@ -32,7 +32,7 @@ fun CircularBox(
     showBorder: Boolean = false,
     size: Dp = 40.dp,
     selectedIcon: ImageVector = Icons.Default.Check,
-    backgroundColor: Color = MaterialTheme.colors.surface,
+    backgroundColor: Color = MaterialTheme.colors.background,
     selectedTint: Color = MaterialTheme.colors.secondaryVariant,
     unselectedTint: Color = MaterialTheme.colors.secondaryVariant,
     borderStroke: BorderStroke = BorderStroke(1.dp, MaterialTheme.colors.error),
