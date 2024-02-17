@@ -10,11 +10,7 @@ interface ExpensesCategoryRepository {
 
     suspend fun getExpensesCategoryById(expensesCategoryId: String): Resource<ExpensesCategory?>
 
-    suspend fun createNewExpensesCategory(newExpensesCategory: ExpensesCategory): Resource<Boolean>
-
-    suspend fun updateExpensesCategory(newExpensesCategory: ExpensesCategory, expensesCategoryId: String): Resource<Boolean>
-
-    suspend fun deleteExpensesCategory(expensesCategoryId: String): Resource<Boolean>
+    suspend fun createOrUpdateCategory(newCategory: ExpensesCategory, categoryId: String): Resource<Boolean>
 
     suspend fun deleteExpensesCategories(expensesCategoryIds: List<String>): Resource<Boolean>
 }
