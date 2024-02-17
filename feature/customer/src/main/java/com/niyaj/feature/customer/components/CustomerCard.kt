@@ -90,8 +90,7 @@ fun CustomerData(
             CircularBox(
                 icon = Icons.Default.Person,
                 doesSelected = doesSelected(item.customerId),
-                text = item.customerName,
-                backgroundColor = MaterialTheme.colors.background
+                text = item.customerName
             )
         },
         trailing = {
