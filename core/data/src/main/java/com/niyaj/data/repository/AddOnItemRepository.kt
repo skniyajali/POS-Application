@@ -10,13 +10,9 @@ interface AddOnItemRepository {
 
     suspend fun getAddOnItemById(addOnItemId: String): Resource<AddOnItem?>
 
-    fun findAddOnItemByName(addOnItemName: String, addOnItemId: String?): Boolean
+    suspend fun findAddOnItemByName(itemName: String, itemId: String?): Boolean
 
-    suspend fun createNewAddOnItem(newAddOnItem: AddOnItem): Resource<Boolean>
-
-    suspend fun updateAddOnItem(newAddOnItem: AddOnItem, addOnItemId: String): Resource<Boolean>
-
-    suspend fun deleteAddOnItem(addOnItemId: String): Resource<Boolean>
+    suspend fun createOrUpdateItem(newItem: AddOnItem, itemId: String): Resource<Boolean>
 
     suspend fun deleteAddOnItems(addOnItemIds: List<String>): Resource<Boolean>
 }
