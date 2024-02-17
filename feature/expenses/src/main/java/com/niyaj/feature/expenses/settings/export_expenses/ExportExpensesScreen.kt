@@ -33,7 +33,6 @@ import com.niyaj.common.tags.ExpenseTestTags.EXPENSE_NOT_AVAILABLE
 import com.niyaj.common.tags.ExpenseTestTags.EXPORT_EXPENSE_FILE_NAME
 import com.niyaj.common.tags.ExpenseTestTags.EXPORT_EXPENSE_TITLE
 import com.niyaj.common.utils.Constants.ImportExportType.EXPORT
-import com.niyaj.common.utils.toPrettyDate
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.feature.expenses.components.ImportExportExpensesBody
 import com.niyaj.feature.expenses.destinations.AddEditExpensesScreenDestination
@@ -56,9 +55,9 @@ import kotlinx.coroutines.launch
 @Destination(style = DestinationStyleBottomSheet::class)
 @Composable
 fun ExportExpensesScreen(
-    navController : NavController,
-    viewModel : ExpensesSettingViewModel = hiltViewModel(),
-    resultBackNavigator : ResultBackNavigator<String>
+    navController: NavController,
+    viewModel: ExpensesSettingViewModel = hiltViewModel(),
+    resultBackNavigator: ResultBackNavigator<String>
 ) {
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -164,7 +163,7 @@ fun ExportExpensesScreen(
                 ) {
                     ImportExportExpensesBody(
                         lazyListState = lazyListState,
-                        groupedExpenses = expensesState.groupBy { it.expensesDate.toPrettyDate() },
+                        expenses = expensesState,
                         selectedExpenses = selectedExpenses,
                         expanded = expanded,
                         onExpandChanged = {
@@ -195,7 +194,7 @@ fun ExportExpensesScreen(
                     }
                 )
             }
-        }else {
+        } else {
             ItemNotAvailable(
                 text = EXPENSE_NOT_AVAILABLE,
                 buttonText = CREATE_NEW_EXPENSE,

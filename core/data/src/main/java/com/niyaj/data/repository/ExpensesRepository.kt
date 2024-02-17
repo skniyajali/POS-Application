@@ -6,15 +6,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface ExpensesRepository {
 
-    suspend fun getAllExpenses(searchText: String, expensesDate: String?): Flow<List<Expenses>>
+    suspend fun getAllExpenses(searchText: String, date: String): Flow<List<Expenses>>
 
     suspend fun getExpensesById(expensesId: String): Resource<Expenses?>
 
-    suspend fun createNewExpenses(newExpenses: Expenses): Resource<Boolean>
-
-    suspend fun updateExpenses(newExpenses: Expenses, expensesId: String): Resource<Boolean>
-
-    suspend fun deleteExpense(expensesId: String): Resource<Boolean>
+    suspend fun createOrUpdateExpenses(newExpenses: Expenses, expensesId: String): Resource<Boolean>
 
     suspend fun deleteExpenses(expensesIds: List<String>): Resource<Boolean>
 

@@ -12,12 +12,13 @@ import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.niyaj.common.tags.EmployeeTestTags
 import com.niyaj.common.utils.toRupee
@@ -26,21 +27,24 @@ import com.niyaj.designsystem.theme.SpaceMini
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.ui.components.NoteText
 import com.niyaj.ui.components.RoundedBox
+import com.niyaj.ui.components.TextWithIcon
 
 /**
  *
  */
 @Composable
 fun TotalExpenses(
+    modifier: Modifier = Modifier,
     selectedDate: String,
     totalAmount: String,
     totalPayment: Int,
     onClickDatePicker: () -> Unit
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .testTag("CalculateTotalExpenses")
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(SpaceSmall),
         shape = RoundedCornerShape(4.dp),
         elevation = SpaceMini
     ) {
@@ -88,11 +92,11 @@ fun TotalExpenses(
                     modifier = Modifier.testTag(EmployeeTestTags.REMAINING_AMOUNT_TEXT)
                 )
 
-                Text(
+                TextWithIcon(
                     text = "Total $totalPayment Payment",
-                    color = MaterialTheme.colors.error,
-                    style = MaterialTheme.typography.caption,
-                    textAlign = TextAlign.End
+                    icon = Icons.AutoMirrored.Filled.ShowChart,
+                    textColor = MaterialTheme.colors.error,
+                    tintColor = MaterialTheme.colors.error
                 )
             }
 

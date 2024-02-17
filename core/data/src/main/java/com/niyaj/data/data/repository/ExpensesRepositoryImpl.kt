@@ -8,6 +8,7 @@ import com.niyaj.common.tags.ExpenseTestTags.EXPENSE_PRICE_LESS_THAN_TEN_ERROR
 import com.niyaj.common.utils.Resource
 import com.niyaj.common.utils.ValidationResult
 import com.niyaj.common.utils.getCalculatedStartDate
+import com.niyaj.data.mapper.toEntity
 import com.niyaj.data.repository.ExpensesRepository
 import com.niyaj.data.repository.SettingsRepository
 import com.niyaj.data.repository.validation.ExpensesValidationRepository
@@ -24,7 +25,7 @@ import io.realm.kotlin.ext.query
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 
@@ -38,30 +39,22 @@ class ExpensesRepositoryImpl(
 
     override suspend fun getAllExpenses(
         searchText: String,
-        expensesDate: String?
+        date: String
     ): Flow<List<Expenses>> {
-        return channelFlow {
-            withContext(ioDispatcher) {
-                try {
-                    val expenses = if (expensesDate != null) {
-                        realm.query<ExpensesEntity>("expensesDate == $0", expensesDate)
-                            .sort("expensesDate", Sort.DESCENDING)
-                            .asFlow()
-                    } else {
-                        realm.query<ExpensesEntity>()
-                            .sort("expensesDate", Sort.DESCENDING)
-                            .asFlow()
-                    }
-
-                    expenses.collectWithSearch(
-                        transform = { it.toExternalModel() },
-                        searchFilter = { it.filterExpenses(searchText) },
-                        send = { send(it) }
-                    )
-
-                } catch (e: Exception) {
-                    send(emptyList())
-                }
+        return withContext(ioDispatcher) {
+            if (date.isNotEmpty()) {
+                realm.query<ExpensesEntity>("expensesDate == $0", date)
+                    .sort("expensesDate", Sort.DESCENDING)
+                    .asFlow()
+            } else {
+                realm.query<ExpensesEntity>()
+                    .sort("expensesDate", Sort.DESCENDING)
+                    .asFlow()
+            }.mapLatest { expenses ->
+                expenses.collectWithSearch(
+                    transform = { it.toExternalModel() },
+                    searchFilter = { it.filterExpenses(searchText) },
+                )
             }
         }
     }
@@ -78,61 +71,12 @@ class ExpensesRepositoryImpl(
         }
     }
 
-    override suspend fun createNewExpenses(newExpenses: Expenses): Resource<Boolean> {
-        return try {
-            withContext(ioDispatcher) {
-                val validateExpensesCategory =
-                    validateExpensesCategory(newExpenses.expensesCategory?.expensesCategoryId ?: "")
-                val validateExpensesPrice = validateExpensesPrice(newExpenses.expensesAmount)
-                val validateExpensesDate = validateExpenseDate(newExpenses.expensesDate)
-
-                val hasError =
-                    listOf(
-                        validateExpensesCategory,
-                        validateExpensesPrice,
-                        validateExpensesDate
-                    ).any { !it.successful }
-
-                if (!hasError) {
-                    val expansesItem = ExpensesEntity()
-                    expansesItem.expensesId =
-                        newExpenses.expensesId.ifEmpty { BsonObjectId().toHexString() }
-                    expansesItem.expensesAmount = newExpenses.expensesAmount
-                    expansesItem.expensesDate = newExpenses.expensesDate
-                    expansesItem.expensesRemarks = newExpenses.expensesRemarks
-                    expansesItem.createdAt =
-                        newExpenses.createdAt.ifEmpty { System.currentTimeMillis().toString() }
-
-                    val expansesCategory = realm.query<ExpensesCategoryEntity>(
-                        "expensesCategoryId == $0",
-                        newExpenses.expensesCategory?.expensesCategoryId
-                    ).first().find()
-                        ?: return@withContext Resource.Error("Unable to find expenses category")
-
-                    realm.write {
-                        findLatest(expansesCategory)?.let {
-                            expansesItem.expensesCategory = it
-                        }
-
-                        this.copyToRealm(expansesItem)
-                    }
-
-                    Resource.Success(true)
-                } else {
-                    Resource.Error("Unable to validate expenses")
-                }
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Error creating Expanses Item")
-        }
-    }
-
-    override suspend fun updateExpenses(
+    override suspend fun createOrUpdateExpenses(
         newExpenses: Expenses,
         expensesId: String
     ): Resource<Boolean> {
-        return try {
-            withContext(ioDispatcher) {
+        return withContext(ioDispatcher) {
+            try {
                 val validateCategory =
                     validateExpensesCategory(newExpenses.expensesCategory?.expensesCategoryId ?: "")
                 val validateExpensesPrice = validateExpensesPrice(newExpenses.expensesAmount)
@@ -159,48 +103,25 @@ class ExpensesRepositoryImpl(
                                 this.expensesAmount = newExpenses.expensesAmount
                                 this.expensesRemarks = newExpenses.expensesRemarks
                                 this.expensesDate = newExpenses.expensesDate
-                                this.createdAt = newExpenses.createdAt.ifEmpty {
-                                    System.currentTimeMillis().toString()
-                                }
-                                this.updatedAt = System.currentTimeMillis().toString()
                                 this.expensesCategory = expansesCategory
+                                this.updatedAt = System.currentTimeMillis().toString()
                             }
                         }
 
                         Resource.Success(true)
                     } else {
-                        Resource.Error("Unable to find expenses")
+                        realm.write {
+                            this.copyToRealm(newExpenses.toEntity())
+                        }
+                        Resource.Success(true)
                     }
                 } else {
                     Resource.Error("Unable to validate expenses")
                 }
+
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "Failed to update expanses.")
             }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to update expanses.")
-        }
-    }
-
-    override suspend fun deleteExpense(expensesId: String): Resource<Boolean> {
-        return try {
-            withContext(ioDispatcher) {
-                val expansesItem =
-                    realm.query<ExpensesEntity>("expensesId == $0", expensesId).first().find()
-
-                if (expansesItem != null) {
-                    realm.write {
-                        findLatest(expansesItem)?.let {
-                            delete(it)
-                        }
-                    }
-
-                    Resource.Success(true)
-                } else {
-                    Resource.Error("Unable to find expense item")
-                }
-
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to delete expanses.")
         }
     }
 
@@ -238,7 +159,7 @@ class ExpensesRepositoryImpl(
                     val expenses = if (deleteAll) {
                         this.query<ExpensesEntity>().find()
                     } else {
-                        this.query<ExpensesEntity>("createdAt < $0", expensesDate).find()
+                        this.query<ExpensesEntity>("expensesDate < $0", expensesDate).find()
                     }
 
                     delete(expenses)

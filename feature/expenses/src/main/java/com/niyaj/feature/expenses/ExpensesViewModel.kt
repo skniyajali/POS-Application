@@ -40,7 +40,7 @@ class ExpensesViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val expenses = _text.combine(_selectedDate) { text, date ->
-        expensesRepository.getAllExpenses(text, date)
+        expensesRepository.getAllExpenses(text,date)
     }
         .flatMapLatest { it ->
             it.map { items ->
