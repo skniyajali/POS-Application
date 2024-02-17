@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.common.utils.Resource
+import com.niyaj.common.utils.capitalizeWords
 import com.niyaj.data.repository.ExpensesCategoryRepository
 import com.niyaj.data.repository.validation.ExpCategoryValidationRepository
 import com.niyaj.model.ExpensesCategory
@@ -28,13 +29,15 @@ class AddEditExpensesCategoryViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
+    private val categoryId = savedStateHandle.get<String>("expensesCategoryId")
+
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
     var categoryName by mutableStateOf("")
 
     val nameError = snapshotFlow { categoryName }.mapLatest {
-        validationRepository.validateExpensesCategoryName(it).errorMessage
+        validationRepository.validateName(it, categoryId).errorMessage
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -66,30 +69,18 @@ class AddEditExpensesCategoryViewModel @Inject constructor(
             if (nameError.value == null) {
                 val newCategory = ExpensesCategory(
                     expensesCategoryId = categoryId,
-                    expensesCategoryName = categoryName,
+                    expensesCategoryName = categoryName.trim().capitalizeWords,
                 )
 
-                if (categoryId.isEmpty()) {
-                    val result = repository.createNewExpensesCategory(newCategory)
-                    when(result) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable to create category"))
-                        }
+                val message = if (categoryId.isEmpty()) "Created" else "Updated"
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Category Created Successfully"))
-                        }
+                when (val result = repository.createOrUpdateCategory(newCategory, categoryId)) {
+                    is Resource.Error -> {
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable"))
                     }
-                }else {
-                    val result = repository.updateExpensesCategory(newCategory, categoryId)
-                    when(result) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable to update category"))
-                        }
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Category Updated Successfully"))
-                        }
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("Category $message Successfully"))
                     }
                 }
             }

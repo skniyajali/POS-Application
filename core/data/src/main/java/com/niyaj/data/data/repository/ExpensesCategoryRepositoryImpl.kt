@@ -2,6 +2,7 @@ package com.niyaj.data.data.repository
 
 import com.niyaj.common.utils.Resource
 import com.niyaj.common.utils.ValidationResult
+import com.niyaj.data.mapper.toEntity
 import com.niyaj.data.repository.ExpensesCategoryRepository
 import com.niyaj.data.repository.validation.ExpCategoryValidationRepository
 import com.niyaj.data.utils.collectWithSearch
@@ -12,14 +13,12 @@ import com.niyaj.model.ExpensesCategory
 import com.niyaj.model.filterExpensesCategory
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
-import io.realm.kotlin.exceptions.RealmException
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
-import org.mongodb.kbson.BsonObjectId
 
 class ExpensesCategoryRepositoryImpl(
     config: RealmConfiguration,
@@ -29,25 +28,18 @@ class ExpensesCategoryRepositoryImpl(
     val realm = Realm.open(config)
 
     override suspend fun getAllExpensesCategory(searchText: String): Flow<List<ExpensesCategory>> {
-        return channelFlow {
-            withContext(ioDispatcher) {
-                try {
-                    val categories = realm
-                        .query<ExpensesCategoryEntity>()
-                        .sort("expensesCategoryId", Sort.DESCENDING)
-                        .find()
-                        .asFlow()
-
+        return withContext(ioDispatcher) {
+            realm
+                .query<ExpensesCategoryEntity>()
+                .sort("expensesCategoryId", Sort.DESCENDING)
+                .find()
+                .asFlow()
+                .mapLatest { categories ->
                     categories.collectWithSearch(
                         transform = { it.toExternalModel() },
                         searchFilter = { it.filterExpensesCategory(searchText) },
-                        send = { send(it) }
                     )
-
-                } catch (e: Exception) {
-                    send(emptyList())
                 }
-            }
         }
     }
 
@@ -64,101 +56,42 @@ class ExpensesCategoryRepositoryImpl(
         }
     }
 
-    override suspend fun createNewExpensesCategory(newExpensesCategory: ExpensesCategory): Resource<Boolean> {
-        return try {
-            val validateExpensesCategoryName =
-                validateExpensesCategoryName(newExpensesCategory.expensesCategoryName)
-
-            if (validateExpensesCategoryName.successful) {
-                withContext(ioDispatcher) {
-                    val expansesCategory = ExpensesCategoryEntity()
-                    expansesCategory.expensesCategoryId =
-                        newExpensesCategory.expensesCategoryId.ifEmpty { BsonObjectId().toHexString() }
-                    expansesCategory.expensesCategoryName = newExpensesCategory.expensesCategoryName
-                    expansesCategory.createdAt = newExpensesCategory.createdAt.ifEmpty {
-                        System.currentTimeMillis().toString()
-                    }
-
-                    realm.write {
-                        this.copyToRealm(expansesCategory)
-                    }
-                }
-
-                Resource.Success(true)
-            } else {
-                Resource.Error("Unable to validate expenses category")
-            }
-        } catch (e: RealmException) {
-            Resource.Error(e.message ?: "Error creating expanses category Item")
-        }
-    }
-
-    override suspend fun updateExpensesCategory(
-        newExpensesCategory: ExpensesCategory,
-        expensesCategoryId: String,
+    override suspend fun createOrUpdateCategory(
+        newCategory: ExpensesCategory,
+        categoryId: String
     ): Resource<Boolean> {
-        return try {
-            val validateExpensesCategoryName =
-                validateExpensesCategoryName(newExpensesCategory.expensesCategoryName)
+        return withContext(ioDispatcher) {
+            try {
+                val validateName = validateName(newCategory.expensesCategoryName, categoryId)
 
-            if (validateExpensesCategoryName.successful) {
-                withContext(ioDispatcher) {
-                    val expansesCategory = realm.query<ExpensesCategoryEntity>(
-                        "expensesCategoryId == $0",
-                        expensesCategoryId
-                    ).first().find()
-                    if (expansesCategory != null) {
-                        realm.write {
-                            findLatest(expansesCategory)?.apply {
-                                this.expensesCategoryName = newExpensesCategory.expensesCategoryName
-                                this.updatedAt = System.currentTimeMillis().toString()
+                if (validateName.successful) {
+                    withContext(ioDispatcher) {
+                        val expansesCategory = realm.query<ExpensesCategoryEntity>(
+                            "expensesCategoryId == $0",
+                            categoryId
+                        ).first().find()
+                        if (expansesCategory != null) {
+                            realm.write {
+                                findLatest(expansesCategory)?.apply {
+                                    this.expensesCategoryName = newCategory.expensesCategoryName
+                                    this.updatedAt = System.currentTimeMillis().toString()
+                                }
                             }
-                        }
 
-                        Resource.Success(true)
-                    } else {
-                        Resource.Error("Unable to find expense category")
-                    }
-                }
-            } else {
-                Resource.Error("Unable to validate expenses category")
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to update expanses category.")
-        }
-    }
-
-    override suspend fun deleteExpensesCategory(expensesCategoryId: String): Resource<Boolean> {
-        return try {
-            withContext(ioDispatcher) {
-                val expansesCategoryItem =
-                    realm.query<ExpensesCategoryEntity>(
-                        "expensesCategoryId == $0",
-                        expensesCategoryId
-                    )
-                        .first().find()
-
-                if (expansesCategoryItem != null) {
-                    realm.write {
-                        val expenses = this.query<ExpensesEntity>(
-                            "expensesCategory.expensesCategoryId == $0",
-                            expensesCategoryId
-                        ).find()
-
-                        delete(expenses)
-
-                        findLatest(expansesCategoryItem)?.let {
-                            delete(it)
+                            Resource.Success(true)
+                        } else {
+                            realm.write {
+                                this.copyToRealm(newCategory.toEntity())
+                            }
+                            Resource.Success(true)
                         }
                     }
-
-                    Resource.Success(true)
                 } else {
-                    Resource.Error("Unable to find expense category")
+                    Resource.Error("Unable to validate expenses category")
                 }
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "Failed to update expanses category.")
             }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to delete expanses category.")
         }
     }
 
@@ -194,7 +127,25 @@ class ExpensesCategoryRepositoryImpl(
         }
     }
 
-    override fun validateExpensesCategoryName(categoryName: String): ValidationResult {
+    private suspend fun findCategoryByNameAndId(
+        categoryName: String,
+        categoryId: String?
+    ): Boolean {
+        return withContext(ioDispatcher) {
+            if (categoryId.isNullOrEmpty()) {
+                realm.query<ExpensesCategoryEntity>("expensesCategoryName == $0", categoryName)
+                    .first().find()
+            } else {
+                realm.query<ExpensesCategoryEntity>(
+                    "expensesCategoryName == $0 AND expensesCategoryId != $1",
+                    categoryName,
+                    categoryId
+                ).first().find()
+            } != null
+        }
+    }
+
+    override suspend fun validateName(categoryName: String, categoryId: String?): ValidationResult {
         if (categoryName.isEmpty()) return ValidationResult(false, "Category name is empty")
 
         if (categoryName.length < 3) return ValidationResult(false, "Invalid category name")
@@ -203,6 +154,15 @@ class ExpensesCategoryRepositoryImpl(
             false,
             "Category name must not contain any digit"
         )
+        val result = withContext(ioDispatcher) {
+            findCategoryByNameAndId(categoryName, categoryId)
+        }
+        if (result) {
+            return ValidationResult(
+                false,
+                "Category name already exist"
+            )
+        }
 
         return ValidationResult(true)
     }

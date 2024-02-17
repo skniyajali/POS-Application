@@ -149,7 +149,7 @@ fun StandardScaffoldNew(
 
     val backgroundColor by transition.animateColor(label = "actionBarContextual") { isContextualMode ->
         if (isContextualMode) {
-            MaterialTheme.colors.secondary
+            MaterialTheme.colors.secondaryVariant
         } else {
             MaterialTheme.colors.primary
         }
