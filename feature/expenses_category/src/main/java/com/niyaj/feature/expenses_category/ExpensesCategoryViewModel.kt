@@ -36,6 +36,7 @@ class ExpensesCategoryViewModel @Inject constructor(
 
     override fun deleteItems() {
         super.deleteItems()
+
         viewModelScope.launch {
             val result = repository.deleteExpensesCategories(selectedItems.toList())
 
@@ -46,7 +47,7 @@ class ExpensesCategoryViewModel @Inject constructor(
 
                 is Resource.Success -> {
                     mEventFlow.emit(
-                        UiEvent.Success("${mSelectedItems.size} categories has been deleted")
+                        UiEvent.Success("categories has been deleted")
                     )
                 }
             }
