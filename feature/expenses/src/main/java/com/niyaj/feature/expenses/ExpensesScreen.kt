@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.FabPosition
 import androidx.compose.material.ScaffoldState
@@ -28,7 +29,8 @@ import com.niyaj.common.tags.ExpenseTestTags.NO_ITEMS_IN_EXPENSE
 import com.niyaj.common.utils.toMilliSecond
 import com.niyaj.common.utils.toPrettyDate
 import com.niyaj.designsystem.theme.SpaceSmall
-import com.niyaj.feature.expenses.components.ExpensesItems
+import com.niyaj.feature.expenses.components.ExpensesItem
+import com.niyaj.feature.expenses.components.GroupedExpensesData
 import com.niyaj.feature.expenses.components.TotalExpenses
 import com.niyaj.feature.expenses.destinations.AddEditExpensesScreenDestination
 import com.niyaj.feature.expenses.destinations.ExpensesSettingScreenDestination
@@ -232,28 +234,54 @@ fun ExpensesScreen(
                     is UiState.Loading -> LoadingIndicator()
 
                     is UiState.Success -> {
-                        Spacer(modifier = Modifier.height(SpaceSmall))
                         val groupedExpenses = remember(state.data) {
-                            state.data.groupBy { it.expensesDate.toPrettyDate() }
+                            state.data.groupBy { it.expensesCategory?.expensesCategoryName!! }
                         }
 
-                        ExpensesItems(
-                            lazyListState = lazyListState,
-                            groupedExpenses = groupedExpenses,
-                            doesSelected = {
-                                selectedItems.contains(it)
-                            },
-                            onClick = {
-                                if (selectedItems.isNotEmpty()) {
-                                    viewModel.selectItem(it)
+                        Spacer(modifier = Modifier.height(SpaceSmall))
+
+                        LazyColumn(
+                            state = lazyListState
+                        ) {
+                            groupedExpenses.forEach { (categoryName, expenses) ->
+                                if (expenses.size > 1) {
+                                    item {
+                                        GroupedExpensesData(
+                                            items = expenses,
+                                            categoryName = categoryName,
+                                            doesSelected = {
+                                                selectedItems.contains(it)
+                                            },
+                                            onClick = {
+                                                if (selectedItems.isNotEmpty()) {
+                                                    viewModel.selectItem(it)
+                                                }
+                                            },
+                                            onLongClick = viewModel::selectItem
+                                        )
+                                    }
+                                }else {
+                                    item {
+                                        ExpensesItem(
+                                            categoryName = categoryName,
+                                            expense = expenses.first(),
+                                            doesSelected = {
+                                                selectedItems.contains(it)
+                                            },
+                                            onClick = {
+                                                if (selectedItems.isNotEmpty()) {
+                                                    viewModel.selectItem(it)
+                                                }
+                                            },
+                                            onLongClick = viewModel::selectItem
+                                        )
+                                    }
                                 }
-                            },
-                            onLongClick = viewModel::selectItem
-                        )
+                            }
+                        }
                     }
                 }
             }
-
         }
     }
 

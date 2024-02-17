@@ -147,33 +147,18 @@ class AddEditExpensesViewModel @Inject constructor(
                         .toString() else null
                 )
 
-                if (expenseId.isEmpty()) {
-                    when (val result = expensesRepository.createNewExpenses(newExpense)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(
-                                UiEvent.Error(
-                                    result.message ?: "Unable to add expense"
-                                )
-                            )
-                        }
+                val message = if (expenseId.isEmpty()) "created" else "updated"
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Expense created successfully"))
-                        }
-                    }
-                } else {
-                    when (val result = expensesRepository.updateExpenses(newExpense, expenseId)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(
-                                UiEvent.Error(result.message ?: "Unable to update expense")
-                            )
-                        }
+                val result = expensesRepository.createOrUpdateExpenses(newExpense, expenseId)
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Expense updated successfully"))
-                        }
+                when (result) {
+                    is Resource.Error -> {
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to add expense"))
                     }
 
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("Expense $message successfully"))
+                    }
                 }
 
                 state = AddEditExpenseState()

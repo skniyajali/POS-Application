@@ -27,7 +27,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.niyaj.common.tags.ExpenseTestTags.IMPORT_EXPENSE_NOTE_TEXT
 import com.niyaj.common.tags.ExpenseTestTags.IMPORT_EXPENSE_TITLE
-import com.niyaj.common.utils.toPrettyDate
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.feature.expenses.components.ImportExportExpensesBody
 import com.niyaj.feature.expenses.settings.ExpensesSettingViewModel
@@ -49,9 +48,9 @@ import kotlinx.coroutines.launch
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ImportExpensesScreen(
-    navController : NavController,
-    viewModel : ExpensesSettingViewModel = hiltViewModel(),
-    resultBackNavigator : ResultBackNavigator<String>
+    navController: NavController,
+    viewModel: ExpensesSettingViewModel = hiltViewModel(),
+    resultBackNavigator: ResultBackNavigator<String>
 ) {
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -63,7 +62,7 @@ fun ImportExpensesScreen(
 
     val importedData = viewModel.importExportedExpenses.collectAsStateWithLifecycle().value
 
-    val showImportedBtn = if(isChosen) selectedExpenses.isNotEmpty() else importedData.isNotEmpty()
+    val showImportedBtn = if (isChosen) selectedExpenses.isNotEmpty() else importedData.isNotEmpty()
 
     var expanded by remember {
         mutableStateOf(false)
@@ -111,7 +110,7 @@ fun ImportExpensesScreen(
                 .fillMaxWidth()
                 .padding(SpaceSmall)
         ) {
-            if(importedData.isNotEmpty()) {
+            if (importedData.isNotEmpty()) {
                 ImportExportHeader(
                     modifier = Modifier,
                     text = "Import " + if (isChosen) "${selectedExpenses.size} Selected Expenses" else " All Expenses",
@@ -135,7 +134,7 @@ fun ImportExpensesScreen(
                 ) {
                     ImportExportExpensesBody(
                         lazyListState = lazyListState,
-                        groupedExpenses = importedData.groupBy { it.expensesDate.toPrettyDate() },
+                        expenses = importedData,
                         selectedExpenses = selectedExpenses,
                         expanded = expanded,
                         onExpandChanged = {

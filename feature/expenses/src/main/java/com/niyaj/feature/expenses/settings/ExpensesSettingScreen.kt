@@ -1,8 +1,7 @@
 package com.niyaj.feature.expenses.settings
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.ScaffoldState
@@ -27,7 +26,6 @@ import com.niyaj.common.tags.ExpenseTestTags.DELETE_PAST_EXPENSE_TITLE
 import com.niyaj.common.tags.ExpenseTestTags.EXPENSE_SETTINGS_TITLE
 import com.niyaj.common.tags.ExpenseTestTags.EXPORT_EXPENSE_TITLE
 import com.niyaj.common.tags.ExpenseTestTags.IMPORT_EXPENSE_TITLE
-import com.niyaj.designsystem.theme.SpaceMedium
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.feature.expenses.ExpensesViewModel
 import com.niyaj.feature.expenses.destinations.ExportExpensesScreenDestination
@@ -116,12 +114,12 @@ fun ExpensesSettingScreen(
     ) {
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(SpaceSmall),
+                .fillMaxSize()
+                .padding(SpaceSmall)
+                .padding(it),
+            verticalArrangement = Arrangement.spacedBy(SpaceSmall)
         ) {
             item {
-                Spacer(modifier = Modifier.height(SpaceSmall))
-
                 SettingsCard(
                     text = "Delete Past Expenses",
                     icon = Icons.Default.Delete,
@@ -129,12 +127,9 @@ fun ExpensesSettingScreen(
                         deleteLastSevenDaysState.show()
                     },
                 )
-                Spacer(modifier = Modifier.height(SpaceMedium))
             }
 
             item {
-                Spacer(modifier = Modifier.height(SpaceSmall))
-
                 SettingsCard(
                     text = "Delete All Expenses",
                     icon = Icons.Default.DeleteForever,
@@ -142,7 +137,6 @@ fun ExpensesSettingScreen(
                         deleteAllOrdersState.show()
                     },
                 )
-                Spacer(modifier = Modifier.height(SpaceMedium))
             }
 
             item {
@@ -153,7 +147,6 @@ fun ExpensesSettingScreen(
                         navController.navigate(ImportExpensesScreenDestination())
                     },
                 )
-                Spacer(modifier = Modifier.height(SpaceMedium))
             }
 
             item {
@@ -165,7 +158,6 @@ fun ExpensesSettingScreen(
                         navController.navigate(ExportExpensesScreenDestination())
                     },
                 )
-                Spacer(modifier = Modifier.height(SpaceMedium))
             }
         }
     }

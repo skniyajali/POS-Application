@@ -198,7 +198,7 @@ class ExpensesSettingViewModel @Inject constructor(
 
     private fun getAllExpenses() {
         viewModelScope.launch {
-            expensesRepository.getAllExpenses("", null).collectLatest { result ->
+            expensesRepository.getAllExpenses("","").collectLatest { result ->
                 _state.value = result
             }
         }
