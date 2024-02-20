@@ -8,11 +8,9 @@ import com.niyaj.ui.event.BaseViewModel
 import com.niyaj.ui.event.UiEvent
 import com.niyaj.ui.event.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,17 +26,14 @@ class EmployeeViewModel @Inject constructor(
 
     override var totalItems: List<String> = emptyList()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     val employees = snapshotFlow { searchText.value }
         .flatMapLatest { it ->
             employeeRepository.getAllEmployee(it)
-                .onStart { UiState.Loading }
-                .map { items ->
-                    totalItems = items.map { it.employeeId }
-                    if (items.isEmpty()) {
-                        UiState.Empty
-                    } else UiState.Success(items)
-                }
+        }.mapLatest { items ->
+            totalItems = items.map { it.employeeId }
+            if (items.isEmpty()) {
+                UiState.Empty
+            } else UiState.Success(items)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

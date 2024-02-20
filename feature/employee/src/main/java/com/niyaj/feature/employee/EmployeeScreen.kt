@@ -2,11 +2,9 @@ package com.niyaj.feature.employee
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.FabPosition
 import androidx.compose.material.ScaffoldState
@@ -195,12 +193,12 @@ fun EmployeeScreen(
                             .padding(SpaceSmall),
                         state = lazyListState
                     ) {
-                        itemsIndexed(
+                        items(
                             items = state.data,
-                            key = { index, item ->
-                                item.employeeId.plus(index)
+                            key = { item ->
+                                item.employeeId
                             }
-                        ) { index, item: Employee ->
+                        ) { item: Employee ->
                             EmployeeData(
                                 item = item,
                                 doesSelected = {
@@ -215,9 +213,6 @@ fun EmployeeScreen(
                                 },
                                 onLongClick = viewModel::selectItem
                             )
-
-                            Spacer(modifier = Modifier.height(SpaceSmall))
-
                         }
                     }
                 }

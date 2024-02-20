@@ -210,26 +210,15 @@ class AddEditPaymentViewModel @Inject constructor(
                     updatedAt = if (paymentId.isEmpty()) System.currentTimeMillis()
                         .toString() else null
                 )
+                val message = if (paymentId.isEmpty()) "Added" else "Updated"
 
-                if (paymentId.isEmpty()) {
-                    when (paymentRepository.addNewPayment(newPayment)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable To Add Payment."))
-                        }
-
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Payment Created Successfully."))
-                        }
+                when (val result = paymentRepository.addOrUpdatePayment(newPayment, paymentId)) {
+                    is Resource.Error -> {
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable"))
                     }
-                } else {
-                    when (paymentRepository.updatePaymentById(newPayment, paymentId)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable To Add Payment."))
-                        }
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Payment Updated Successfully."))
-                        }
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("Payment $message Successfully."))
                     }
                 }
 

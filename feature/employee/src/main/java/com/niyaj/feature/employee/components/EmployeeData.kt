@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.trace
 import com.niyaj.common.tags.EmployeeTestTags
 import com.niyaj.designsystem.theme.SpaceMini
+import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.model.Employee
 import com.niyaj.ui.components.CircularBox
 
@@ -42,6 +44,7 @@ fun EmployeeData(
     ListItem(
         modifier = modifier
             .fillMaxWidth()
+            .padding(SpaceSmall)
             .testTag(EmployeeTestTags.EMPLOYEE_TAG.plus(item.employeeId))
             .shadow(2.dp, RoundedCornerShape(SpaceMini))
             .clip(RoundedCornerShape(SpaceMini))

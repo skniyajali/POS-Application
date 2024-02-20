@@ -152,6 +152,9 @@ fun endTime(): Calendar {
 val getStartTime: String = startTime().timeInMillis.toString()
 val getEndTime: String = endTime().timeInMillis.toString()
 
+val String.toSafeAmount
+    get() = this
+        .substringBefore(".")
 
 val String.toRupee
     get() = DecimalFormat

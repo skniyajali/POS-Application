@@ -46,7 +46,8 @@ fun EmployeePayments(
         },
         modifier = Modifier
             .testTag(employee.employeeName.plus("Tag"))
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(SpaceSmall),
         shape = RoundedCornerShape(4.dp),
         elevation = SpaceMini
     ) {

@@ -67,6 +67,7 @@ import com.niyaj.common.tags.PaymentScreenTags.PAYMENT_NOTE_FIELD
 import com.niyaj.common.tags.PaymentScreenTags.PAYMENT_TYPE_ERROR
 import com.niyaj.common.tags.PaymentScreenTags.PAYMENT_TYPE_FIELD
 import com.niyaj.common.utils.toMilliSecond
+import com.niyaj.common.utils.toSafeAmount
 import com.niyaj.common.utils.toSalaryDate
 import com.niyaj.designsystem.theme.SpaceMini
 import com.niyaj.designsystem.theme.SpaceSmall
@@ -445,7 +446,7 @@ fun AddEditPaymentScreen(
                     errorTag = GIVEN_AMOUNT_ERROR,
                     keyboardType = KeyboardType.Number,
                     onValueChange = {
-                        viewModel.onEvent(AddEditPaymentEvent.PaymentAmountChanged(it))
+                        viewModel.onEvent(AddEditPaymentEvent.PaymentAmountChanged(it.toSafeAmount))
                     },
                 )
             }
