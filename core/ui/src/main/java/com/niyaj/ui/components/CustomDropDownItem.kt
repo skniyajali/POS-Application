@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentAlpha
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MenuDefaults
 import androidx.compose.material.ProvideTextStyle
@@ -77,6 +78,7 @@ fun DropdownMenuItemContent(
         if (leadingIcon != null) {
             CompositionLocalProvider(
                 LocalContentAlpha provides ContentAlpha.high,
+                LocalContentColor provides LocalContentColor.current
             ) {
                 Box(Modifier.defaultMinSize(minWidth = ListItemLeadingIconSize)) {
                     leadingIcon()
@@ -111,7 +113,8 @@ fun DropdownMenuItemContent(
 
         if (trailingIcon != null) {
             CompositionLocalProvider(
-                LocalContentAlpha provides ContentAlpha.medium
+                LocalContentAlpha provides ContentAlpha.medium,
+                LocalContentColor provides LocalContentColor.current
             ) {
                 Box(Modifier.defaultMinSize(minWidth = ListItemTrailingIconSize)) {
                     trailingIcon()

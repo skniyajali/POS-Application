@@ -12,19 +12,15 @@ interface EmployeeRepository {
 
     suspend fun getAllEmployee(searchText: String): Flow<List<Employee>>
 
-    fun getEmployeeById(employeeId: String): Employee?
+    suspend fun getEmployeeById(employeeId: String): Employee?
 
-    fun findEmployeeByName(employeeName: String, employeeId: String?): Boolean
+    suspend fun findEmployeeByName(employeeName: String, employeeId: String?): Boolean
 
-    fun findEmployeeByPhone(employeePhone: String, employeeId: String?): Boolean
+    suspend fun findEmployeeByPhone(employeePhone: String, employeeId: String?): Boolean
 
-    fun doesAnyEmployeeExist(): Boolean
+    suspend fun doesAnyEmployeeExist(): Boolean
 
-    suspend fun createNewEmployee(newEmployee: Employee): Resource<Boolean>
-
-    suspend fun updateEmployee(newEmployee: Employee, employeeId: String): Resource<Boolean>
-
-    suspend fun deleteEmployee(employeeId: String): Resource<Boolean>
+    suspend fun createOrUpdateEmployee(newEmployee: Employee, employeeId: String): Resource<Boolean>
 
     suspend fun deleteEmployees(employeeIds: List<String>): Resource<Boolean>
 

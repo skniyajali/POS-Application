@@ -4,9 +4,9 @@ import com.niyaj.common.utils.ValidationResult
 
 interface EmployeeValidationRepository {
 
-    fun validateEmployeeName(name: String, employeeId: String? = null): ValidationResult
+    suspend fun validateEmployeeName(name: String, employeeId: String? = null): ValidationResult
 
-    fun validateEmployeePhone(phone: String, employeeId: String? = null): ValidationResult
+    suspend fun validateEmployeePhone(phone: String, employeeId: String? = null): ValidationResult
 
     fun validateEmployeePosition(position: String): ValidationResult
 

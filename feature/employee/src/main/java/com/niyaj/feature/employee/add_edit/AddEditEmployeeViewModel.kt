@@ -156,25 +156,15 @@ class AddEditEmployeeViewModel @Inject constructor(
                         .toString() else null
                 )
 
-                if (employeeId.isEmpty()) {
-                    when (repository.createNewEmployee(newEmployee)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable To Create Employee."))
-                        }
+                val message = if (employeeId.isEmpty()) "Created" else "Updated"
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Employee Created Successfully."))
-                        }
+                when (val result = repository.createOrUpdateEmployee(newEmployee, employeeId)) {
+                    is Resource.Error -> {
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable."))
                     }
-                } else {
-                    when (repository.updateEmployee(newEmployee, employeeId)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable To Create Employee."))
-                        }
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Employee Updated Successfully."))
-                        }
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("Employee $message Successfully."))
                     }
                 }
 

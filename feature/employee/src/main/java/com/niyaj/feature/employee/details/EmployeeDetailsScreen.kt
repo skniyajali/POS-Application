@@ -184,11 +184,13 @@ fun EmployeeDetailsScreen(
                         )
                     },
                     onClickPaymentCount = {
+                        paymentDetailsExpanded = true
                         scope.launch {
                             lazyListState.animateScrollToItem(3)
                         }
                     },
                     onClickAbsentCount = {
+                        absentReportsExpanded = true
                         scope.launch {
                             lazyListState.animateScrollToItem(4)
                         }
@@ -244,5 +246,4 @@ fun EmployeeDetailsScreen(
             }
         }
     }
-
 }

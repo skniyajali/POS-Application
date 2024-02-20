@@ -20,7 +20,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
+import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.MergeType
+import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CalendarToday
@@ -28,6 +30,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Person4
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,13 +41,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -73,6 +75,7 @@ import com.niyaj.designsystem.theme.SpaceMini
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.model.PaymentMode
 import com.niyaj.model.PaymentType
+import com.niyaj.ui.components.CircularBox
 import com.niyaj.ui.components.CustomDropdownMenuItem
 import com.niyaj.ui.components.StandardButtonFW
 import com.niyaj.ui.components.StandardOutlinedTextField
@@ -206,29 +209,30 @@ fun AddEditPaymentScreen(
                         modifier = Modifier
                             .width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                     ) {
-                        employees.forEachIndexed { index, employee ->
-                            DropdownMenuItem(
+                        employees.forEach { employee ->
+                            CustomDropdownMenuItem(
                                 modifier = Modifier
-                                    .testTag(employee.employeeName)
-                                    .fillMaxWidth(),
+                                    .testTag(employee.employeeName),
+                                text = {
+                                    Text(
+                                        text = employee.employeeName,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                },
+                                leadingIcon = {
+                                    CircularBox(
+                                        icon = Icons.Default.Person,
+                                        doesSelected = selectedEmployee.employeeName == employee.employeeName,
+                                        text = employee.employeeName
+                                    )
+                                },
                                 onClick = {
                                     viewModel.onEvent(AddEditPaymentEvent.OnSelectEmployee(employee))
                                     employeeToggled = false
                                 }
-                            ) {
-                                Text(
-                                    text = employee.employeeName,
-                                    style = MaterialTheme.typography.body1,
-                                )
-                            }
+                            )
 
-                            if (index != employees.size - 1) {
-                                Divider(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = Color.Gray,
-                                    thickness = 0.8.dp
-                                )
-                            }
+                            Divider(modifier = Modifier.fillMaxWidth())
                         }
 
                         if (employees.isEmpty()) {
@@ -315,7 +319,7 @@ fun AddEditPaymentScreen(
                         modifier = Modifier
                             .width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                     ) {
-                        PaymentType.entries.forEach { paymentType ->
+                        PaymentType.entries.forEachIndexed { index, paymentType ->
                             DropdownMenuItem(
                                 modifier = Modifier
                                     .testTag(paymentType.name)
@@ -330,14 +334,13 @@ fun AddEditPaymentScreen(
                                 Text(
                                     text = paymentType.name,
                                     style = MaterialTheme.typography.body1,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
 
-                            Divider(
-                                modifier = Modifier.fillMaxWidth(),
-                                color = Color.Gray,
-                                thickness = 0.8.dp
-                            )
+                            if (index != PaymentType.entries.size - 1) {
+                                Divider(modifier = Modifier.fillMaxWidth())
+                            }
                         }
                     }
                 }
@@ -406,11 +409,23 @@ fun AddEditPaymentScreen(
                         modifier = Modifier
                             .width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                     ) {
-                        PaymentMode.entries.forEach { paymentMode ->
-                            DropdownMenuItem(
+                        PaymentMode.entries.forEachIndexed { index, paymentMode ->
+                            val icon = when (paymentMode) {
+                                PaymentMode.Cash -> Icons.Default.Money
+                                PaymentMode.Online -> Icons.Default.AccountBalance
+                                PaymentMode.Both -> Icons.AutoMirrored.Filled.CallSplit
+                            }
+
+                            CustomDropdownMenuItem(
                                 modifier = Modifier
-                                    .testTag(paymentMode.name)
-                                    .fillMaxWidth(),
+                                    .testTag(paymentMode.name),
+                                text = {
+                                    Text(
+                                        text = paymentMode.name,
+                                        style = MaterialTheme.typography.body1,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                },
                                 onClick = {
                                     viewModel.onEvent(
                                         AddEditPaymentEvent.PaymentModeChanged(
@@ -418,19 +433,18 @@ fun AddEditPaymentScreen(
                                         )
                                     )
                                     paymentModeExpanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = "${paymentMode.name} icon"
+                                    )
                                 }
-                            ) {
-                                Text(
-                                    text = paymentMode.name,
-                                    style = MaterialTheme.typography.body1,
-                                )
-                            }
-
-                            Divider(
-                                modifier = Modifier.fillMaxWidth(),
-                                color = Color.Gray,
-                                thickness = 0.8.dp
                             )
+
+                            if (index != PaymentMode.entries.size - 1) {
+                                Divider(modifier = Modifier.fillMaxWidth())
+                            }
                         }
                     }
                 }

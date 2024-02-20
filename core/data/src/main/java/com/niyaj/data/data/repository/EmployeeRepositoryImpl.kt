@@ -5,7 +5,9 @@ import com.niyaj.common.utils.Resource
 import com.niyaj.common.utils.ValidationResult
 import com.niyaj.common.utils.compareSalaryDates
 import com.niyaj.common.utils.getSalaryDates
+import com.niyaj.common.utils.toError
 import com.niyaj.common.utils.toRupee
+import com.niyaj.data.mapper.toEntity
 import com.niyaj.data.repository.EmployeeRepository
 import com.niyaj.data.repository.validation.EmployeeValidationRepository
 import com.niyaj.data.utils.collectWithSearch
@@ -22,7 +24,6 @@ import com.niyaj.model.PaymentStatus
 import com.niyaj.model.filterEmployee
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
-import io.realm.kotlin.exceptions.RealmException
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineDispatcher
@@ -30,8 +31,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
-import org.mongodb.kbson.BsonObjectId
 import timber.log.Timber
 
 class EmployeeRepositoryImpl(
@@ -46,137 +47,87 @@ class EmployeeRepositoryImpl(
     }
 
     override suspend fun getAllEmployee(searchText: String): Flow<List<Employee>> {
-        return channelFlow {
-            withContext(ioDispatcher) {
-                try {
-                    val employees = realm
-                        .query<EmployeeEntity>().sort("employeeId", Sort.DESCENDING)
-                        .find()
-                        .asFlow()
-
+        return withContext(ioDispatcher) {
+            realm
+                .query<EmployeeEntity>().sort("employeeId", Sort.DESCENDING)
+                .find()
+                .asFlow()
+                .mapLatest { employees ->
                     employees.collectWithSearch(
                         transform = { it.toExternalModel() },
                         searchFilter = { it.filterEmployee(searchText) },
-                        send = { send(it) }
                     )
-
-                } catch (e: Exception) {
-                    send(emptyList())
                 }
-            }
         }
     }
 
-    override fun doesAnyEmployeeExist(): Boolean {
-        return realm.query<EmployeeEntity>().find().isNotEmpty()
+    override suspend fun doesAnyEmployeeExist(): Boolean {
+        return withContext(ioDispatcher) {
+            realm.query<EmployeeEntity>().find().isNotEmpty()
+        }
     }
 
-    override fun getEmployeeById(employeeId: String): Employee? {
+    override suspend fun getEmployeeById(employeeId: String): Employee? {
         return try {
-            realm
-                .query<EmployeeEntity>("employeeId == $0", employeeId)
-                .first()
-                .find()
-                ?.toExternalModel()
+            withContext(ioDispatcher) {
+                realm
+                    .query<EmployeeEntity>("employeeId == $0", employeeId)
+                    .first()
+                    .find()
+                    ?.toExternalModel()
+            }
         } catch (e: Exception) {
             null
         }
     }
 
-    override fun findEmployeeByName(employeeName: String, employeeId: String?): Boolean {
-        val employee = if (employeeId == null) {
-            realm.query<EmployeeEntity>("employeeName == $0", employeeName).first().find()
-        } else {
-            realm.query<EmployeeEntity>(
-                "employeeId != $0 && employeeName == $1",
-                employeeId,
-                employeeName
-            ).first().find()
-        }
-
-        return employee != null
-    }
-
-    override fun findEmployeeByPhone(employeePhone: String, employeeId: String?): Boolean {
-        val employee = if (employeeId == null) {
-            realm.query<EmployeeEntity>("employeePhone == $0", employeePhone).first().find()
-        } else {
-            realm.query<EmployeeEntity>(
-                "employeeId != $0 && employeePhone == $1",
-                employeeId,
-                employeePhone
-            ).first().find()
-        }
-
-        return employee != null
-    }
-
-    override suspend fun createNewEmployee(newEmployee: Employee): Resource<Boolean> {
-        return try {
-            withContext(ioDispatcher) {
-                val validateEmployeeName = validateEmployeeName(newEmployee.employeeName)
-                val validateEmployeePhone = validateEmployeePhone(newEmployee.employeePhone)
-                val validateEmployeePosition =
-                    validateEmployeePosition(newEmployee.employeePosition)
-                val validateEmployeeSalary = validateEmployeeSalary(newEmployee.employeeSalary)
-
-                val hasError = listOf(
-                    validateEmployeeName,
-                    validateEmployeePhone,
-                    validateEmployeePosition,
-                    validateEmployeeSalary
-                ).any { !it.successful }
-
-                if (!hasError) {
-                    val employee = EmployeeEntity()
-                    employee.employeeId =
-                        newEmployee.employeeId.ifEmpty { BsonObjectId().toHexString() }
-                    employee.employeeName = newEmployee.employeeName
-                    employee.employeePhone = newEmployee.employeePhone
-                    employee.employeeType = newEmployee.employeeType.name
-                    employee.employeeSalary = newEmployee.employeeSalary
-                    employee.employeeSalaryType = newEmployee.employeeSalaryType.name
-                    employee.employeePosition = newEmployee.employeePosition
-                    employee.employeeJoinedDate = newEmployee.employeeJoinedDate
-                    employee.createdAt =
-                        newEmployee.createdAt.ifEmpty { System.currentTimeMillis().toString() }
-
-                    realm.write {
-                        this.copyToRealm(employee)
-                    }
-
-                    Resource.Success(true)
-                } else {
-                    Resource.Error("Unable to validate employee")
-                }
-            }
-        } catch (e: RealmException) {
-            Resource.Error(e.message ?: "Error creating Employee Item")
+    override suspend fun findEmployeeByName(employeeName: String, employeeId: String?): Boolean {
+        return withContext(ioDispatcher) {
+            if (employeeId == null) {
+                realm.query<EmployeeEntity>("employeeName == $0", employeeName).first().find()
+            } else {
+                realm.query<EmployeeEntity>(
+                    "employeeId != $0 && employeeName == $1",
+                    employeeId,
+                    employeeName
+                ).first().find()
+            } != null
         }
     }
 
-    override suspend fun updateEmployee(
+    override suspend fun findEmployeeByPhone(employeePhone: String, employeeId: String?): Boolean {
+        return withContext(ioDispatcher) {
+            if (employeeId == null) {
+                realm.query<EmployeeEntity>("employeePhone == $0", employeePhone).first().find()
+            } else {
+                realm.query<EmployeeEntity>(
+                    "employeeId != $0 && employeePhone == $1",
+                    employeeId,
+                    employeePhone
+                ).first().find()
+            } != null
+        }
+    }
+
+    override suspend fun createOrUpdateEmployee(
         newEmployee: Employee,
         employeeId: String
     ): Resource<Boolean> {
         return try {
             withContext(ioDispatcher) {
-                val validateEmployeeName =
-                    validateEmployeeName(newEmployee.employeeName, employeeId)
-                val validateEmployeePhone =
-                    validateEmployeePhone(newEmployee.employeePhone, employeeId)
-                val validateEmployeePosition =
-                    validateEmployeePosition(newEmployee.employeePosition)
-                val validateEmployeeSalary = validateEmployeeSalary(newEmployee.employeeSalary)
+                val validateName = validateEmployeeName(newEmployee.employeeName, employeeId)
+                val validatePhone = validateEmployeePhone(newEmployee.employeePhone, employeeId)
+                val validatePosition = validateEmployeePosition(newEmployee.employeePosition)
+                val validateSalary = validateEmployeeSalary(newEmployee.employeeSalary)
 
-                val hasError = listOf(
-                    validateEmployeeName,
-                    validateEmployeePhone,
-                    validateEmployeePosition,
-                    validateEmployeeSalary
-                ).any { !it.successful }
+                val validators = listOf(
+                    validateName,
+                    validatePhone,
+                    validatePosition,
+                    validateSalary
+                )
 
-                if (!hasError) {
+                if (!validators.any { !it.successful }) {
                     val employee =
                         realm.query<EmployeeEntity>("employeeId == $0", employeeId).first().find()
                     if (employee != null) {
@@ -195,55 +146,18 @@ class EmployeeRepositoryImpl(
 
                         Resource.Success(true)
                     } else {
-                        Resource.Error("Unable to find employee")
+                        realm.write {
+                            this.copyToRealm(newEmployee.toEntity())
+                        }
+
+                        Resource.Success(true)
                     }
                 } else {
-                    Resource.Error("Unable to validate employee")
+                    Resource.Error(validators.toError())
                 }
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to update employee.")
-        }
-    }
-
-    override suspend fun deleteEmployee(employeeId: String): Resource<Boolean> {
-        return try {
-            withContext(ioDispatcher) {
-                val employee =
-                    realm.query<EmployeeEntity>("employeeId == $0", employeeId).first().find()
-
-                if (employee != null) {
-                    realm.write {
-                        val salary =
-                            this.query<PaymentEntity>(
-                                "employee.employeeId == $0",
-                                employeeId
-                            )
-                                .find()
-                        val attendance =
-                            this.query<AttendanceEntity>("employee.employeeId == $0", employeeId)
-                                .find()
-
-                        if (salary.isNotEmpty()) {
-                            delete(salary)
-                        }
-
-                        if (attendance.isNotEmpty()) {
-                            delete(attendance)
-                        }
-
-                        findLatest(employee)?.let {
-                            delete(it)
-                        }
-                    }
-
-                    Resource.Success(true)
-                } else {
-                    Resource.Error("Unable to find employee")
-                }
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to delete employee")
         }
     }
 
@@ -291,109 +205,6 @@ class EmployeeRepositoryImpl(
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to delete employee")
         }
-    }
-
-    override fun validateEmployeeName(name: String, employeeId: String?): ValidationResult {
-        if (name.isEmpty()) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Employee name must not be empty",
-            )
-        }
-
-        if (name.length < 4) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Employee name must be more than 4 characters",
-            )
-        }
-
-        if (name.any { it.isDigit() }) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Employee name must not contain any digit",
-            )
-        }
-
-        if (this.findEmployeeByName(name, employeeId)) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Employee name already exists.",
-            )
-        }
-
-        return ValidationResult(
-            successful = true,
-        )
-    }
-
-    override fun validateEmployeePhone(phone: String, employeeId: String?): ValidationResult {
-        if (phone.isEmpty()) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Phone no must not be empty",
-            )
-        }
-
-        if (phone.length != 10) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Phone must be 10(${phone.length}) digits",
-            )
-        }
-
-        if (phone.any { it.isLetter() }) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Phone must not contain a letter",
-            )
-        }
-
-        if (this.findEmployeeByPhone(phone, employeeId)) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Phone no already exists",
-            )
-        }
-
-        return ValidationResult(
-            successful = true,
-        )
-    }
-
-    override fun validateEmployeePosition(position: String): ValidationResult {
-        if (position.isEmpty()) {
-            return ValidationResult(false, "Employee position is required")
-        }
-
-        return ValidationResult(true)
-    }
-
-    override fun validateEmployeeSalary(salary: String): ValidationResult {
-        if (salary.isEmpty()) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Salary must not be empty",
-            )
-        }
-
-        if (salary.length != 5) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Salary is in invalid",
-            )
-        }
-
-        if (salary.any { it.isLetter() }) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = "Salary must not contain any characters",
-            )
-        }
-
-        return ValidationResult(
-            successful = true,
-        )
     }
 
     override suspend fun getEmployeeSalaryEstimation(
@@ -600,6 +411,118 @@ class EmployeeRepositoryImpl(
         } catch (e: Exception) {
             emptyList()
         }
+    }
+
+    override suspend fun validateEmployeeName(name: String, employeeId: String?): ValidationResult {
+        if (name.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Employee name must not be empty",
+            )
+        }
+
+        if (name.length < 4) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Employee name must be more than 4 characters",
+            )
+        }
+
+        if (name.any { it.isDigit() }) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Employee name must not contain any digit",
+            )
+        }
+
+        val serverResult = withContext(ioDispatcher) {
+            findEmployeeByName(name, employeeId)
+        }
+
+        if (serverResult) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Employee name already exists.",
+            )
+        }
+
+        return ValidationResult(
+            successful = true,
+        )
+    }
+
+    override suspend fun validateEmployeePhone(
+        phone: String,
+        employeeId: String?
+    ): ValidationResult {
+        if (phone.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Phone no must not be empty",
+            )
+        }
+
+        if (phone.length != 10) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Phone must be 10(${phone.length}) digits",
+            )
+        }
+
+        if (phone.any { it.isLetter() }) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Phone must not contain a letter",
+            )
+        }
+
+        val result = withContext(ioDispatcher) { findEmployeeByPhone(phone, employeeId) }
+
+        if (result) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Phone no already exists",
+            )
+        }
+
+        return ValidationResult(
+            successful = true,
+        )
+    }
+
+    override fun validateEmployeePosition(position: String): ValidationResult {
+        if (position.isEmpty()) {
+            return ValidationResult(false, "Employee position is required")
+        }
+
+        return ValidationResult(true)
+    }
+
+    override fun validateEmployeeSalary(salary: String): ValidationResult {
+        if (salary.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Salary must not be empty",
+            )
+        }
+
+        if (salary.length != 5) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Salary is in invalid",
+            )
+        }
+
+        if (salary.any { it.isLetter() }) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = "Salary must not contain any characters",
+            )
+        }
+
+        return ValidationResult(
+            successful = true,
+        )
     }
 }
 
