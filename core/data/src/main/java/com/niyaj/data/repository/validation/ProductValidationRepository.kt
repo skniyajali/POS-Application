@@ -5,7 +5,10 @@ import com.niyaj.common.utils.ValidationResult
 interface ProductValidationRepository {
     fun validateCategoryName(categoryName: String): ValidationResult
 
-    fun validateProductName(productName: String, productId: String? = null): ValidationResult
+    suspend fun validateProductName(
+        productName: String,
+        productId: String? = null
+    ): ValidationResult
 
     fun validateProductPrice(productPrice: Int): ValidationResult
 }

@@ -11,7 +11,6 @@ import com.niyaj.common.utils.ValidationResult
 import com.niyaj.data.mapper.toEntity
 import com.niyaj.data.repository.ProductRepository
 import com.niyaj.data.repository.validation.ProductValidationRepository
-import com.niyaj.data.utils.collectAndSend
 import com.niyaj.data.utils.collectWithSearch
 import com.niyaj.database.model.CartEntity
 import com.niyaj.database.model.CartOrderEntity
@@ -35,6 +34,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import org.mongodb.kbson.BsonObjectId
 
@@ -42,26 +42,21 @@ class ProductRepositoryImpl(
     config: RealmConfiguration,
     private val ioDispatcher: CoroutineDispatcher
 ) : ProductRepository, ProductValidationRepository {
+    
     val realm = Realm.open(config)
 
     override suspend fun getAllCategories(): Flow<List<Category>> {
-        return channelFlow {
-            withContext(ioDispatcher) {
-                try {
-                    val items = realm.query<CategoryEntity>()
-                        .sort("categoryId", Sort.ASCENDING)
-                        .find()
-                        .asFlow()
-
-                    items.collectAndSend(
+        return withContext(ioDispatcher) {
+            realm.query<CategoryEntity>()
+                .sort("categoryId", Sort.ASCENDING)
+                .find()
+                .asFlow()
+                .mapLatest { items ->
+                    items.collectWithSearch(
                         transform = { it.toExternalModel() },
-                        send = { send(it) }
+                        searchFilter = { it }
                     )
-
-                } catch (e: Exception) {
-                    send(emptyList())
                 }
-            }
         }
     }
 
@@ -80,27 +75,22 @@ class ProductRepositoryImpl(
         searchText: String,
         categoryId: String
     ): Flow<List<Product>> {
-        return channelFlow {
-            withContext(ioDispatcher) {
-                try {
-                    val products = realm.query<ProductEntity>()
-                        .sort("productId", Sort.ASCENDING).asFlow()
-
+        return withContext(ioDispatcher) {
+            realm.query<ProductEntity>()
+                .sort("productId", Sort.ASCENDING)
+                .asFlow()
+                .mapLatest { products ->
                     products.collectWithSearch(
                         transform = { it.toExternalModel() },
                         searchFilter = {
                             it.filterByCategory(categoryId).filterProducts(searchText)
                         },
-                        send = { send(it) }
                     )
-                } catch (e: Exception) {
-                    send(emptyList())
                 }
-            }
         }
     }
 
-    override fun getProductById(productId: String): Resource<Product?> {
+    override suspend fun getProductById(productId: String): Resource<Product?> {
         return try {
             val product = realm.query<ProductEntity>("productId == $0", productId).first().find()
             Resource.Success(product?.toExternalModel())
@@ -109,59 +99,24 @@ class ProductRepositoryImpl(
         }
     }
 
-    override fun findProductByName(productName: String, productId: String?): Boolean {
-        val product = if (productId == null) {
-            realm.query<ProductEntity>("productName == $0", productName).first().find()
-        } else {
-            realm.query<ProductEntity>(
-                "productId != $0 && productName == $1",
-                productId,
-                productName
-            ).first().find()
-        }
-
-        return product != null
-    }
-
-    override suspend fun createNewProduct(newProduct: Product): Resource<Boolean> {
-        return try {
-            withContext(ioDispatcher) {
-                val validateProductName =
-                    validateProductName(newProduct.productName, newProduct.productId)
-                val validateProductPrice = validateProductPrice(newProduct.productPrice)
-
-                val hasError =
-                    listOf(validateProductPrice, validateProductName).any { !it.successful }
-
-                if (!hasError) {
-                    val category = realm.query<CategoryEntity>(
-                        "categoryId == $0",
-                        newProduct.category?.categoryId
-                    ).first().find()
-
-                    if (category != null) {
-                        val product = newProduct.toEntity()
-                        realm.write {
-                            findLatest(category)?.let { product.category = it }
-
-                            this.copyToRealm(product)
-                        }
-
-                        Resource.Success(true)
-                    } else {
-                        Resource.Error("Unable to find category")
-                    }
-
-                } else {
-                    Resource.Error("Unable to validate product")
-                }
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to create new product")
+    override suspend fun findProductByName(productName: String, productId: String?): Boolean {
+        return withContext(ioDispatcher) {
+            if (productId == null) {
+                realm.query<ProductEntity>("productName == $0", productName).first().find()
+            } else {
+                realm.query<ProductEntity>(
+                    "productId != $0 && productName == $1",
+                    productId,
+                    productName
+                ).first().find()
+            } != null
         }
     }
 
-    override suspend fun updateProduct(newProduct: Product, productId: String): Resource<Boolean> {
+    override suspend fun createOrUpdateProduct(
+        newProduct: Product,
+        productId: String
+    ): Resource<Boolean> {
         return try {
             withContext(ioDispatcher) {
                 val validateProductName = validateProductName(newProduct.productName, productId)
@@ -194,7 +149,11 @@ class ProductRepositoryImpl(
 
                             Resource.Success(true)
                         } else {
-                            Resource.Error("Unable to find product")
+                            realm.write {
+                                this.copyToRealm(newProduct.toEntity(findLatest(category)))
+                            }
+
+                            Resource.Success(true)
                         }
                     } else {
                         Resource.Error("Unable to find product category")
@@ -205,32 +164,6 @@ class ProductRepositoryImpl(
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unable to update product")
-        }
-    }
-
-    override suspend fun deleteProduct(productId: String): Resource<Boolean> {
-        return try {
-            withContext(ioDispatcher) {
-                val product =
-                    realm.query<ProductEntity>("productId == $0", productId).first().find()
-                if (product != null) {
-                    realm.write {
-                        val cartOrders =
-                            this.query<CartEntity>("product.productId == $0", productId).find()
-
-                        delete(cartOrders)
-                        findLatest(product)?.let {
-                            delete(it)
-                        }
-                    }
-
-                    Resource.Success(true)
-                } else {
-                    Resource.Error("Unable to delete product")
-                }
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to delete product")
         }
     }
 
@@ -391,68 +324,6 @@ class ProductRepositoryImpl(
         }
     }
 
-    override fun validateCategoryName(categoryName: String): ValidationResult {
-        if (categoryName.isEmpty()) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = PRODUCT_CATEGORY_EMPTY_ERROR,
-            )
-        }
-
-        return ValidationResult(
-            successful = true
-        )
-    }
-
-    override fun validateProductName(productName: String, productId: String?): ValidationResult {
-        if (productName.isEmpty()) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = PRODUCT_NAME_EMPTY_ERROR,
-            )
-        }
-
-        if (productName.length < 4) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = PRODUCT_NAME_LENGTH_ERROR
-            )
-        }
-
-        val serverResult = findProductByName(productName, productId)
-
-        if (serverResult) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = PRODUCT_NAME_ALREADY_EXIST_ERROR
-            )
-        }
-
-        return ValidationResult(
-            successful = true
-        )
-    }
-
-    override fun validateProductPrice(productPrice: Int): ValidationResult {
-        if (productPrice == 0) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = PRODUCT_PRICE_EMPTY_ERROR,
-            )
-        }
-
-        if (productPrice < 10) {
-            return ValidationResult(
-                successful = false,
-                errorMessage = PRODUCT_PRICE_LENGTH_ERROR
-            )
-        }
-
-        return ValidationResult(
-            successful = true
-        )
-    }
-
     override suspend fun getProductOrders(productId: String): Flow<List<ProductOrder>> {
         return channelFlow {
             try {
@@ -503,5 +374,72 @@ class ProductRepositoryImpl(
                 ProductOrder()
             }
         }
+    }
+
+    override fun validateCategoryName(categoryName: String): ValidationResult {
+        if (categoryName.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = PRODUCT_CATEGORY_EMPTY_ERROR,
+            )
+        }
+
+        return ValidationResult(
+            successful = true
+        )
+    }
+
+    override suspend fun validateProductName(
+        productName: String,
+        productId: String?
+    ): ValidationResult {
+        if (productName.isEmpty()) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = PRODUCT_NAME_EMPTY_ERROR,
+            )
+        }
+
+        if (productName.length < 4) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = PRODUCT_NAME_LENGTH_ERROR
+            )
+        }
+
+        val serverResult = withContext(ioDispatcher) {
+            findProductByName(productName, productId)
+        }
+
+        if (serverResult) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = PRODUCT_NAME_ALREADY_EXIST_ERROR
+            )
+        }
+
+        return ValidationResult(
+            successful = true
+        )
+    }
+
+    override fun validateProductPrice(productPrice: Int): ValidationResult {
+        if (productPrice == 0) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = PRODUCT_PRICE_EMPTY_ERROR,
+            )
+        }
+
+        if (productPrice < 10) {
+            return ValidationResult(
+                successful = false,
+                errorMessage = PRODUCT_PRICE_LENGTH_ERROR
+            )
+        }
+
+        return ValidationResult(
+            successful = true
+        )
     }
 }

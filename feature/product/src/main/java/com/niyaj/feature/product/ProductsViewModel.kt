@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -98,7 +99,7 @@ class ProductsViewModel @Inject constructor(
     private fun getAllCategories() {
         viewModelScope.launch {
             productRepository.getAllCategories().collectLatest { result ->
-                _categories.value = result
+                _categories.update { result }
             }
         }
     }

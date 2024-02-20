@@ -40,7 +40,7 @@ fun CircularBox(
     val availBorder = if (showBorder) borderStroke  else null
 
     val textStyle =
-        if (size < 40.dp) MaterialTheme.typography.body2 else MaterialTheme.typography.body1
+        if (size < 40.dp) MaterialTheme.typography.caption else MaterialTheme.typography.body2
     val iconSize = if (size < 40.dp) IconSizeSmall else IconSizeMedium
 
     Box(
