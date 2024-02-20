@@ -31,9 +31,7 @@ class EmployeeViewModel @Inject constructor(
             employeeRepository.getAllEmployee(it)
         }.mapLatest { items ->
             totalItems = items.map { it.employeeId }
-            if (items.isEmpty()) {
-                UiState.Empty
-            } else UiState.Success(items)
+            if (items.isEmpty()) UiState.Empty else UiState.Success(items)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

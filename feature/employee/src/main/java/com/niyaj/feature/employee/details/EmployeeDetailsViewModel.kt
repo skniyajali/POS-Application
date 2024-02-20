@@ -13,11 +13,11 @@ import com.niyaj.ui.event.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -55,16 +55,15 @@ class EmployeeDetailsViewModel @Inject constructor(
         initialValue = emptyList(),
     )
 
-    val salaryEstimation = snapshotFlow { _selectedSalaryDate.value }
-        .combine(snapshotFlow { _employeeId }) { date, employeeId ->
-            employeeRepository.getEmployeeSalaryEstimation(employeeId, date)
-        }.flatMapLatest { flow ->
-            flow.map { UiState.Success(it) }
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = UiState.Loading,
-        )
+    val salaryEstimation = snapshotFlow { _selectedSalaryDate.value }.flatMapLatest { date ->
+        employeeRepository.getEmployeeSalaryEstimation(_employeeId, date)
+    }.mapLatest { data ->
+        UiState.Success(data)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = UiState.Loading,
+    )
 
     val payments = MutableStateFlow<UiState<List<EmployeePayments>>>(UiState.Loading)
 
@@ -92,16 +91,20 @@ class EmployeeDetailsViewModel @Inject constructor(
 
     private fun getEmployeePayments(employeeId: String) {
         viewModelScope.launch {
-            employeeRepository.getEmployeePayments(employeeId).collect { result ->
-                payments.value = if (result.isEmpty()) UiState.Empty else UiState.Success(result)
+            employeeRepository.getEmployeePayments(employeeId).collectLatest { result ->
+                payments.update {
+                    if (result.isEmpty()) UiState.Empty else UiState.Success(result)
+                }
             }
         }
     }
 
     private fun getEmployeeAbsentDates(employeeId: String) {
         viewModelScope.launch {
-            employeeRepository.getEmployeeAbsentDates(employeeId).collect {
-                employeeAbsentDates.value = if (it.isEmpty()) UiState.Empty else UiState.Success(it)
+            employeeRepository.getEmployeeAbsentDates(employeeId).collectLatest { result ->
+                employeeAbsentDates.update {
+                    if (result.isEmpty()) UiState.Empty else UiState.Success(result)
+                }
             }
         }
     }
