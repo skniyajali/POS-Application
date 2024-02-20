@@ -17,6 +17,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -63,36 +64,38 @@ fun EmployeeAbsentData(
                     .padding(SpaceMini),
             ) {
                 grouped.value.forEach { attendance ->
-                    Card(
-                        modifier = Modifier
-                            .testTag(attendance.employee?.employeeName.plus(attendance.absentDate.toDate))
-                            .combinedClickable(
-                                onClick = {
-                                    onClick(attendance.attendeeId)
-                                },
-                                onLongClick = {
-                                    onLongClick(attendance.attendeeId)
-                                },
-                            ),
-                        backgroundColor = LightColor6,
-                        elevation = 2.dp,
-                        border = if (doesSelected(attendance.attendeeId)) BorderStroke(
-                            1.dp,
-                            MaterialTheme.colors.primary
-                        ) else null,
-                    ) {
-                        Text(
-                            text = attendance.absentDate.toDate,
-                            style = MaterialTheme.typography.body1,
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colors.secondaryVariant,
+                    key(attendance.attendeeId) {
+                        Card(
                             modifier = Modifier
-                                .padding(SpaceSmall)
-                        )
-                    }
+                                .testTag(attendance.employee?.employeeName.plus(attendance.absentDate.toDate))
+                                .combinedClickable(
+                                    onClick = {
+                                        onClick(attendance.attendeeId)
+                                    },
+                                    onLongClick = {
+                                        onLongClick(attendance.attendeeId)
+                                    },
+                                ),
+                            backgroundColor = LightColor6,
+                            elevation = 2.dp,
+                            border = if (doesSelected(attendance.attendeeId)) BorderStroke(
+                                1.dp,
+                                MaterialTheme.colors.primary
+                            ) else null,
+                        ) {
+                            Text(
+                                text = attendance.absentDate.toDate,
+                                style = MaterialTheme.typography.body1,
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colors.secondaryVariant,
+                                modifier = Modifier
+                                    .padding(SpaceSmall)
+                            )
+                        }
 
-                    Spacer(modifier = Modifier.width(SpaceSmall))
+                        Spacer(modifier = Modifier.width(SpaceSmall))
+                    }
                 }
             }
         }

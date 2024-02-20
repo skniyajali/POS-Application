@@ -2,10 +2,9 @@ package com.niyaj.data.data.repository
 
 import com.niyaj.common.utils.Resource
 import com.niyaj.common.utils.ValidationResult
-import com.niyaj.common.utils.getStartTime
+import com.niyaj.data.mapper.toEntity
 import com.niyaj.data.repository.AttendanceRepository
 import com.niyaj.data.repository.validation.AttendanceValidationRepository
-import com.niyaj.data.utils.collectAndSend
 import com.niyaj.data.utils.collectWithSearch
 import com.niyaj.database.model.AttendanceEntity
 import com.niyaj.database.model.EmployeeEntity
@@ -19,9 +18,8 @@ import io.realm.kotlin.ext.query
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
-import org.mongodb.kbson.BsonObjectId
 
 class AttendanceRepositoryImpl(
     config: RealmConfiguration,
@@ -31,18 +29,12 @@ class AttendanceRepositoryImpl(
     val realm = Realm.open(config)
 
     override suspend fun getAllEmployee(): Flow<List<Employee>> {
-        return channelFlow {
-            try {
-                withContext(ioDispatcher) {
-                    val employees = realm.query<EmployeeEntity>().find().asFlow()
-
-                    employees.collectAndSend(
-                        transform = { it.toExternalModel() },
-                        send = { send(it) }
-                    )
-                }
-            } catch (e: Exception) {
-                send(emptyList())
+        return withContext(ioDispatcher) {
+            realm.query<EmployeeEntity>().find().asFlow().mapLatest { employees ->
+                employees.collectWithSearch(
+                    transform = { it.toExternalModel() },
+                    searchFilter = { it }
+                )
             }
         }
     }
@@ -62,25 +54,18 @@ class AttendanceRepositoryImpl(
     }
 
     override suspend fun getAllAttendance(searchText: String): Flow<List<Attendance>> {
-        return channelFlow {
-            withContext(ioDispatcher) {
-                try {
-                    val attendance = realm
-                        .query<AttendanceEntity>()
-                        .sort("absentDate", Sort.DESCENDING)
-                        .find()
-                        .asFlow()
-
+        return withContext(ioDispatcher) {
+            realm
+                .query<AttendanceEntity>()
+                .sort("absentDate", Sort.DESCENDING)
+                .find()
+                .asFlow()
+                .mapLatest { attendance ->
                     attendance.collectWithSearch(
                         transform = { it.toExternalModel() },
                         searchFilter = { it.filterEmployeeAttendance(searchText) },
-                        send = { send(it) }
                     )
-
-                } catch (e: Exception) {
-                    send(emptyList())
                 }
-            }
         }
     }
 
@@ -96,110 +81,56 @@ class AttendanceRepositoryImpl(
         }
     }
 
-    override fun findAttendanceByAbsentDate(
+    override suspend fun findAttendanceByAbsentDate(
         absentDate: String,
         employeeId: String,
         attendanceId: String?,
     ): Boolean {
-        val employeeAttendance = if (attendanceId == null) {
-            realm.query<AttendanceEntity>(
-                "absentDate == $0 AND employee.employeeId == $1",
-                absentDate,
-                employeeId
-            ).first().find()
-        } else {
-            realm.query<AttendanceEntity>(
-                "attendeeId != $0 && absentDate == $1 AND employee.employeeId == $2",
-                attendanceId,
-                absentDate,
-                employeeId
-            ).first().find()
-        }
-
-        return employeeAttendance != null
-    }
-
-    override suspend fun addAbsentEntry(attendance: Attendance): Resource<Boolean> {
-        return try {
-            val validateAbsentEmployee =
-                validateAbsentEmployee(attendance.employee?.employeeId ?: "")
-            val validateIsAbsent = validateIsAbsent(attendance.isAbsent)
-            val validateAbsentDate = validateAbsentDate(
-                absentDate = attendance.absentDate,
-                employeeId = attendance.employee?.employeeId ?: "",
-                attendanceId = attendance.attendeeId
-            )
-
-            val hasError = listOf(
-                validateAbsentEmployee,
-                validateIsAbsent,
-                validateAbsentDate
-            ).any { !it.successful }
-
-            if (!hasError) {
-                val employee =
-                    realm.query<EmployeeEntity>("employeeId == $0", attendance.employee?.employeeId)
-                        .first().find()
-
-                if (employee != null) {
-                    val newAttendance = AttendanceEntity()
-                    newAttendance.attendeeId =
-                        attendance.attendeeId.ifEmpty { BsonObjectId().toHexString() }
-                    newAttendance.isAbsent = attendance.isAbsent
-                    newAttendance.absentDate = attendance.absentDate
-                    newAttendance.absentReason = attendance.absentReason
-                    newAttendance.createdAt = attendance.createdAt.ifEmpty { getStartTime }
-
-                    withContext(ioDispatcher) {
-                        realm.write {
-                            findLatest(employee).also {
-                                newAttendance.employee = it
-                            }
-
-                            this.copyToRealm(newAttendance)
-                        }
-                    }
-
-                    Resource.Success(true)
-                } else {
-                    Resource.Error("Employee not found")
-                }
+        return withContext(ioDispatcher) {
+            if (attendanceId == null) {
+                realm.query<AttendanceEntity>(
+                    "absentDate == $0 AND employee.employeeId == $1",
+                    absentDate,
+                    employeeId
+                ).first().find()
             } else {
-                Resource.Error("Unable to validate attendance")
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to add absent entry.")
+                realm.query<AttendanceEntity>(
+                    "attendeeId != $0 && absentDate == $1 AND employee.employeeId == $2",
+                    attendanceId,
+                    absentDate,
+                    employeeId
+                ).first().find()
+            } != null
         }
     }
 
-    override suspend fun updateAbsentEntry(
+    override suspend fun addOrUpdateAbsentEntry(
         attendance: Attendance,
-        attendanceId: String,
+        attendanceId: String
     ): Resource<Boolean> {
-        return try {
-            val validateAbsentEmployee =
-                validateAbsentEmployee(attendance.employee?.employeeId ?: "")
-            val validateIsAbsent = validateIsAbsent(attendance.isAbsent)
-            val validateAbsentDate = validateAbsentDate(
-                attendance.absentDate,
-                attendance.employee?.employeeId ?: "",
-                attendanceId
-            )
+        return withContext(ioDispatcher) {
+            try {
+                val validateAbsentEmployee =
+                    validateAbsentEmployee(attendance.employee?.employeeId ?: "")
+                val validateIsAbsent = validateIsAbsent(attendance.isAbsent)
+                val validateAbsentDate = validateAbsentDate(
+                    attendance.absentDate,
+                    attendance.employee?.employeeId ?: "",
+                    attendanceId
+                )
 
-            val hasError = listOf(
-                validateAbsentEmployee,
-                validateIsAbsent,
-                validateAbsentDate
-            ).any { !it.successful }
+                val hasError = listOf(
+                    validateAbsentEmployee,
+                    validateIsAbsent,
+                    validateAbsentDate
+                ).any { !it.successful }
 
-            if (!hasError) {
-                withContext(ioDispatcher) {
+                if (!hasError) {
                     val employee =
                         realm.query<EmployeeEntity>(
                             "employeeId == $0",
                             attendance.employee?.employeeId
-                        )
-                            .first().find()
+                        ).first().find()
 
                     if (employee != null) {
                         val newAttendance =
@@ -222,39 +153,21 @@ class AttendanceRepositoryImpl(
 
                             Resource.Success(true)
                         } else {
-                            Resource.Error("Unable to find employee attendance")
+                            realm.write {
+                                this.copyToRealm(attendance.toEntity(findLatest(employee)))
+                            }
+
+                            Resource.Success(true)
                         }
                     } else {
                         Resource.Error("Employee not found")
                     }
-                }
-            } else {
-                Resource.Error("Unable to validate attendance")
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to add absent entry.")
-        }
-    }
-
-    override suspend fun removeAttendanceById(attendanceId: String): Resource<Boolean> {
-        return try {
-            withContext(ioDispatcher) {
-                val attendance =
-                    realm.query<AttendanceEntity>("attendeeId == $0", attendanceId).first().find()
-                if (attendance != null) {
-                    realm.write {
-                        findLatest(attendance)?.let {
-                            delete(it)
-                        }
-                    }
-
-                    Resource.Success(true)
                 } else {
-                    Resource.Error("Unable to find attendance")
+                    Resource.Error("Unable to validate attendance")
                 }
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "Unable to add absent entry.")
             }
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unable to remove attendance")
         }
     }
 
@@ -310,7 +223,7 @@ class AttendanceRepositoryImpl(
         }
     }
 
-    override fun validateAbsentDate(
+    override suspend fun validateAbsentDate(
         absentDate: String,
         employeeId: String?,
         attendanceId: String?
@@ -323,7 +236,9 @@ class AttendanceRepositoryImpl(
         }
 
         if (employeeId != null) {
-            val serverResult = findAttendanceByAbsentDate(absentDate, employeeId, attendanceId)
+            val serverResult = withContext(ioDispatcher) {
+                findAttendanceByAbsentDate(absentDate, employeeId, attendanceId)
+            }
 
             if (serverResult) {
                 return ValidationResult(

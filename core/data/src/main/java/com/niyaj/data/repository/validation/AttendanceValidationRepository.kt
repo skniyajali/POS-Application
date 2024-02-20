@@ -4,7 +4,11 @@ import com.niyaj.common.utils.ValidationResult
 
 interface AttendanceValidationRepository {
 
-    fun validateAbsentDate(absentDate: String, employeeId: String? = null, attendanceId: String? = null): ValidationResult
+    suspend fun validateAbsentDate(
+        absentDate: String,
+        employeeId: String? = null,
+        attendanceId: String? = null
+    ): ValidationResult
 
     fun validateAbsentEmployee(employeeId: String): ValidationResult
 

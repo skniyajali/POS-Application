@@ -157,25 +157,15 @@ class AddEditAbsentViewModel @Inject constructor(
                         .toString()
                 )
 
-                if (absentId.isEmpty()) {
-                    when (absentRepository.addAbsentEntry(newAbsent)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable To Mark Employee Absent."))
-                        }
+                val message = if (absentId.isEmpty()) "Added" else "Updated"
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Employee Marked As Absent."))
-                        }
+                when (val result = absentRepository.addOrUpdateAbsentEntry(newAbsent, absentId)) {
+                    is Resource.Error -> {
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable"))
                     }
-                } else {
-                    when (absentRepository.updateAbsentEntry(newAbsent, absentId)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable To Mark Employee Absent."))
-                        }
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Employee Marked As Absent."))
-                        }
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("Employee Absent $message."))
                     }
                 }
 

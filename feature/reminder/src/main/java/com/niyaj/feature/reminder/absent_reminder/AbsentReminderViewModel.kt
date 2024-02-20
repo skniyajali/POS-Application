@@ -101,12 +101,14 @@ class AbsentReminderViewModel @Inject constructor(
                             employees.value.find { it.employee.employeeId == employeeId }
 
                         if (employeeWithStatus != null) {
-                            val result = attendanceRepository.addAbsentEntry(
+                            val result = attendanceRepository.addOrUpdateAbsentEntry(
                                 Attendance(
                                     employee = employeeWithStatus.employee,
                                     isAbsent = true,
                                     absentDate = _selectedDate.value.ifEmpty { getStartTime },
-                                )
+                                    createdAt = System.currentTimeMillis().toString()
+                                ),
+                                ""
                             )
 
                             when (result) {

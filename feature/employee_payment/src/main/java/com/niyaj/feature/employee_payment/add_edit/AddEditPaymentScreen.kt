@@ -176,7 +176,7 @@ fun AddEditPaymentScreen(
         ) {
             item(PAYMENT_EMPLOYEE_NAME_FIELD) {
                 ExposedDropdownMenuBox(
-                    expanded = employees.isNotEmpty() && employeeToggled,
+                    expanded = employeeToggled,
                     onExpandedChange = {
                         employeeToggled = !employeeToggled
                     },
@@ -202,7 +202,7 @@ fun AddEditPaymentScreen(
                     )
 
                     DropdownMenu(
-                        expanded = employees.isNotEmpty() && employeeToggled,
+                        expanded = employeeToggled,
                         onDismissRequest = {
                             employeeToggled = false
                         },

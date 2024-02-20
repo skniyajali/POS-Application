@@ -15,13 +15,16 @@ interface AttendanceRepository {
 
     suspend fun getAttendanceById(attendanceId: String): Resource<Attendance?>
 
-    fun findAttendanceByAbsentDate(absentDate: String, employeeId: String, attendanceId: String? = null): Boolean
+    suspend fun findAttendanceByAbsentDate(
+        absentDate: String,
+        employeeId: String,
+        attendanceId: String? = null
+    ): Boolean
 
-    suspend fun addAbsentEntry(attendance: Attendance): Resource<Boolean>
-
-    suspend fun updateAbsentEntry(attendance: Attendance, attendanceId: String): Resource<Boolean>
-
-    suspend fun removeAttendanceById(attendanceId: String): Resource<Boolean>
+    suspend fun addOrUpdateAbsentEntry(
+        attendance: Attendance,
+        attendanceId: String
+    ): Resource<Boolean>
 
     suspend fun removeAttendances(attendanceIds: List<String>): Resource<Boolean>
 

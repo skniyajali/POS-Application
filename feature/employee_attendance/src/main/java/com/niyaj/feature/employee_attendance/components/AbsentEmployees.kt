@@ -46,9 +46,10 @@ fun AbsentEmployees(
         },
         modifier = Modifier
             .testTag(employee.employeeName.plus("Tag"))
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(SpaceSmall),
         shape = RoundedCornerShape(4.dp),
-        elevation = SpaceMini
+        elevation = SpaceMini,
     ) {
         StandardExpandable(
             modifier = Modifier

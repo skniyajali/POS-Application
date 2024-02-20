@@ -2,9 +2,7 @@ package com.niyaj.feature.employee_attendance
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -233,8 +231,6 @@ fun AttendanceScreen(
                                         },
                                     )
                                 }
-
-                                Spacer(modifier = Modifier.height(SpaceSmall))
                             }
                         }
                     }
