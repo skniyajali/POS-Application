@@ -1,7 +1,9 @@
 package com.niyaj.feature.employee_attendance.add_edit
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,6 +25,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EventBusy
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Person4
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,12 +36,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,7 +55,9 @@ import com.niyaj.common.tags.AbsentScreenTestTags.CREATE_NEW_ABSENT
 import com.niyaj.common.tags.AbsentScreenTestTags.EDIT_ABSENT_ITEM
 import com.niyaj.common.utils.toMilliSecond
 import com.niyaj.common.utils.toSalaryDate
+import com.niyaj.designsystem.theme.SpaceMini
 import com.niyaj.designsystem.theme.SpaceSmall
+import com.niyaj.ui.components.CircularBox
 import com.niyaj.ui.components.CustomDropdownMenuItem
 import com.niyaj.ui.components.StandardButtonFW
 import com.niyaj.ui.components.StandardOutlinedTextField
@@ -138,7 +142,7 @@ fun AddEditAbsentScreen(
         ) {
             item(ABSENT_EMPLOYEE_NAME_FIELD) {
                 ExposedDropdownMenuBox(
-                    expanded = employees.isNotEmpty() && employeeToggled,
+                    expanded = employeeToggled,
                     onExpandedChange = {
                         employeeToggled = !employeeToggled
                     },
@@ -164,36 +168,37 @@ fun AddEditAbsentScreen(
                     )
 
                     DropdownMenu(
-                        expanded = employees.isNotEmpty() && employeeToggled,
+                        expanded = employeeToggled,
                         onDismissRequest = {
                             employeeToggled = false
                         },
                         modifier = Modifier
                             .width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
                     ) {
-                        employees.forEachIndexed { index, employee ->
-                            DropdownMenuItem(
+                        employees.forEach { employee ->
+                            CustomDropdownMenuItem(
                                 modifier = Modifier
-                                    .testTag(employee.employeeName)
-                                    .fillMaxWidth(),
+                                    .testTag(employee.employeeName),
+                                text = {
+                                    Text(
+                                        text = employee.employeeName,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                },
+                                leadingIcon = {
+                                    CircularBox(
+                                        icon = Icons.Default.Person,
+                                        doesSelected = selectedEmployee.employeeName == employee.employeeName,
+                                        text = employee.employeeName
+                                    )
+                                },
                                 onClick = {
                                     viewModel.onEvent(AddEditAbsentEvent.OnSelectEmployee(employee))
                                     employeeToggled = false
                                 }
-                            ) {
-                                Text(
-                                    text = employee.employeeName,
-                                    style = MaterialTheme.typography.body1,
-                                )
-                            }
+                            )
 
-                            if (index != employees.size) {
-                                Divider(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = Color.Gray,
-                                    thickness = 0.8.dp
-                                )
-                            }
+                            Divider(modifier = Modifier.fillMaxWidth())
                         }
 
                         if (employees.isEmpty()) {
@@ -280,6 +285,8 @@ fun AddEditAbsentScreen(
             }
 
             item(ADD_EDIT_ABSENT_ENTRY_BTN) {
+                Spacer(modifier = Modifier.height(SpaceMini))
+
                 StandardButtonFW(
                     modifier = Modifier
                         .fillMaxWidth()

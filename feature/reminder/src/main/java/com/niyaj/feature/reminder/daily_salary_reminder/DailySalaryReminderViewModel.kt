@@ -108,7 +108,8 @@ class DailySalaryReminderViewModel @Inject constructor(
                                     paymentAmount = employeeWithStatus.employee.employeeSalary.toDailySalaryAmount(),
                                     paymentDate = _selectedDate.value.ifEmpty { getStartTime },
                                     paymentType = PaymentType.Advanced,
-                                    paymentNote = "Created from reminder"
+                                    paymentNote = "Created from reminder",
+                                    createdAt = System.currentTimeMillis().toString()
                                 ),
                                 ""
                             )
