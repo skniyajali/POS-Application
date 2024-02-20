@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.niyaj.core.ui.R
 import com.niyaj.designsystem.theme.SpaceMedium
@@ -53,14 +54,19 @@ fun ImportExportHeader(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
+                modifier = Modifier.weight(2f, true),
                 text = text,
                 style = MaterialTheme.typography.body1,
                 fontWeight = FontWeight.SemiBold,
+                overflow = TextOverflow.Ellipsis,
+                minLines = 1,
+                maxLines = 1
             )
 
             Spacer(modifier = Modifier.width(SpaceMini))
 
             Row(
+                modifier = Modifier.weight(1f, true),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {

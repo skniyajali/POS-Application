@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
@@ -15,7 +15,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
@@ -27,7 +26,6 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.rounded.AddBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,10 +35,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -59,9 +57,9 @@ import com.niyaj.common.tags.ProductTestTags.PRODUCT_NAME_ERROR
 import com.niyaj.common.tags.ProductTestTags.PRODUCT_NAME_FIELD
 import com.niyaj.common.tags.ProductTestTags.PRODUCT_PRICE_ERROR
 import com.niyaj.common.tags.ProductTestTags.PRODUCT_PRICE_FIELD
-import com.niyaj.designsystem.theme.IconSizeExtraLarge
-import com.niyaj.designsystem.theme.SpaceMedium
+import com.niyaj.designsystem.theme.SpaceMini
 import com.niyaj.designsystem.theme.SpaceSmall
+import com.niyaj.ui.components.CircularBox
 import com.niyaj.ui.components.CustomDropdownMenuItem
 import com.niyaj.ui.components.StandardButtonFW
 import com.niyaj.ui.components.StandardOutlinedTextField
@@ -126,135 +124,120 @@ fun AddEditProductScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(SpaceSmall),
+            verticalArrangement = Arrangement.spacedBy(SpaceSmall)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+            ExposedDropdownMenuBox(
+                modifier = Modifier
+                    .testTag(PRODUCT_CATEGORY_FIELD),
+                expanded = expanded,
+                onExpandedChange = {
+                    expanded = !expanded
+                }
             ) {
-                ExposedDropdownMenuBox(
+                StandardOutlinedTextField(
                     modifier = Modifier
-                        .testTag(PRODUCT_CATEGORY_FIELD)
-                        .weight(2.5f),
+                        .fillMaxWidth()
+                        .onGloballyPositioned { coordinates ->
+                            //This value is used to assign to the DropDown the same width
+                            textFieldSize = coordinates.size.toSize()
+                        },
+                    text = selectedCategory.categoryName,
+                    label = PRODUCT_CATEGORY_FIELD,
+                    leadingIcon = Icons.Default.Category,
+                    error = categoryError,
+                    errorTag = PRODUCT_CATEGORY_ERROR,
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                )
+                DropdownMenu(
                     expanded = expanded,
-                    onExpandedChange = {
-                        expanded = !expanded
-                    }
+                    onDismissRequest = {
+                        expanded = false
+                    },
+                    modifier = Modifier
+                        .width(with(LocalDensity.current) { textFieldSize.width.toDp() })
+                        .height(300.dp),
                 ) {
-                    StandardOutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onGloballyPositioned { coordinates ->
-                                //This value is used to assign to the DropDown the same width
-                                textFieldSize = coordinates.size.toSize()
-                            },
-                        text = selectedCategory.categoryName,
-                        label = PRODUCT_CATEGORY_FIELD,
-                        leadingIcon = Icons.Default.Category,
-                        error = categoryError,
-                        errorTag = PRODUCT_CATEGORY_ERROR,
-                        onValueChange = {},
-                        readOnly = true,
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                        },
-                    )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = {
-                            expanded = false
-                        },
-                        modifier = Modifier
-                            .width(with(LocalDensity.current) { textFieldSize.width.toDp() }),
-                    ) {
-                        categories.forEachIndexed { index, category ->
-                            DropdownMenuItem(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    viewModel.onEvent(AddEditProductEvent.CategoryChanged(category))
-                                    expanded = false
-                                }
-                            ) {
-                                Text(
-                                    text = category.categoryName,
-                                    style = MaterialTheme.typography.body1,
-                                )
-                            }
-
-                            if (index != categories.size) {
-                                Divider(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = Color.Gray,
-                                    thickness = 0.8.dp
-                                )
-                            }
-                        }
-
-                        if (categories.isEmpty()) {
-                            DropdownMenuItem(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .align(Alignment.CenterHorizontally),
-                                enabled = false,
-                                onClick = {},
-                                content = {
-                                    Text(
-                                        text = "Categories not available",
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                    )
-                                },
-                            )
-                        }
-
+                    categories.forEach { category ->
                         CustomDropdownMenuItem(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            onClick = {
-                                navController.navigate(Screens.ADD_EDIT_CATEGORY_SCREEN)
-                            },
+                                .fillMaxWidth()
+                                .testTag(category.categoryId),
                             text = {
                                 Text(
-                                    text = "Create new category",
-                                    color = MaterialTheme.colors.secondary
+                                    text = category.categoryName,
+                                    style = MaterialTheme.typography.body2,
+                                    fontWeight = FontWeight.SemiBold
                                 )
+                            },
+                            onClick = {
+                                viewModel.onEvent(AddEditProductEvent.CategoryChanged(category))
+                                expanded = false
                             },
                             leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "Create",
-                                    tint = MaterialTheme.colors.secondary
-                                )
-                            },
-                            trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowRightAlt,
-                                    contentDescription = "trailing"
+                                CircularBox(
+                                    icon = Icons.Default.Category,
+                                    doesSelected = selectedCategory.categoryName == category.categoryName,
+                                    text = category.categoryName
                                 )
                             }
                         )
+
+                        Divider(modifier = Modifier.fillMaxWidth())
                     }
-                }
 
-                Spacer(modifier = Modifier.width(SpaceSmall))
+                    if (categories.isEmpty()) {
+                        DropdownMenuItem(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.CenterHorizontally),
+                            enabled = false,
+                            onClick = {},
+                            content = {
+                                Text(
+                                    text = "Categories not available",
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                )
+                            },
+                        )
+                    }
 
-                IconButton(
-                    onClick = {
-                        navController.navigate(Screens.ADD_EDIT_CATEGORY_SCREEN)
-                    },
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.AddBox,
-                        contentDescription = "Add New Category",
-                        tint = MaterialTheme.colors.primary,
+                    Divider(modifier = Modifier.fillMaxWidth())
+
+                    CustomDropdownMenuItem(
                         modifier = Modifier
-                            .size(IconSizeExtraLarge)
+                            .fillMaxWidth(),
+                        onClick = {
+                            navController.navigate(Screens.ADD_EDIT_CATEGORY_SCREEN)
+                        },
+                        text = {
+                            Text(
+                                text = "Create new category",
+                                color = MaterialTheme.colors.secondary
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Create",
+                                tint = MaterialTheme.colors.secondary
+                            )
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowRightAlt,
+                                contentDescription = "trailing"
+                            )
+                        }
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(SpaceSmall))
 
             StandardOutlinedTextField(
                 modifier = Modifier.testTag(PRODUCT_NAME_FIELD),
@@ -268,8 +251,6 @@ fun AddEditProductScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(SpaceSmall))
-
             StandardOutlinedTextField(
                 modifier = Modifier.testTag(PRODUCT_PRICE_FIELD),
                 text = viewModel.state.productPrice,
@@ -282,8 +263,6 @@ fun AddEditProductScreen(
                     viewModel.onEvent(AddEditProductEvent.ProductPriceChanged(it))
                 },
             )
-
-            Spacer(modifier = Modifier.height(SpaceSmall))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -306,7 +285,7 @@ fun AddEditProductScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(SpaceMedium))
+            Spacer(modifier = Modifier.height(SpaceMini))
 
             StandardButtonFW(
                 modifier = Modifier
@@ -319,8 +298,6 @@ fun AddEditProductScreen(
                     viewModel.onEvent(AddEditProductEvent.AddOrUpdateProduct(productId))
                 },
             )
-
         }
     }
-
 }

@@ -14,21 +14,17 @@ interface ProductRepository {
 
     suspend fun getAllProducts(searchText: String, categoryId: String): Flow<List<Product>>
 
-    fun getProductById(productId: String): Resource<Product?>
+    suspend fun getProductById(productId: String): Resource<Product?>
 
-    fun findProductByName(productName: String, productId: String? = null): Boolean
+    suspend fun findProductByName(productName: String, productId: String? = null): Boolean
 
-    suspend fun createNewProduct(newProduct: Product): Resource<Boolean>
-
-    suspend fun updateProduct(newProduct: Product, productId: String): Resource<Boolean>
-
-    suspend fun deleteProduct(productId: String): Resource<Boolean>
+    suspend fun createOrUpdateProduct(newProduct: Product, productId: String): Resource<Boolean>
 
     suspend fun deleteProducts(productIds: List<String>): Resource<Boolean>
 
-    suspend fun increasePrice(price: Int, productList: List<String> = emptyList()): Resource<Boolean>
+    suspend fun increasePrice(price: Int, productList: List<String>): Resource<Boolean>
 
-    suspend fun decreasePrice(price: Int, productList: List<String> = emptyList()): Resource<Boolean>
+    suspend fun decreasePrice(price: Int, productList: List<String>): Resource<Boolean>
 
     suspend fun importProducts(products: List<Product>): Resource<Boolean>
 

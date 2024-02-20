@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -31,6 +32,7 @@ import com.niyaj.common.tags.ProductTestTags.DECREASE_PRODUCTS_TITLE
 import com.niyaj.common.tags.ProductTestTags.INCREASE_PRODUCTS_TEXT_FIELD
 import com.niyaj.common.tags.ProductTestTags.INCREASE_PRODUCTS_TITLE
 import com.niyaj.designsystem.theme.SpaceMedium
+import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.feature.product.components.ProductBody
 import com.niyaj.feature.product.destinations.AddEditProductScreenDestination
 import com.niyaj.ui.components.ImportExportHeader
@@ -107,6 +109,7 @@ fun ProductPriceScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(SpaceSmall)
             ) {
                 ImportExportHeader(
                     text = "Applied " + if (isChoose && selectedProducts.isNotEmpty())

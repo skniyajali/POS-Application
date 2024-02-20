@@ -3,9 +3,7 @@ package com.niyaj.feature.product.settings
 import android.Manifest
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
@@ -26,7 +24,6 @@ import com.niyaj.common.tags.ProductTestTags.DECREASE_PRODUCTS_TITLE
 import com.niyaj.common.tags.ProductTestTags.EXPORT_PRODUCTS_TITLE
 import com.niyaj.common.tags.ProductTestTags.IMPORT_PRODUCTS_TITLE
 import com.niyaj.common.tags.ProductTestTags.INCREASE_PRODUCTS_TITLE
-import com.niyaj.designsystem.theme.SpaceMedium
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.feature.product.destinations.ExportProductScreenDestination
 import com.niyaj.feature.product.destinations.ImportProductScreenDestination
@@ -116,9 +113,8 @@ fun ProductSettingScreen(
                 .fillMaxWidth()
                 .padding(SpaceSmall),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(SpaceSmall)
         ) {
-
             SettingsCard(
                 text = INCREASE_PRODUCTS_TITLE,
                 icon = Icons.Default.ControlPoint,
@@ -126,7 +122,6 @@ fun ProductSettingScreen(
                     navController.navigate(ProductPriceScreenDestination())
                 },
             )
-            Spacer(modifier = Modifier.height(SpaceMedium))
 
             SettingsCard(
                 text = DECREASE_PRODUCTS_TITLE,
@@ -136,8 +131,6 @@ fun ProductSettingScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(SpaceMedium))
-
             SettingsCard(
                 text = IMPORT_PRODUCTS_TITLE,
                 icon = Icons.Default.SaveAlt,
@@ -145,8 +138,6 @@ fun ProductSettingScreen(
                     navController.navigate(ImportProductScreenDestination)
                 },
             )
-
-            Spacer(modifier = Modifier.height(SpaceMedium))
 
             SettingsCard(
                 text = EXPORT_PRODUCTS_TITLE,

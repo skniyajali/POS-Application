@@ -149,28 +149,19 @@ class AddEditProductViewModel @Inject constructor(
                     updatedAt = if (productId.isEmpty()) null else System.currentTimeMillis()
                         .toString()
                 )
+                val message = if (productId.isEmpty()) "created" else "updated"
 
-                if (productId.isEmpty()) {
-                    when (productRepository.createNewProduct(newProduct)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable to create new product"))
-                        }
-
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Product created successfully"))
-                        }
+                when (val result = productRepository.createOrUpdateProduct(newProduct, productId)) {
+                    is Resource.Error -> {
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable"))
                     }
-                } else {
-                    when (productRepository.updateProduct(newProduct, productId)) {
-                        is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable to update product"))
-                        }
 
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Product updated successfully"))
-                        }
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("Product $message successfully"))
                     }
                 }
+
+                state = AddEditProductState()
             }
         }
     }

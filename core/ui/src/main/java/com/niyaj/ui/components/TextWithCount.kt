@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -33,11 +34,11 @@ fun TextWithCount(
     leadingIcon: ImageVector? = null,
     count: Int,
     onClick: () -> Unit = {},
+    backGroundColor: Color = Color.Transparent,
 ) {
-    Row(
+    Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(SpaceSmall)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -45,16 +46,25 @@ fun TextWithCount(
                     onClick()
                 }
             ),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        backgroundColor = backGroundColor,
+        shape = RoundedCornerShape(SpaceMini),
+        elevation = 0.dp
     ) {
-        TextWithIcon(
-            text = text,
-            icon = leadingIcon,
-            fontWeight = FontWeight.Bold
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(SpaceSmall),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TextWithIcon(
+                text = text,
+                icon = leadingIcon,
+                fontWeight = FontWeight.Bold
+            )
 
-        CountBox(count = count.toString())
+            CountBox(count = count.toString())
+        }
     }
 }
 
@@ -67,11 +77,13 @@ fun TextWithCount(
     trailingText: String? = null,
     leadingIcon: ImageVector? = null,
     onClick: () -> Unit = {},
+    backGroundColor: Color = Color.Transparent,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(SpaceSmall)
+            .background(backGroundColor)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -87,7 +99,7 @@ fun TextWithCount(
             icon = leadingIcon,
             fontWeight = FontWeight.Bold
         )
-        
+
         Row {
             trailingText?.let {
                 CountBox(count = it)
@@ -105,7 +117,7 @@ fun CountBox(
     modifier: Modifier = Modifier,
     count: String,
     textColor: Color = MaterialTheme.colors.onSecondary,
-    backGroundColor: Color =  MaterialTheme.colors.secondaryVariant
+    backGroundColor: Color = MaterialTheme.colors.secondaryVariant
 ) {
     Column(
         modifier = modifier

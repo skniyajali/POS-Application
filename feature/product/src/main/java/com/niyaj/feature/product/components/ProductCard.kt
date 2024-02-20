@@ -1,8 +1,9 @@
 package com.niyaj.feature.product.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,13 +28,14 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.automirrored.filled.Rule
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +49,7 @@ import com.niyaj.designsystem.theme.SpaceMini
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.designsystem.theme.TextGray
 import com.niyaj.model.Product
+import com.niyaj.ui.components.CircularBox
 import com.niyaj.ui.components.StandardExpandable
 import com.niyaj.ui.components.StandardOutlinedChip
 import com.niyaj.ui.components.TextWithCount
@@ -54,6 +57,10 @@ import com.niyaj.ui.components.TextWithIcon
 import com.niyaj.ui.components.header
 import com.niyaj.ui.util.isScrolled
 
+enum class ViewType {
+    ROW,
+    COLUMN,
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -63,6 +70,8 @@ fun ProductCard(
     doesSelected: Boolean = false,
     doesAnySelected: Boolean = false,
     showCategory: Boolean = true,
+    showCircularBox: Boolean = false,
+    showBackArrow: Boolean = false,
     onSelectProduct: (String) -> Unit,
     onClickProduct: (String) -> Unit = {},
     backgroundColor: Color = MaterialTheme.colors.onPrimary,
@@ -100,30 +109,53 @@ fun ProductCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.Start
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(SpaceSmall)
             ) {
-                Text(
-                    text = product.productName,
-                    style = MaterialTheme.typography.body1,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.SemiBold,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                )
-                Spacer(modifier = Modifier.height(SpaceMini))
-                Text(
-                    text = product.productPrice.toString().toRupee,
-                    style = MaterialTheme.typography.body1,
-                    textAlign = TextAlign.Center,
-                )
+                AnimatedVisibility(
+                    visible = showCircularBox
+                ) {
+                    CircularBox(
+                        icon = Icons.Default.Dns,
+                        doesSelected = doesSelected,
+                        text = product.productName,
+                        showBorder = !product.productAvailability
+                    )
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        text = product.productName,
+                        style = MaterialTheme.typography.body1,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.SemiBold,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                    )
+                    Spacer(modifier = Modifier.height(SpaceMini))
+                    Text(
+                        text = product.productPrice.toString().toRupee,
+                        style = MaterialTheme.typography.body1,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
 
-            if (showCategory) {
+            AnimatedVisibility(visible = showCategory) {
                 StandardOutlinedChip(
                     text = product.category?.categoryName ?: "Uncategorized",
                     onClick = {}
+                )
+            }
+
+            AnimatedVisibility(visible = showBackArrow) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                    contentDescription = "View Details"
                 )
             }
         }
@@ -203,7 +235,10 @@ fun ProductBody(
                     groupedProducts = groupedProducts,
                     selectedProducts = selectedProducts,
                     onCategorySelect = onCategorySelect,
-                    onSelectProduct = onSelectProduct
+                    onSelectProduct = onSelectProduct,
+                    onClickProduct = onSelectProduct,
+                    showCategory = true,
+                    showBackArrow = false,
                 )
             }
         )
@@ -223,103 +258,105 @@ fun ProductBodyContent(
     selectedProducts: List<String>,
     viewType: ViewType = ViewType.COLUMN,
     headerColor: Color = LightColor8,
+    showCategory: Boolean = false,
+    showBackArrow: Boolean = true,
     onCategorySelect: (products: List<String>) -> Unit,
     onSelectProduct: (productId: String) -> Unit,
     onClickProduct: (productId: String) -> Unit = {},
 ) {
-    if (viewType == ViewType.COLUMN) {
-        LazyColumn(
-            state = lazyListState,
-            modifier = modifier,
-        ) {
-            groupedProducts.forEach { (category, products) ->
-                stickyHeader {
-                    category?.let { category ->
-                        TextWithCount(
-                            modifier = Modifier
-                                .background(
-                                    if (lazyListState.isScrolled) headerColor else Color.Transparent
+    Crossfade(
+        targetState = viewType,
+        label = "Product::Data"
+    ) { type ->
+        when (type) {
+            ViewType.COLUMN -> {
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = modifier.padding(SpaceMini),
+                ) {
+                    groupedProducts.forEach { (category, products) ->
+                        stickyHeader {
+                            category?.let { category ->
+                                TextWithCount(
+                                    modifier = Modifier
+                                        .testTag(category),
+                                    backGroundColor = if (lazyListState.isScrolled) headerColor else Color.Transparent,
+                                    text = category,
+                                    count = products.size,
+                                    leadingIcon = Icons.Default.Category,
+                                    onClick = {
+                                        onCategorySelect(products.map { it.productId })
+                                    }
                                 )
-                                .clip(
-                                    RoundedCornerShape(if (lazyListState.isScrolled) 4.dp else 0.dp)
-                                ),
-                            text = category,
-                            count = products.size,
-                            onClick = {
-                                onCategorySelect(products.map { it.productId })
                             }
-                        )
-                    }
-                }
+                        }
 
-                itemsIndexed(
-                    items = products,
-                    key = { index, item ->
-                        item.productId.plus(index)
-                    }
-                ) { _, product ->
-                    ProductCard(
-                        product = product,
-                        doesSelected = selectedProducts.contains(product.productId),
-                        doesAnySelected = selectedProducts.isNotEmpty(),
-                        onSelectProduct = onSelectProduct,
-                        onClickProduct = onClickProduct
-                    )
+                        itemsIndexed(
+                            items = products,
+                            key = { index, item ->
+                                item.productId.plus(index)
+                            }
+                        ) { _, product ->
+                            ProductCard(
+                                product = product,
+                                doesSelected = selectedProducts.contains(product.productId),
+                                doesAnySelected = selectedProducts.isNotEmpty(),
+                                showCircularBox = true,
+                                showBackArrow = showBackArrow,
+                                showCategory = showCategory,
+                                onSelectProduct = onSelectProduct,
+                                onClickProduct = onClickProduct
+                            )
 
-                    Spacer(modifier = Modifier.height(SpaceSmall))
+                            Spacer(modifier = Modifier.height(SpaceSmall))
+                        }
+                    }
                 }
             }
-        }
-    } else {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            state = lazyGridState,
-        ) {
-            groupedProducts.forEach { (category, products) ->
-                header {
-                    category?.let { category ->
-                        TextWithCount(
-                            modifier = Modifier
-                                .background(
-                                    if (lazyGridState.isScrolled) headerColor else Color.Transparent
+
+            ViewType.ROW -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    state = lazyGridState,
+                ) {
+                    groupedProducts.forEach { (category, products) ->
+                        header {
+                            category?.let { category ->
+                                TextWithCount(
+                                    modifier = Modifier
+                                        .testTag(category),
+                                    backGroundColor = if (lazyListState.isScrolled) headerColor else Color.Transparent,
+                                    text = category,
+                                    count = products.size,
+                                    leadingIcon = Icons.Default.Category,
+                                    onClick = {
+                                        onCategorySelect(products.map { it.productId })
+                                    }
                                 )
-                                .clip(
-                                    RoundedCornerShape(if (lazyGridState.isScrolled) 4.dp else 0.dp)
-                                ),
-                            text = category,
-                            count = products.size,
-                            onClick = {
-                                onCategorySelect(products.map { it.productId })
                             }
-                        )
-                    }
-                }
+                        }
 
-                itemsIndexed(
-                    items = products,
-                    key = { index, item ->
-                        item.productId.plus(index)
-                    }
-                ) { _, product ->
-                    ProductCard(
-                        modifier = Modifier.padding(SpaceMini),
-                        product = product,
-                        doesSelected = selectedProducts.contains(product.productId),
-                        doesAnySelected = selectedProducts.isNotEmpty(),
-                        showCategory = false,
-                        onSelectProduct = onSelectProduct,
-                        onClickProduct = onClickProduct
-                    )
+                        itemsIndexed(
+                            items = products,
+                            key = { index, item ->
+                                item.productId.plus(index)
+                            }
+                        ) { _, product ->
+                            ProductCard(
+                                modifier = Modifier.padding(SpaceMini),
+                                product = product,
+                                doesSelected = selectedProducts.contains(product.productId),
+                                doesAnySelected = selectedProducts.isNotEmpty(),
+                                showCategory = false,
+                                onSelectProduct = onSelectProduct,
+                                onClickProduct = onClickProduct
+                            )
 
-                    Spacer(modifier = Modifier.height(SpaceSmall))
+                            Spacer(modifier = Modifier.height(SpaceSmall))
+                        }
+                    }
                 }
             }
         }
     }
-}
-
-
-enum class ViewType {
-    ROW,
-    COLUMN,
 }

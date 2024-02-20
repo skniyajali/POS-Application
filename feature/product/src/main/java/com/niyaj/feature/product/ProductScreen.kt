@@ -92,14 +92,14 @@ fun ProductScreen(
     val selectedItems = viewModel.selectedItems.toList()
     val selectedCategory = viewModel.selectedCategory.collectAsStateWithLifecycle().value
 
-    val showFab = viewModel.totalItems.isNotEmpty() && selectedCategory.isEmpty()
+    val showFab = viewModel.totalItems.isNotEmpty()
 
     val showSearchBar = viewModel.showSearchBar.collectAsState().value
     val searchText = viewModel.searchText.value
 
     val viewType = viewModel.viewType.collectAsStateWithLifecycle().value
 
-    val isScrolled = when(viewType) {
+    val isScrolled = when (viewType) {
         ViewType.ROW -> lazyGridState.isScrolled
         ViewType.COLUMN -> lazyListState.isScrolled
     }
@@ -171,18 +171,18 @@ fun ProductScreen(
             }
         },
         title = if (selectedItems.isEmpty()) PRODUCT_SCREEN_TITLE else "${selectedItems.size} Selected",
-        showFab = showFab,
+        showFab = showFab && selectedCategory.isEmpty(),
         floatingActionButton = {
             StandardFAB(
                 showScrollToTop = isScrolled,
                 fabText = ProductTestTags.CREATE_NEW_PRODUCT,
-                fabVisible = (showFab && selectedItems.isEmpty() && !showSearchBar),
+                fabVisible = (showFab && selectedItems.isEmpty() && !showSearchBar && selectedCategory.isEmpty()),
                 onFabClick = {
                     navController.navigate(AddEditProductScreenDestination())
                 },
                 onClickScroll = {
                     scope.launch {
-                        when(viewType) {
+                        when (viewType) {
                             ViewType.ROW -> lazyGridState.animateScrollToItem(0)
                             ViewType.COLUMN -> lazyListState.animateScrollToItem(0)
                         }
@@ -260,7 +260,6 @@ fun ProductScreen(
             )
 
             Spacer(modifier = Modifier.height(SpaceSmall))
-
 
             Crossfade(
                 targetState = uiState,
