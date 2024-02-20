@@ -101,15 +101,16 @@ class DailySalaryReminderViewModel @Inject constructor(
                         val employeeWithStatus =
                             employees.value.find { it.employee.employeeId == employeeId }
                         if (employeeWithStatus != null) {
-                            val result = salaryRepository.addNewPayment(
+                            val result = salaryRepository.addOrUpdatePayment(
                                 Payment(
                                     employee = employeeWithStatus.employee,
                                     paymentMode = PaymentMode.Cash,
                                     paymentAmount = employeeWithStatus.employee.employeeSalary.toDailySalaryAmount(),
                                     paymentDate = _selectedDate.value.ifEmpty { getStartTime },
-                                    paymentType = PaymentType.Salary,
+                                    paymentType = PaymentType.Advanced,
                                     paymentNote = "Created from reminder"
-                                )
+                                ),
+                                ""
                             )
 
                             when (result) {

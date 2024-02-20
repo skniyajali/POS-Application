@@ -2,8 +2,6 @@ package com.niyaj.feature.employee_payment
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -204,11 +202,6 @@ fun PaymentScreen(
                                 totalAmount = totalAmount,
                                 paymentsCount = paymentsCount,
                                 employeesCount = employeeCount,
-                                onClickEmployeeCount = {
-                                    scope.launch {
-                                        lazyListState.animateScrollToItem(1)
-                                    }
-                                },
                                 onClickTotalPayments = {
                                     scope.launch {
                                         lazyListState.animateScrollToItem(1)
@@ -242,8 +235,6 @@ fun PaymentScreen(
                                         },
                                         onLongClick = viewModel::selectItem,
                                     )
-
-                                    Spacer(modifier = Modifier.height(SpaceSmall))
                                 }
                             }
                         }

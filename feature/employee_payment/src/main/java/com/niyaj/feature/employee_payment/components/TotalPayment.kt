@@ -20,6 +20,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EventBusy
+import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.People
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +34,7 @@ import com.niyaj.designsystem.theme.LightColor6
 import com.niyaj.designsystem.theme.SpaceMedium
 import com.niyaj.designsystem.theme.SpaceMini
 import com.niyaj.designsystem.theme.SpaceSmall
+import com.niyaj.ui.components.TextWithIcon
 
 
 /**
@@ -42,16 +45,14 @@ import com.niyaj.designsystem.theme.SpaceSmall
 fun TotalPayment(
     paymentsCount: Int = 0,
     employeesCount: Int = 0,
-    onClickEmployeeCount: () -> Unit,
     onClickTotalPayments: () -> Unit,
     totalAmount: String = "0",
     onClickAbsentEntry: () -> Unit,
 ) {
-    Spacer(modifier = Modifier.height(SpaceSmall))
-
     Card(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(SpaceSmall),
         shape = RoundedCornerShape(4.dp),
         elevation = SpaceMini
     ) {
@@ -78,11 +79,11 @@ fun TotalPayment(
                     backgroundColor = LightColor6,
                     modifier = Modifier.testTag("TotalPayments")
                 ) {
-                    Text(
-                        text = "$paymentsCount Payments",
-                        style = MaterialTheme.typography.body2,
+                    TextWithIcon(
                         modifier = Modifier
-                            .padding(SpaceSmall)
+                            .padding(SpaceMini),
+                        text = "$paymentsCount Payments",
+                        icon = Icons.Default.Money
                     )
                 }
             }
@@ -104,19 +105,12 @@ fun TotalPayment(
                     modifier = Modifier.testTag("TotalAmount")
                 )
 
-                Card(
-                    onClick = onClickEmployeeCount,
-                    backgroundColor = LightColor6,
+                TextWithIcon(
                     modifier = Modifier
-                        .testTag("TotalEmployees")
-                ) {
-                    Text(
-                        text = "$employeesCount Employees",
-                        style = MaterialTheme.typography.body2,
-                        modifier = Modifier
-                            .padding(SpaceSmall)
-                    )
-                }
+                        .padding(SpaceMini),
+                    text = "$employeesCount Employees",
+                    icon = Icons.Default.People
+                )
             }
 
             Spacer(modifier = Modifier.height(SpaceSmall))
@@ -147,6 +141,4 @@ fun TotalPayment(
             Spacer(modifier = Modifier.height(SpaceSmall))
         }
     }
-
-    Spacer(modifier = Modifier.height(SpaceMedium))
 }
