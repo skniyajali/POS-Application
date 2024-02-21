@@ -2,10 +2,12 @@ package com.niyaj.feature.product
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
+import com.niyaj.common.utils.Resource
 import com.niyaj.data.repository.ProductRepository
 import com.niyaj.feature.product.components.ViewType
 import com.niyaj.model.Category
 import com.niyaj.ui.event.BaseViewModel
+import com.niyaj.ui.event.UiEvent
 import com.niyaj.ui.event.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,9 +22,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- *
- */
 @HiltViewModel
 class ProductsViewModel @Inject constructor(
     private val productRepository: ProductRepository,
@@ -79,16 +78,16 @@ class ProductsViewModel @Inject constructor(
     fun selectProducts(products: List<String>) {
         productCount += 1
 
-        if (products.isNotEmpty()){
+        if (products.isNotEmpty()) {
             viewModelScope.launch {
                 products.forEach { product ->
-                    if(productCount % 2 != 0){
+                    if (productCount % 2 != 0) {
                         val selectedProduct = mSelectedItems.find { it == product }
 
-                        if (selectedProduct == null){
+                        if (selectedProduct == null) {
                             mSelectedItems.add(product)
                         }
-                    }else {
+                    } else {
                         mSelectedItems.remove(product)
                     }
                 }
@@ -100,6 +99,23 @@ class ProductsViewModel @Inject constructor(
         viewModelScope.launch {
             productRepository.getAllCategories().collectLatest { result ->
                 _categories.update { result }
+            }
+        }
+    }
+
+    override fun deleteItems() {
+        super.deleteItems()
+
+        viewModelScope.launch {
+            when (val result = productRepository.deleteProducts(selectedItems.toList())) {
+                is Resource.Error -> {
+                    mEventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete"))
+                }
+
+                is Resource.Success -> {
+                    mEventFlow.emit(UiEvent.Success("${selectedItems.size} items has been deleted"))
+                    mSelectedItems.clear()
+                }
             }
         }
     }

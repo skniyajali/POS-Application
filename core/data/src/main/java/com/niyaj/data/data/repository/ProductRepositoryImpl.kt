@@ -42,7 +42,7 @@ class ProductRepositoryImpl(
     config: RealmConfiguration,
     private val ioDispatcher: CoroutineDispatcher
 ) : ProductRepository, ProductValidationRepository {
-    
+
     val realm = Realm.open(config)
 
     override suspend fun getAllCategories(): Flow<List<Category>> {
@@ -82,8 +82,9 @@ class ProductRepositoryImpl(
                 .mapLatest { products ->
                     products.collectWithSearch(
                         transform = { it.toExternalModel() },
-                        searchFilter = {
-                            it.filterByCategory(categoryId).filterProducts(searchText)
+                        searchFilter = { list ->
+                            list.filterByCategory(categoryId)
+                                .filterProducts(searchText)
                         },
                     )
                 }
