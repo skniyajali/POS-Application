@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.niyaj.common.utils.Resource
+import com.niyaj.common.utils.capitalizeWords
 import com.niyaj.data.repository.CategoryRepository
 import com.niyaj.data.repository.validation.CategoryValidationRepository
 import com.niyaj.model.Category
@@ -36,7 +37,7 @@ class AddEditCategoryViewModel @Inject constructor(
     val eventFlow = _eventFlow.asSharedFlow()
 
     val categoryNameError = snapshotFlow { state.categoryName }.mapLatest {
-        validationRepository.validateCategoryName(it).errorMessage
+        validationRepository.validateCategoryName(it, categoryId).errorMessage
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -71,26 +72,31 @@ class AddEditCategoryViewModel @Inject constructor(
     }
 
     private fun addOrEditCategory() {
-        viewModelScope.launch {
-            val newCategory = Category(
-                categoryId = categoryId,
-                categoryName = state.categoryName,
-                categoryAvailability = state.categoryAvailability,
-            )
+        if (categoryNameError.value == null) {
+            viewModelScope.launch {
+                val newCategory = Category(
+                    categoryId = categoryId,
+                    categoryName = state.categoryName.trim().capitalizeWords,
+                    categoryAvailability = state.categoryAvailability,
+                    createdAt = System.currentTimeMillis().toString(),
+                    updatedAt = if (categoryId.isEmpty()) null else System.currentTimeMillis().toString()
+                )
 
-            val message = if (categoryId.isEmpty()) "Created" else "Updated"
+                val message = if (categoryId.isEmpty()) "Created" else "Updated"
 
-            when (val result = categoryRepository.createOrUpdateCategory(newCategory, categoryId)) {
-                is Resource.Success -> {
-                    _eventFlow.emit(UiEvent.Success("Category $message Successfully"))
+                when (val result =
+                    categoryRepository.createOrUpdateCategory(newCategory, categoryId)) {
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("Category $message Successfully"))
+                    }
+
+                    is Resource.Error -> {
+                        _eventFlow.emit(UiEvent.Error(result.message ?: "Unable"))
+                    }
                 }
 
-                is Resource.Error -> {
-                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable"))
-                }
+                state = AddEditCategoryState()
             }
-
-            state = AddEditCategoryState()
         }
     }
 
@@ -110,5 +116,4 @@ class AddEditCategoryViewModel @Inject constructor(
             }
         }
     }
-
 }
