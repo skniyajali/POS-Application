@@ -44,6 +44,8 @@ class CategoryViewModel @Inject constructor(
                             "${selectedItems.size} item deleted successfully"
                         )
                     )
+
+                    mSelectedItems.clear()
                 }
 
                 is Resource.Error -> {
@@ -52,8 +54,6 @@ class CategoryViewModel @Inject constructor(
                     )
                 }
             }
-
-            mSelectedItems.clear()
         }
     }
 }

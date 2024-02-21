@@ -2,8 +2,8 @@ package com.niyaj.common.tags
 
 object CategoryTestTags {
 
-    const val CATEGORY_SCREEN_TITLE = "Categories"
-    const val CATEGORY_NOT_AVAILABLE = "Category Not Available"
+    const val CATEGORY_SCREEN_TITLE = "Dish Categories"
+    const val CATEGORY_NOT_AVAILABLE = "Dish Category Not Available"
     const val CATEGORY_SEARCH_PLACEHOLDER = "Search for Categories..."
 
     const val ADD_EDIT_CATEGORY_BTN = "AddEdit Category Button"
@@ -12,8 +12,8 @@ object CategoryTestTags {
     const val UPDATE_CATEGORY = "Update Category"
     const val ADD_EDIT_CATEGORY_SCREEN = "AddUpdate Category Screen"
 
-    const val CATEGORY_NAME_FIELD = "Category Name"
-    const val CATEGORY_NAME_ERROR = "Category Name Error"
+    const val CATEGORY_NAME_FIELD = "Dish Category Name"
+    const val CATEGORY_NAME_ERROR = "Dish Category Name Error"
 
     const val CATEGORY_AVAILABLE_SWITCH = "Category Available Switch"
 

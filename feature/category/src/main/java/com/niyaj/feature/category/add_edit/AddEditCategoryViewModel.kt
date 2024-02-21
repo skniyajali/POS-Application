@@ -78,40 +78,21 @@ class AddEditCategoryViewModel @Inject constructor(
                 categoryAvailability = state.categoryAvailability,
             )
 
-            if (categoryId.isEmpty()) {
-                when (val result = categoryRepository.createNewCategory(newCategory)) {
-                    is Resource.Success -> {
-                        _eventFlow.emit(UiEvent.Success("Category Created Successfully"))
-                    }
+            val message = if (categoryId.isEmpty()) "Created" else "Updated"
 
-                    is Resource.Error -> {
-                        _eventFlow.emit(
-                            UiEvent.Error(
-                                result.message ?: "Unable to create new order"
-                            )
-                        )
-                    }
+            when (val result = categoryRepository.createOrUpdateCategory(newCategory, categoryId)) {
+                is Resource.Success -> {
+                    _eventFlow.emit(UiEvent.Success("Category $message Successfully"))
                 }
-            } else {
-                when (val result = categoryRepository.updateCategory(newCategory, categoryId)) {
-                    is Resource.Success -> {
-                        _eventFlow.emit(
-                            UiEvent.Success(successMessage = "Category Updated Successfully")
-                        )
-                    }
 
-                    is Resource.Error -> {
-                        _eventFlow.emit(
-                            UiEvent.Error(result.message ?: "Unable")
-                        )
-                    }
+                is Resource.Error -> {
+                    _eventFlow.emit(UiEvent.Error(result.message ?: "Unable"))
                 }
             }
 
             state = AddEditCategoryState()
         }
     }
-
 
     private fun getCategoryById(categoryId: String) {
         viewModelScope.launch {

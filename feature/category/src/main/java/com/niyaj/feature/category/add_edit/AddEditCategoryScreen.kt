@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
@@ -87,6 +88,7 @@ fun AddEditCategoryScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(SpaceSmall)
         ) {
             StandardOutlinedTextField(
                 modifier = Modifier.testTag(CATEGORY_NAME_FIELD),
@@ -138,5 +140,4 @@ fun AddEditCategoryScreen(
             )
         }
     }
-
 }

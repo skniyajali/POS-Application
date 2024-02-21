@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
  * @param navController
  * @param scaffoldState
  * @param viewModel
-// * @param resultRecipient
+ * @param resultRecipient
  * @see CategoryViewModel
  */
 @RootNavGraph(start = true)
