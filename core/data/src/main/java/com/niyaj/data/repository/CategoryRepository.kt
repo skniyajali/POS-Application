@@ -10,13 +10,12 @@ interface CategoryRepository {
 
     suspend fun getCategoryById(categoryId: String): Resource<Category?>
 
-    fun findCategoryByName(name: String, categoryId: String?): Boolean
+    suspend fun findCategoryByName(name: String, categoryId: String?): Boolean
 
-    suspend fun createNewCategory(newCategory: Category): Resource<Boolean>
-
-    suspend fun updateCategory(updatedCategory: Category, categoryId: String): Resource<Boolean>
-
-    suspend fun deleteCategory(categoryId: String): Resource<Boolean>
+    suspend fun createOrUpdateCategory(
+        updatedCategory: Category,
+        categoryId: String
+    ): Resource<Boolean>
 
     suspend fun deleteCategories(categoryIds: List<String>): Resource<Boolean>
 }

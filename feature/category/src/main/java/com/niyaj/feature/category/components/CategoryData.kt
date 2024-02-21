@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.trace
@@ -37,6 +38,7 @@ fun CategoryData(
     Card(
         modifier = modifier
             .padding(SpaceSmall)
+            .clip(MaterialTheme.shapes.medium)
             .combinedClickable(
                 onClick = {
                     onClick(item.categoryId)

@@ -2,6 +2,8 @@ package com.niyaj.feature.category
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -11,6 +13,7 @@ import androidx.compose.material.ScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -21,6 +24,7 @@ import com.niyaj.common.tags.CategoryTestTags.CREATE_NEW_CATEGORY
 import com.niyaj.common.tags.CategoryTestTags.DELETE_CATEGORY_ITEM_MESSAGE
 import com.niyaj.common.tags.CategoryTestTags.DELETE_CATEGORY_ITEM_TITLE
 import com.niyaj.common.utils.Constants.SEARCH_ITEM_NOT_FOUND
+import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.feature.category.components.CategoryData
 import com.niyaj.feature.category.destinations.AddEditCategoryScreenDestination
 import com.niyaj.ui.components.ItemNotAvailable
@@ -50,7 +54,7 @@ import kotlinx.coroutines.launch
  * @param navController
  * @param scaffoldState
  * @param viewModel
-// * @param resultRecipient
+ * @param resultRecipient
  * @see CategoryViewModel
  */
 @RootNavGraph(start = true)
@@ -193,6 +197,9 @@ fun CategoryScreen(
 
                 is UiState.Success -> {
                     LazyVerticalGrid(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(SpaceSmall),
                         columns = GridCells.Fixed(2),
                         state = lazyGridState,
                     ) {
