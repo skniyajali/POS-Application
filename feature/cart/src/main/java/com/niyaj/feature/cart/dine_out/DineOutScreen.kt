@@ -198,11 +198,10 @@ fun DineOutScreen(
                         }
                     }
                 ) {
-
                     CartItems(
                         listState = listState,
-                        cartItems = state.data,
-                        selectedCartItems = selectedDineOutOrder,
+                        cartItems = state,
+                        doesSelected = { selectedDineOutOrder.contains(it) },
                         addOnItems = addOnItems,
                         showPrintBtn = true,
                         onSelectCartOrder = dineOutViewModel::selectItem,

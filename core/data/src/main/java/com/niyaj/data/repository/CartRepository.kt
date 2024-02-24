@@ -9,15 +9,15 @@ interface CartRepository {
 
     suspend fun getAllAddOnItems(searchText: String): Flow<List<AddOnItem>>
 
-    fun getAllDineInOrders(): Flow<List<CartItem>>
+    suspend fun getAllDineInOrders(): Flow<List<CartItem>>
 
-    fun getAllDineOutOrders(): Flow<List<CartItem>>
+    suspend fun getAllDineOutOrders(): Flow<List<CartItem>>
 
     suspend fun addProductToCart(cartOrderId: String, productId: String): Resource<Boolean>
 
     suspend fun removeProductFromCart(cartOrderId: String, productId: String): Resource<Boolean>
 
-    fun countTotalPrice(cartOrderId: String): Pair<Int, Int>
+    suspend fun countTotalPrice(cartOrderId: String): Pair<Int, Int>
 
     /**
      * Delete old data before current date
