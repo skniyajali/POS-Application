@@ -59,36 +59,36 @@ class CartRepositoryImpl(
         }
     }
 
-    override fun getAllDineInOrders(): Flow<List<CartItem>> {
+    override suspend fun getAllDineInOrders(): Flow<List<CartItem>> {
         return channelFlow {
-            try {
-                val items = withContext(ioDispatcher) {
-                    realm.query<CartEntity>(
+            withContext(ioDispatcher) {
+                try {
+                    val items = realm.query<CartEntity>(
                         "cartOrder.cartOrderStatus == $0 AND cartOrder.orderType == $1",
                         OrderStatus.PROCESSING.name,
                         OrderType.DineIn.name
                     ).sort("cartId", Sort.DESCENDING).asFlow()
-                }
 
-                items.collectLatest { changes: ResultsChange<CartEntity> ->
-                    when (changes) {
-                        is UpdatedResults -> {
-                            send(mapCartRealmToCartItem(changes.list))
-                        }
+                    items.collectLatest { changes: ResultsChange<CartEntity> ->
+                        when (changes) {
+                            is UpdatedResults -> {
+                                send(mapCartRealmToCartItem(changes.list))
+                            }
 
-                        else -> {
-                            send(mapCartRealmToCartItem(changes.list))
+                            else -> {
+                                send(mapCartRealmToCartItem(changes.list))
+                            }
                         }
                     }
-                }
 
-            } catch (e: Exception) {
-                send(emptyList())
+                } catch (e: Exception) {
+                    send(emptyList())
+                }
             }
         }
     }
 
-    override fun getAllDineOutOrders(): Flow<List<CartItem>> {
+    override suspend fun getAllDineOutOrders(): Flow<List<CartItem>> {
         return channelFlow {
             try {
                 val items = withContext(ioDispatcher) {
@@ -217,44 +217,47 @@ class CartRepositoryImpl(
         }
     }
 
-    override fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
-        var totalPrice = 0
-        var discountPrice = 0
+    override suspend fun countTotalPrice(cartOrderId: String): Pair<Int, Int> {
+        return withContext(ioDispatcher) {
+            var totalPrice = 0
+            var discountPrice = 0
 
-        val cartOrder =
-            realm.query<CartOrderEntity>("cartOrderId == $0", cartOrderId).first().find()
-        val cartOrders = realm.query<CartEntity>("cartOrder.cartOrderId == $0", cartOrderId).find()
+            val cartOrder =
+                realm.query<CartOrderEntity>("cartOrderId == $0", cartOrderId).first().find()
+            val cartOrders =
+                realm.query<CartEntity>("cartOrder.cartOrderId == $0", cartOrderId).find()
 
-        if (cartOrder != null && cartOrders.isNotEmpty()) {
-            if (cartOrder.doesChargesIncluded) {
-                val charges = realm.query<ChargesEntity>().find()
+            if (cartOrder != null && cartOrders.isNotEmpty()) {
+                if (cartOrder.doesChargesIncluded) {
+                    val charges = realm.query<ChargesEntity>().find()
 
-                for (charge in charges) {
-                    if (charge.isApplicable && cartOrder.orderType != OrderType.DineIn.name) {
-                        totalPrice += charge.chargesPrice
+                    for (charge in charges) {
+                        if (charge.isApplicable && cartOrder.orderType != OrderType.DineIn.name) {
+                            totalPrice += charge.chargesPrice
+                        }
+                    }
+                }
+
+                if (cartOrder.addOnItems.isNotEmpty()) {
+                    for (addOnItem in cartOrder.addOnItems) {
+
+                        totalPrice += addOnItem.itemPrice
+
+                        if (!addOnItem.isApplicable) {
+                            discountPrice += addOnItem.itemPrice
+                        }
+                    }
+                }
+
+                for (cartOrder1 in cartOrders) {
+                    if (cartOrder1.product != null) {
+                        totalPrice += cartOrder1.quantity.times(cartOrder1.product?.productPrice!!)
                     }
                 }
             }
 
-            if (cartOrder.addOnItems.isNotEmpty()) {
-                for (addOnItem in cartOrder.addOnItems) {
-
-                    totalPrice += addOnItem.itemPrice
-
-                    if (!addOnItem.isApplicable) {
-                        discountPrice += addOnItem.itemPrice
-                    }
-                }
-            }
-
-            for (cartOrder1 in cartOrders) {
-                if (cartOrder1.product != null) {
-                    totalPrice += cartOrder1.quantity.times(cartOrder1.product?.productPrice!!)
-                }
-            }
+            Pair(totalPrice, discountPrice)
         }
-
-        return Pair(totalPrice, discountPrice)
     }
 
     override suspend fun deletePastData(): Resource<Boolean> {
@@ -281,44 +284,44 @@ class CartRepositoryImpl(
         return realm.query<CartOrderEntity>("cartOrderId == $0", cartOrderId).find().first()
     }
 
-    private fun mapCartRealmToCartItem(carts: List<CartEntity>): List<CartItem> {
-        val groupedByOrder = carts.groupBy { it.cartOrder?.cartOrderId }
+    private suspend fun mapCartRealmToCartItem(carts: List<CartEntity>): List<CartItem> {
+        return withContext(ioDispatcher) {
+            val groupedByOrder = carts.groupBy { it.cartOrder?.cartOrderId }
 
-        val data = groupedByOrder.map { groupedCartProducts ->
-            if (groupedCartProducts.key != null && groupedCartProducts.value.isNotEmpty()) {
-                val cartOrder = getCartOrderById(groupedCartProducts.key!!)
+            groupedByOrder.map { groupedCartProducts ->
+                if (groupedCartProducts.key != null && groupedCartProducts.value.isNotEmpty()) {
+                    val cartOrder = getCartOrderById(groupedCartProducts.key!!)
 
-                if (cartOrder.cartOrderStatus != OrderStatus.PLACED.name) {
-                    CartItem(
-                        cartOrderId = cartOrder.cartOrderId,
-                        orderId = cartOrder.orderId,
-                        orderType = OrderType.valueOf(cartOrder.orderType),
-                        cartProducts = groupedCartProducts.value.map { cart ->
-                            if (cart.product != null) {
-                                CartProductItem(
-                                    productId = cart.product!!.productId,
-                                    productName = cart.product!!.productName,
-                                    productPrice = cart.product!!.productPrice,
-                                    productQuantity = cart.quantity
-                                )
-                            } else {
-                                CartProductItem()
-                            }
-                        },
-                        addOnItems = cartOrder.addOnItems.map { it.addOnItemId },
-                        customerPhone = cartOrder.customer?.customerPhone,
-                        customerAddress = cartOrder.address?.shortName,
-                        updatedAt = cartOrder.createdAt,
-                        orderPrice = countTotalPrice(cartOrder.cartOrderId)
-                    )
+                    if (cartOrder.cartOrderStatus != OrderStatus.PLACED.name) {
+                        CartItem(
+                            cartOrderId = cartOrder.cartOrderId,
+                            orderId = cartOrder.orderId,
+                            orderType = OrderType.valueOf(cartOrder.orderType),
+                            cartProducts = groupedCartProducts.value.map { cart ->
+                                if (cart.product != null) {
+                                    CartProductItem(
+                                        productId = cart.product!!.productId,
+                                        productName = cart.product!!.productName,
+                                        productPrice = cart.product!!.productPrice,
+                                        productQuantity = cart.quantity
+                                    )
+                                } else {
+                                    CartProductItem()
+                                }
+                            },
+                            addOnItems = cartOrder.addOnItems.map { it.addOnItemId },
+                            customerPhone = cartOrder.customer?.customerPhone,
+                            customerAddress = cartOrder.address?.shortName,
+                            updatedAt = cartOrder.createdAt,
+                            orderPrice = countTotalPrice(cartOrder.cartOrderId)
+                        )
+                    } else {
+                        CartItem()
+                    }
                 } else {
                     CartItem()
                 }
-            } else {
-                CartItem()
             }
         }
-
-        return data
     }
 }

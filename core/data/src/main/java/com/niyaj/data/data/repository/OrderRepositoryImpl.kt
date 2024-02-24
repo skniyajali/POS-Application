@@ -34,6 +34,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -45,23 +46,17 @@ class OrderRepositoryImpl(
     val realm = Realm.open(config)
 
     override suspend fun getAllCharges(): Flow<List<Charges>> {
-        return channelFlow {
-            withContext(ioDispatcher) {
-                try {
-                    val charges = realm.query<ChargesEntity>()
-                        .sort("chargesId", Sort.DESCENDING)
-                        .find()
-                        .asFlow()
-
+        return withContext(ioDispatcher) {
+            realm.query<ChargesEntity>()
+                .sort("chargesId", Sort.DESCENDING)
+                .find()
+                .asFlow()
+                .mapLatest { charges ->
                     charges.collectWithSearch(
                         transform = { it.toExternalModel() },
                         searchFilter = { it },
-                        send = { send(it) }
                     )
-                } catch (e: Exception) {
-                    send(emptyList())
                 }
-            }
         }
     }
 
@@ -338,7 +333,6 @@ class OrderRepositoryImpl(
             }
         }
     }
-
 
     private suspend fun mapCartOrderToDineOutOrders(data: List<CartOrderEntity>): List<DineOutOrder> {
         val result = withContext(ioDispatcher) {

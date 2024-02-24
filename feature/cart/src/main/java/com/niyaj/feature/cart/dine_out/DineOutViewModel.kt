@@ -24,15 +24,17 @@ class DineOutViewModel @Inject constructor(
 
     override var totalItems: List<String> = emptyList()
 
-    val dineOutOrders = cartRepository.getAllDineOutOrders().mapLatest { items ->
-        totalItems = items.map { it.cartOrderId }
+    val dineOutOrders = snapshotFlow { searchText.value }
+        .flatMapLatest { cartRepository.getAllDineOutOrders() }
+        .mapLatest { result ->
+            totalItems = result.map { it.cartOrderId }
 
-        if (items.isEmpty()) UiState.Empty else UiState.Success(items)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = UiState.Loading
-    )
+            if (result.isEmpty()) UiState.Empty else UiState.Success(result)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = UiState.Loading
+        )
 
     val addOnItems = snapshotFlow { searchText.value }.flatMapLatest {
         cartRepository.getAllAddOnItems(it)
@@ -130,5 +132,4 @@ class DineOutViewModel @Inject constructor(
             }
         }
     }
-
 }
