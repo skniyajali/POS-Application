@@ -5,9 +5,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface SelectedRepository {
 
-    suspend fun getAllProcessingCartOrder(): Flow<List<CartOrder>>
+    fun getAllProcessingCartOrder(): Flow<List<CartOrder>>
 
-    suspend fun getSelectedCartOrders(): Flow<String?>
+    fun getSelectedCartOrders(): Flow<String?>
 
     suspend fun markOrderAsSelected(cartOrderId: String): Boolean
 }

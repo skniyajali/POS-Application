@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.niyaj.common.tags.CartOrderTestTags.CART_ORDER_NOT_AVAILABLE
@@ -75,8 +75,8 @@ fun SelectedCartOrderScreen(
     onClickCreateCartOrder: () -> Unit,
     onClickEditCartOrder: (String) -> Unit
 ) {
-    val uiState = viewModel.cartOrders.collectAsState().value
-    val selectedCartOrder = viewModel.selectedCartOrder.collectAsState().value
+    val uiState = viewModel.cartOrders.collectAsStateWithLifecycle().value
+    val selectedCartOrder = viewModel.selectedCartOrder.collectAsStateWithLifecycle().value
 
     BottomSheetWithCloseDialog(
         modifier = Modifier.fillMaxSize(),
@@ -85,7 +85,6 @@ fun SelectedCartOrderScreen(
             navController.navigateUp()
         }
     ) {
-
         Crossfade(
             targetState = uiState,
             label = "Selected Order::State"
@@ -105,9 +104,14 @@ fun SelectedCartOrderScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = SpaceMedium)
+                            .padding(vertical = SpaceMedium, horizontal = SpaceSmall)
                     ) {
-                        itemsIndexed(state.data.asReversed()) { _, item ->
+                        items(
+                            items = state.data.asReversed(),
+                            key = {
+                                it.cartOrderId
+                            }
+                        ) {item ->
                             CartOrderBox(
                                 cartOrder = item,
                                 selectedOrderId = selectedCartOrder,

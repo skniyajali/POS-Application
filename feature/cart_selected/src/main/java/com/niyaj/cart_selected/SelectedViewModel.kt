@@ -5,15 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.niyaj.common.utils.Resource
 import com.niyaj.data.repository.CartOrderRepository
 import com.niyaj.data.repository.SelectedRepository
-import com.niyaj.model.CartOrder
 import com.niyaj.ui.event.UiEvent
 import com.niyaj.ui.event.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,28 +19,31 @@ import javax.inject.Inject
 class SelectedViewModel @Inject constructor(
     private val selectedRepository: SelectedRepository,
     private val cartOrderRepository: CartOrderRepository,
-): ViewModel(){
+) : ViewModel() {
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
-    val eventFlow = _eventFlow.asSharedFlow()
 
-    private val _selectedCartOrder = MutableStateFlow<String?>(null)
-    val selectedCartOrder = _selectedCartOrder.asStateFlow()
+    val selectedCartOrder = selectedRepository.getSelectedCartOrders().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = null
+    )
 
-    private val _cartOrders = MutableStateFlow<UiState<List<CartOrder>>>(UiState.Loading)
-    val cartOrders = _cartOrders.asStateFlow()
+    val cartOrders = selectedRepository.getAllProcessingCartOrder().mapLatest {
+        UiState.Success(it)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = UiState.Loading
+    )
 
-    init {
-        getAllCartOrders()
-        getSelectedOrder()
-    }
-
-    internal fun deleteCartOrder(cartOrderId: String){
+    internal fun deleteCartOrder(cartOrderId: String) {
         viewModelScope.launch {
-            when(val result = cartOrderRepository.deleteCartOrder(cartOrderId)) {
+            when (val result = cartOrderRepository.deleteCartOrder(cartOrderId)) {
                 is Resource.Error -> {
                     _eventFlow.emit(UiEvent.Error(result.message ?: "Unable to delete"))
                 }
+
                 is Resource.Success -> {
                     _eventFlow.emit(UiEvent.Success("Cart Order deleted successfully"))
                 }
@@ -53,28 +54,6 @@ class SelectedViewModel @Inject constructor(
     internal fun selectCartOrder(cartOrderId: String) {
         viewModelScope.launch {
             selectedRepository.markOrderAsSelected(cartOrderId)
-        }
-    }
-
-    private fun getAllCartOrders() {
-        viewModelScope.launch {
-            selectedRepository.getAllProcessingCartOrder().collectLatest { list ->
-                if (list.isEmpty()) {
-                    _cartOrders.value = UiState.Empty
-                }else {
-                    _cartOrders.value = UiState.Success(list)
-                }
-            }
-        }
-    }
-
-    private fun getSelectedOrder() {
-        viewModelScope.launch {
-            cartOrderRepository.getSelectedCartOrders().collectLatest { result ->
-                result.let {
-                    _selectedCartOrder.value = it
-                }
-            }
         }
     }
 }

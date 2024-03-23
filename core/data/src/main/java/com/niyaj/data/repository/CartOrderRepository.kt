@@ -23,9 +23,7 @@ interface CartOrderRepository {
 
     suspend fun getCartOrderById(cartOrderId: String): Resource<CartOrder?>
 
-    suspend fun createNewOrder(newOrder: CartOrder): Resource<Boolean>
-
-    suspend fun updateCartOrder(newOrder: CartOrder, cartOrderId: String): Resource<Boolean>
+    suspend fun createOrUpdateCartOrder(newOrder: CartOrder, cartOrderId: String): Resource<Boolean>
 
     suspend fun updateAddOnItem(addOnItemId: String, cartOrderId: String): Resource<Boolean>
 
@@ -37,7 +35,7 @@ interface CartOrderRepository {
 
     suspend fun placeAllOrder(cartOrderIds: List<String>): Resource<Boolean>
 
-    suspend fun getSelectedCartOrders(): Flow<String?>
+    fun getSelectedCartOrders(): Flow<String?>
 
     suspend fun addSelectedCartOrder(cartOrderId: String): Boolean
 
