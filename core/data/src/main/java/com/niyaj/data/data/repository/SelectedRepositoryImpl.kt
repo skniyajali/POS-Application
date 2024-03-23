@@ -20,13 +20,13 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.withContext
 
 class SelectedRepositoryImpl(
-    private val config: RealmConfiguration,
+    config: RealmConfiguration,
     private val ioDispatcher: CoroutineDispatcher,
 ) : SelectedRepository {
 
     private val realm = Realm.open(config)
 
-    override suspend fun getAllProcessingCartOrder(): Flow<List<CartOrder>> {
+    override fun getAllProcessingCartOrder(): Flow<List<CartOrder>> {
         return channelFlow {
             withContext(ioDispatcher) {
                 try {
@@ -49,7 +49,7 @@ class SelectedRepositoryImpl(
         }
     }
 
-    override suspend fun getSelectedCartOrders(): Flow<String?> {
+    override fun getSelectedCartOrders(): Flow<String?> {
         return channelFlow {
             withContext(ioDispatcher){
                 val selectedCartOrder = realm

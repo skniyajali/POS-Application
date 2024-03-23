@@ -195,36 +195,21 @@ class AddEditCartOrderViewModel @Inject constructor(
                     customer = _newCustomer.value,
                     address = _newAddress.value,
                     doesChargesIncluded = state.doesChargesIncluded,
+                    createdAt = System.currentTimeMillis().toString(),
+                    updatedAt = if (cartOrderId.isEmpty()) null else System.currentTimeMillis().toString()
                 )
+                val result = cartOrderRepository.createOrUpdateCartOrder(newCartOrder, cartOrderId)
+                val message = if (cartOrderId.isEmpty()) "created" else "updated"
 
-                if (cartOrderId.isEmpty()) {
-                    when (val result = cartOrderRepository.createNewOrder(newCartOrder)) {
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Order created successfully"))
-                        }
-
-                        is Resource.Error -> {
-                            _eventFlow.emit(
-                                UiEvent.Error(result.message ?: "Unable to create new order")
-                            )
-                        }
+                when (result) {
+                    is Resource.Success -> {
+                        _eventFlow.emit(UiEvent.Success("Order $message successfully"))
                     }
-                } else {
-                    when (val result =
-                        cartOrderRepository.updateCartOrder(newCartOrder, cartOrderId)) {
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Order updated successfully"))
 
-                        }
-
-                        is Resource.Error -> {
-                            _eventFlow.emit(
-                                UiEvent.Error(
-                                    result.message ?: "Unable to update order"
-                                )
-                            )
-
-                        }
+                    is Resource.Error -> {
+                        _eventFlow.emit(
+                            UiEvent.Error(result.message ?: "Unable")
+                        )
                     }
                 }
             }
