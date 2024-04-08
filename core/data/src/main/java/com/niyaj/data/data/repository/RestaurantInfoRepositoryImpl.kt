@@ -20,6 +20,7 @@ import com.niyaj.common.tags.ProfileTestTags.TAG_EMPTY_ERROR
 import com.niyaj.common.utils.Resource
 import com.niyaj.common.utils.ValidationResult
 import com.niyaj.common.utils.isValidPassword
+import com.niyaj.data.mapper.toEntity
 import com.niyaj.data.repository.RestaurantInfoRepository
 import com.niyaj.data.repository.validation.RestaurantInfoValidationRepository
 import com.niyaj.database.model.RestaurantInfoEntity
@@ -87,7 +88,7 @@ class RestaurantInfoRepositoryImpl(
                         restaurant.logo = imageName
                         restaurant.updatedAt = System.currentTimeMillis().toString()
                     } else {
-                        val newRestaurant = RestaurantInfoEntity()
+                        val newRestaurant = RestaurantInfo().toEntity()
                         newRestaurant.restaurantId = RESTAURANT_ID
                         newRestaurant.logo = imageName
                         newRestaurant.createdAt = System.currentTimeMillis().toString()
@@ -115,7 +116,7 @@ class RestaurantInfoRepositoryImpl(
                         restaurant.printLogo = imageName
                         restaurant.updatedAt = System.currentTimeMillis().toString()
                     } else {
-                        val newRestaurant = RestaurantInfoEntity()
+                        val newRestaurant = RestaurantInfo().toEntity()
                         newRestaurant.restaurantId = RESTAURANT_ID
                         newRestaurant.printLogo = imageName
                         newRestaurant.createdAt = System.currentTimeMillis().toString()
