@@ -1,15 +1,27 @@
 package com.niyaj.feature.profile.add_edit
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Edit
@@ -20,16 +32,26 @@ import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.niyaj.common.tags.ProfileTestTags.ADDRESS_ERROR_FIELD
 import com.niyaj.common.tags.ProfileTestTags.ADDRESS_FIELD
 import com.niyaj.common.tags.ProfileTestTags.ADD_EDIT_PROFILE_BTN
@@ -48,28 +70,111 @@ import com.niyaj.common.tags.ProfileTestTags.S_PHONE_FIELD
 import com.niyaj.common.tags.ProfileTestTags.TAG_ERROR_FIELD
 import com.niyaj.common.tags.ProfileTestTags.TAG_FIELD
 import com.niyaj.common.tags.ProfileTestTags.UPDATE_PROFILE
+import com.niyaj.common.utils.ImageStorageManager
+import com.niyaj.common.utils.toBitmap
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.feature.profile.ProfileEvent
 import com.niyaj.feature.profile.ProfileViewModel
+import com.niyaj.feature.profile.components.UpdatedRestaurantCard
+import com.niyaj.model.RESTAURANT_LOGO_NAME
+import com.niyaj.model.RESTAURANT_PRINT_LOGO_NAME
 import com.niyaj.ui.components.StandardButtonFW
 import com.niyaj.ui.components.StandardOutlinedTextField
 import com.niyaj.ui.event.UiEvent
-import com.niyaj.ui.util.BottomSheetWithCloseDialog
+import com.niyaj.ui.util.Screens
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
-import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
+import kotlinx.coroutines.launch
 
-@Destination(style = DestinationStyleBottomSheet::class)
+@OptIn(ExperimentalPermissionsApi::class)
+@Destination(route = Screens.UPDATE_PROFILE_SCREEN)
 @Composable
 fun UpdateProfileScreen(
     navController: NavController = rememberNavController(),
-    profileViewModel: ProfileViewModel = hiltViewModel(),
+    viewModel: ProfileViewModel = hiltViewModel(),
     resultBackNavigator: ResultBackNavigator<String>
 ) {
-    val scannedBitmap = profileViewModel.scannedBitmap.collectAsStateWithLifecycle().value
+    val scaffoldState = rememberScaffoldState()
+    val context = LocalContext.current
+    val lazyListState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
+    val info = viewModel.info.collectAsStateWithLifecycle().value
+
+    val resLogo = info.getRestaurantLogo(context)
+    val printLogo = info.getRestaurantPrintLogo(context)
+
+    val scannedBitmap = viewModel.scannedBitmap.collectAsStateWithLifecycle().value
+
+    val permissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberMultiplePermissionsState(
+            permissions = listOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.READ_MEDIA_IMAGES
+            )
+        )
+    } else {
+        rememberMultiplePermissionsState(
+            permissions = listOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+            )
+        )
+    }
+
+    fun checkForMediaPermission() {
+        if (!permissionState.allPermissionsGranted) {
+            permissionState.launchMultiplePermissionRequest()
+        }
+    }
+
+    var showPrintLogo by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    val resLogoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let {
+            val result = ImageStorageManager.saveToInternalStorage(
+                context,
+                uri.toBitmap(context),
+                RESTAURANT_LOGO_NAME
+            )
+
+            scope.launch {
+                if (result) {
+                    scaffoldState.snackbarHostState.showSnackbar("Profile image saved successfully.")
+                    viewModel.onEvent(ProfileEvent.LogoChanged)
+                } else {
+                    scaffoldState.snackbarHostState.showSnackbar("Unable save image into storage.")
+                }
+            }
+        }
+    }
+
+    val printLogoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let {
+            val result = ImageStorageManager.saveToInternalStorage(
+                context,
+                uri.toBitmap(context),
+                RESTAURANT_PRINT_LOGO_NAME
+            )
+
+            scope.launch {
+                if (result) {
+                    scaffoldState.snackbarHostState.showSnackbar("Print Image saved successfully.")
+                    viewModel.onEvent(ProfileEvent.PrintLogoChanged)
+                } else {
+                    scaffoldState.snackbarHostState.showSnackbar("Unable save print image into storage.")
+                }
+            }
+        }
+    }
 
     LaunchedEffect(key1 = true) {
-        profileViewModel.eventFlow.collect { event ->
+        viewModel.eventFlow.collect { event ->
             when (event) {
                 is UiEvent.Success -> {
                     resultBackNavigator.navigateBack(event.successMessage)
@@ -83,145 +188,207 @@ fun UpdateProfileScreen(
     }
 
     LaunchedEffect(key1 = true) {
-        profileViewModel.onEvent(ProfileEvent.SetProfileInfo)
+        viewModel.onEvent(ProfileEvent.SetProfileInfo)
     }
 
-    BottomSheetWithCloseDialog(
-        modifier = Modifier.fillMaxSize(),
-        text = UPDATE_PROFILE,
-        onClosePressed = {
-            navController.navigateUp()
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collect { event ->
+            when (event) {
+                is UiEvent.Success -> {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = event.successMessage
+                    )
+                }
+
+                is UiEvent.Error -> {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = event.errorMessage
+                    )
+                }
+
+            }
         }
-    ) {
+    }
+
+    Scaffold(
+        scaffoldState = scaffoldState,
+        modifier = Modifier
+            .fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(text = UPDATE_PROFILE) },
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navController.navigateUp() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Navigate Back"
+                        )
+                    }
+                },
+                elevation = 0.dp
+            )
+        }
+    ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(paddingValues),
+            state = lazyListState,
+            verticalArrangement = Arrangement.spacedBy(SpaceSmall)
         ) {
+            item("UpdatedRestaurantCard") {
+                UpdatedRestaurantCard(
+                    info = info,
+                    resLogo = resLogo,
+                    printLogo = printLogo,
+                    showPrintLogo = showPrintLogo,
+                    onClickEdit = {
+                        checkForMediaPermission()
+                        resLogoLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    onClickChangePrintLogo = {
+                        checkForMediaPermission()
+                        printLogoLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    onClickViewPrintLogo = {
+                        showPrintLogo = !showPrintLogo
+                    }
+                )
+            }
+
             item(NAME_FIELD) {
                 StandardOutlinedTextField(
-                    modifier = Modifier.testTag(NAME_FIELD),
-                    text = profileViewModel.updateState.name,
+                    modifier = Modifier
+                        .padding(horizontal = SpaceSmall)
+                        .testTag(NAME_FIELD),
+                    text = viewModel.updateState.name,
                     label = NAME_FIELD,
                     leadingIcon = Icons.Default.Restaurant,
-                    error = profileViewModel.updateState.nameError,
+                    error = viewModel.updateState.nameError,
                     errorTag = NAME_ERROR_FIELD,
                     onValueChange = {
-                        profileViewModel.onEvent(ProfileEvent.NameChanged(it))
+                        viewModel.onEvent(ProfileEvent.NameChanged(it))
                     },
                 )
-
-                Spacer(modifier = Modifier.height(SpaceSmall))
             }
 
             item(EMAIL_FIELD) {
                 StandardOutlinedTextField(
-                    modifier = Modifier.testTag(EMAIL_FIELD),
-                    text = profileViewModel.updateState.email,
+                    modifier = Modifier
+                        .padding(horizontal = SpaceSmall)
+                        .testTag(EMAIL_FIELD),
+                    text = viewModel.updateState.email,
                     label = EMAIL_FIELD,
                     leadingIcon = Icons.Default.Email,
                     errorTag = EMAIL_ERROR_FIELD,
-                    error = profileViewModel.updateState.emailError,
+                    error = viewModel.updateState.emailError,
                     onValueChange = {
-                        profileViewModel.onEvent(ProfileEvent.NameChanged(it))
+                        viewModel.onEvent(ProfileEvent.NameChanged(it))
                     },
                 )
-
-                Spacer(modifier = Modifier.height(SpaceSmall))
             }
 
             item(P_PHONE_FIELD) {
                 StandardOutlinedTextField(
-                    modifier = Modifier.testTag(P_PHONE_FIELD),
-                    text = profileViewModel.updateState.primaryPhone,
+                    modifier = Modifier
+                        .padding(horizontal = SpaceSmall)
+                        .testTag(P_PHONE_FIELD),
+                    text = viewModel.updateState.primaryPhone,
                     label = P_PHONE_FIELD,
                     leadingIcon = Icons.Default.PhoneAndroid,
                     errorTag = P_PHONE_ERROR_FIELD,
-                    error = profileViewModel.updateState.primaryPhoneError,
+                    error = viewModel.updateState.primaryPhoneError,
                     onValueChange = {
-                        profileViewModel.onEvent(ProfileEvent.PrimaryPhoneChanged(it))
+                        viewModel.onEvent(ProfileEvent.PrimaryPhoneChanged(it))
                     },
                 )
-
-                Spacer(modifier = Modifier.height(SpaceSmall))
             }
 
             item(S_PHONE_FIELD) {
                 StandardOutlinedTextField(
-                    modifier = Modifier.testTag(S_PHONE_FIELD),
-                    text = profileViewModel.updateState.secondaryPhone,
+                    modifier = Modifier
+                        .padding(horizontal = SpaceSmall)
+                        .testTag(S_PHONE_FIELD),
+                    text = viewModel.updateState.secondaryPhone,
                     label = S_PHONE_FIELD,
                     leadingIcon = Icons.Default.Phone,
                     errorTag = S_PHONE_ERROR_FIELD,
-                    error = profileViewModel.updateState.secondaryPhoneError,
+                    error = viewModel.updateState.secondaryPhoneError,
                     onValueChange = {
-                        profileViewModel.onEvent(ProfileEvent.SecondaryPhoneChanged(it))
+                        viewModel.onEvent(ProfileEvent.SecondaryPhoneChanged(it))
                     },
                 )
-
-                Spacer(modifier = Modifier.height(SpaceSmall))
             }
 
             item(TAG_FIELD) {
                 StandardOutlinedTextField(
-                    modifier = Modifier.testTag(TAG_FIELD),
-                    text = profileViewModel.updateState.tagline,
+                    modifier = Modifier
+                        .padding(horizontal = SpaceSmall)
+                        .testTag(TAG_FIELD),
+                    text = viewModel.updateState.tagline,
                     label = TAG_FIELD,
                     errorTag = TAG_ERROR_FIELD,
                     leadingIcon = Icons.AutoMirrored.Filled.StarHalf,
-                    error = profileViewModel.updateState.taglineError,
+                    error = viewModel.updateState.taglineError,
                     onValueChange = {
-                        profileViewModel.onEvent(ProfileEvent.TaglineChanged(it))
+                        viewModel.onEvent(ProfileEvent.TaglineChanged(it))
                     },
                 )
-
-                Spacer(modifier = Modifier.height(SpaceSmall))
             }
 
             item(ADDRESS_FIELD) {
                 StandardOutlinedTextField(
-                    modifier = Modifier.testTag(ADDRESS_FIELD),
-                    text = profileViewModel.updateState.address,
+                    modifier = Modifier
+                        .padding(horizontal = SpaceSmall)
+                        .testTag(ADDRESS_FIELD),
+                    text = viewModel.updateState.address,
                     label = ADDRESS_FIELD,
                     maxLines = 2,
                     leadingIcon = Icons.Default.LocationOn,
                     errorTag = ADDRESS_ERROR_FIELD,
-                    error = profileViewModel.updateState.addressError,
+                    error = viewModel.updateState.addressError,
                     onValueChange = {
-                        profileViewModel.onEvent(ProfileEvent.AddressChanged(it))
+                        viewModel.onEvent(ProfileEvent.AddressChanged(it))
                     },
                 )
-
-                Spacer(modifier = Modifier.height(SpaceSmall))
             }
 
             item(DESC_FIELD) {
                 StandardOutlinedTextField(
-                    modifier = Modifier.testTag(DESC_FIELD),
-                    text = profileViewModel.updateState.description,
+                    modifier = Modifier
+                        .padding(horizontal = SpaceSmall)
+                        .testTag(DESC_FIELD),
+                    text = viewModel.updateState.description,
                     label = DESC_FIELD,
                     singleLine = false,
                     maxLines = 2,
                     leadingIcon = Icons.AutoMirrored.Filled.Notes,
-                    error = profileViewModel.updateState.descriptionError,
+                    error = viewModel.updateState.descriptionError,
                     errorTag = DESC_ERROR_FIELD,
                     onValueChange = {
-                        profileViewModel.onEvent(ProfileEvent.DescriptionChanged(it))
+                        viewModel.onEvent(ProfileEvent.DescriptionChanged(it))
                     },
                 )
-
-                Spacer(modifier = Modifier.height(SpaceSmall))
             }
 
             item(QR_CODE_FIELD) {
                 StandardOutlinedTextField(
-                    modifier = Modifier.testTag(QR_CODE_FIELD),
-                    text = profileViewModel.updateState.paymentQrCode,
+                    modifier = Modifier
+                        .padding(horizontal = SpaceSmall)
+                        .testTag(QR_CODE_FIELD),
+                    text = viewModel.updateState.paymentQrCode,
                     label = QR_CODE_FIELD,
                     leadingIcon = Icons.Default.QrCode,
                     trailingIcon = {
                         IconButton(
                             onClick = {
-                                profileViewModel.onEvent(ProfileEvent.StartScanning)
+                                viewModel.onEvent(ProfileEvent.StartScanning)
                             }
                         ) {
                             Icon(
@@ -230,21 +397,18 @@ fun UpdateProfileScreen(
                             )
                         }
                     },
-                    error = profileViewModel.updateState.paymentQrCodeError,
+                    error = viewModel.updateState.paymentQrCodeError,
                     errorTag = QR_CODE_ERROR,
                     singleLine = false,
                     maxLines = 4,
                     onValueChange = {
-                        profileViewModel.onEvent(ProfileEvent.PaymentQrCodeChanged(it))
+                        viewModel.onEvent(ProfileEvent.PaymentQrCodeChanged(it))
                     },
                 )
-
-                Spacer(modifier = Modifier.height(SpaceSmall))
             }
 
             item("Scanned Bitmap") {
                 if (scannedBitmap != null) {
-                    Spacer(modifier = Modifier.height(SpaceSmall))
 
                     Box(
                         modifier = Modifier
@@ -268,11 +432,13 @@ fun UpdateProfileScreen(
                 Spacer(modifier = Modifier.height(SpaceSmall))
 
                 StandardButtonFW(
-                    modifier = Modifier.testTag(ADD_EDIT_PROFILE_BTN),
+                    modifier = Modifier
+                        .padding(horizontal = SpaceSmall)
+                        .testTag(ADD_EDIT_PROFILE_BTN),
                     text = UPDATE_PROFILE,
                     icon = Icons.Default.Edit,
                     onClick = {
-                        profileViewModel.onEvent(ProfileEvent.UpdateProfile)
+                        viewModel.onEvent(ProfileEvent.UpdateProfile)
                     }
                 )
 

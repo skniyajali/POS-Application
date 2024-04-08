@@ -47,7 +47,9 @@ fun RestaurantDetails(
     onClickViewPrintLogo : () -> Unit,
 ) {
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(SpaceSmall),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -157,7 +159,7 @@ fun RestaurantDetails(
                 Spacer(modifier = Modifier.width(SpaceSmall))
 
                 StandardButton(
-                    text = "View Image",
+                    text = if (!showPrintLogo) "View Image" else "Hide Image",
                     icon = Icons.Default.ImageSearch,
                     onClick = onClickViewPrintLogo
                 )

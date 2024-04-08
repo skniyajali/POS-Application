@@ -12,6 +12,7 @@ object Screens {
     const val HOME_SCREEN = "home_screen"
 
     const val PROFILE_SCREEN = "profile_screen"
+    const val UPDATE_PROFILE_SCREEN = "update_profile_screen"
 
     const val CART_SCREEN = "cart_screen"
 
