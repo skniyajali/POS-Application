@@ -13,11 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Scaffold
 import androidx.compose.material.ScaffoldState
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Password
 import androidx.compose.runtime.Composable
@@ -29,6 +32,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -44,12 +48,9 @@ import com.niyaj.feature.profile.components.RestaurantCard
 import com.niyaj.feature.profile.destinations.UpdateProfileScreenDestination
 import com.niyaj.model.RESTAURANT_LOGO_NAME
 import com.niyaj.model.RESTAURANT_PRINT_LOGO_NAME
-import com.niyaj.ui.components.ScrollToTop
 import com.niyaj.ui.components.SettingsCard
-import com.niyaj.ui.components.StandardScaffoldNew
 import com.niyaj.ui.event.UiEvent
 import com.niyaj.ui.util.Screens
-import com.niyaj.ui.util.isScrolled
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.navigate
@@ -179,39 +180,43 @@ fun ProfileScreen(
         }
     }
 
-
-    StandardScaffoldNew(
-        navController = navController,
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize(),
         scaffoldState = scaffoldState,
-        showBackButton = true,
-        selectionCount = 0,
-        title = PROFILE_SCREEN,
-        navActions = {
-            IconButton(
-                onClick = {
-                    navController.navigate(UpdateProfileScreenDestination())
-                }
-            ) {
-                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Profile")
-            }
-        },
-        showFab = true,
-        floatingActionButton = {
-            ScrollToTop(
-                visible = lazyListState.isScrolled,
-                onClick = {
-                    scope.launch {
-                        lazyListState.animateScrollToItem(index = 0)
+        topBar = {
+            TopAppBar(
+                title = { Text(text = PROFILE_SCREEN) },
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navController.navigateUp() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Navigate Back"
+                        )
                     }
                 },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            navController.navigate(UpdateProfileScreenDestination())
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Profile"
+                        )
+                    }
+                },
+                elevation = 0.dp
             )
-        },
-        fabPosition = FabPosition.End,
+        }
     ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(SpaceSmall)
+                .padding(it)
                 .background(LightColor6),
             state = lazyListState,
             verticalArrangement = Arrangement.spacedBy(SpaceSmall)
@@ -241,11 +246,15 @@ fun ProfileScreen(
             }
 
             item("Account Info") {
-                AccountInfo(account = accountInfo)
+                AccountInfo(
+                    modifier = Modifier.padding(SpaceSmall),
+                    account = accountInfo
+                )
             }
 
             item("Change Password") {
                 SettingsCard(
+                    modifier = Modifier.padding(SpaceSmall),
                     text = "Change Password",
                     icon = Icons.Default.Password
                 ) {
@@ -257,5 +266,3 @@ fun ProfileScreen(
         }
     }
 }
-
-

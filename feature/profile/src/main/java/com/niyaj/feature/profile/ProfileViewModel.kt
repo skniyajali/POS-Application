@@ -158,26 +158,21 @@ class ProfileViewModel @Inject constructor(
         val validatedName = validation.validateRestaurantName(updateState.name)
         val validatedTagLine = validation.validateRestaurantTagline(updateState.tagline)
         val validatedEmail = validation.validateRestaurantEmail(updateState.email)
-        val validatedPrimaryPhone =
-            validation.validatePrimaryPhone(updateState.primaryPhone)
-        val validatedSecondaryPhone =
-            validation.validateSecondaryPhone(updateState.secondaryPhone)
+        val validatedPPhone = validation.validatePrimaryPhone(updateState.primaryPhone)
+        val validatedSPhone = validation.validateSecondaryPhone(updateState.secondaryPhone)
         val validatedAddress = validation.validateRestaurantAddress(updateState.address)
-        val validatedPaymentQrCode =
-            validation.validatePaymentQrCode(updateState.paymentQrCode)
-        val validatedDesc =
-            validation.validatePaymentQrCode(updateState.description)
-
+        val validatedQrCode = validation.validatePaymentQrCode(updateState.paymentQrCode)
+        val validatedDesc = validation.validatePaymentQrCode(updateState.description)
 
         val hasError = listOf(
             validatedName,
             validatedTagLine,
             validatedEmail,
-            validatedPrimaryPhone,
-            validatedSecondaryPhone,
+            validatedPPhone,
+            validatedSPhone,
             validatedAddress,
             validatedDesc,
-            validatedPaymentQrCode
+            validatedQrCode
         ).any { !it.successful }
 
         if (hasError) {
@@ -185,10 +180,10 @@ class ProfileViewModel @Inject constructor(
                 nameError = validatedName.errorMessage,
                 taglineError = validatedTagLine.errorMessage,
                 emailError = validatedEmail.errorMessage,
-                primaryPhoneError = validatedPrimaryPhone.errorMessage,
-                secondaryPhoneError = validatedSecondaryPhone.errorMessage,
+                primaryPhoneError = validatedPPhone.errorMessage,
+                secondaryPhoneError = validatedSPhone.errorMessage,
                 addressError = validatedAddress.errorMessage,
-                paymentQrCodeError = validatedPaymentQrCode.errorMessage,
+                paymentQrCodeError = validatedQrCode.errorMessage,
                 descriptionError = validatedDesc.errorMessage
             )
 
