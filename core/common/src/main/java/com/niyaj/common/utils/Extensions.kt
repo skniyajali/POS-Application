@@ -7,7 +7,13 @@ import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.text.format.DateUtils
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
 import java.math.RoundingMode
 import java.nio.ByteBuffer
 import java.text.DecimalFormat
@@ -490,6 +496,47 @@ fun Uri.toBitmap(context: Context): Bitmap? {
     return bitmap
 }
 
+suspend fun Context.saveImageToInternalStorage(
+    uri: Uri,
+    fileName: String,
+    oldFileName: String = "",
+    dispatcher: CoroutineDispatcher = Dispatchers.IO,
+): Resource<String> {
+    val contentResolver = this.contentResolver
+    val targetFile = File(this.filesDir, fileName)
+
+    if (oldFileName.isNotEmpty()) {
+        val oldFile = File(this.filesDir, oldFileName)
+        if (oldFile.exists()) {
+            oldFile.delete()
+        }
+    }
+
+    return withContext(dispatcher) {
+        try {
+            targetFile.createNewFile()
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                targetFile.outputStream().use { outputStream ->
+                    inputStream.copyTo(outputStream, bufferSize = 1024)
+                }
+            }
+            Resource.Success(fileName)
+        } catch (e: Exception) {
+            Resource.Error(e.message.toString())
+        }
+    }
+}
+
+private fun InputStream.copyTo(
+    outputStream: OutputStream,
+    bufferSize: Int = 1024
+) {
+    val buffer = ByteArray(bufferSize)
+    var bytesRead: Int
+    while (read(buffer).also { bytesRead = it } > 0) {
+        outputStream.write(buffer, 0, bytesRead)
+    }
+}
 
 fun drawableToByteArray(context: Context, imageRes: Int): ByteArray {
     // Get the drawable from the resources

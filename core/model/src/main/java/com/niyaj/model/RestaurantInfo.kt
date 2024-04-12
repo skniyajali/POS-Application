@@ -65,8 +65,8 @@ const val RESTAURANT_ADDRESS =
 const val RESTAURANT_PAYMENT_QR_DATA =
     "upi://pay?pa=paytmqr281005050101zry6uqipmngr@paytm&pn=Paytm%20Merchant&paytmqr=281005050101ZRY6UQIPMNGR"
 
-const val RESTAURANT_LOGO_NAME = "reslogo.png"
-const val RESTAURANT_PRINT_LOGO_NAME = "printlogo.png"
+const val RESTAURANT_LOGO_NAME = "reslogo"
+const val RESTAURANT_PRINT_LOGO_NAME = "printlogo"
 
 val RESTAURANT_LOGO = R.drawable.logo_new.toString()
 val PRINT_LOGO = R.drawable.reslogo.toString()

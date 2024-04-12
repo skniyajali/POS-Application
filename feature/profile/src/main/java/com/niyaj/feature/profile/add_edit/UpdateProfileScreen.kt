@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,9 +44,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.offset
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -70,14 +72,10 @@ import com.niyaj.common.tags.ProfileTestTags.S_PHONE_FIELD
 import com.niyaj.common.tags.ProfileTestTags.TAG_ERROR_FIELD
 import com.niyaj.common.tags.ProfileTestTags.TAG_FIELD
 import com.niyaj.common.tags.ProfileTestTags.UPDATE_PROFILE
-import com.niyaj.common.utils.ImageStorageManager
-import com.niyaj.common.utils.toBitmap
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.feature.profile.ProfileEvent
 import com.niyaj.feature.profile.ProfileViewModel
 import com.niyaj.feature.profile.components.UpdatedRestaurantCard
-import com.niyaj.model.RESTAURANT_LOGO_NAME
-import com.niyaj.model.RESTAURANT_PRINT_LOGO_NAME
 import com.niyaj.ui.components.StandardButtonFW
 import com.niyaj.ui.components.StandardOutlinedTextField
 import com.niyaj.ui.event.UiEvent
@@ -95,14 +93,10 @@ fun UpdateProfileScreen(
     resultBackNavigator: ResultBackNavigator<String>
 ) {
     val scaffoldState = rememberScaffoldState()
-    val context = LocalContext.current
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
     val info = viewModel.info.collectAsStateWithLifecycle().value
-
-    val resLogo = info.getRestaurantLogo(context)
-    val printLogo = info.getRestaurantPrintLogo(context)
 
     val scannedBitmap = viewModel.scannedBitmap.collectAsStateWithLifecycle().value
 
@@ -135,19 +129,8 @@ fun UpdateProfileScreen(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         uri?.let {
-            val result = ImageStorageManager.saveToInternalStorage(
-                context,
-                uri.toBitmap(context),
-                RESTAURANT_LOGO_NAME
-            )
-
             scope.launch {
-                if (result) {
-                    scaffoldState.snackbarHostState.showSnackbar("Profile image saved successfully.")
-                    viewModel.onEvent(ProfileEvent.LogoChanged)
-                } else {
-                    scaffoldState.snackbarHostState.showSnackbar("Unable save image into storage.")
-                }
+                viewModel.onEvent(ProfileEvent.LogoChanged(uri = it))
             }
         }
     }
@@ -156,19 +139,8 @@ fun UpdateProfileScreen(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         uri?.let {
-            val result = ImageStorageManager.saveToInternalStorage(
-                context,
-                uri.toBitmap(context),
-                RESTAURANT_PRINT_LOGO_NAME
-            )
-
             scope.launch {
-                if (result) {
-                    scaffoldState.snackbarHostState.showSnackbar("Print Image saved successfully.")
-                    viewModel.onEvent(ProfileEvent.PrintLogoChanged)
-                } else {
-                    scaffoldState.snackbarHostState.showSnackbar("Unable save print image into storage.")
-                }
+                viewModel.onEvent(ProfileEvent.PrintLogoChanged(uri = it))
             }
         }
     }
@@ -236,13 +208,35 @@ fun UpdateProfileScreen(
                 .fillMaxWidth()
                 .padding(paddingValues),
             state = lazyListState,
+            contentPadding = PaddingValues(SpaceSmall),
             verticalArrangement = Arrangement.spacedBy(SpaceSmall)
         ) {
+            val sidePadding = (-8).dp
+
             item("UpdatedRestaurantCard") {
                 UpdatedRestaurantCard(
+                    modifier = Modifier
+                        .layout { measurable, constraints ->
+                            // Measure the composable adding the side padding*2 (left+right)
+                            val placeable =
+                                measurable.measure(
+                                    constraints.offset(
+                                        horizontal = -sidePadding.roundToPx() * 2,
+                                        vertical = -sidePadding.roundToPx()
+                                    )
+                                )
+
+                            //increase the width adding the side padding*2
+                            layout(
+                                placeable.width + sidePadding.roundToPx() * 2,
+                                placeable.height
+                            ) {
+                                // Where the composable gets placed
+                                placeable.place(+sidePadding.roundToPx(), +sidePadding.roundToPx())
+                            }
+
+                        },
                     info = info,
-                    resLogo = resLogo,
-                    printLogo = printLogo,
                     showPrintLogo = showPrintLogo,
                     onClickEdit = {
                         checkForMediaPermission()

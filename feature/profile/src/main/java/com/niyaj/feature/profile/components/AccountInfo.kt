@@ -22,7 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import com.niyaj.designsystem.theme.SpaceMini
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.model.Account
 
@@ -40,7 +40,7 @@ fun AccountInfo(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(SpaceSmall),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(SpaceSmall),
         ) {
             Row(
                 modifier = Modifier
@@ -69,19 +69,23 @@ fun AccountInfo(
                 value = account.email
             )
 
+            Divider(modifier = Modifier.fillMaxWidth())
+
             AccountInfoBox(
                 title = "Phone",
                 icon = Icons.Default.PhoneAndroid,
                 value = account.phone
             )
 
+            Divider(modifier = Modifier.fillMaxWidth())
+
             AccountInfoBox(
                 title = "Password",
                 icon = Icons.Default.Password,
-                value = account.password
+                value = account.password,
             )
 
-            Spacer(modifier = Modifier.height(SpaceSmall))
+            Spacer(modifier = Modifier.height(SpaceMini))
         }
     }
 }

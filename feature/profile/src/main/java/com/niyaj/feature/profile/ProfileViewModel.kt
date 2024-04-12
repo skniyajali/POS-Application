@@ -1,12 +1,16 @@
 package com.niyaj.feature.profile
 
+import android.app.Application
 import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.niyaj.common.network.Dispatcher
+import com.niyaj.common.network.PoposDispatchers
 import com.niyaj.common.utils.Resource
+import com.niyaj.common.utils.saveImageToInternalStorage
 import com.niyaj.data.repository.AccountRepository
 import com.niyaj.data.repository.QRCodeScanner
 import com.niyaj.data.repository.RestaurantInfoRepository
@@ -19,6 +23,8 @@ import com.niyaj.model.RestaurantInfo
 import com.niyaj.ui.event.UiEvent
 import com.niyaj.ui.util.QRCodeEncoder
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,14 +33,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val repository : RestaurantInfoRepository,
-    private val validation : RestaurantInfoValidationRepository,
-    private val accountRepository : AccountRepository,
-    private val scanner : QRCodeScanner
+    private val repository: RestaurantInfoRepository,
+    private val validation: RestaurantInfoValidationRepository,
+    private val accountRepository: AccountRepository,
+    private val scanner: QRCodeScanner,
+    private val application: Application,
+    @Dispatcher(PoposDispatchers.IO)
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     var updateState by mutableStateOf(UpdateProfileState())
@@ -57,8 +67,7 @@ class ProfileViewModel @Inject constructor(
         initialValue = Account()
     )
 
-
-    fun onEvent(event : ProfileEvent) {
+    fun onEvent(event: ProfileEvent) {
         when (event) {
             is ProfileEvent.NameChanged -> {
                 updateState = updateState.copy(
@@ -118,12 +127,32 @@ class ProfileViewModel @Inject constructor(
 
             is ProfileEvent.LogoChanged -> {
                 viewModelScope.launch {
-                    when (repository.updateRestaurantLogo(RESTAURANT_LOGO_NAME)) {
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Profile photo has been updated"))
-                        }
+                    val fileName = "$RESTAURANT_LOGO_NAME-${System.currentTimeMillis()}.png"
+
+                    val result = withContext(dispatcher) {
+                        application.saveImageToInternalStorage(
+                            event.uri,
+                            fileName,
+                            info.value.logo,
+                            dispatcher
+                        )
+                    }
+
+                    when (result) {
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable to update profile photo"))
+                            _eventFlow.emit(UiEvent.Error("Unable to save logo into device"))
+                        }
+
+                        is Resource.Success -> {
+                            when (repository.updateRestaurantLogo(fileName)) {
+                                is Resource.Success -> {
+                                    _eventFlow.emit(UiEvent.Success("Profile photo has been updated"))
+                                }
+
+                                is Resource.Error -> {
+                                    _eventFlow.emit(UiEvent.Error("Unable to update profile photo"))
+                                }
+                            }
                         }
                     }
                 }
@@ -131,12 +160,32 @@ class ProfileViewModel @Inject constructor(
 
             is ProfileEvent.PrintLogoChanged -> {
                 viewModelScope.launch {
-                    when (repository.updatePrintLogo(RESTAURANT_PRINT_LOGO_NAME)) {
-                        is Resource.Success -> {
-                            _eventFlow.emit(UiEvent.Success("Print photo has been updated"))
-                        }
+                    val fileName = "$RESTAURANT_PRINT_LOGO_NAME-${System.currentTimeMillis()}.png"
+
+                    val result = withContext(dispatcher) {
+                        application.saveImageToInternalStorage(
+                            event.uri,
+                            fileName,
+                            info.value.printLogo,
+                            dispatcher
+                        )
+                    }
+
+                    when (result) {
                         is Resource.Error -> {
-                            _eventFlow.emit(UiEvent.Error("Unable to update print photo"))
+                            _eventFlow.emit(UiEvent.Error("Unable to save print image into device"))
+                        }
+
+                        is Resource.Success -> {
+                            when (repository.updatePrintLogo(fileName)) {
+                                is Resource.Success -> {
+                                    _eventFlow.emit(UiEvent.Success("Print photo has been updated"))
+                                }
+
+                                is Resource.Error -> {
+                                    _eventFlow.emit(UiEvent.Error("Unable to update print photo"))
+                                }
+                            }
                         }
                     }
                 }

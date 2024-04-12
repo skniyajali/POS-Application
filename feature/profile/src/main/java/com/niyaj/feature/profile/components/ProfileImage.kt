@@ -1,30 +1,31 @@
 package com.niyaj.feature.profile.components
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import com.niyaj.designsystem.theme.ProfilePictureSizeLarge
 import com.niyaj.model.RESTAURANT_LOGO
+import java.io.File
 
 @Composable
 fun ProfileImage(
-    modifier : Modifier = Modifier,
-    defaultLogo : Int = RESTAURANT_LOGO.toInt(),
-    resLogo : Bitmap? = null,
+    modifier: Modifier = Modifier,
+    logo: String,
 ) {
+    val context = LocalContext.current
     val rainbowColorsBrush = remember {
         Brush.sweepGradient(
             listOf(
@@ -39,28 +40,30 @@ fun ProfileImage(
             )
         )
     }
-
     val borderWidth = 4.dp
 
-    if (resLogo == null) {
-        Image(
-            painter = painterResource(id = defaultLogo),
-            contentDescription = "logo",
-            contentScale = ContentScale.Crop,
-            modifier = modifier
-                .size(ProfilePictureSizeLarge)
-                .clip(CircleShape)
-                .border(BorderStroke(borderWidth, rainbowColorsBrush), CircleShape)
-        )
+    val data = if (logo.isEmpty()) {
+        RESTAURANT_LOGO.toInt()
     } else {
-        Image(
-            bitmap = resLogo.asImageBitmap(),
-            contentDescription = "logo",
-            contentScale = ContentScale.Crop,
-            modifier = modifier
-                .size(ProfilePictureSizeLarge)
-                .clip(CircleShape)
-                .border(BorderStroke(borderWidth, rainbowColorsBrush), CircleShape)
-        )
+        File(context.filesDir, logo)
     }
+
+    val logoRequest = ImageRequest
+        .Builder(context)
+        .data(data)
+        .crossfade(enable = true)
+        .placeholder(RESTAURANT_LOGO.toInt())
+        .error(RESTAURANT_LOGO.toInt())
+        .build()
+
+    SubcomposeAsyncImage(
+        model = logoRequest,
+        contentDescription = "logo",
+        contentScale = ContentScale.Crop,
+        loading = { CircularProgressIndicator() },
+        modifier = modifier
+            .size(ProfilePictureSizeLarge)
+            .clip(CircleShape)
+            .border(BorderStroke(borderWidth, rainbowColorsBrush), CircleShape)
+    )
 }
