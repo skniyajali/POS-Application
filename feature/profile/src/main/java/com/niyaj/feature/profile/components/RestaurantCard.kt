@@ -1,10 +1,8 @@
 package com.niyaj.feature.profile.components
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -35,19 +34,22 @@ import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import com.niyaj.designsystem.theme.LightColor6
 import com.niyaj.designsystem.theme.SpaceMini
 import com.niyaj.designsystem.theme.SpaceSmall
+import com.niyaj.model.PRINT_LOGO
 import com.niyaj.model.RestaurantInfo
 import com.niyaj.ui.components.NoteText
 import com.niyaj.ui.components.StandardButton
 import com.niyaj.ui.components.StandardOutlinedButton
+import java.io.File
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
@@ -55,8 +57,6 @@ fun RestaurantCard(
     modifier: Modifier = Modifier,
     info: RestaurantInfo,
     showPrintLogo: Boolean = false,
-    printLogo: Bitmap? = null,
-    resLogo: Bitmap? = null,
     onClickEdit: () -> Unit,
     onClickChangePrintLogo: () -> Unit,
     onClickViewPrintLogo: () -> Unit,
@@ -102,7 +102,7 @@ fun RestaurantCard(
                 ) {
                     ProfileImage(
                         modifier = Modifier,
-                        resLogo = resLogo
+                        logo = info.logo
                     )
 
                     IconButton(
@@ -125,9 +125,8 @@ fun RestaurantCard(
 
             RestaurantDetails(
                 modifier = Modifier
-                    .padding(top = 40.dp),
+                    .padding(top = 30.dp),
                 info = info,
-                printLogo = printLogo,
                 showPrintLogo = showPrintLogo,
                 onClickChangePrintLogo = onClickChangePrintLogo,
                 onClickViewPrintLogo = onClickViewPrintLogo,
@@ -142,14 +141,21 @@ fun UpdatedRestaurantCard(
     modifier: Modifier = Modifier,
     info: RestaurantInfo,
     showPrintLogo: Boolean = false,
-    printLogo: Bitmap? = null,
-    resLogo: Bitmap? = null,
     onClickEdit: () -> Unit,
     onClickChangePrintLogo: () -> Unit,
     onClickViewPrintLogo: () -> Unit,
 ) {
+    val context = LocalContext.current
     val iconSize = 24.dp
     val offsetInPx = LocalDensity.current.run { (iconSize / 2).roundToPx() }
+
+    val printLogoRequest = ImageRequest
+        .Builder(context)
+        .data(File(context.filesDir, info.printLogo))
+        .crossfade(enable = true)
+        .placeholder(PRINT_LOGO.toInt())
+        .error(PRINT_LOGO.toInt())
+        .build()
 
     Card(
         modifier = modifier
@@ -189,7 +195,7 @@ fun UpdatedRestaurantCard(
                 ) {
                     ProfileImage(
                         modifier = Modifier,
-                        resLogo = resLogo
+                        logo = info.logo
                     )
 
                     IconButton(
@@ -241,14 +247,12 @@ fun UpdatedRestaurantCard(
                             .fillMaxWidth()
                             .padding(SpaceSmall),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.spacedBy(SpaceSmall),
                     ) {
                         NoteText(
                             text = "You have not set your print logo, Click below to set.",
                             onClick = onClickChangePrintLogo
                         )
-
-                        Spacer(modifier = Modifier.height(SpaceSmall))
 
                         StandardButton(
                             text = "Set Image",
@@ -260,53 +264,64 @@ fun UpdatedRestaurantCard(
                         )
                     }
                 } else {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(SpaceSmall),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(SpaceSmall),
                     ) {
-                        StandardOutlinedButton(
-                            text = "Change",
-                            icon = Icons.Default.AddToPhotos,
-                            onClick = onClickChangePrintLogo,
+                        NoteText(
+                            text = "Restaurant print logo has been set, Click below to change",
+                            color = MaterialTheme.colors.primary,
+                            onClick = onClickChangePrintLogo
                         )
 
-                        Spacer(modifier = Modifier.width(SpaceSmall))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            StandardOutlinedButton(
+                                text = "Change",
+                                icon = Icons.Default.AddToPhotos,
+                                onClick = onClickChangePrintLogo,
+                            )
 
-                        StandardButton(
-                            text = "View Image",
-                            icon = Icons.Default.ImageSearch,
-                            onClick = onClickViewPrintLogo
-                        )
+                            Spacer(modifier = Modifier.width(SpaceSmall))
+
+                            StandardButton(
+                                text = if (!showPrintLogo) "View Image" else "Hide Image",
+                                icon = Icons.Default.ImageSearch,
+                                onClick = onClickViewPrintLogo
+                            )
+                        }
                     }
                 }
             }
 
             AnimatedVisibility(
-                visible = showPrintLogo && printLogo != null,
+                visible = showPrintLogo && info.printLogo.isNotEmpty(),
             ) {
-                printLogo?.let {
-                    Spacer(modifier = Modifier.height(SpaceSmall))
+                Spacer(modifier = Modifier.height(SpaceSmall))
 
-                    Card(
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(SpaceSmall),
+                    backgroundColor = LightColor6
+                ) {
+                    SubcomposeAsyncImage(
+                        model = printLogoRequest,
+                        contentDescription = "Print Logo",
+                        loading = { CircularProgressIndicator() },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .padding(SpaceSmall),
-                        backgroundColor = LightColor6
-                    ) {
-                        Image(
-                            bitmap = it.asImageBitmap(),
-                            contentDescription = "Print Logo",
-                            contentScale = ContentScale.Inside,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(SpaceSmall)
-                                .align(Alignment.CenterHorizontally)
-                        )
-                    }
+                            .fillMaxSize()
+                            .padding(SpaceSmall)
+                            .align(Alignment.CenterHorizontally)
+                    )
                 }
             }
         }

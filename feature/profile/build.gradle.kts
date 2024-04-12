@@ -17,4 +17,8 @@ android {
 dependencies {
     implementation(libs.accompanist.permissions)
     implementation(libs.zxing.core)
+
+    implementation(libs.coil.kt)
+    implementation(libs.coil.kt.compose)
+
 }

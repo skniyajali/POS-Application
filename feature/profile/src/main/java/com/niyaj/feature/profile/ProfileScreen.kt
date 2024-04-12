@@ -31,7 +31,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -39,15 +38,11 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.niyaj.common.tags.ProfileTestTags.PROFILE_SCREEN
-import com.niyaj.common.utils.ImageStorageManager
-import com.niyaj.common.utils.toBitmap
 import com.niyaj.designsystem.theme.LightColor6
 import com.niyaj.designsystem.theme.SpaceSmall
 import com.niyaj.feature.profile.components.AccountInfo
 import com.niyaj.feature.profile.components.RestaurantCard
 import com.niyaj.feature.profile.destinations.UpdateProfileScreenDestination
-import com.niyaj.model.RESTAURANT_LOGO_NAME
-import com.niyaj.model.RESTAURANT_PRINT_LOGO_NAME
 import com.niyaj.ui.components.SettingsCard
 import com.niyaj.ui.event.UiEvent
 import com.niyaj.ui.util.Screens
@@ -73,15 +68,56 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
     resultRecipient: ResultRecipient<UpdateProfileScreenDestination, String>
 ) {
-    val context = LocalContext.current
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
     val info = viewModel.info.collectAsStateWithLifecycle().value
     val accountInfo = viewModel.accountInfo.collectAsStateWithLifecycle().value
 
-    val resLogo = info.getRestaurantLogo(context)
-    val printLogo = info.getRestaurantPrintLogo(context)
+    val permissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberMultiplePermissionsState(
+            permissions = listOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.READ_MEDIA_IMAGES
+            )
+        )
+    } else {
+        rememberMultiplePermissionsState(
+            permissions = listOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+            )
+        )
+    }
+
+    fun checkForMediaPermission() {
+        if (!permissionState.allPermissionsGranted) {
+            permissionState.launchMultiplePermissionRequest()
+        }
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        checkForMediaPermission()
+    }
+
+    var showPrintLogo by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    val resLogoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let {
+            viewModel.onEvent(ProfileEvent.LogoChanged(uri = it))
+        }
+    }
+
+    val printLogoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let {
+            viewModel.onEvent(ProfileEvent.PrintLogoChanged(uri = it))
+        }
+    }
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
@@ -108,73 +144,6 @@ fun ProfileScreen(
             is NavResult.Value -> {
                 scope.launch {
                     scaffoldState.snackbarHostState.showSnackbar(result.value)
-                }
-            }
-        }
-    }
-
-    val permissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        rememberMultiplePermissionsState(
-            permissions = listOf(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.READ_MEDIA_IMAGES
-            )
-        )
-    } else {
-        rememberMultiplePermissionsState(
-            permissions = listOf(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-            )
-        )
-    }
-
-    fun checkForMediaPermission() {
-        if (!permissionState.allPermissionsGranted) {
-            permissionState.launchMultiplePermissionRequest()
-        }
-    }
-
-    var showPrintLogo by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    val resLogoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
-        uri?.let {
-            val result = ImageStorageManager.saveToInternalStorage(
-                context,
-                uri.toBitmap(context),
-                RESTAURANT_LOGO_NAME
-            )
-
-            scope.launch {
-                if (result) {
-                    scaffoldState.snackbarHostState.showSnackbar("Profile image saved successfully.")
-                    viewModel.onEvent(ProfileEvent.LogoChanged)
-                } else {
-                    scaffoldState.snackbarHostState.showSnackbar("Unable save image into storage.")
-                }
-            }
-        }
-    }
-
-    val printLogoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
-        uri?.let {
-            val result = ImageStorageManager.saveToInternalStorage(
-                context,
-                uri.toBitmap(context),
-                RESTAURANT_PRINT_LOGO_NAME
-            )
-
-            scope.launch {
-                if (result) {
-                    scaffoldState.snackbarHostState.showSnackbar("Print Image saved successfully.")
-                    viewModel.onEvent(ProfileEvent.PrintLogoChanged)
-                } else {
-                    scaffoldState.snackbarHostState.showSnackbar("Unable save print image into storage.")
                 }
             }
         }
@@ -224,8 +193,6 @@ fun ProfileScreen(
             item("Restaurant Info") {
                 RestaurantCard(
                     info = info,
-                    resLogo = resLogo,
-                    printLogo = printLogo,
                     showPrintLogo = showPrintLogo,
                     onClickEdit = {
                         checkForMediaPermission()

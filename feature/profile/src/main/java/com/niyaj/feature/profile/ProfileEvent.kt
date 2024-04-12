@@ -1,5 +1,7 @@
 package com.niyaj.feature.profile
 
+import android.net.Uri
+
 sealed class ProfileEvent {
 
     data class NameChanged(val name: String) : ProfileEvent()
@@ -20,9 +22,9 @@ sealed class ProfileEvent {
 
     data object StartScanning : ProfileEvent()
 
-    data object LogoChanged : ProfileEvent()
+    data class LogoChanged(val uri: Uri) : ProfileEvent()
 
-    data object PrintLogoChanged : ProfileEvent()
+    data class PrintLogoChanged(val uri: Uri) : ProfileEvent()
 
     data object SetProfileInfo: ProfileEvent()
 
